@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DragzonePortalMount = () =>
+export const DragzonePortalMount = () =>
 {
     return (
         <div 
@@ -8,5 +8,3 @@ const DragzonePortalMount = () =>
         />
     );
 }
-
-export default DragzonePortalMount;

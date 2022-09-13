@@ -22,13 +22,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useMouseDrag = void 0;
 const react_1 = __importStar(require("react"));
-const Dragzone_1 = __importDefault(require("../components/Dragzone"));
+const Dragzone_1 = require("../components/Dragzone");
 function useMouseDrag(props) {
     const [dragging, setDragging] = (0, react_1.useState)(false);
     const enableMoveRef = (0, react_1.useRef)(false);
@@ -67,7 +64,7 @@ function useMouseDrag(props) {
             onMouseUp: cancel,
         },
         catcher: (dragging ?
-            react_1.default.createElement(Dragzone_1.default, { onMouseMove: zoneMove, onMouseUp: zoneEnd, onMouseLeave: zoneEnd, cursor: props.cursor })
+            react_1.default.createElement(Dragzone_1.Dragzone, { onMouseMove: zoneMove, onMouseUp: zoneEnd, onMouseLeave: zoneEnd, cursor: props.cursor })
             : null)
     };
 }

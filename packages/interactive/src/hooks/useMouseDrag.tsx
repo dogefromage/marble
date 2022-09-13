@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import Dragzone from "../components/Dragzone";
+import { Dragzone } from "../components/Dragzone";
 
 export function useMouseDrag(props:
     {

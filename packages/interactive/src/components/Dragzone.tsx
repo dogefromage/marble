@@ -19,7 +19,7 @@ const DragzoneDiv = styled.div<Props>`
     cursor: ${({ cursor }) => cursor || 'inherit' };
 `;
 
-const Dragzone = (props: React.HTMLAttributes<HTMLDivElement> | Props) => 
+export const Dragzone = (props: React.HTMLAttributes<HTMLDivElement> | Props) => 
 {
     return ReactDOM.createPortal(
         <DragzoneDiv
@@ -28,5 +28,3 @@ const Dragzone = (props: React.HTMLAttributes<HTMLDivElement> | Props) =>
         document.querySelector(`#dragzone-portal-mount`)!
     );
 };
-
-export default Dragzone;

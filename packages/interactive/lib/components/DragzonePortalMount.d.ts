@@ -1,3 +1,2 @@
 /// <reference types="react" />
-declare const DragzonePortalMount: () => JSX.Element;
-export default DragzonePortalMount;
+export declare const DragzonePortalMount: () => JSX.Element;
