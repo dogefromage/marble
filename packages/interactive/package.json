@@ -1,0 +1,15 @@
+{
+  "name": "@marble/interactive",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "watch": "tsc --watch"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "styled-components": "^5.3.5"
+  }
+}

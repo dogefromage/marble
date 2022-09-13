@@ -1,0 +1,11 @@
+{
+    "name": "@marble/root",
+    "private": true,
+    "workspaces": [
+      "packages/*"
+    ],
+    "dependencies": {
+      "nodemon": "^2.0.16"
+    }
+  }
+  
