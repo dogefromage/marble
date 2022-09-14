@@ -115,15 +115,14 @@ const GeometryEditor = ({ }: ViewProps) =>
         return generateAdjacencyLists(geometryZ);
     }, [ geometryZ?.validity ]);
 
-    console.warn('fix forwards');
-
-    const edges = adjacencyLists?.backwards;
+    const forwardEdges = adjacencyLists?.forwards;
+    const backwardEdges = adjacencyLists?.backwards;
 
     return (
         <EditorWrapper>
         {
-            geometryId && geometryZ && edges &&
-            edges.map(subList =>
+            geometryId && geometryZ && backwardEdges &&
+            backwardEdges.map(subList =>
                 subList.map(edge =>
                     <LinkComponent 
                         key={edge.key}
@@ -136,12 +135,13 @@ const GeometryEditor = ({ }: ViewProps) =>
             )
         }
         {
-            geometryZ &&
-            geometryZ.nodes.map(node =>
+            geometryZ && forwardEdges &&
+            geometryZ.nodes.map((node, nodeIndex) =>
                 <GeometryNode
                     geometryId={geometryZ.id}
                     key={node.id}
                     node={node}
+                    forwardEdges={forwardEdges[nodeIndex]}
                 />
             )
         }

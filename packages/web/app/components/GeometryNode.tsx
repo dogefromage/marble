@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/GeometriesSlice/geometriesSlice';
 import { GNodeZ } from '../slices/GeometriesSlice/types/Geometry';
+import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
 import { Point } from '../utils/types/common';
 import GeometryRowRoot from './GeometryRowRoot';
 import { BOX_SHADOW } from './styled/utils';
@@ -28,28 +29,22 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
     left: 0;
 
     width: ${NODE_WIDTH}px;
-    /* padding: 4px 0; */
     
     background-color: white;
-    /* border: solid 1px black; */
     border-radius: 3px;
-
-    /* outline: solid 1px black; */
-
     box-shadow: 5px 5px #00000066;
 
     cursor: pointer;
-
-    /* ${ BOX_SHADOW } */
 `;
 
 interface Props
 {
     geometryId: string;
     node: GNodeZ;
+    forwardEdges: GeometryEdge[][] | undefined;
 }
 
-const GeometryNode = ({ geometryId, node }: Props) =>
+const GeometryNode = ({ geometryId, node, forwardEdges }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -86,7 +81,7 @@ const GeometryNode = ({ geometryId, node }: Props) =>
                 nodeId: node.id,
                 position,
                 undo: { 
-                    stackToken: dragRef.current!.stackToken 
+                    actionToken: dragRef.current!.stackToken 
                 },
             }))
         },
@@ -99,12 +94,16 @@ const GeometryNode = ({ geometryId, node }: Props) =>
             {...handlers}
         >
         {
-            node.rows.map(row =>
+            node.rows.map((row, rowIndex) =>
                 <GeometryRowRoot 
                     geometryId={geometryId}
                     nodeId={node.id}
                     key={row.id}
                     row={row}
+                    connected={
+                        forwardEdges && forwardEdges[rowIndex]?.length > 0 ||
+                        row.connectedOutput != null
+                    }
                 />
             )
         }

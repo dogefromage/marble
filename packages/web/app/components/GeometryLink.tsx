@@ -15,20 +15,18 @@ interface LinkDivProps
     B: Point;
 }
 
-const RADIUS = 2.5;
-
 const LinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }) =>
 {
     const dx = B.x - A.x;
     const dy = B.y - A.y;
 
-    const width = Math.hypot(dx, dy) + 2 * RADIUS;
+    const width = Math.hypot(dx, dy);
     const alpha = Math.atan2(dy, dx);
 
     return ({
         style:
         {
-            width,
+            width: `calc(${width}px + 2 * var(--radius))`,
             transform: `
                 translate(${A.x}px, ${A.y}px) 
                 rotate(${alpha}rad)`,
@@ -37,23 +35,27 @@ const LinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }) =>
     })
 })<LinkDivProps>`
 
+    --radius: 2.5px;
+
     position: absolute;
-    top: ${-RADIUS}px;
-    left: ${-RADIUS}px;
-    height: ${2 * RADIUS}px;
-    transform-origin: ${RADIUS}px ${RADIUS}px;
+    top: calc(-1 * var(--radius));
+    left: calc(-1 * var(--radius));
+    height: calc(2 * var(--radius));
+    transform-origin: var(--radius) var(--radius);
 
     background-color: var(--link-color);
 
     border-radius: 1000px;
 
-    opacity: 0.5;
+    /* opacity: 0.5; */
 
     cursor: pointer;
 
     &:hover
     {
-        opacity: 1;
+        /* opacity: 1; */
+
+        --radius: 4px
     }
 `;
 

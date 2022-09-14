@@ -28,7 +28,13 @@ const react_1 = __importStar(require("react"));
 const Dragzone_1 = require("../components/Dragzone");
 function useMouseDrag(props) {
     const [dragging, setDragging] = (0, react_1.useState)(false);
-    const enableMoveRef = (0, react_1.useRef)(false);
+    const moveRef = (0, react_1.useRef)({
+        mouseDown: false,
+        startPos: {
+            x: 0,
+            y: 0,
+        }
+    });
     const start = (e) => {
         var _a;
         if (props.mouseButton && e.button !== props.mouseButton)
@@ -37,16 +43,20 @@ function useMouseDrag(props) {
         (_a = props.start) === null || _a === void 0 ? void 0 : _a.call(props, e, () => { out.cancel = true; });
         if (out.cancel)
             return;
-        enableMoveRef.current = true;
+        moveRef.current.mouseDown = true;
+        moveRef.current.startPos = { x: e.clientX, y: e.clientY };
     };
     const moveFirst = (e) => {
-        if (enableMoveRef.current) {
+        if (moveRef.current.mouseDown) {
+            const deltaMove = Math.hypot(moveRef.current.startPos.x - e.clientX, moveRef.current.startPos.y - e.clientY);
+            if (props.deadzone && deltaMove < props.deadzone)
+                return;
             setDragging(true);
-            enableMoveRef.current = false;
+            moveRef.current.mouseDown = false;
         }
     };
     const cancel = (e) => {
-        enableMoveRef.current = false;
+        moveRef.current.mouseDown = false;
     };
     const zoneMove = (e) => {
         var _a;

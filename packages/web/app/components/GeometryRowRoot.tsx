@@ -7,6 +7,7 @@ export type RowProps<T extends RowZ = RowZ> =
 {
     geometryId: string;
     nodeId: string;
+    connected: boolean;
     row: T;
 }
 

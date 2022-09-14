@@ -5,6 +5,8 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesConnectJoints } from '../slices/GeometriesSlice/geometriesSlice';
 import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG, RowTypes } from '../slices/GeometriesSlice/types/Geometry';
 
+export const JOINT_OFFSET = -32;
+
 const JointDiv = styled.div<{
     direction: JointDirection;
     connected: boolean;
@@ -15,18 +17,17 @@ const JointDiv = styled.div<{
 
     top: 50%;
 
-    ${({ direction }) => direction === 'input' ?
-        'left: -34px' :
-        'right: -34px'
+    ${({ direction }) => 
+        `${ direction === 'input' ? 
+            'left' : 'right'}: ${JOINT_OFFSET}px` 
     };
 
     width: 24px;
-    height: 24px;
-    /* aspect-ratio: 1; */
+    aspect-ratio: 1;
 
     transform: translateY(-50%);
 
-    /* background-color: #ff000033;§ */
+    /* background-color: #ff000033; */
 
     display: flex;
     align-items: center;
@@ -41,7 +42,12 @@ const JointDiv = styled.div<{
         background-color: ${({ theme, dataType }) => theme.colors.dataTypes[dataType] };
         border-radius: 50%;
 
-        opacity: ${({ connected }) => connected ? 0 : 0.5 };
+        opacity: ${({ connected, isHovering }) => 
+        {
+            if (isHovering) return 1;
+            if (connected) return 0;
+            return 0.5;
+        }};
     }
     
     &:hover .joint-inner

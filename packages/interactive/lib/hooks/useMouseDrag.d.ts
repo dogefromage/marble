@@ -1,6 +1,7 @@
 import React from "react";
 export declare function useMouseDrag(props: {
     mouseButton?: number;
+    deadzone?: number;
     start?: (e: React.MouseEvent, cancel: () => void) => void;
     move?: (e: React.MouseEvent) => void;
     end?: (e: React.MouseEvent) => void;

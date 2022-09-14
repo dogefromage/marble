@@ -1,5 +1,4 @@
 import { DataTypes, GeometryZ, OutputRowT } from "../../slices/GeometriesSlice/types/Geometry";
-import { arraySetNested } from "../array";
 
 export interface GeometryEdge
 {
@@ -11,9 +10,17 @@ export interface GeometryEdge
     key: string;
 }
 
+function getA<T>(array: Array<Array<T>>, index: number): Array<T>
+{
+    if (array[index] == null)
+        array[index] = [];
+
+    return array[index];
+}
+
 export function generateAdjacencyLists(g: GeometryZ)
 {
-    const forwards: GeometryEdge[][] = [];
+    const forwards: GeometryEdge[][][] = [];
     const backwards: GeometryEdge[][] = [];
 
     const outputIndicesMap = new Map<string, { nodeIndex: number , rowIndex: number }>();
@@ -54,8 +61,8 @@ export function generateAdjacencyLists(g: GeometryZ)
                     key: outputKey + ':' +inputKey,
                 }
 
-                arraySetNested(forwards, edge, outputIndices.nodeIndex, outputIndices.rowIndex);
-                arraySetNested(backwards, edge, nodeIndex, rowIndex);
+                getA(getA(forwards, outputIndices.nodeIndex), outputIndices.rowIndex).push(edge);
+                getA(backwards, nodeIndex)[rowIndex] = edge;
             }
         }
     }

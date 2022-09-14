@@ -4,7 +4,7 @@ import { UndoAction } from "../../enhancers/types/undoable";
 import { RootState } from "../../redux/store";
 import generateAlphabeticalId from "../../utils/generateAlphabeticalId";
 import { Point } from "../../utils/types/common";
-import { GeometryS, GNodeT, GNodeS, GeometriesSliceState, JointLocation } from "./types/Geometry";
+import { GeometryS, GNodeT, GNodeS, GeometriesSliceState, JointLocation, RowS } from "./types/Geometry";
 
 function createGeometry(id: string)
 {
