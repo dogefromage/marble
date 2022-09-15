@@ -1,4 +1,4 @@
-import { DataTypes, FieldRowT } from '../slices/GeometriesSlice/types/Geometry';
+import { DataTypes, FieldRowT } from '../types/Geometry';
 import GeometryRowFieldFloat from './GeometryRowFieldFloat';
 import { RowProps } from './GeometryRowRoot';
 

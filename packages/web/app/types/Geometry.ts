@@ -1,10 +1,10 @@
 
-import { Point } from "../../../utils/types/common";
-import { Override } from "../../../utils/types/override";
-
 /**
  * JOINT
  */
+
+import { vec2 } from "gl-matrix";
+import { Override, Point } from "./utils";
 
 export const JOINT_DND_TAG = 'dnd.joint';
 
@@ -122,12 +122,3 @@ export interface GeometryS
 }
 
 export type GeometryZ = Override<GeometryS, 'nodes', Array<GNodeZ>>;
-
-/**
- * SLICE
- */
-
-export type GeometriesSliceState =
-{
-    [id: string]: GeometryS;
-}

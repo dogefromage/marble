@@ -4,29 +4,18 @@ import { Provider } from 'react-redux';
 import GeometryEditorView from '../../app/components/GeometryEditorView';
 import { initStore, RootState } from '../../app/redux/store';
 import { DragzonePortalMount } from '@marble/interactive';
+import ViewportView from '../../app/components/ViewportView';
+import styled from 'styled-components';
+import AppRoot from '../../app/components/AppRoot';
+import { useRouter } from 'next/router';
 
-interface Props
+const ProjectPage = () =>
 {
-
-}
-
-const ProjectPage = ({ }: Props) =>
-{
-    const [ store, setStore ] = useState<EnhancedStore<RootState, AnyAction>>();
-
-    useEffect(() =>
-    {
-        setStore(initStore());
-    }, [])
+    const router = useRouter()
+    const { project_id } = router.query;
 
     return (
-        store &&
-        <Provider store={store}>
-            <div className='geometry-wrapper'>
-                <GeometryEditorView panelId='1234' />
-            </div>
-            <DragzonePortalMount />
-        </Provider>
+        <AppRoot projectId={project_id as string} />
     );
 }
 

@@ -1,8 +1,8 @@
 import { JOINT_OFFSET } from "../../components/GeometryJoint";
 import { NODE_WIDTH } from "../../components/GeometryNode";
 import { GNODE_ROW_UNIT_HEIGHT } from "../../components/styled/GeometryRowDiv";
-import { JointDirection } from "../../slices/GeometriesSlice/types/Geometry";
-import { Point } from "../types/common";
+import { JointDirection } from "../../types/Geometry";
+import { Point } from "../../types/utils";
 
 export default function getJointPosition(nodePosition: Point, heightUnits: number, direction: JointDirection)
 {

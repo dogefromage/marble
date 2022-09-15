@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesDisconnectJoints } from '../slices/GeometriesSlice/geometriesSlice';
-import { DataTypes, GNodeZ } from '../slices/GeometriesSlice/types/Geometry';
+import { geometriesDisconnectJoints } from '../slices/geometriesSlice';
+import { DataTypes, GNodeZ } from '../types/Geometry';
 import countHeightUnits from '../utils/geometry/countHeightUnits';
 import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
 import getJointPosition from '../utils/geometry/getJointPosition';

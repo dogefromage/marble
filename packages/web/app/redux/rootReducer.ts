@@ -1,6 +1,7 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import undoableEnhancer from "../enhancers/undoableEnhancer";
-import geometriesReducer from "../slices/GeometriesSlice/geometriesSlice";
+import geometriesReducer from "../slices/geometriesSlice";
+import viewportPanelsReducer from "../slices/panelViewportSlice";
 
 const reducer = combineReducers({
     project: undoableEnhancer(
@@ -8,10 +9,13 @@ const reducer = combineReducers({
             geometries: geometriesReducer,
         })
     ),
-    // editor: combineReducers({
-    //     panelManager: panelManagerReducer,
-    //     preferences: preferencesReducer,
-    // }),
+    editor: combineReducers({
+        panels: combineReducers({
+            viewport: viewportPanelsReducer,
+        })
+        // panelManager: panelManagerReducer,
+        // preferences: preferencesReducer,
+    }),
 });
 
 export default reducer;

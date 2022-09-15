@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { NameRowT } from '../slices/GeometriesSlice/types/Geometry';
+import { NameRowT } from '../types/Geometry';
 import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from './styled/GeometryRowDiv';
 import GeometryRowNameP from './styled/GeometryRowNameP';

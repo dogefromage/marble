@@ -9,7 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@marble/interactive": "^1.0.0",
+    "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^1.8.5",
+    "gl-matrix": "^3.4.3",
     "immer": "^9.0.15",
     "next": "12.3.0",
     "react": "18.2.0",
@@ -18,10 +21,10 @@
     "redux-logger": "^3.0.6",
     "sass": "^1.54.9",
     "styled-components": "^5.3.5",
-    "uuid": "^9.0.0",
-    "@marble/interactive": "^1.0.0"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/gl-matrix": "^3.2.0",
     "@types/node": "18.7.17",
     "@types/react": "18.0.19",
     "@types/react-dom": "18.0.6",

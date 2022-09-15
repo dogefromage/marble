@@ -1,8 +1,7 @@
-import produce from "immer";
-import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../slices/GeometriesSlice/types/Geometry";
-import { AssetsMap } from "../types/AssetsMap";
+import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../types/Geometry";
+import { KeyValueMap } from "../../types/utils";
 
-export default function zipGeometry(g: GeometryS, templates: AssetsMap<GNodeT>)
+export default function zipGeometry(g: GeometryS, templates: KeyValueMap<GNodeT>)
 {
     const getTemplate = (templateId: string) =>
     {

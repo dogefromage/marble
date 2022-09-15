@@ -1,4 +1,4 @@
-import { DataTypes, GeometryZ, OutputRowT } from "../../slices/GeometriesSlice/types/Geometry";
+import { DataTypes, GeometryZ, OutputRowT } from "../../types/Geometry";
 
 export interface GeometryEdge
 {

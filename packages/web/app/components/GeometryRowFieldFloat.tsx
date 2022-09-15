@@ -1,6 +1,6 @@
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesAssignRowData } from '../slices/GeometriesSlice/geometriesSlice';
-import { FloatFieldRowT } from '../slices/GeometriesSlice/types/Geometry';
+import { geometriesAssignRowData } from '../slices/geometriesSlice';
+import { FloatFieldRowT } from '../types/Geometry';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';

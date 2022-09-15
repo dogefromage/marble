@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { selectGeometries, geometriesNew, geometriesAddNode } from "../slices/GeometriesSlice/geometriesSlice";
-import { DataTypes, GeometryS, GNodeT, GNodeTypes, RowTypes } from "../slices/GeometriesSlice/types/Geometry";
+import { selectGeometries, geometriesNew, geometriesAddNode } from "../slices/geometriesSlice";
+import { DataTypes, GeometryS, GNodeT, GNodeTypes, RowTypes } from "../types/Geometry";
 import { generateAdjacencyLists } from "../utils/geometry/generateAdjacencyLists";
 import zipGeometry from "../utils/geometry/zipGeometry";
-import { AssetsMap } from "../utils/types/AssetsMap";
+import { KeyValueMap } from "../types/utils";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
-import { ViewProps } from "./types/View";
+import { ViewProps } from "../types/View";
 
 const EditorWrapper = styled.div`
 
@@ -58,7 +58,7 @@ export const HELLO_TEMPLATE: GNodeT =
     ],
 }
 
-export const NODE_TEMPLATES: AssetsMap<GNodeT> = 
+export const NODE_TEMPLATES: KeyValueMap<GNodeT> = 
 {
     [HELLO_TEMPLATE.id]: HELLO_TEMPLATE,
 };
