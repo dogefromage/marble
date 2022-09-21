@@ -18,13 +18,15 @@ export enum DataTypes
 {
     Unknown = 'unknown',
     Float = 'float',
+    Float3 = 'float3',
 }
 
 export enum RowTypes
 {
     Name,
-    Field,
+    Input,
     Output,
+    Field,
 }
 
 export interface BaseRowT
@@ -36,6 +38,13 @@ export interface BaseRowT
 export interface NameRowT extends BaseRowT
 {
     type: RowTypes.Name;
+    color: string;
+}
+
+export interface InputRowT extends BaseRowT
+{
+    type: RowTypes.Input;
+    dataType: DataTypes;
 }
 
 export interface OutputRowT extends BaseRowT
@@ -56,8 +65,9 @@ export type FieldRowT =
 
 export type RowT =
     | NameRowT
-    | FieldRowT
+    | InputRowT
     | OutputRowT
+    | FieldRowT
 
 export type JointDirection = 'input' | 'output';
 

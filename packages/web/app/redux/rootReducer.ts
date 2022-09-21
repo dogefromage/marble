@@ -2,6 +2,7 @@ import { combineReducers } from "@reduxjs/toolkit";
 import undoableEnhancer from "../enhancers/undoableEnhancer";
 import geometriesReducer from "../slices/geometriesSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
+import sceneMetaStateReducer from "../slices/sceneMetaSlice";
 
 const reducer = combineReducers({
     project: undoableEnhancer(
@@ -16,6 +17,7 @@ const reducer = combineReducers({
         // panelManager: panelManagerReducer,
         // preferences: preferencesReducer,
     }),
+    sceneMetaState: sceneMetaStateReducer,
 });
 
 export default reducer;

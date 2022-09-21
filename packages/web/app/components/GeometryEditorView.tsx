@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesAddNode, geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { GeometryS, GNodeT, GNodeTypes } from "../types";
-import { DataTypes, RowTypes } from "../types/geometry/Rows";
-import { KeyValueMap } from "../types/utils";
+import { GeometryS } from "../types";
 import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometry/generateAdjacencyLists";
+import { NODE_TEMPLATES } from "../utils/geometry/testingTemplates";
 import zipGeometry from "../utils/geometry/zipGeometry";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
@@ -33,37 +32,6 @@ const EditorWrapper = styled.div`
     ;
 `;
 
-export const HELLO_TEMPLATE: GNodeT = 
-{
-    id: 'hello_template',
-    type: GNodeTypes.Default,
-    rows: [
-        {
-            id: 'row1',
-            type: RowTypes.Name,
-            name: 'Hello Node Editor!',
-        },
-        {
-            id: 'outputrow',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'Main Output',
-        },
-        {
-            id: 'row2',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
-            value: 5,
-            name: 'TestRow',
-        }
-    ],
-}
-
-export const NODE_TEMPLATES: KeyValueMap<GNodeT> = 
-{
-    [HELLO_TEMPLATE.id]: HELLO_TEMPLATE,
-};
-
 const GeometryEditor = ({ }: ViewProps) =>
 {
     const [ geometryId, setGeometryId ] = useState<string>();
@@ -80,26 +48,20 @@ const GeometryEditor = ({ }: ViewProps) =>
         }));
         setGeometryId(id);
 
-        dispatch(geometriesAddNode({
-            geometryId: id,
-            position: { x: 100, y: 150 },
-            template: HELLO_TEMPLATE,
-            undo: {},
-        }))
+        let posX = 50;
+        let posY = 50;
+        for (const template of Object.values(NODE_TEMPLATES))
+        {
+            dispatch(geometriesAddNode({
+                geometryId: id,
+                position: { x: posX, y: posY },
+                template,
+                undo: {},
+            }))
 
-        dispatch(geometriesAddNode({
-            geometryId: id,
-            position: { x: 400, y: 350 },
-            template: HELLO_TEMPLATE,
-            undo: {},
-        }))
-
-        dispatch(geometriesAddNode({
-            geometryId: id,
-            position: { x: 520, y: 200 },
-            template: HELLO_TEMPLATE,
-            undo: {},
-        }))
+            posX += 100;
+            posY += 60;
+        }
     }, []);
     
     const geometryZ = useMemo(() =>

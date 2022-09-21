@@ -5,9 +5,14 @@ import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from './styled/GeometryRowDiv';
 import GeometryRowNameP from './styled/GeometryRowNameP';
 
-const TitleWrapper = styled(GeometryRowDiv)`
+interface WrapperProps
+{
+    backColor: string;
+}
+
+const TitleWrapper = styled(GeometryRowDiv)<WrapperProps>`
     
-    background-color: #a3264e;
+    background-color: ${({ backColor }) => backColor };
     /* background-color: black; */
     color: white;
 
@@ -30,6 +35,7 @@ const GeometryRowName = ({ geometryId, nodeId, row }: RowProps<NameRowT>) =>
     return (
         <TitleWrapper
             heightUnits={1}
+            backColor={row.color}
         >
             <NodeTitle
                 align='left'
