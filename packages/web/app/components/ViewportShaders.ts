@@ -1,4 +1,4 @@
-import { glsl } from "../utils/gl/glsl";
+import { glsl } from "../utils/gl/glslTag";
 
 /////////// VERT ///////////
 

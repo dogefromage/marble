@@ -1,6 +1,6 @@
 import { useMouseDrag } from '@marble/interactive';
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import styled, { css } from 'styled-components';
+import React, { useRef, useState } from 'react';
+import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { clamp } from '../utils/math';
 import { FONT_FAMILY } from './styled/utils';

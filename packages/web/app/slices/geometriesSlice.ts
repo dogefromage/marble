@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { UndoAction } from "../enhancers/types/undoable";
 import { RootState } from "../redux/store";
-import { GeometryS, GNodeS, GNodeT, JointLocation } from "../types/Geometry";
+import { GeometryS, GNodeT, GNodeS, JointLocation } from "../types";
 import { Point } from "../types/utils";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 import { GeometriesSliceState } from "./types/SliceStates";

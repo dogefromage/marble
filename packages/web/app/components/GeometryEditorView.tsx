@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { selectGeometries, geometriesNew, geometriesAddNode } from "../slices/geometriesSlice";
-import { DataTypes, GeometryS, GNodeT, GNodeTypes, RowTypes } from "../types/Geometry";
+import { geometriesAddNode, geometriesNew, selectGeometries } from "../slices/geometriesSlice";
+import { GeometryS, GNodeT, GNodeTypes } from "../types";
+import { DataTypes, RowTypes } from "../types/geometry/Rows";
+import { KeyValueMap } from "../types/utils";
+import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometry/generateAdjacencyLists";
 import zipGeometry from "../utils/geometry/zipGeometry";
-import { KeyValueMap } from "../types/utils";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
-import { ViewProps } from "../types/View";
 
 const EditorWrapper = styled.div`
 

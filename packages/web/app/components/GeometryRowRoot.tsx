@@ -1,4 +1,4 @@
-import { FieldRowT, NameRowT, OutputRowT, RowT, RowTypes, RowZ } from '../types/Geometry';
+import { FieldRowT, NameRowT, OutputRowT, RowTypes, RowZ } from '../types';
 import GeometryRowField from './GeometryRowField';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';

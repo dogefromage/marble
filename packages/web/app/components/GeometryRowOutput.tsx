@@ -1,5 +1,5 @@
 import React from 'react';
-import { OutputRowT } from '../types/Geometry';
+import { OutputRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import GeometryRowName from './GeometryRowName';
 import { RowProps } from './GeometryRowRoot';

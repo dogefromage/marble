@@ -1,8 +1,6 @@
 import useResizeObserver from '@react-hook/resize-observer';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import createFullScreenQuad from '../utils/gl/createFullscreenQuad';
-import { GLFullScreenQuadInstance } from '../types/Viewport';
 import ViewportGLProgram from './ViewportGLProgram';
 
 const CanvasWrapperDiv = styled.div`

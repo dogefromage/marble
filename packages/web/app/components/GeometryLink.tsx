@@ -2,11 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesDisconnectJoints } from '../slices/geometriesSlice';
-import { DataTypes, GNodeZ } from '../types/Geometry';
+import { DataTypes, GNodeZ, Point } from '../types';
 import countHeightUnits from '../utils/geometry/countHeightUnits';
 import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
 import getJointPosition from '../utils/geometry/getJointPosition';
-import { Point } from '../utils/types/common';
 
 interface LinkDivProps
 {

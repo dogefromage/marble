@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { RootState, initStore } from '../redux/store';
 import ViewportView from './ViewportView';
 import { glMatrix } from 'gl-matrix';
+import GeometryEditorView from './GeometryEditorView';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -13,6 +14,8 @@ const Wrapper = styled.div`
   
     width: 100%;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 `;
 
 interface Props
@@ -33,8 +36,8 @@ const AppRoot = ({ projectId }: Props) =>
         store &&
         <Provider store={store}>
             <Wrapper>
-                {/* <GeometryEditorView panelId='1234' /> */}
                 <ViewportView panelId='4321' />
+                <GeometryEditorView panelId='1234' />
             </Wrapper>
             <DragzonePortalMount />
         </Provider>

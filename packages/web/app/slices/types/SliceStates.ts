@@ -1,5 +1,5 @@
-import { GeometryS } from "../../types/Geometry";
-import { ViewportPanelState } from "../../types/PanelViewport";
+import { GeometryS } from "../../types";
+import { ViewportPanelState } from "../../types/viewport/PanelViewport";
 import { KeyValueMap } from "../../types/utils";
 
 export type GeometriesSliceState = KeyValueMap<GeometryS>;

@@ -1,5 +1,5 @@
 import { mat4, quat, vec3 } from "gl-matrix";
-import { Camera } from "../../types/PanelViewport";
+import { Camera } from "../../types/viewport/PanelViewport";
 
 
 export function createTransformationMatrix(position: vec3, rotation: quat)

@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesConnectJoints } from '../slices/geometriesSlice';
-import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG, RowTypes } from '../types/Geometry';
+import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG, RowTypes } from '../types';
 
 export const JOINT_OFFSET = -32;
 

@@ -1,10 +1,9 @@
-import { mat4, vec3 } from "gl-matrix";
 import { fragmentCode, vertexCode } from "../components/ViewportShaders";
 import { KeyValueMap } from "../types/utils";
-import { ProgramUniform } from "../types/Viewport";
+import { ProgramUniform } from "../types/viewport";
 import checkShaderError from "../utils/gl/checkShaderError";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/gl/createFullscreenQuad";
-import { setUniform, UniformTypes } from "../utils/gl/setUniform";
+import { setUniform } from "../utils/gl/setUniform";
 
 interface RuntimeUniform extends ProgramUniform
 {

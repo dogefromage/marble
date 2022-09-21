@@ -1,4 +1,4 @@
-import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../types/Geometry";
+import { GeometryS, GeometryZ, GNodeT, GNodeZ } from "../../types";
 import { KeyValueMap } from "../../types/utils";
 
 export default function zipGeometry(g: GeometryS, templates: KeyValueMap<GNodeT>)
@@ -20,11 +20,13 @@ export default function zipGeometry(g: GeometryS, templates: KeyValueMap<GNodeT>
 
             const rows = t.rows.map(rowT =>
             {
+                // @ts-ignore
                 const rowZ: RowZ = 
                 {
                     ...rowT,
                     ...node.rows[rowT.id],
                 }
+
                 return rowZ;
             });
 

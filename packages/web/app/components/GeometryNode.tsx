@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
-import { GNodeZ } from '../types/Geometry';
+import { GNodeZ } from '../types';
 import { Point } from '../types/utils';
 import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
 import GeometryRowRoot from './GeometryRowRoot';

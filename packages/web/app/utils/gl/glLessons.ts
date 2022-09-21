@@ -27,12 +27,12 @@ export function raymarching(gl: WebGL2RenderingContext)
     const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
     gl.shaderSource(vertexShader, vertexCode);
     gl.compileShader(vertexShader);
-    checkShaderError(gl, vertexShader);
+    // checkShaderError(gl, vertexShader);
 
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
     gl.shaderSource(fragmentShader, fragmentCode);
     gl.compileShader(fragmentShader);
-    checkShaderError(gl, fragmentShader);
+    // checkShaderError(gl, fragmentShader);
 
     const program = gl.createProgram()!;
     gl.attachShader(program, vertexShader);
