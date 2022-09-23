@@ -3,32 +3,32 @@ import { RowT, RowS, RowZ } from "./Rows";
 
 export enum GNodeActions
 {
-    Operation,
+    Arithmetic,
     Call,
     Output,
 }
 
-export interface GNodeBaseAction {}
+export interface GNodeBaseOperation {}
 
-export interface GNodeOperationAction extends GNodeBaseAction
+export interface GNodeArithmeticOperation extends GNodeBaseOperation
 {
-    actionType: GNodeActions.Operation;
+    type: GNodeActions.Arithmetic;
 }
 
-export interface GNodeCallAction extends GNodeBaseAction
+export interface GNodeCallOperation extends GNodeBaseOperation
 {
-    actionType: GNodeActions.Call;
+    type: GNodeActions.Call;
 }
 
-export interface GNodeSpecialAction extends GNodeBaseAction
+export interface GNodeSpecialOperation extends GNodeBaseOperation
 {
-    actionType: GNodeActions.Output;
+    type: GNodeActions.Output;
 }
 
-export type GNodeAction = 
-    | GNodeOperationAction
-    | GNodeCallAction
-    | GNodeSpecialAction
+export type GNodeOperation = 
+    | GNodeArithmeticOperation
+    | GNodeCallOperation
+    | GNodeSpecialOperation
 
 export enum GNodeTypes
 {
@@ -41,7 +41,7 @@ export interface GNodeT
     id: string;
     type: GNodeTypes;
     rows: Array<RowT>;
-    action: GNodeAction;
+    operation: GNodeOperation;
 }
 
 export interface GNodeS

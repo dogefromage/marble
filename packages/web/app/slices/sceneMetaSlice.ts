@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { SceneMetaSliceState } from "./types/SliceStates";
+import { SceneProgramSliceState } from "./types/SliceStates";
 
-const initialState: SceneMetaSliceState = 
+const initialState: SceneProgramSliceState = 
 {
     
 };
 
-export const sceneMetaStateSlice = createSlice({
-    name: 'sceneMetaState',
+export const sceneProgramSlice = createSlice({
+    name: 'sceneProgram',
     initialState,
     reducers: {
 
@@ -17,10 +17,10 @@ export const sceneMetaStateSlice = createSlice({
 
 export const {
     
-} = sceneMetaStateSlice.actions;
+} = sceneProgramSlice.actions;
 
-export const select = (state: RootState) => state.sceneMetaState;
+export const select = (state: RootState) => state.sceneProgram;
 
-const sceneMetaStateReducer = sceneMetaStateSlice.reducer;
+const sceneProgramReducer = sceneProgramSlice.reducer;
 
-export default sceneMetaStateReducer;
+export default sceneProgramReducer;

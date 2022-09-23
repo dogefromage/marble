@@ -34,7 +34,7 @@ export default function zipGeometry(g: GeometryS, templates: KeyValueMap<GNodeT>
             {
                 ...node,
                 type: t.type,
-                action: t.action,
+                operation: t.operation,
                 rows,
             }
 
