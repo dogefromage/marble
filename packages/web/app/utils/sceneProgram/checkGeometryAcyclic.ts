@@ -1,4 +1,5 @@
 import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { generateEdges } from "./generateEdges";
 
 class CycleFoundError extends Error
 {
@@ -27,13 +28,18 @@ function acylicDFS(adjList: GeometryEdge[][][], at: number, status: NodeStatus[]
 
     status[at] = NodeStatus.Visited;
 
-    for (const row of adjList[at])
+    for (const edge of generateEdges(adjList[at]))
     {
-        for (const edge of row)
-        {
-            acylicDFS(adjList, edge.toNodeIndex, status);
-        }
+        acylicDFS(adjList, edge.toNodeIndex, status);
     }
+
+    // for (const row of adjList[at])
+    // {
+    //     for (const edge of row)
+    //     {
+    //         acylicDFS(adjList, edge.toNodeIndex, status);
+    //     }
+    // }
 
     status[at] = NodeStatus.AcyclicDownwards;
 }

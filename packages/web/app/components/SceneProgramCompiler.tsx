@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { compileGeometries } from '../utils/sceneProgram/compileGeometries';
+import { compileGeometries, GeometriesCompilationError } from '../utils/sceneProgram/compileGeometries';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetProgram } from '../slices/sceneProgramSlice';
@@ -25,12 +25,23 @@ const SceneProgramCompiler = () =>
 
         const zippedGeometry = zipGeometry(geoZero, NODE_TEMPLATES);
 
-        const program = compileGeometries(zippedGeometry);
+        try
+        {
+            const program = compileGeometries(zippedGeometry);
 
-        dispatch(sceneProgramSetProgram({
-            program,
-        }));
-    }, [ geometries ])
+            dispatch(sceneProgramSetProgram({
+                program,
+            }));
+        }
+        catch (e)
+        {
+            if (e instanceof GeometriesCompilationError)
+                console.error(`Geometry could not be compiled: ${e.type}`);
+            else
+                throw e;
+        }
+
+    }, [ geoZero?.validity ])
 
     return null;
 }

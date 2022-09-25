@@ -20,11 +20,16 @@ function getA<T>(array: Array<Array<T>>, index: number): Array<T>
 
 export function generateAdjacencyLists(g: GeometryZ)
 {
+    const N = g.nodes.length;
+
+    // const forwards: GeometryEdge[][][] = new Array(N).fill(null);
+    // const backwards: GeometryEdge[][] = new Array(N).fill(null);
+
     const forwards: GeometryEdge[][][] = [];
     const backwards: GeometryEdge[][] = [];
 
     const outputIndicesMap = new Map<string, { nodeIndex: number , rowIndex: number }>();
-    for (let nodeIndex = 0; nodeIndex < g.nodes.length; nodeIndex++)
+    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
         const node = g.nodes[nodeIndex];
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
@@ -35,8 +40,7 @@ export function generateAdjacencyLists(g: GeometryZ)
         }
     }
 
-
-    for (let nodeIndex = 0; nodeIndex < g.nodes.length; nodeIndex++)
+    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
         const node = g.nodes[nodeIndex];
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
@@ -60,6 +64,9 @@ export function generateAdjacencyLists(g: GeometryZ)
                     dataType,
                     key: outputKey + ':' +inputKey,
                 }
+
+                // forwards[outputIndices.nodeIndex][outputIndices.rowIndex].push(edge);
+                // backwards[nodeIndex][rowIndex] = edge;
 
                 getA(getA(forwards, outputIndices.nodeIndex), outputIndices.rowIndex).push(edge);
                 getA(backwards, nodeIndex)[rowIndex] = edge;

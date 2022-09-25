@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { UndoAction } from "../types/undoable";
 import { RootState } from "../redux/store";
-import { GeometryS, GNodeT, GNodeS, JointLocation } from "../types";
+import { GeometryS, GNodeT, GNodeS, JointLocation, GNodeActions } from "../types";
 import { Point } from "../types/utils";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 import { GeometriesSliceState } from "../types/SliceStates";
@@ -16,6 +16,7 @@ function createGeometry(id: string)
         nodes: [],
         validity: 0,
         nextIdIndex: 0,
+        outputId: null,
     }
 
     return geometry;
@@ -74,6 +75,12 @@ export const geometriesSlice = createSlice({
             const { node, nextIdIndex } = createNode(a.payload.template, g.nextIdIndex, a.payload.position);
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
+
+            if (a.payload.template.operation.type === GNodeActions.Output)
+            {
+                g.outputId = node.id;
+                g.validity++;
+            }
         },
         removeNode: (s, a: UndoAction<{ geometryId: string, nodeId: string }>) =>
         {
@@ -81,6 +88,10 @@ export const geometriesSlice = createSlice({
             if (!g) return;
 
             g.nodes = g.nodes.filter(n => n.id !== a.payload.nodeId);
+            
+            if (g.outputId === a.payload.nodeId)
+                g.outputId = null;
+
             g.validity++;
         },
         positionNode: (s, a: UndoAction<{ geometryId: string, nodeId: string, position: Point }>) =>

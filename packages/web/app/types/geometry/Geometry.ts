@@ -6,7 +6,7 @@ export interface GeometryS
     id: string;
     name: string;
     nodes: Array<GNodeS>;
-    outputId?: string;
+    outputId: string | null;
     validity: number;
     nextIdIndex: number;
 }

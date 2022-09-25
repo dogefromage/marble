@@ -1,22 +1,34 @@
 import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { generateEdges } from "./generateEdges";
 
 function findUsedDFS(adjList: GeometryEdge[][][], used: boolean[], at: number)
 {
     if (used[at]) return true;
-    
-    for (const row of adjList[at])
-    {
-        for (const edge of row)
-        {
-            const nextUsed = findUsedDFS(adjList, used, edge.toNodeIndex);
 
-            if (nextUsed)
-            {
-                used[at] = true;
-                return true;
-            }
+    for (const edge of generateEdges(adjList[at]))
+    {
+        const nextUsed = findUsedDFS(adjList, used, edge.toNodeIndex);
+
+        if (nextUsed)
+        {
+            used[at] = true;
+            return true;
         }
     }
+    
+    // for (const row of adjList[at])
+    // {
+    //     for (const edge of row)
+    //     {
+    //         const nextUsed = findUsedDFS(adjList, used, edge.toNodeIndex);
+
+    //         if (nextUsed)
+    //         {
+    //             used[at] = true;
+    //             return true;
+    //         }
+    //     }
+    // }
 
     return false;
 }

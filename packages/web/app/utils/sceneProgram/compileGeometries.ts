@@ -38,6 +38,9 @@ export function compileGeometries(
 
     const { forwards: forwardsAdjList, backwards: backwardsAdjList } = generateAdjacencyLists(geometry);
 
+    console.log('forwardsAdjList')
+    console.log(forwardsAdjList);
+
     // check acyclic
     const firstCycleFound = checkGeometryAcyclic(forwardsAdjList);
     if (firstCycleFound >= 0)
@@ -53,7 +56,17 @@ export function compileGeometries(
     // find used nodes
     const used = findUsedNodes(forwardsAdjList, outputIndex);
 
-    const topoIdList = generateTopologicalOrder(backwards, outputIndex);
+    const topoOrder = generateTopologicalOrder(forwardsAdjList);
 
-    // return list of used operations in right order
+    console.log(geometry.nodes.map(node => node.rows[0].name));
+
+    console.log('used');
+    console.log(used);
+
+    console.log('topoOrder');
+    console.log(topoOrder);
+
+    return {
+        nodes: [],
+    }
 }

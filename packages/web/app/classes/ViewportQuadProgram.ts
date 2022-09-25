@@ -59,7 +59,7 @@ export class ViewportQuadProgram
             };
         })
 
-        console.log('Program created');
+        // console.log('Program created');
     }
 
     setUniformData(name: string, data: number[])
@@ -84,6 +84,6 @@ export class ViewportQuadProgram
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
         
-        console.log('Program rendered')
+        // console.log('Program rendered')
     }
 }

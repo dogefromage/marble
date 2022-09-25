@@ -36,9 +36,9 @@ const SPHERE: GNodeT =
             value: 1,
         }
     ],
-    action: 
+    operation: 
     {
-        actionType: GNodeActions.Call,
+        type: GNodeActions.Call,
     }
 }
 
@@ -60,9 +60,39 @@ const OUTPUT: GNodeT =
             name: 'SDF',
         },
     ],
-    action: 
+    operation: 
     {
-        actionType: GNodeActions.Output,
+        type: GNodeActions.Output,
+    }
+}
+
+const GAGI: GNodeT =
+{
+    id: 'gagi',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Gagi',
+            color: '#123456',
+        },
+        {
+            id: 'output',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'B',
+        },
+        {
+            id: 'input',
+            type: RowTypes.Input,
+            dataType: DataTypes.Float,
+            name: 'A',
+        },
+    ],
+    operation: 
+    {
+        type: GNodeActions.Call,
     }
 }
 
@@ -70,4 +100,5 @@ export const NODE_TEMPLATES: KeyValueMap<GNodeT> =
 {
     [SPHERE.id]: SPHERE,
     [OUTPUT.id]: OUTPUT,
+    [GAGI.id]: GAGI,
 }
