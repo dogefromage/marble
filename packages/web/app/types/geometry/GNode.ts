@@ -1,28 +1,32 @@
+import { ArithmeticOperations, DataTypes, ProgramOperationTypes } from "../sceneProgram";
 import { Point, Override } from "../utils";
 import { RowT, RowS, RowZ } from "./Rows";
-
-export enum GNodeActions
-{
-    Arithmetic,
-    Call,
-    Output,
-}
 
 export interface GNodeBaseOperation {}
 
 export interface GNodeArithmeticOperation extends GNodeBaseOperation
 {
-    type: GNodeActions.Arithmetic;
+    type: ProgramOperationTypes.Arithmetic;
+    lhsRowId: string;
+    rhsRowId: string;
+    outputRowId: string;
+    outputDatatype: DataTypes;
+    operation: ArithmeticOperations;
 }
 
 export interface GNodeCallOperation extends GNodeBaseOperation
 {
-    type: GNodeActions.Call;
+    type: ProgramOperationTypes.Call;
+    argumentRowIds: string[],
+    functionName: string,
+    outputRowId: string;
+    outputDatatype: DataTypes,
 }
 
 export interface GNodeSpecialOperation extends GNodeBaseOperation
 {
-    type: GNodeActions.Output;
+    type: ProgramOperationTypes.Output;
+    inputRowId: string;
 }
 
 export type GNodeOperation = 

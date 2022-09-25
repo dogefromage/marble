@@ -1,4 +1,4 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, KeyValueMap, GNodeActions } from "../../types"
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ObjMap, ProgramOperationTypes, ArithmeticOperations } from "../../types"
 
 enum TemplateColors
 {
@@ -38,7 +38,11 @@ const SPHERE: GNodeT =
     ],
     operation: 
     {
-        type: GNodeActions.Call,
+        type: ProgramOperationTypes.Call,
+        functionName: 'sphere',
+        argumentRowIds: [ 'coordinates', 'radius' ],
+        outputRowId: 'output',
+        outputDatatype: DataTypes.Float,
     }
 }
 
@@ -62,43 +66,55 @@ const OUTPUT: GNodeT =
     ],
     operation: 
     {
-        type: GNodeActions.Output,
+        type: ProgramOperationTypes.Output,
+        inputRowId: 'input'
     }
 }
 
-const GAGI: GNodeT =
+const ADD: GNodeT =
 {
-    id: 'gagi',
+    id: 'add',
     type: GNodeTypes.Default,
     rows: [
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'Gagi',
+            name: 'Add',
             color: '#123456',
         },
         {
-            id: 'output',
+            id: 'c',
             type: RowTypes.Output,
             dataType: DataTypes.Float,
-            name: 'B',
+            name: 'C',
         },
         {
-            id: 'input',
+            id: 'a',
             type: RowTypes.Input,
             dataType: DataTypes.Float,
             name: 'A',
         },
+        {
+            id: 'b',
+            type: RowTypes.Input,
+            dataType: DataTypes.Float,
+            name: 'B',
+        },
     ],
     operation: 
     {
-        type: GNodeActions.Call,
+        type: ProgramOperationTypes.Arithmetic,
+        lhsRowId: 'a',
+        rhsRowId: 'b',
+        outputRowId: 'c',
+        operation: ArithmeticOperations.Add,
+        outputDatatype: DataTypes.Float,
     }
 }
 
-export const NODE_TEMPLATES: KeyValueMap<GNodeT> =
+export const NODE_TEMPLATES: ObjMap<GNodeT> =
 {
     [SPHERE.id]: SPHERE,
     [OUTPUT.id]: OUTPUT,
-    [GAGI.id]: GAGI,
+    [ADD.id]: ADD,
 }

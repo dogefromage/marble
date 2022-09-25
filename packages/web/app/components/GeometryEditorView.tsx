@@ -7,6 +7,7 @@ import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometries/generateAdjacencyLists";
 import { NODE_TEMPLATES } from "../utils/geometries/testingTemplates";
 import zipGeometry from "../utils/geometries/zipGeometry";
+import { generateEdges } from "../utils/sceneProgram/generateEdges";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
 
@@ -59,7 +60,7 @@ const GeometryEditor = ({ }: ViewProps) =>
                 undo: {},
             }))
 
-            posX += 100;
+            posX += 300;
             posY += 60;
         }
     }, []);
@@ -78,22 +79,23 @@ const GeometryEditor = ({ }: ViewProps) =>
         return generateAdjacencyLists(geometryZ);
     }, [ geometryZ?.validity ]);
 
-    const forwardEdges = adjacencyLists?.forwards;
-    const backwardEdges = adjacencyLists?.backwards;
+    const forwardEdges = adjacencyLists?.forwardsAdjList;
 
     return (
         <EditorWrapper>
         {
-            geometryId && geometryZ && backwardEdges &&
-            backwardEdges.map(subList =>
-                subList.map(edge =>
-                    <LinkComponent 
-                        key={edge.key}
-                        geometryId={geometryId}
-                        edge={edge}
-                        fromNode={geometryZ.nodes[edge.fromNodeIndex]}
-                        toNode={geometryZ.nodes[edge.toNodeIndex]}
-                    />
+            geometryId && geometryZ && forwardEdges &&
+            Object.values(forwardEdges).map(nodeEdges =>
+                Object.values(nodeEdges).map(rowEdges =>
+                    rowEdges.map(edge =>
+                        <LinkComponent 
+                            key={edge.key}
+                            geometryId={geometryId}
+                            edge={edge}
+                            fromNode={geometryZ.nodes[edge.fromNodeIndex]}
+                            toNode={geometryZ.nodes[edge.toNodeIndex]}
+                        />
+                    )
                 )
             )
         }

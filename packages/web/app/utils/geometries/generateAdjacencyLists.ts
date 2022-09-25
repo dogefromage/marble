@@ -1,4 +1,6 @@
-import { DataTypes, GeometryZ, OutputRowT } from "../../types";
+import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
+import _ from 'lodash';
+import { generateEdgeSymbol } from "../sceneProgram/programSymbols";
 
 export interface GeometryEdge
 {
@@ -7,53 +9,65 @@ export interface GeometryEdge
     toNodeIndex: number;
     toRowIndex: number;
     dataType: DataTypes;
+    symbol: string;
     key: string;
 }
 
-function getA<T>(array: Array<Array<T>>, index: number): Array<T>
-{
-    if (array[index] == null)
-        array[index] = [];
+export type NestedMap<T> = ObjMap<ObjMap<T>>;
 
-    return array[index];
+export type ForwardAdjacencyList = NestedMap<GeometryEdge[]>;
+export type BackwardAdjacencyList = NestedMap<GeometryEdge>;
+
+function customizer(objValue: any, srcValue: any)
+{
+    if (_.isArray(objValue))
+    {
+        return objValue.concat(srcValue);
+    }
+}
+
+function locationHash(node: string, row: string)
+{
+    return [ node, row ].join('-');
 }
 
 export function generateAdjacencyLists(g: GeometryZ)
 {
     const N = g.nodes.length;
 
-    // const forwards: GeometryEdge[][][] = new Array(N).fill(null);
-    // const backwards: GeometryEdge[][] = new Array(N).fill(null);
+    // const forwards: GeometryEdge[][][] = [];
+    // const backwards: GeometryEdge[][] = [];
 
-    const forwards: GeometryEdge[][][] = [];
-    const backwards: GeometryEdge[][] = [];
+    const forwardsAdjList: ForwardAdjacencyList = {};
+    const backwardsAdjList: BackwardAdjacencyList = {};
 
-    const outputIndicesMap = new Map<string, { nodeIndex: number , rowIndex: number }>();
+    const outputIndicesMap = new Map<string, { nodeIndex: number, rowIndex: number }>();
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
-        const node = g.nodes[nodeIndex];
+        const node = g.nodes[ nodeIndex ];
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
         {
-            const row = node.rows[rowIndex];
-            const key = node.id + '.' + row.id;
+            const row = node.rows[ rowIndex ];
+            const key = locationHash(node.id, row.id);
             outputIndicesMap.set(key, { nodeIndex, rowIndex });
         }
     }
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
-        const node = g.nodes[nodeIndex];
+        const node = g.nodes[ nodeIndex ];
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
         {
-            const row = node.rows[rowIndex];
+            const row = node.rows[ rowIndex ];
             if (row.connectedOutput)
             {
-                const outputKey = row.connectedOutput.nodeId + '.' + row.connectedOutput.rowId;
+                const outputKey = locationHash(row.connectedOutput.nodeId, row.connectedOutput.rowId);
                 const outputIndices = outputIndicesMap.get(outputKey);
                 if (!outputIndices) continue;
 
                 const dataType = (row as OutputRowT).dataType || DataTypes.Unknown;
-                const inputKey = nodeIndex + '.' + rowIndex;
+                const symbol = generateEdgeSymbol(outputIndices.nodeIndex, outputIndices.rowIndex);
+                const key = [ 'edge-key', outputIndices.nodeIndex, outputIndices.rowIndex, nodeIndex, rowIndex ].join('-');
 
                 const edge: GeometryEdge =
                 {
@@ -62,20 +76,29 @@ export function generateAdjacencyLists(g: GeometryZ)
                     toNodeIndex: nodeIndex,
                     toRowIndex: rowIndex,
                     dataType,
-                    key: outputKey + ':' +inputKey,
-                }
+                    symbol,
+                    key, 
+                };
 
-                // forwards[outputIndices.nodeIndex][outputIndices.rowIndex].push(edge);
-                // backwards[nodeIndex][rowIndex] = edge;
+                const forwardAddition = { 
+                    [outputIndices.nodeIndex]: {
+                        [outputIndices.rowIndex]: [ edge ],
+                    }
+                };
+                _.mergeWith(forwardsAdjList, forwardAddition, customizer);
 
-                getA(getA(forwards, outputIndices.nodeIndex), outputIndices.rowIndex).push(edge);
-                getA(backwards, nodeIndex)[rowIndex] = edge;
+                const backwardAddition = { 
+                    [nodeIndex]: {
+                        [rowIndex]: edge,
+                    }
+                };
+                _.mergeWith(backwardsAdjList, backwardAddition, customizer);
             }
         }
     }
 
     return {
-        forwards,
-        backwards,
+        forwardsAdjList,
+        backwardsAdjList,
     }
 }

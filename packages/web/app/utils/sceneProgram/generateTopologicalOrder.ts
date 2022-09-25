@@ -1,46 +1,28 @@
-import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { ForwardAdjacencyList, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { generateEdges } from "./generateEdges";
 
-function topSortDfs(adjList: GeometryEdge[][][], order: number[], visited: boolean[], at: number, i: number)
+function topSortDfs(adjList: ForwardAdjacencyList, order: number[], visited: Set<number>, at: number)
 {
-    if (visited[at]) return i;
+    if (visited.has(at)) return;
 
-    visited[at] = true;
+    visited.add(at);
 
     for (const edge of generateEdges(adjList[at]))
     {
-        topSortDfs(adjList, order, visited, edge.toNodeIndex, i);
+        topSortDfs(adjList, order, visited, edge.toNodeIndex);
     }
 
-    // if (adjList[at])
-    // {
-    //     for (const row of adjList[at])
-    //     {
-    //         if (row)
-    //         {
-    //             for (const edge of row)
-    //             {
-    //                 topSortDfs(adjList, order, visited, edge.toNodeIndex, i);
-    //             }
-    //         }
-    //     }
-    // }
-
-    order[i] = at;
-
-    return i - 1;
+    order.unshift(at);
 }
 
-export function generateTopologicalOrder(adjList: GeometryEdge[][][])
+export function generateTopologicalOrder(adjList: ForwardAdjacencyList)
 {
-    const order = new Array<number>(adjList.length).fill(0);
-    const visited = new Array<boolean>(adjList.length).fill(false);
+    const order: number[] = [];
+    const visited = new Set<number>();
 
-    let i = adjList.length - 1;
-
-    for (let at = 0; at < adjList.length; at++)
+    for (const at in adjList)
     {
-        i = topSortDfs(adjList, order, visited, at, i);
+        topSortDfs(adjList, order, visited, parseInt(at));
     }
 
     return order;

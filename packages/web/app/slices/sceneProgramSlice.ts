@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { SceneProgramTree } from "../types";
+import { SceneProgram } from "../types";
 import { SceneProgramSliceState } from "../types/SliceStates";
 
 const initialState: SceneProgramSliceState = 
@@ -12,7 +12,7 @@ export const sceneProgramSlice = createSlice({
     name: 'sceneProgram',
     initialState,
     reducers: {
-        setProgram: (s, a: PayloadAction<{ program: SceneProgramTree | null }>) =>
+        setProgram: (s, a: PayloadAction<{ program: SceneProgram | null }>) =>
         {
             s.program = a.payload.program;
         }

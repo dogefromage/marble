@@ -1,21 +1,14 @@
-import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { ForwardAdjacencyList } from "../geometries/generateAdjacencyLists";
 
-
-export function *generateEdges(adjListNode: GeometryEdge[][])
+export function *generateEdges(adjListNode: ForwardAdjacencyList[number])
 {
-    if (adjListNode)
+    for (const rowIndex in adjListNode)
     {
-        for (const row of adjListNode)
+        for (const edge of adjListNode[rowIndex])
         {
-            if (row)
+            if (edge)
             {
-                for (const edge of row)
-                {
-                    if (edge)
-                    {
-                        yield edge
-                    }
-                }
+                yield edge
             }
         }
     }

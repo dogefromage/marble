@@ -1,5 +1,5 @@
 import { fragmentCode, vertexCode } from "../components/ViewportShaders";
-import { KeyValueMap } from "../types/utils";
+import { ObjMap } from "../types/utils";
 import { ProgramUniform } from "../types/viewport";
 import checkShaderError from "../utils/viewport/checkShaderError";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";
@@ -16,7 +16,7 @@ export class ViewportQuadProgram
     private vertexBuffer: WebGLBuffer;
     private indexBuffer: WebGLBuffer;
 
-    private uniforms: KeyValueMap<RuntimeUniform> = {} 
+    private uniforms: ObjMap<RuntimeUniform> = {} 
 
     constructor(
         private gl: WebGL2RenderingContext,

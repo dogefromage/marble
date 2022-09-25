@@ -1,9 +1,9 @@
-import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { ForwardAdjacencyList, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { generateEdges } from "./generateEdges";
 
-function findUsedDFS(adjList: GeometryEdge[][][], used: boolean[], at: number)
+function findUsedDFS(adjList: ForwardAdjacencyList, used: Set<number>, at: number)
 {
-    if (used[at]) return true;
+    if (used.has(at)) return true;
 
     for (const edge of generateEdges(adjList[at]))
     {
@@ -11,36 +11,22 @@ function findUsedDFS(adjList: GeometryEdge[][][], used: boolean[], at: number)
 
         if (nextUsed)
         {
-            used[at] = true;
+            used.add(at);
             return true;
         }
     }
-    
-    // for (const row of adjList[at])
-    // {
-    //     for (const edge of row)
-    //     {
-    //         const nextUsed = findUsedDFS(adjList, used, edge.toNodeIndex);
-
-    //         if (nextUsed)
-    //         {
-    //             used[at] = true;
-    //             return true;
-    //         }
-    //     }
-    // }
 
     return false;
 }
 
-export default function findUsedNodes(adjList: GeometryEdge[][][], outputIndex: number)
+export default function findUsedNodes(adjList: ForwardAdjacencyList, outputIndex: number)
 {
-    const used = new Array<boolean>(adjList.length).fill(true);
-    used[outputIndex] = true;
+    const used = new Set<number>();
+    used.add(outputIndex);
 
-    for (let i = 0; i < adjList.length; i++)
+    for (const at in adjList)
     {
-        findUsedDFS(adjList, used, i);
+        findUsedDFS(adjList, used, parseInt(at));
     }
 
     return used;

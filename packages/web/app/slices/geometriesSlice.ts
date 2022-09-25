@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { UndoAction } from "../types/undoable";
 import { RootState } from "../redux/store";
-import { GeometryS, GNodeT, GNodeS, JointLocation, GNodeActions } from "../types";
+import { GeometryS, GNodeT, GNodeS, JointLocation, ProgramOperationTypes } from "../types";
 import { Point } from "../types/utils";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 import { GeometriesSliceState } from "../types/SliceStates";
@@ -76,7 +76,7 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.operation.type === GNodeActions.Output)
+            if (a.payload.template.operation.type === ProgramOperationTypes.Output)
             {
                 g.outputId = node.id;
                 g.validity++;

@@ -1,12 +1,12 @@
-import { GeometryS, SceneProgramTree } from ".";
+import { GeometryS, SceneProgram } from ".";
 import { ViewportPanelState } from "./viewport/PanelViewport";
-import { KeyValueMap } from "./utils";
+import { ObjMap } from "./utils";
 
-export type GeometriesSliceState = KeyValueMap<GeometryS>;
+export type GeometriesSliceState = ObjMap<GeometryS>;
 
-export type ViewportPanelsSliceState = KeyValueMap<ViewportPanelState>;
+export type ViewportPanelsSliceState = ObjMap<ViewportPanelState>;
 
 export type SceneProgramSliceState = 
 {
-    program: SceneProgramTree | null;
+    program: SceneProgram | null;
 }

@@ -3,6 +3,8 @@
  * JOINT
  */
 
+import { DataTypes } from "../sceneProgram";
+
 export const JOINT_DND_TAG = 'dnd.joint';
 
 export interface JointDndTransfer extends JointLocation
@@ -13,13 +15,6 @@ export interface JointDndTransfer extends JointLocation
 /**
  * ROWS
  */
-
-export enum DataTypes
-{
-    Unknown = 'unknown',
-    Float = 'float',
-    Float3 = 'float3',
-}
 
 export enum RowTypes
 {

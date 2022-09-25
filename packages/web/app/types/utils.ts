@@ -1,6 +1,6 @@
 
 
-export type KeyValueMap<T> =
+export type ObjMap<T> =
 {
     [ key: string ]: T;
 }

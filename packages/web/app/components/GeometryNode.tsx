@@ -5,10 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
 import { GNodeZ } from '../types';
-import { Point } from '../types/utils';
+import { ObjMap, Point } from '../types/utils';
 import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
 import GeometryRowRoot from './GeometryRowRoot';
-import { BOX_SHADOW } from '../styled/utils';
 
 export const NODE_WIDTH = 200;
 
@@ -41,7 +40,7 @@ interface Props
 {
     geometryId: string;
     node: GNodeZ;
-    forwardEdges: GeometryEdge[][] | undefined;
+    forwardEdges: ObjMap<GeometryEdge[]> | undefined;
 }
 
 const GeometryNode = ({ geometryId, node, forwardEdges }: Props) =>

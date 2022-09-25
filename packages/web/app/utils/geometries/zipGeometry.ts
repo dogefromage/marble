@@ -1,7 +1,7 @@
 import { GeometryS, GeometryZ, GNodeT, GNodeZ } from "../../types";
-import { KeyValueMap } from "../../types/utils";
+import { ObjMap } from "../../types/utils";
 
-export default function zipGeometry(g: GeometryS, templates: KeyValueMap<GNodeT>)
+export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
 {
     const getTemplate = (templateId: string) =>
     {

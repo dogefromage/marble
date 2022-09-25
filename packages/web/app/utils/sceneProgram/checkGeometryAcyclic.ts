@@ -1,15 +1,6 @@
-import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { ObjMap } from "../../types";
+import { ForwardAdjacencyList } from "../geometries/generateAdjacencyLists";
 import { generateEdges } from "./generateEdges";
-
-class CycleFoundError extends Error
-{
-    constructor(
-        public cycleNodeIndex: number
-    )
-    {
-        super();
-    }
-}
 
 enum NodeStatus
 {
@@ -18,51 +9,37 @@ enum NodeStatus
     AcyclicDownwards,
 }
 
-function acylicDFS(adjList: GeometryEdge[][][], at: number, status: NodeStatus[])
+function acylicDFS(adjList: ForwardAdjacencyList, at: number, status: ObjMap<NodeStatus>, cycles: number[]): number | undefined
 {
     if (status[at] === NodeStatus.AcyclicDownwards) 
         return;
 
     if (status[at] === NodeStatus.Visited)
-        throw new CycleFoundError(at);
+    {
+        cycles.push(at);
+        return;
+    }
 
     status[at] = NodeStatus.Visited;
 
     for (const edge of generateEdges(adjList[at]))
     {
-        acylicDFS(adjList, edge.toNodeIndex, status);
+        acylicDFS(adjList, edge.toNodeIndex, status, cycles);
     }
-
-    // for (const row of adjList[at])
-    // {
-    //     for (const edge of row)
-    //     {
-    //         acylicDFS(adjList, edge.toNodeIndex, status);
-    //     }
-    // }
 
     status[at] = NodeStatus.AcyclicDownwards;
 }
 
-export function checkGeometryAcyclic(adjList: GeometryEdge[][][])
+export function checkGeometryAcyclic(adjList: ForwardAdjacencyList)
 {
-    const status = new Array<NodeStatus>(adjList.length)
-        .fill(NodeStatus.None);
+    const N = Object.keys(adjList).length;
+    const status: ObjMap<NodeStatus> = {};
+    const cycles: number[] = [];
 
-    try
+    for (const at in adjList)
     {
-        for (let i = 0; i < adjList.length; i++)
-        {
-            acylicDFS(adjList, i, status);
-        }
-    }
-    catch (e)
-    {
-        if (e instanceof CycleFoundError)
-            return e.cycleNodeIndex;
-
-        throw e;
+        acylicDFS(adjList, parseInt(at), status, cycles);
     }
 
-    return -1;
+    return cycles;
 }
