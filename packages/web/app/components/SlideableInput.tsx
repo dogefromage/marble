@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { clamp } from '../utils/math';
-import { FONT_FAMILY } from './styled/utils';
+import { FONT_FAMILY } from '../styled/utils';
 
 const SlidableInputDiv = styled.div`
 

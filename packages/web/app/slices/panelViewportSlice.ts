@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { quat, vec3 } from "gl-matrix";
 import { RootState } from "../redux/store";
 import { degToRad } from "../utils/math";
-import { ViewportPanelsSliceState } from "./types/SliceStates";
+import { ViewportPanelsSliceState } from "../types/SliceStates";
 
 function createDefaultState()
 {
@@ -11,7 +11,7 @@ function createDefaultState()
         camera: {
             position: vec3.fromValues(7.358, -6.925, 4.958),
             rotation: quat.fromValues(0.483536, 0.208704, 0.336872, 0.780483),
-            fov: degToRad(40),
+            fov: degToRad(25),
         },
     };
 }

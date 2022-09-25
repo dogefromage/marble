@@ -1,8 +1,8 @@
 import { InputRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
-import GeometryRowDiv from './styled/GeometryRowDiv';
-import GeometryRowNameP from './styled/GeometryRowNameP';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import GeometryRowNameP from '../styled/GeometryRowNameP';
 
 const GeometryRowInput = ({ geometryId, nodeId, row, connected }: RowProps<InputRowT>) =>
 {

@@ -7,6 +7,7 @@ import { RootState, initStore } from '../redux/store';
 import ViewportView from './ViewportView';
 import { glMatrix } from 'gl-matrix';
 import GeometryEditorView from './GeometryEditorView';
+import SceneProgramCompiler from './SceneProgramCompiler';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -39,6 +40,7 @@ const AppRoot = ({ projectId }: Props) =>
                 <ViewportView panelId='4321' />
                 <GeometryEditorView panelId='1234' />
             </Wrapper>
+            <SceneProgramCompiler />
             <DragzonePortalMount />
         </Provider>
     );

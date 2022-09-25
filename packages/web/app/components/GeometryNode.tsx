@@ -6,9 +6,9 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
 import { GNodeZ } from '../types';
 import { Point } from '../types/utils';
-import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
+import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
 import GeometryRowRoot from './GeometryRowRoot';
-import { BOX_SHADOW } from './styled/utils';
+import { BOX_SHADOW } from '../styled/utils';
 
 export const NODE_WIDTH = 200;
 

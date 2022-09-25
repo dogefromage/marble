@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesDisconnectJoints } from '../slices/geometriesSlice';
 import { DataTypes, GNodeZ, Point } from '../types';
-import countHeightUnits from '../utils/geometry/countHeightUnits';
-import { GeometryEdge } from '../utils/geometry/generateAdjacencyLists';
-import getJointPosition from '../utils/geometry/getJointPosition';
+import countHeightUnits from '../utils/geometries/countHeightUnits';
+import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
+import getJointPosition from '../utils/geometries/getJointPosition';
 
 interface LinkDivProps
 {

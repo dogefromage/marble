@@ -4,8 +4,8 @@ import { FloatFieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
-import GeometryRowDiv from './styled/GeometryRowDiv';
-import GeometryRowNameP from './styled/GeometryRowNameP';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import GeometryRowNameP from '../styled/GeometryRowNameP';
 
 const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: RowProps<FloatFieldRowT>) =>
 {

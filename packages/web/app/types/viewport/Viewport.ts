@@ -1,5 +1,5 @@
-import createFullScreenQuad from "../../utils/gl/createFullscreenQuad";
-import { UniformTypes } from "../../utils/gl/setUniform";
+import createFullScreenQuad from "../../utils/viewport/createFullscreenQuad";
+import { UniformTypes } from "../../utils/viewport/setUniform";
 
 export interface GLFullScreenQuadInstance
 {

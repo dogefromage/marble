@@ -1,9 +1,9 @@
 import { fragmentCode, vertexCode } from "../components/ViewportShaders";
 import { KeyValueMap } from "../types/utils";
 import { ProgramUniform } from "../types/viewport";
-import checkShaderError from "../utils/gl/checkShaderError";
-import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/gl/createFullscreenQuad";
-import { setUniform } from "../utils/gl/setUniform";
+import checkShaderError from "../utils/viewport/checkShaderError";
+import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";
+import { setUniform } from "../utils/viewport/setUniform";
 
 interface RuntimeUniform extends ProgramUniform
 {

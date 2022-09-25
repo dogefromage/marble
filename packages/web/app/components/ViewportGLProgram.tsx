@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { ViewportQuadProgram } from '../classes/ViewportQuadProgram';
 import { useAppSelector } from '../redux/hooks';
 import { selectViewportPanels } from '../slices/panelViewportSlice';
-import { createCameraWorldToScreen } from '../utils/gl/matrixMath';
-import { UniformTypes } from '../utils/gl/setUniform';
+import { createCameraWorldToScreen } from '../utils/viewport/matrixMath';
+import { UniformTypes } from '../utils/viewport/setUniform';
 
 interface Props
 {

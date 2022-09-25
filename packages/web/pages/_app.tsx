@@ -1,6 +1,6 @@
 import { AppProps } from 'next/app'
 import { ThemeProvider } from 'styled-components';
-import defaultTheme from '../app/components/styled/defaultTheme';
+import defaultTheme from '../app/styled/defaultTheme';
 import '../styles/globals.scss';
 
 const MyApp = ({ Component, pageProps }: AppProps) =>

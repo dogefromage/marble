@@ -3,8 +3,8 @@ import { OutputRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import GeometryRowName from './GeometryRowName';
 import { RowProps } from './GeometryRowRoot';
-import GeometryRowDiv from './styled/GeometryRowDiv';
-import GeometryRowNameP from './styled/GeometryRowNameP';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import GeometryRowNameP from '../styled/GeometryRowNameP';
 
 const GeometryRowOutput = ({ geometryId, nodeId, row, connected }: RowProps<OutputRowT>) =>
 {

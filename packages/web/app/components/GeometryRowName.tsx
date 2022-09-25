@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { NameRowT } from '../types';
 import { RowProps } from './GeometryRowRoot';
-import GeometryRowDiv from './styled/GeometryRowDiv';
-import GeometryRowNameP from './styled/GeometryRowNameP';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import GeometryRowNameP from '../styled/GeometryRowNameP';
 
 interface WrapperProps
 {

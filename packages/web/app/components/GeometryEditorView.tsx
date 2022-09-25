@@ -4,9 +4,9 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesAddNode, geometriesNew, selectGeometries } from "../slices/geometriesSlice";
 import { GeometryS } from "../types";
 import { ViewProps } from "../types/View";
-import { generateAdjacencyLists } from "../utils/geometry/generateAdjacencyLists";
-import { NODE_TEMPLATES } from "../utils/geometry/testingTemplates";
-import zipGeometry from "../utils/geometry/zipGeometry";
+import { generateAdjacencyLists } from "../utils/geometries/generateAdjacencyLists";
+import { NODE_TEMPLATES } from "../utils/geometries/testingTemplates";
+import zipGeometry from "../utils/geometries/zipGeometry";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
 
