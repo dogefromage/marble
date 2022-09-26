@@ -45,9 +45,26 @@ vec3 rayAt(Ray ray, float t)
     return ray.o + t * ray.d;
 }
 
-float sdf_sphere(vec3 p, float r)
+float inc_sdf_sphere(vec3 p, float r)
 {
     return length(p) - r;
+}
+
+float inc_sdf_cube(vec3 p, float s)
+{
+    vec3 b = vec3(s, s, s);
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
+float inc_union(float a, float b)
+{
+    return min(a, b);
+}
+
+float inc_difference(float a, float b)
+{
+    return max(a, -b);
 }
 
 %INCLUDED_METHODS%
@@ -62,7 +79,7 @@ float sdf(vec3 p)
 vec3 calcNormal(vec3 p)
 {
     // https://iquilezles.org/articles/normalsSDF/
-    const float h = 0.001;
+    const float h = 0.0001;
     const vec2 k = vec2(1,-1);
     return normalize( k.xyy * sdf( p + k.xyy*h ) + 
                       k.yyx * sdf( p + k.yyx*h ) + 
@@ -72,7 +89,7 @@ vec3 calcNormal(vec3 p)
 
 const float MARCH_MAX_DISTANCE = 1000.0;
 const int MARCH_MAX_ITERATIONS = 1000;
-const float MARCH_EPSILON = 0.001;
+const float MARCH_EPSILON = 0.00001;
 
 float march(Ray ray)
 {

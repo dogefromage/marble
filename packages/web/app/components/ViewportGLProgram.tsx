@@ -5,7 +5,6 @@ import { useAppSelector } from '../redux/hooks';
 import { selectViewportPanels } from '../slices/panelViewportSlice';
 import { selectSceneProgram } from '../slices/sceneProgramSlice';
 import { generateGLSL } from '../utils/codeGeneration/generateGLSL';
-import { glsl } from '../utils/codeGeneration/glslTag';
 import { createCameraWorldToScreen } from '../utils/viewport/matrixMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
 
