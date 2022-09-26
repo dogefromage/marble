@@ -1,3 +1,4 @@
+import { RowValue } from "../geometry";
 
 export enum ProgramOperationTypes
 {
@@ -68,8 +69,9 @@ export type ProgramOperation =
 
 export interface ProgramConstant
 {
-    value: number | number[];
+    value: RowValue;
     symbol: string;
+    dataType: DataTypes;
 }
 
 export interface SceneProgram

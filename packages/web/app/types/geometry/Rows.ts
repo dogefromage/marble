@@ -7,6 +7,8 @@ import { DataTypes } from "../sceneProgram";
 
 export const JOINT_DND_TAG = 'dnd.joint';
 
+export type RowValue = number | number[];
+
 export interface JointDndTransfer extends JointLocation
 {
     direction: JointDirection;
@@ -52,7 +54,7 @@ export interface FloatFieldRowT extends BaseRowT
 {
     type: RowTypes.Field,
     dataType: DataTypes.Float;
-    value: number;
+    value: RowValue;
 }
 
 export type FieldRowT =

@@ -1,14 +1,8 @@
-import { GNodeZ, RowTypes, RowZ } from "../../types";
+import { GNodeZ, RowZ } from "../../types";
 
-
-export function getRowByIdAndType<T extends RowZ>(node: GNodeZ, id: string, type?: RowTypes)
+export function getRowById<T extends RowZ>(node: GNodeZ, id: string)
 {
-    const index = node.rows.findIndex(node => 
-    {
-        if (node.id !== id) return false;
-        if (type && node.type !== type) return false;
-        return true;
-    });
+    const index = node.rows.findIndex(node => node.id === id);
 
     return {
         rowIndex: index,

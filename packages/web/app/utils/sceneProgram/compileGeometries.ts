@@ -1,10 +1,12 @@
-import { GeometryZ, InputRowT, JointDirection, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowTypes, RowZ, SceneProgram } from "../../types";
-import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
-import { getRowByIdAndType } from "../geometries/getRows";
+import { DataTypes, FieldRowT, GeometryZ, GNodeZ, InputRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowValue, RowZ, SceneProgram } from "../../types";
+import { generateAdjacencyLists, GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { getRowById } from "../geometries/getRows";
+import { hasRowDataType, hasRowValue } from "../geometries/assertions";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";
 import { generateConstantSymbol } from "./programSymbols";
+import { getDefaultValue } from "../geometries/getDefaultValue";
 
 export enum GeometriesCompilationErrorTypes
 {
@@ -19,6 +21,58 @@ export class GeometriesCompilationError extends Error
     )
     {
         super(`Error "${type}" at compiling geometry`);
+    }
+}
+
+function createSymbol(nodeIndex: number, rowIndex: number, row: RowZ)
+{
+    const symbol = generateConstantSymbol(nodeIndex, rowIndex);
+    if (!hasRowDataType(row))
+    {
+        console.log({ nodeIndex, rowIndex });
+        throw new Error(`Above row must have datatype`);
+    }
+    const dataType = row.dataType;
+    const value = (row as { value: RowValue }).value || getDefaultValue(row.dataType);
+
+    const constant: ProgramConstant =
+    {
+        value, symbol, dataType,
+    };
+    
+    return constant;
+}
+
+function curriedRowSymbolGenerator(
+    nodeIndex: number,
+    node: GNodeZ,
+    incomingEdges: ObjMap<GeometryEdge>,
+    outgoingEdges: ObjMap<GeometryEdge[]>,
+    constants: ProgramConstant[],
+)
+{
+    return (rowId: string, direction: JointDirection) =>
+    {
+        const { rowIndex, row } = 
+            getRowById<InputRowT>(node, rowId);
+
+        if (direction === 'input')
+        {
+            const incomingSymbol = incomingEdges?.[rowIndex]?.symbol;
+
+            if (incomingSymbol) return incomingSymbol;
+
+            const constant = createSymbol(nodeIndex, rowIndex, row);
+            constants.push(constant);
+            return constant.symbol;
+        }
+        else
+        {
+            const outgoingSymbol = outgoingEdges?.[rowIndex]?.[0]?.symbol;
+            if (outgoingSymbol) return outgoingSymbol;
+
+            throw new Error(`This theoretically shouldn't happen, since a node should not be compiled to an operation if it's not needed in the program.`);
+        }
     }
 }
 
@@ -64,63 +118,36 @@ export function compileGeometries(
             orderedUsedNodes.map(nodeIndex =>
     {
         const node = geometry.nodes[nodeIndex];
-        const incomingEdges = backwardsAdjList[nodeIndex];
-        const outgoingEdges = forwardsAdjList[nodeIndex];
+
+        const genRowSymbol = curriedRowSymbolGenerator(
+            nodeIndex,
+            node, 
+            backwardsAdjList[nodeIndex],
+            forwardsAdjList[nodeIndex],
+            programConstants,
+        );
 
         const nodeOp = node.operation;
-
-        function createSymbol(rowIndex: number, row: RowZ)
-        {
-            console.warn('TODO: create default value or format existing depending on datatype');
-            console.warn('TODO: add datatype ex. float to obj bc it will be needed for code generation');
-
-            const value = (row as any).value || 0;
-            const symbol = generateConstantSymbol(nodeIndex, rowIndex)
-            programConstants.push({ value, symbol });
-            return symbol;
-        }
-
-        function readOrGenRowSymbol(rowId: string, direction: JointDirection)
-        {
-            const { rowIndex, row } = 
-                getRowByIdAndType<InputRowT>(node, rowId);
-
-            if (direction === 'input')
-            {
-                const incomingSymbol = incomingEdges?.[rowIndex]?.symbol;
-
-                if (incomingSymbol) return incomingSymbol;
-                return createSymbol(rowIndex, row);
-            }
-            else
-            {
-                const outgoingSymbol = outgoingEdges?.[rowIndex]?.[0]?.symbol;
-                if (outgoingSymbol) return outgoingSymbol;
-
-                throw new Error(`This theoretically shoulnd't happen, since a node should not be compiled to an operation if it's not needed in the program.`);
-            }
-        }
-
         if (nodeOp.type === ProgramOperationTypes.Output)
         {
             const outputOp: ProgramOutputOperation = 
             {
                 type: ProgramOperationTypes.Output,
-                input: readOrGenRowSymbol(nodeOp.inputRowId, 'input'),
+                input: genRowSymbol(nodeOp.inputRowId, 'input'),
             }
             return outputOp;
         }
         if (nodeOp.type === ProgramOperationTypes.Arithmetic)
         { 
             const { row: outputRow } = 
-                getRowByIdAndType<OutputRowT>(node, nodeOp.outputRowId, RowTypes.Output);
+                getRowById<OutputRowT>(node, nodeOp.outputRowId);
 
             const arithmeticOp: ProgramArithmeticOperation = 
             {
                 type: ProgramOperationTypes.Arithmetic,
-                lhs: readOrGenRowSymbol(nodeOp.lhsRowId, 'input'),
-                rhs: readOrGenRowSymbol(nodeOp.rhsRowId, 'input'),
-                outputElement: readOrGenRowSymbol(nodeOp.outputRowId, 'output'),
+                lhs: genRowSymbol(nodeOp.lhsRowId, 'input'),
+                rhs: genRowSymbol(nodeOp.rhsRowId, 'input'),
+                outputElement: genRowSymbol(nodeOp.outputRowId, 'output'),
                 outputDatatype: outputRow.dataType,
                 operation: nodeOp.operation,
             }
@@ -129,16 +156,16 @@ export function compileGeometries(
         if (nodeOp.type === ProgramOperationTypes.Call)
         {
             const { row: outputRow } = 
-                getRowByIdAndType<OutputRowT>(node, nodeOp.outputRowId, RowTypes.Output);
+                getRowById<OutputRowT>(node, nodeOp.outputRowId);
 
             const callOp: ProgramCallOperation = 
             {
                 type: ProgramOperationTypes.Call,
                 arguments: nodeOp.argumentRowIds.map(
-                    id => readOrGenRowSymbol(id, 'input')
+                    id => genRowSymbol(id, 'input')
                 ),
                 functionName: nodeOp.functionName,
-                outputElement: readOrGenRowSymbol(nodeOp.outputRowId, 'output'),
+                outputElement: genRowSymbol(nodeOp.outputRowId, 'output'),
                 outputDatatype: outputRow.dataType,
             }
             return callOp;
@@ -147,7 +174,6 @@ export function compileGeometries(
         throw new Error(`Operation not found`);
     });
 
-    
     const program: SceneProgram =
     {
         constants: programConstants,
