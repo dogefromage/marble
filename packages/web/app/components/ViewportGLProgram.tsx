@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { ViewportQuadProgram } from '../classes/ViewportQuadProgram';
 import { useAppSelector } from '../redux/hooks';
 import { selectViewportPanels } from '../slices/panelViewportSlice';
+import { selectSceneProgram } from '../slices/sceneProgramSlice';
+import { generateGLSL } from '../utils/codeGeneration/generateGLSL';
+import { glsl } from '../utils/codeGeneration/glslTag';
 import { createCameraWorldToScreen } from '../utils/viewport/matrixMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
 
@@ -15,35 +18,52 @@ interface Props
 
 const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
 {
-    const [ program, setProgram ] = useState<ViewportQuadProgram>();
+    const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
 
     const viewportPanelState = useAppSelector(selectViewportPanels)[panelId];
+
+    const sceneProgramState = useAppSelector(selectSceneProgram);
 
     useEffect(() =>
     {
         const _program = new ViewportQuadProgram(gl,
-        [
-            {
-                name: 'inverseCamera',
+        {
+            'inverseCamera': {
                 type: UniformTypes.UniformMatrix4fv,
                 data: Array.from(mat4.create()),
             },
-        ]);
+        });
 
-        setProgram(_program);
+        setQuadProgram(_program);
     }, [ gl ]);
 
     useEffect(() =>
     {
-        if (!program) return;
+        if (!quadProgram) return;
 
         const worldToScreen = createCameraWorldToScreen(viewportPanelState.camera, canvasAspect);
         const screenToWorld = mat4.invert(mat4.create(), worldToScreen);
-        program.setUniformData('inverseCamera', Array.from(screenToWorld));
+        quadProgram.setUniformData('inverseCamera', Array.from(screenToWorld));
 
-        requestAnimationFrame(() => program.render());
+        requestAnimationFrame(() => quadProgram.render());
 
-    }, [ program, viewportPanelState.camera, canvasAspect ]);
+    }, [ quadProgram, viewportPanelState.camera, canvasAspect ]);
+
+    useEffect(() =>
+    {
+        if (!sceneProgramState.program ||
+            !quadProgram) return;
+
+        const shaders = generateGLSL(sceneProgramState.program);
+
+        // console.log(`\n\n\n\nVERT SHADER\n\n`);
+        // console.log(shaders.vertCode);
+        // console.log(`\n\nFRAG SHADER\n\n`);
+        // console.log(shaders.fragCode);
+
+        quadProgram.setProgram(shaders.vertCode, shaders.fragCode);
+
+    }, [ sceneProgramState.program, quadProgram ]);
 
     return null;
 }

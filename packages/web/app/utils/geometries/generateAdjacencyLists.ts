@@ -1,6 +1,7 @@
 import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
 import _ from 'lodash';
-import { generateEdgeSymbol } from "../sceneProgram/programSymbols";
+import { generateEdgeVarName } from "../sceneProgram/programVarNames";
+import { assertRowHas } from "./assertions";
 
 export interface GeometryEdge
 {
@@ -9,7 +10,7 @@ export interface GeometryEdge
     toNodeIndex: number;
     toRowIndex: number;
     dataType: DataTypes;
-    symbol: string;
+    edgeKey: string;
     key: string;
 }
 
@@ -65,9 +66,11 @@ export function generateAdjacencyLists(g: GeometryZ)
                 const outputIndices = outputIndicesMap.get(outputKey);
                 if (!outputIndices) continue;
 
-                const dataType = (row as OutputRowT).dataType || DataTypes.Unknown;
-                const symbol = generateEdgeSymbol(outputIndices.nodeIndex, outputIndices.rowIndex);
+                const symbol = generateEdgeVarName(outputIndices.nodeIndex, outputIndices.rowIndex);
                 const key = [ 'edge-key', outputIndices.nodeIndex, outputIndices.rowIndex, nodeIndex, rowIndex ].join('-');
+
+                if (!assertRowHas<OutputRowT>(row, 'dataType')) 
+                    throw new Error(`Property missing 'dataType'`);
 
                 const edge: GeometryEdge =
                 {
@@ -75,8 +78,8 @@ export function generateAdjacencyLists(g: GeometryZ)
                     fromRowIndex: outputIndices.rowIndex,
                     toNodeIndex: nodeIndex,
                     toRowIndex: rowIndex,
-                    dataType,
-                    symbol,
+                    dataType: row.dataType,
+                    edgeKey: symbol,
                     key, 
                 };
 

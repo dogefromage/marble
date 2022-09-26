@@ -9,7 +9,7 @@ const QUAD = new Float32Array([
 const INDICES = new Uint16Array([ 3, 2, 1, 3, 1, 0 ]);
 export const QUAD_INDICES_LENGTH = INDICES.length;
 
-export default function createFullScreenQuad(gl: WebGL2RenderingContext, attributeLocation: number)
+export default function createFullScreenQuad(gl: WebGL2RenderingContext)
 {
     const vertexBuffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -18,9 +18,6 @@ export default function createFullScreenQuad(gl: WebGL2RenderingContext, attribu
     const indexBuffer = gl.createBuffer()!;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, INDICES, gl.STATIC_DRAW);
-
-    gl.vertexAttribPointer(attributeLocation, 3, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(attributeLocation);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);

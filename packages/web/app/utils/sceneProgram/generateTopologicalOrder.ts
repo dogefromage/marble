@@ -15,10 +15,13 @@ function topSortDfs(adjList: ForwardAdjacencyList, order: number[], visited: Set
     order.unshift(at);
 }
 
-export function generateTopologicalOrder(adjList: ForwardAdjacencyList)
+export function generateTopologicalOrder(adjList: ForwardAdjacencyList, outputIndex: number)
 {
     const order: number[] = [];
     const visited = new Set<number>();
+
+    order.push(outputIndex);
+    visited.add(outputIndex);
 
     for (const at in adjList)
     {

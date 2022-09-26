@@ -1,6 +1,4 @@
 import { mat4, vec3 } from "gl-matrix";
-import { fragmentCode, vertexCode } from "../../components/ViewportShaders";
-import checkShaderError from "./checkShaderError";
 
 
 export function raymarching(gl: WebGL2RenderingContext)

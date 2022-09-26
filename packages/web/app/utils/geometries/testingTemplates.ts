@@ -1,9 +1,11 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, ObjMap, ProgramOperationTypes, ArithmeticOperations } from "../../types"
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ObjMap, ProgramOperationTypes, ArithmeticOperations, DefaultFunctionArgs, DefaultFunctionArgNames } from "../../types"
 
 enum TemplateColors
 {
     Primitives = '#999966',
 }
+
+const VEC3_ZERO = [ 0, 0, 0 ];
 
 const SPHERE: GNodeT = 
 {
@@ -25,8 +27,10 @@ const SPHERE: GNodeT =
         {
             id: 'coordinates',
             type: RowTypes.Input,
-            dataType: DataTypes.Float3,
             name: 'Coordinates',
+            dataType: DataTypes.Vec3,
+            value: VEC3_ZERO,
+            alternativeArg: DefaultFunctionArgNames.RayPosition,
         },
         {
             id: 'radius',
@@ -39,7 +43,7 @@ const SPHERE: GNodeT =
     operation: 
     {
         type: ProgramOperationTypes.Call,
-        functionName: 'sphere',
+        functionName: 'sdf_sphere',
         argumentRowIds: [ 'coordinates', 'radius' ],
         outputRowId: 'output',
         outputDatatype: DataTypes.Float,
@@ -59,9 +63,10 @@ const OUTPUT: GNodeT =
         },
         {
             id: 'input',
+            name: 'SDF',
             type: RowTypes.Input,
             dataType: DataTypes.Float,
-            name: 'SDF',
+            value: 10000,
         },
     ],
     operation: 
@@ -90,15 +95,17 @@ const ADD: GNodeT =
         },
         {
             id: 'a',
-            type: RowTypes.Input,
-            dataType: DataTypes.Float,
+            type: RowTypes.Field,
             name: 'A',
+            dataType: DataTypes.Float,
+            value: 0,
         },
         {
             id: 'b',
-            type: RowTypes.Input,
-            dataType: DataTypes.Float,
+            type: RowTypes.Field,
             name: 'B',
+            dataType: DataTypes.Float,
+            value: 0,
         },
     ],
     operation: 

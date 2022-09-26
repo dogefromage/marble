@@ -9,18 +9,37 @@ export enum ProgramOperationTypes
 
 export enum ArithmeticOperations
 {
-    Add = 'add',
-    Subtract = 'subtract',
-    Multiply = 'multiply',
-    Divide = 'divide',
+    Add = '+',
+    Subtract = '-',
+    Multiply = '*',
+    Divide = '/',
 }
 
 export enum DataTypes
 {
     Unknown = 'unknown',
     Float = 'float',
-    Float3 = 'vec3',
+    Vec3 = 'vec3',
 }
+
+export interface FunctionArg 
+{
+    name: string;
+    dataType: DataTypes;
+}
+
+export enum DefaultFunctionArgNames
+{
+    RayPosition = 'arg_ray_p'
+}
+
+export const DefaultFunctionArgs: FunctionArg[] = 
+[
+    {
+        name: DefaultFunctionArgNames.RayPosition, 
+        dataType: DataTypes.Vec3,
+    },
+];
 
 export interface ProgramOutputOperation
 {
@@ -53,7 +72,7 @@ export interface ProgramCallOperation
     type: ProgramOperationTypes.Call;
     outputElement: string | null;
     outputDatatype: DataTypes;
-    arguments: string[];
+    functionArgs: string[];
     functionName: string;
 
     /**
@@ -70,12 +89,15 @@ export type ProgramOperation =
 export interface ProgramConstant
 {
     value: RowValue;
-    symbol: string;
+    element: string;
     dataType: DataTypes;
 }
 
 export interface SceneProgram
 {
+    methodName: string;
+    functionArgs: FunctionArg[];
     constants: ProgramConstant[];
     operations: ProgramOperation[];
+    methodReturnType: DataTypes;
 }

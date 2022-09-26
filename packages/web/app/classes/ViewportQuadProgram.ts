@@ -1,81 +1,91 @@
-import { fragmentCode, vertexCode } from "../components/ViewportShaders";
 import { ObjMap } from "../types/utils";
 import { ProgramUniform } from "../types/viewport";
 import checkShaderError from "../utils/viewport/checkShaderError";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";
 import { setUniform } from "../utils/viewport/setUniform";
 
-interface RuntimeUniform extends ProgramUniform
-{
-    location: WebGLUniformLocation;
-}
-
 export class ViewportQuadProgram
 {
-    private program: WebGLProgram;
+    private currentProgram: WebGLProgram | null = null;
     private vertexBuffer: WebGLBuffer;
     private indexBuffer: WebGLBuffer;
 
-    private uniforms: ObjMap<RuntimeUniform> = {} 
+    public attributeLocations: {
+        buffer?: number;
+    } = {};
 
     constructor(
         private gl: WebGL2RenderingContext,
-        uniforms: ProgramUniform[],
+        private uniforms: ObjMap<ProgramUniform>,
     )
     {
+        const buffers = createFullScreenQuad(gl);
+        this.vertexBuffer = buffers.vertexBuffer;
+        this.indexBuffer = buffers.indexBuffer;
+    }
+
+    setProgram(vertCode: string, fragCode: string)
+    {
+        const gl = this.gl;
+
+        const program = gl.createProgram()!;
+        this.currentProgram = program;
+
         const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-        gl.shaderSource(vertexShader, vertexCode);
+        gl.shaderSource(vertexShader, vertCode);
         gl.compileShader(vertexShader);
         checkShaderError(gl, 'vertex shader', vertexShader);
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-        gl.shaderSource(fragmentShader, fragmentCode);
+        gl.shaderSource(fragmentShader, fragCode);
         gl.compileShader(fragmentShader);
         checkShaderError(gl, 'fragment shader', fragmentShader);
-
-        const program = gl.createProgram()!;
-        this.program = program;
 
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);
         gl.linkProgram(program);
+        
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+        
+        this.attributeLocations.buffer = gl.getAttribLocation(program, "position");
+
         gl.useProgram(program);
-
-        const positionLocation = gl.getAttribLocation(program, "position");
-
-        const buffers = createFullScreenQuad(gl, positionLocation);
-        this.vertexBuffer = buffers.vertexBuffer;
-        this.indexBuffer = buffers.indexBuffer;
-
-        uniforms.forEach(programUniform =>
+    
+        Object.entries(this.uniforms).forEach(([ key, uniform ]) =>
         {
-            const location = gl.getUniformLocation(program, programUniform.name);
-            if (!location) throw new Error(`Uniform not found in program: ${programUniform.name}`);
+            const location = gl.getUniformLocation(program, key);
+            if (!location) throw new Error(`Uniform not found in program: ${key}`);
 
-            this.uniforms[programUniform.name] =
-            {
-                ...programUniform,
-                location,
-            };
-        })
+            uniform.location = location;
+        });
 
-        // console.log('Program created');
+        requestAnimationFrame(() => this.render());
     }
 
     setUniformData(name: string, data: number[])
     {
-        this.uniforms[name].data = data;
+        if (this.uniforms?.[name])
+            this.uniforms[name].data = data;
     }
 
     render()
     {
         const gl = this.gl;
+        const program = this.currentProgram;
 
+        if (!program) return;
+
+        gl.useProgram(program);
+    
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        gl.vertexAttribPointer(this.attributeLocations.buffer!, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(this.attributeLocations.buffer!);
 
         for (const uniform of Object.values(this.uniforms))
         {
+            if (!uniform.location) continue;
             setUniform(gl, uniform.location, uniform.type, uniform.data);
         }
 
@@ -83,7 +93,5 @@ export class ViewportQuadProgram
 
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-        
-        // console.log('Program rendered')
     }
 }

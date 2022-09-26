@@ -23,7 +23,7 @@ export const {
     setProgram: sceneProgramSetProgram,
 } = sceneProgramSlice.actions;
 
-export const select = (state: RootState) => state.sceneProgram;
+export const selectSceneProgram = (state: RootState) => state.sceneProgram;
 
 const sceneProgramReducer = sceneProgramSlice.reducer;
 

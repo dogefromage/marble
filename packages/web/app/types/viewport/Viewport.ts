@@ -15,7 +15,7 @@ export type GLProgramUniforms = Array<{
 
 export interface ProgramUniform
 {
-    name: string;
     type: UniformTypes;
     data: number[];
+    location?: WebGLUniformLocation;
 }

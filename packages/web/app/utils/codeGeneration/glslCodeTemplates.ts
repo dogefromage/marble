@@ -1,14 +1,13 @@
-import { glsl } from "../utils/viewport/glslTag";
+import { glsl } from "./glslTag";
 
-/////////// VERT ///////////
+////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
-export const vertexCode = glsl`
+export const VERT_CODE_TEMPLATE = glsl`
+
 precision mediump float;
 
 attribute vec3 position;
-
 uniform mat4 inverseCamera;
-
 varying vec3 ray_o;
 varying vec3 ray_d;
 
@@ -27,9 +26,12 @@ void main()
 }
 `;
 
-/////////// FRAG ///////////
 
-export const fragmentCode = glsl`
+
+////////////////////////////////// FRAGMENT SHADER //////////////////////////////////
+
+export const FRAG_CODE_TEMPLATE = glsl`
+
 precision mediump float;
 
 struct Ray
@@ -43,38 +45,18 @@ vec3 rayAt(Ray ray, float t)
     return ray.o + t * ray.d;
 }
 
+float sdf_sphere(vec3 p, float r)
+{
+    return length(p) - r;
+}
+
+%INCLUDED_METHODS%
+
+%COMPILED_GEOMETRIES%
+
 float sdf(vec3 p)
 {
-    // sphere
-    // return length(p) - 1.;
-
-    // box
-    // vec3 b = vec3(1, 1, 1);
-    // vec3 q = abs(p) - b;
-    // return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-
-    // torus
-    // vec2 t = vec2(1, 0.5);
-    // vec2 q = vec2(length(p.xz)-t.x,p.y);
-    // return length(q)-t.y;
-
-    // wire box
-    vec3 b = vec3(0.9, 0.8, 0.5);
-    float e = 0.05;
-    p = abs(p)-b;
-    vec3 q = abs(p+e)-e;
-    return min(min(
-        length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
-        length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
-        length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
-
-    // float t = 5.0;
-    // vec3 _p = mod(p + 0.5 * t, t) - 0.5 * t;
-    // vec3 b = vec3(0.8, 0.8, 0.8);
-    // vec3 q = abs(_p) - b;
-    // float box = length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-    // float sphere = length(_p) - 1.0; 
-    // return max(box, -sphere);
+    %ROOT_GEOMETRY%
 }
 
 vec3 calcNormal(vec3 p)
@@ -127,9 +109,7 @@ vec3 render(Ray ray)
 
     float diffuse = max(0.0, dot(light, n));
 
-    // red green blue
-
-    return vec3(diffuse, 0.5 * diffuse, 0.5 * diffuse);
+    return vec3(diffuse, diffuse, diffuse);
 }
 
 varying vec3 ray_o;
@@ -142,3 +122,42 @@ void main()
     gl_FragColor = vec4(pixelColor, 1);
 }
 `;
+
+
+
+
+
+
+// float sdf(vec3 p)
+// {
+//     // sphere
+//     // return length(p) - 1.;
+
+//     // box
+//     // vec3 b = vec3(1, 1, 1);
+//     // vec3 q = abs(p) - b;
+//     // return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+
+//     // torus
+//     // vec2 t = vec2(1, 0.5);
+//     // vec2 q = vec2(length(p.xz)-t.x,p.y);
+//     // return length(q)-t.y;
+
+//     // // wire box
+//     // vec3 b = vec3(0.9, 0.8, 0.5);
+//     // float e = 0.05;
+//     // p = abs(p)-b;
+//     // vec3 q = abs(p+e)-e;
+//     // return min(min(
+//     //     length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
+//     //     length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
+//     //     length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
+
+//     // float t = 5.0;
+//     // vec3 _p = mod(p + 0.5 * t, t) - 0.5 * t;
+//     // vec3 b = vec3(0.8, 0.8, 0.8);
+//     // vec3 q = abs(_p) - b;
+//     // float box = length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+//     // float sphere = length(_p) - 1.0; 
+//     // return max(box, -sphere);
+// }

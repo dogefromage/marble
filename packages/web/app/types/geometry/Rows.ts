@@ -32,29 +32,34 @@ export interface BaseRowT
     name: string;
 }
 
+export interface BaseInputRowT<D extends DataTypes = DataTypes> extends BaseRowT 
+{
+    dataType: D;
+    value: RowValue;
+    alternativeArg?: string;
+}
+
 export interface NameRowT extends BaseRowT
 {
     type: RowTypes.Name;
     color: string;
 }
 
-export interface InputRowT extends BaseRowT
+export interface InputRowT extends BaseInputRowT
 {
     type: RowTypes.Input;
     dataType: DataTypes;
+}
+
+export interface FloatFieldRowT extends BaseInputRowT<DataTypes.Float>
+{
+    type: RowTypes.Field;
 }
 
 export interface OutputRowT extends BaseRowT
 {
     type: RowTypes.Output;
     dataType: DataTypes;
-}
-
-export interface FloatFieldRowT extends BaseRowT
-{
-    type: RowTypes.Field,
-    dataType: DataTypes.Float;
-    value: RowValue;
 }
 
 export type FieldRowT =

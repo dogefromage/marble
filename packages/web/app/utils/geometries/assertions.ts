@@ -1,12 +1,8 @@
-import { DataTypes, InputRowT, RowValue, RowZ } from "../../types";
+import { RowT, RowZ } from "../../types";
 
-export function hasRowDataType(row: RowZ): row is RowZ & { dataType: DataTypes }
+// chad function
+
+export function assertRowHas<T extends RowT>(row: RowZ, ...properties: string[]): row is RowZ & T
 {
-    return (row as any).dataType != null;
+    return properties.every(p => Object.hasOwn(row, p));
 }
-
-export function hasRowValue(row: RowZ): row is RowZ & { value: RowValue }
-{
-    return (row as any).value != null;
-}
-
