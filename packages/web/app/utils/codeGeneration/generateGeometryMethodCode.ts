@@ -1,4 +1,5 @@
 import { ProgramOperationTypes, SceneProgram } from "../../types";
+import { CodeTemplate } from "./CodeTemplate";
 import { formatValueGLSL } from "./formatValue";
 import { glsl } from "./glslTag";
 
@@ -12,14 +13,14 @@ const geometryMethodTemplate = glsl`
 
 export function generateGeometryMethodCode(sceneProgram: SceneProgram)
 {
-    let method = geometryMethodTemplate;
+    const methodTemplate = new CodeTemplate(geometryMethodTemplate)
 
-    method = method.replace('%RETURN_TYPE%', sceneProgram.methodReturnType);
-    method = method.replace('%METHOD_NAME%', sceneProgram.methodName);
+    methodTemplate.replace('%RETURN_TYPE%', sceneProgram.methodReturnType);
+    methodTemplate.replace('%METHOD_NAME%', sceneProgram.methodName);
 
     const argumentList = sceneProgram.functionArgs
         .map(arg => arg.dataType + ' ' + arg.name).join(', ');
-    method = method.replace('%ARGUMENT_LIST%', argumentList);
+    methodTemplate.replace('%ARGUMENT_LIST%', argumentList);
 
     const methodCodeList: string[] = [];
 
@@ -59,7 +60,9 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
         .map(line => `\t${line}`)
         .join(`\n`);
 
-    method = method.replace('%METHOD_CODE%', methodCodeString);
+    methodTemplate.replace('%METHOD_CODE%', methodCodeString);
+
+    const method = methodTemplate.getFinishedCode(/%.*%/)
 
     return {
         method,
