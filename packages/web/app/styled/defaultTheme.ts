@@ -7,7 +7,8 @@ const defaultTheme: DefaultTheme =
         dataTypes: {
             unknown: '#636363',
             float: '#0277BD',
-            vec3: '#6A1B9A'
+            vec2: '#a84a32',
+            vec3: '#6A1B9A',
         }
     },
 };

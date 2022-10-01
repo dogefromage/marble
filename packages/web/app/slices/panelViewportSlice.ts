@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { quat, vec3 } from "gl-matrix";
+import panelStateEnhancer from "../enhancers/panelStateEnhancer";
 import { RootState } from "../redux/store";
+import { CreatePanelStateCallback, ViewportPanelsSliceState, ViewTypes } from "../types";
 import { degToRad } from "../utils/math";
-import { ViewportPanelsSliceState } from "../types/SliceStates";
 
-function createDefaultState()
+export const createViewportPanelState: CreatePanelStateCallback = 
+    () => 
 {
     return {
         // Blender default cube camera
@@ -21,25 +23,17 @@ const initialState: ViewportPanelsSliceState = {};
 export const viewportPanelsSlice = createSlice({
     name: 'viewportPanel',
     initialState,
-    reducers: {
-        createPanelState: (s, a: PayloadAction<{ panelId: string }>) =>
-        {
-            s[a.payload.panelId] = createDefaultState();
-        },
-        removePanelState: (s, a: PayloadAction<{ panelId: string }>) =>
-        {
-            delete s[a.payload.panelId];
-        },
-    }
+    reducers: {}
 });
 
-export const {
-    createPanelState: viewportPanelsCreatePanelState,
-    removePanelState: viewportPanelsRemovePanelState,
-} = viewportPanelsSlice.actions;
+// export const {
+// } = viewportPanelsSlice.actions;
 
 export const selectViewportPanels = (state: RootState) => state.editor.panels.viewport;
 
-const viewportPanelsReducer = viewportPanelsSlice.reducer;
+const viewportPanelsReducer = panelStateEnhancer(
+    viewportPanelsSlice.reducer,
+    ViewTypes.Viewport,
+);
 
 export default viewportPanelsReducer;

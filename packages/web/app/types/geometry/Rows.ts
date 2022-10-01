@@ -7,7 +7,16 @@ import { DataTypes } from "../sceneProgram";
 
 export const JOINT_DND_TAG = 'dnd.joint';
 
-export type RowValue = number | number[];
+export type RowValuePair = [ number, number ];
+export type RowValueTriple = [ number, number, number ];
+
+interface RowValueMap 
+{
+    [DataTypes.Float]: number;
+    [DataTypes.Unknown]: number;
+    [DataTypes.Vec2]: RowValuePair;
+    [DataTypes.Vec3]: RowValueTriple;
+}
 
 export interface JointDndTransfer extends JointLocation
 {
@@ -21,55 +30,59 @@ export interface JointDndTransfer extends JointLocation
 export enum RowTypes
 {
     Name,
-    Input,
+    InputOnly,
     Output,
     Field,
 }
 
-export interface BaseRowT
+export interface AnyRowT
 {
     id: string;
     name: string;
 }
 
-export interface BaseInputRowT<D extends DataTypes = DataTypes> extends BaseRowT 
-{
-    dataType: D;
-    value: RowValue;
-    alternativeArg?: string;
-}
-
-export interface NameRowT extends BaseRowT
+export interface NameRowT extends AnyRowT
 {
     type: RowTypes.Name;
     color: string;
 }
 
-export interface InputRowT extends BaseInputRowT
+export interface AnyInputRowT<D extends DataTypes = DataTypes> extends AnyRowT 
 {
-    type: RowTypes.Input;
-    dataType: DataTypes;
+    dataType: D;
+    value: RowValueMap[D];
+    alternativeArg?: string;
 }
 
-export interface FloatFieldRowT extends BaseInputRowT<DataTypes.Float>
+export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends AnyInputRowT<D>
+{
+    type: RowTypes.InputOnly;
+}
+
+export type AnyInputOnlyRowT = { [T in keyof typeof DataTypes]: InputOnlyRowT<typeof DataTypes[T]> }[keyof typeof DataTypes]
+
+export interface FieldRowT<D extends DataTypes = DataTypes> extends AnyInputRowT<D>
 {
     type: RowTypes.Field;
 }
 
-export interface OutputRowT extends BaseRowT
+export interface OutputRowT<D extends DataTypes = DataTypes> extends AnyRowT
 {
     type: RowTypes.Output;
-    dataType: DataTypes;
+    dataType: D;
 }
 
-export type FieldRowT =
-    | FloatFieldRowT;
-
-export type RowT =
+export type GenericRowT<D extends DataTypes = DataTypes> =
     | NameRowT
-    | InputRowT
-    | OutputRowT
-    | FieldRowT
+    | InputOnlyRowT<D>
+    | OutputRowT<D>
+    | FieldRowT<D>
+
+type GenericRowTMapped = 
+{
+    [D in keyof typeof DataTypes]: GenericRowT<typeof DataTypes[D]>;
+}
+export type RowT = GenericRowTMapped[keyof typeof DataTypes];
 
 export type JointDirection = 'input' | 'output';
 
@@ -79,9 +92,9 @@ export interface JointLocation
     rowId: string;
 }
 
-export type RowS<T extends RowT = RowT> = Partial<T> &
+export type RowS<T extends RowT | GenericRowT> = Partial<T> &
 {
     connectedOutput?: JointLocation;
 }
 
-export type RowZ<T extends RowT = RowT> = RowS & T;
+export type RowZ<T extends RowT | GenericRowT = GenericRowT> = RowS<T> & T;

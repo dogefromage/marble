@@ -1,11 +1,12 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, ObjMap, ProgramOperationTypes, ArithmeticOperations, DefaultFunctionArgs, DefaultFunctionArgNames } from "../../types"
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ObjMap, ProgramOperationTypes, ArithmeticOperations, DefaultFunctionArgs, DefaultFunctionArgNames, RowValueTriple, RowValuePair } from "../../types"
 
 enum TemplateColors
 {
     Primitives = '#999966',
 }
 
-const VEC3_ZERO = [ 0, 0, 0 ];
+const VEC2_ZERO: RowValuePair = [ 0, 0 ];
+const VEC3_ZERO: RowValueTriple = [ 0, 0, 0 ];
 
 const FAR_AWAY = 100000;
 
@@ -28,7 +29,7 @@ const SPHERE: GNodeT =
         },
         {
             id: 'coordinates',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'Coordinates',
             dataType: DataTypes.Vec3,
             value: VEC3_ZERO,
@@ -71,7 +72,7 @@ const CUBE: GNodeT =
         },
         {
             id: 'coordinates',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'Coordinates',
             dataType: DataTypes.Vec3,
             value: VEC3_ZERO,
@@ -109,7 +110,7 @@ const OUTPUT: GNodeT =
         {
             id: 'input',
             name: 'SDF',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             dataType: DataTypes.Float,
             value: FAR_AWAY,
         },
@@ -183,14 +184,14 @@ const UNION: GNodeT =
         },
         {
             id: 'a',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'A',
             dataType: DataTypes.Float,
             value: FAR_AWAY,
         },
         {
             id: 'b',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'B',
             dataType: DataTypes.Float,
             value: FAR_AWAY,
@@ -225,14 +226,14 @@ const DIFFERENCE: GNodeT =
         },
         {
             id: 'a',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'A',
             dataType: DataTypes.Float,
             value: FAR_AWAY,
         },
         {
             id: 'b',
-            type: RowTypes.Input,
+            type: RowTypes.InputOnly,
             name: 'B',
             dataType: DataTypes.Float,
             value: 0,
@@ -248,12 +249,101 @@ const DIFFERENCE: GNodeT =
     }
 }
 
+const TRANSFORM: GNodeT =
+{
+    id: 'transform',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Transform',
+            color: '#123456',
+        },
+        {
+            id: 'y',
+            type: RowTypes.Output,
+            dataType: DataTypes.Vec3,
+            name: 'Y',
+        },
+        {
+            id: 'x',
+            type: RowTypes.InputOnly,
+            dataType: DataTypes.Vec3,
+            name: 'X',
+            value: VEC3_ZERO,
+            alternativeArg: DefaultFunctionArgNames.RayPosition,
+        },
+        {
+            id: 'translation',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec3,
+            name: 'Translation',
+            value: VEC3_ZERO,
+        },
+    ],
+    operation: 
+    {
+        type: ProgramOperationTypes.Call,
+        functionName: 'inc_transform',
+        argumentRowIds: [ 'x' ],
+        outputRowId: 'y',
+        outputDatatype: DataTypes.Vec3,
+    }
+}
+
+const TESTING: GNodeT =
+{
+    id: 'testing',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Testing',
+            color: '#123456',
+        },
+        {
+            id: 'y',
+            type: RowTypes.Output,
+            dataType: DataTypes.Vec3,
+            name: 'Y',
+        },
+        {
+            id: 'x',
+            type: RowTypes.InputOnly,
+            dataType: DataTypes.Vec3,
+            name: 'X',
+            value: VEC3_ZERO,
+            alternativeArg: DefaultFunctionArgNames.RayPosition,
+        },
+        {
+            id: 'test',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec2,
+            name: 'TKJSLKd',
+            value: VEC2_ZERO,
+        },
+    ],
+    operation: 
+    {
+        type: ProgramOperationTypes.Call,
+        functionName: 'inc_transform',
+        argumentRowIds: [ 'x' ],
+        outputRowId: 'y',
+        outputDatatype: DataTypes.Vec3,
+    }
+}
+
 export const NODE_TEMPLATES: ObjMap<GNodeT> =
 {
-    [CUBE.id]: CUBE,
-    [SPHERE.id]: SPHERE,
-    [UNION.id]: UNION,
-    [DIFFERENCE.id]: DIFFERENCE,
-    [OUTPUT.id]: OUTPUT,
+    // [TRANSFORM.id]: TRANSFORM,
+    // [CUBE.id]: CUBE,
+    // [SPHERE.id]: SPHERE,
+    // [UNION.id]: UNION,
+    // [DIFFERENCE.id]: DIFFERENCE,
+    // [OUTPUT.id]: OUTPUT,
     // [ADD.id]: ADD,
+    [TESTING.id]: TESTING,
+    ['1234']: TESTING,
 }

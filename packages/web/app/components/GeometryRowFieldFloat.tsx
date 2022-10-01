@@ -1,13 +1,15 @@
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
-import { FloatFieldRowT } from '../types';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import GeometryRowNameP from '../styled/GeometryRowNameP';
+import { DataTypes, FieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
-import GeometryRowDiv from '../styled/GeometryRowDiv';
-import GeometryRowNameP from '../styled/GeometryRowNameP';
 
-const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: RowProps<FloatFieldRowT>) =>
+type Props = RowProps<FieldRowT<DataTypes.Float>>;
+
+const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: Props) =>
 {
     const dispatch = useAppDispatch();
 

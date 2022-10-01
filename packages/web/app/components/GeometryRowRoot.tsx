@@ -1,6 +1,6 @@
-import { FieldRowT, InputRowT, NameRowT, OutputRowT, RowTypes, RowZ } from '../types';
+import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowTypes, RowZ } from '../types';
 import GeometryRowField from './GeometryRowField';
-import GeometryRowInput from './GeometryRowInput';
+import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 
@@ -17,8 +17,8 @@ const GeometryRowRoot = (props: RowProps) =>
     if (props.row.type === RowTypes.Name)
         return <GeometryRowName {...props as RowProps<NameRowT> } />
     
-    if (props.row.type === RowTypes.Input)
-        return <GeometryRowInput {...props as RowProps<InputRowT> } />
+    if (props.row.type === RowTypes.InputOnly)
+        return <GeometryRowInputOnly {...props as RowProps<InputOnlyRowT> } />
         
     if (props.row.type === RowTypes.Output)
     return <GeometryRowOutput {...props as RowProps<OutputRowT> } />
@@ -26,6 +26,8 @@ const GeometryRowRoot = (props: RowProps) =>
     if (props.row.type === RowTypes.Field)
         return <GeometryRowField {...props as RowProps<FieldRowT> } />
 
+    console.warn('row component missing');
+    
     return null;
 }
 

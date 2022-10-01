@@ -9,7 +9,7 @@ import { ObjMap, Point } from '../types/utils';
 import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
 import GeometryRowRoot from './GeometryRowRoot';
 
-export const NODE_WIDTH = 200;
+export const NODE_WIDTH = 160;
 
 interface DivProps
 {
