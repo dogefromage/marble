@@ -11,9 +11,13 @@ const GeometryRowDiv = styled.div<GeometryRowWrapperProps>`
     
     height: ${({ heightUnits }) => `${heightUnits * GNODE_ROW_UNIT_HEIGHT}px` };
 
-    display: flex;
+    display: grid;
+    grid-template-rows: repeat(
+        ${({ heightUnits }) => heightUnits }, 
+        ${GNODE_ROW_UNIT_HEIGHT}px
+    );
     align-items: center;
-
+    
     margin: 0 8px;
 
     position: relative;

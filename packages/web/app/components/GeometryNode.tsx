@@ -3,10 +3,9 @@ import { useRef } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesPositionNode } from '../slices/geometriesSlice';
+import { geometriesPositionNode, geometriesRemoveNode } from '../slices/geometriesSlice';
 import { GNodeZ } from '../types';
-import { ObjMap, Point } from '../types/utils';
-import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
+import { Point } from '../types/utils';
 import GeometryRowRoot from './GeometryRowRoot';
 
 export const NODE_WIDTH = 160;
@@ -40,10 +39,9 @@ interface Props
 {
     geometryId: string;
     node: GNodeZ;
-    forwardEdges: ObjMap<GeometryEdge[]> | undefined;
 }
 
-const GeometryNode = ({ geometryId, node, forwardEdges }: Props) =>
+const GeometryNode = ({ geometryId, node }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -91,6 +89,16 @@ const GeometryNode = ({ geometryId, node, forwardEdges }: Props) =>
         <GeometryNodeDiv
             position={node.position}
             {...handlers}
+            onDoubleClick={e => 
+            {
+                dispatch(geometriesRemoveNode({
+                    geometryId: geometryId,
+                    nodeId: node.id,
+                    undo: {}
+                }));
+                
+                e.stopPropagation();
+            }}
         >
         {
             node.rows.map((row, rowIndex) =>
@@ -100,8 +108,7 @@ const GeometryNode = ({ geometryId, node, forwardEdges }: Props) =>
                     key={row.id}
                     row={row}
                     connected={
-                        forwardEdges && forwardEdges[rowIndex]?.length > 0 ||
-                        row.connectedOutput != null
+                        row.displayConnected || false
                     }
                 />
             )

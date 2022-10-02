@@ -10,22 +10,28 @@ const SlidableInputDiv = styled.div`
 
     position: relative;
     width: 100%;
-    height: ${GNODE_ROW_UNIT_HEIGHT * 0.8}px;
+    height: ${GNODE_ROW_UNIT_HEIGHT * 0.7}px;
     display: flex;
     align-items: center;
 
-    margin: ${GNODE_ROW_UNIT_HEIGHT * 0.1}px 0;
-    
-    form
+    margin: ${GNODE_ROW_UNIT_HEIGHT * 0.15}px 0;
+
+    form,
+    input
     {
         width: 100%;
         height: 100%;
 
+        position: absolute;
+
+        left: 0;
+        top: 0;
+    }
+    
+    form
+    {
         input
         {
-            width: 100%;
-            height: 100%;
-            
             padding: 0 0.5em;
             border-radius: 3px;
             background-color: #e5e4eb;
@@ -73,7 +79,7 @@ type Props =
 {
     value: number;
     onChange: (newValue: number, actionToken?: string) => void; 
-    name: string;
+    name?: string;
 }
 
 const SlidableInput = ({
@@ -180,7 +186,7 @@ const SlidableInput = ({
             </form>
             { catcher }
             {
-                !isWriting &&
+                !isWriting && name &&
                 <p className='name'>{ name }</p>
             }
             {

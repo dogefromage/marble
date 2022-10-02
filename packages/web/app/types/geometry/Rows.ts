@@ -93,9 +93,10 @@ export interface JointLocation
     rowId: string;
 }
 
-export type RowS<T extends RowT | GenericRowT> = Partial<T> &
+export type RowS<T extends RowT | GenericRowT = GenericRowT> = Partial<T> &
 {
     connectedOutput?: JointLocation;
+    displayConnected?: boolean;
 }
 
 export type RowZ<T extends RowT | GenericRowT = GenericRowT> = RowS<T> & T;

@@ -1,5 +1,5 @@
 import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowTypes, RowZ } from '../types';
-import GeometryRowField from './GeometryRowField';
+import GeometryRowField, { getRowHeightFields } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
@@ -10,6 +10,14 @@ export type RowProps<T extends RowZ = RowZ> =
     nodeId: string;
     connected: boolean;
     row: T;
+}
+
+export function getRowHeightRoot(row: RowZ)
+{
+    if (row.type === RowTypes.Field)
+        return getRowHeightFields(row);
+
+    return 1;
 }
 
 const GeometryRowRoot = (props: RowProps) =>

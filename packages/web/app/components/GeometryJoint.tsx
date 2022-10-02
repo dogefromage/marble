@@ -3,6 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesConnectJoints } from '../slices/geometriesSlice';
+import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG } from '../types';
 
 export const JOINT_OFFSET = -32;
@@ -15,7 +16,8 @@ const JointDiv = styled.div<{
 }>`
     position: absolute;
 
-    top: 50%;
+    /* top: 50%; */
+    top: ${0.5 * GNODE_ROW_UNIT_HEIGHT}px;
 
     ${({ direction }) => 
         `${ direction === 'input' ? 

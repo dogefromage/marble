@@ -1,14 +1,16 @@
+import produce from "immer";
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesAddNode, geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { GeometryS } from "../types";
+import { GeometryS, Point } from "../types";
 import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometries/generateAdjacencyLists";
 import { NODE_TEMPLATES } from "../utils/geometries/testingTemplates";
 import zipGeometry from "../utils/geometries/zipGeometry";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
+import GeometryNodeQuickdial from "./GeometryNodeQuickdial";
 
 const EditorWrapper = styled.div`
 
@@ -48,66 +50,124 @@ const GeometryEditor = ({ }: ViewProps) =>
         }));
         setGeometryId(id);
 
-        let posX = 50;
-        let posY = 50;
-        for (const template of Object.values(NODE_TEMPLATES))
-        {
-            dispatch(geometriesAddNode({
-                geometryId: id,
-                position: { x: posX, y: posY },
-                template,
-                undo: {},
-            }))
+        // let posX = 50;
+        // let posY = 50;
+        // for (const template of Object.values(NODE_TEMPLATES))
+        // {
+        //     dispatch(geometriesAddNode({
+        //         geometryId: id,
+        //         position: { x: posX, y: posY },
+        //         template,
+        //         undo: {},
+        //     }))
 
-            posX += 300;
-            posY += 60;
-        }
+        //     posX += 300;
+        //     posY += 60;
+        // }
+        
+        dispatch(geometriesAddNode({
+            geometryId: id,
+            position: { x: 500, y: 200 },
+            template: NODE_TEMPLATES['output'],
+            undo: {},
+        }))
     }, []);
+
+    const [ quickDial, setQuickDial ] = useState<{
+        position: Point;
+    }>();
     
-    const geometryZ = useMemo(() =>
+    const zipped = useMemo(() =>
     {
         if (!geometryS || !NODE_TEMPLATES)
             return;
 
         return zipGeometry(geometryS, NODE_TEMPLATES);
+
     }, [ geometryS, NODE_TEMPLATES ]);
 
     const adjacencyLists = useMemo(() =>
     {
-        if (!geometryZ) return;
-        return generateAdjacencyLists(geometryZ);
-    }, [ geometryZ?.validity ]);
+        if (!zipped) return;
+        return generateAdjacencyLists(zipped);
+
+    }, [ zipped?.validity ]);
+
+    const withConnections = useMemo(() =>
+    {
+        if (!zipped || !adjacencyLists) 
+            return;
+
+        return produce(zipped, z =>
+        {
+            for (let nodeIndex = 0; nodeIndex < z.nodes.length; nodeIndex++)
+            {
+                const node = z.nodes[nodeIndex];
+
+                for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
+                {
+                    const row = node.rows[rowIndex];
+                    
+                    const inputExists = adjacencyLists.backwardsAdjList[nodeIndex]?.[rowIndex] != null;
+                    const outputExists = adjacencyLists.forwardsAdjList[nodeIndex]?.[rowIndex]?.length > 0;
+                    
+                    row.displayConnected = inputExists || outputExists;
+                }
+            }
+        });
+
+    }, [ zipped, adjacencyLists ])
 
     const forwardEdges = adjacencyLists?.forwardsAdjList;
 
     return (
-        <EditorWrapper>
+        <EditorWrapper
+            onDoubleClick={e =>
+            {
+                const position = {
+                    x: e.pageX,
+                    y: e.pageY,
+                };
+
+                setQuickDial({
+                    position,
+                })
+            }}
+        >
         {
-            geometryId && geometryZ && forwardEdges &&
+            forwardEdges && withConnections &&
             Object.values(forwardEdges).map(nodeEdges =>
                 Object.values(nodeEdges).map(rowEdges =>
                     rowEdges.map(edge =>
                         <LinkComponent 
                             key={edge.key}
-                            geometryId={geometryId}
+                            geometryId={withConnections.id}
                             edge={edge}
-                            fromNode={geometryZ.nodes[edge.fromNodeIndex]}
-                            toNode={geometryZ.nodes[edge.toNodeIndex]}
+                            fromNode={withConnections.nodes[edge.fromNodeIndex]}
+                            toNode={withConnections.nodes[edge.toNodeIndex]}
                         />
                     )
                 )
             )
         }
         {
-            geometryZ && forwardEdges &&
-            geometryZ.nodes.map((node, nodeIndex) =>
+            withConnections &&
+            withConnections.nodes.map(node =>
                 <GeometryNode
-                    geometryId={geometryZ.id}
+                    geometryId={withConnections.id}
                     key={node.id}
                     node={node}
-                    forwardEdges={forwardEdges[nodeIndex]}
                 />
             )
+        }
+        {
+            geometryId && quickDial && 
+            <GeometryNodeQuickdial 
+                geometryId={geometryId}
+                position={quickDial.position}
+                templates={NODE_TEMPLATES}
+                onClose={() => setQuickDial(undefined)}
+            />
         }
         </EditorWrapper>
     )

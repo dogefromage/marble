@@ -310,6 +310,18 @@ const TESTING: GNodeT =
             name: 'Y',
         },
         {
+            id: 'asd',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'asdsd',
+        },
+        {
+            id: 'asdasd',
+            type: RowTypes.Output,
+            dataType: DataTypes.Vec2,
+            name: 'aa',
+        },
+        {
             id: 'x',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
@@ -324,6 +336,20 @@ const TESTING: GNodeT =
             name: 'TKJSLKd',
             value: VEC2_ZERO,
         },
+        {
+            id: 'sdsa',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec3,
+            name: 'a1231',
+            value: VEC3_ZERO,
+        },
+        {
+            id: 'asdfa',
+            type: RowTypes.Field,
+            dataType: DataTypes.Float,
+            name: '434',
+            value: 0,
+        },
     ],
     operation: 
     {
@@ -337,13 +363,12 @@ const TESTING: GNodeT =
 
 export const NODE_TEMPLATES: ObjMap<GNodeT> =
 {
-    // [TRANSFORM.id]: TRANSFORM,
-    // [CUBE.id]: CUBE,
-    // [SPHERE.id]: SPHERE,
-    // [UNION.id]: UNION,
-    // [DIFFERENCE.id]: DIFFERENCE,
-    // [OUTPUT.id]: OUTPUT,
-    // [ADD.id]: ADD,
-    [TESTING.id]: TESTING,
-    ['1234']: TESTING,
+    [TRANSFORM.id]: TRANSFORM,
+    [CUBE.id]: CUBE,
+    [SPHERE.id]: SPHERE,
+    [UNION.id]: UNION,
+    [DIFFERENCE.id]: DIFFERENCE,
+    [OUTPUT.id]: OUTPUT,
+    [ADD.id]: ADD,
+    // [TESTING.id]: TESTING,
 }
