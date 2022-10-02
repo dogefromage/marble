@@ -1,4 +1,4 @@
-import { DefaultFunctionArgs, GeometryZ, GNodeZ, InputRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowZ, SceneProgram } from "../../types";
+import { DefaultFunctionArgs, GeometryZ, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowZ, SceneProgram } from "../../types";
 import { assertRowHas } from "../geometries/assertions";
 import { generateAdjacencyLists, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
@@ -25,7 +25,7 @@ export class GeometriesCompilationError extends Error
 
 function createConstantName(nodeIndex: number, rowIndex: number, row: RowZ)
 {
-    if (!assertRowHas<InputRowT>(row, 'value', 'dataType'))
+    if (!assertRowHas<InputOnlyRowT>(row, 'value', 'dataType'))
     {
         console.log({ nodeIndex, rowIndex });
         throw new Error(`Row (${nodeIndex + ', ' + rowIndex}) must inherit from type BaseInputRowT`);
@@ -52,7 +52,7 @@ function curriedRowVarNameGenerator(
     return (rowId: string, direction: JointDirection) =>
     {
         const { rowIndex, row } = 
-            getRowById<InputRowT>(node, rowId);
+            getRowById<InputOnlyRowT>(node, rowId);
 
         if (direction === 'input')
         {

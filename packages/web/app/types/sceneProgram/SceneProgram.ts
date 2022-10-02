@@ -19,6 +19,7 @@ export enum DataTypes
 {
     Unknown = 'unknown',
     Float = 'float',
+    Vec2 = 'vec2',
     Vec3 = 'vec3',
 }
 

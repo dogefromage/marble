@@ -4,14 +4,17 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { clamp } from '../utils/math';
 import { FONT_FAMILY } from '../styled/utils';
+import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 
 const SlidableInputDiv = styled.div`
 
     position: relative;
     width: 100%;
-    height: 75%;
+    height: ${GNODE_ROW_UNIT_HEIGHT * 0.8}px;
     display: flex;
     align-items: center;
+
+    margin: ${GNODE_ROW_UNIT_HEIGHT * 0.1}px 0;
     
     form
     {

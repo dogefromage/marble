@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { viewportPanelsCreatePanelState, viewportPanelsRemovePanelState } from '../slices/panelViewportSlice';
+import { createViewportPanelState } from '../slices/panelViewportSlice';
+import { ViewTypes } from '../types';
 import { ViewProps } from '../types/View';
+import { useBindPanelState } from '../utils/panelState/useBindPanelState';
 import ViewportCanvas from './ViewportCanvas';
 
 const ViewPortDiv = styled.div`
@@ -13,16 +14,11 @@ const ViewPortDiv = styled.div`
 
 const ViewportView = ({ panelId }: ViewProps) =>
 {
-    const dispatch = useAppDispatch();
-
-    useEffect(() =>
-    {
-        dispatch(viewportPanelsCreatePanelState({ panelId }));
-
-        return () => { 
-            dispatch(viewportPanelsRemovePanelState({ panelId })) 
-        };
-    }, [ panelId ]);
+    useBindPanelState(
+        panelId, 
+        createViewportPanelState,
+        ViewTypes.Viewport,
+    );
 
     return (
         <ViewPortDiv>

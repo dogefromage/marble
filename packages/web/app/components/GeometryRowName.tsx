@@ -28,6 +28,10 @@ const TitleWrapper = styled(GeometryRowDiv)<WrapperProps>`
 const NodeTitle = styled(GeometryRowNameP)`
     
     font-weight: bold;
+    
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 `
 
 const GeometryRowName = ({ geometryId, nodeId, row }: RowProps<NameRowT>) =>

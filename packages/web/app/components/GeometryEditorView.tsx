@@ -7,7 +7,6 @@ import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometries/generateAdjacencyLists";
 import { NODE_TEMPLATES } from "../utils/geometries/testingTemplates";
 import zipGeometry from "../utils/geometries/zipGeometry";
-import { generateEdges } from "../utils/sceneProgram/generateEdges";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
 

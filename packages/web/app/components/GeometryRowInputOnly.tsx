@@ -1,10 +1,10 @@
-import { InputRowT } from '../types';
+import { InputOnlyRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 
-const GeometryRowInput = ({ geometryId, nodeId, row, connected }: RowProps<InputRowT>) =>
+const GeometryRowInputOnly = ({ geometryId, nodeId, row, connected }: RowProps<InputOnlyRowT>) =>
 {
     return (
         <GeometryRowDiv
@@ -26,4 +26,4 @@ const GeometryRowInput = ({ geometryId, nodeId, row, connected }: RowProps<Input
     );
 }
 
-export default GeometryRowInput;
+export default GeometryRowInputOnly;
