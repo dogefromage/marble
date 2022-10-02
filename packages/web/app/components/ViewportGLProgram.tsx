@@ -55,11 +55,6 @@ const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
 
         const shaders = generateGLSL(sceneProgramState.program);
 
-        // console.log(`\n\n\n\nVERT SHADER\n\n`);
-        // console.log(shaders.vertCode);
-        // console.log(`\n\nFRAG SHADER\n\n`);
-        // console.log(shaders.fragCode);
-
         quadProgram.setProgram(shaders.vertCode, shaders.fragCode);
 
     }, [ sceneProgramState.program, quadProgram ]);

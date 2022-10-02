@@ -2,10 +2,11 @@ import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { UndoAction } from "../types/undoable";
 import { RootState } from "../redux/store";
-import { GeometryS, GNodeT, GNodeS, JointLocation, ProgramOperationTypes } from "../types";
+import { GeometryS, GNodeT, GNodeS, JointLocation, ProgramOperationTypes, OutputRowT, InputRowT, DataTypes } from "../types";
 import { Point } from "../types/utils";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 import { GeometriesSliceState } from "../types/SliceStates";
+import { assertRowHas } from "../utils/geometries/assertions";
 
 function createGeometry(id: string)
 {
@@ -121,7 +122,9 @@ export const geometriesSlice = createSlice({
         connectJoints: (s, a: UndoAction<{ 
             geometryId: string, 
             inputJoint: JointLocation, 
-            outputJoint: JointLocation, 
+            inputDataType: DataTypes,
+            outputJoint: JointLocation,
+            outputDataType: DataTypes,
         }>) =>
         {
             const g = getGeometry(s, a);
@@ -137,6 +140,9 @@ export const geometriesSlice = createSlice({
 
             const inputRow = inputNode.rows[a.payload.inputJoint.rowId] || {};
             inputNode.rows[a.payload.inputJoint.rowId] = inputRow;
+
+            if (a.payload.inputDataType !== a.payload.outputDataType)
+                return console.error(`Connected rows must have same dataType`);
 
             inputRow.connectedOutput = 
             { 
@@ -179,7 +185,8 @@ export const {
     disconnectJoints: geometriesDisconnectJoints,
 } = geometriesSlice.actions;
 
-export const selectGeometries = (state: RootState) => state.project.present.geometries;
+export const selectGeometries = (state: RootState) => state.project.geometries;
+// export const selectGeometries = (state: RootState) => state.project.present.geometries;
 
 const geometriesReducer = geometriesSlice.reducer;
 

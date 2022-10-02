@@ -12,6 +12,7 @@ export type RowValue = number | number[];
 export interface JointDndTransfer extends JointLocation
 {
     direction: JointDirection;
+    dataType: DataTypes;
 }
 
 /**

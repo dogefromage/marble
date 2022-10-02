@@ -251,9 +251,9 @@ const DIFFERENCE: GNodeT =
 export const NODE_TEMPLATES: ObjMap<GNodeT> =
 {
     [CUBE.id]: CUBE,
-    [SPHERE.id]: SPHERE,
-    [UNION.id]: UNION,
-    [DIFFERENCE.id]: DIFFERENCE,
+    // [SPHERE.id]: SPHERE,
+    // [UNION.id]: UNION,
+    // [DIFFERENCE.id]: DIFFERENCE,
     [OUTPUT.id]: OUTPUT,
     // [ADD.id]: ADD,
 }

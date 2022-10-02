@@ -4,7 +4,7 @@ import geometriesReducer from "../slices/geometriesSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import sceneProgramReducer from "../slices/sceneProgramSlice";
 
-const reducer = combineReducers({
+const rootReducer = combineReducers({
     project: undoableEnhancer(
         combineReducers({
             geometries: geometriesReducer,
@@ -20,4 +20,4 @@ const reducer = combineReducers({
     sceneProgram: sceneProgramReducer,
 });
 
-export default reducer;
+export default rootReducer;

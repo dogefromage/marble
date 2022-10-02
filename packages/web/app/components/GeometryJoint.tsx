@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesConnectJoints } from '../slices/geometriesSlice';
-import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG, RowTypes } from '../types';
+import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG } from '../types';
 
 export const JOINT_OFFSET = -32;
 
@@ -78,6 +78,7 @@ const GeometryJoint = ({ geometryId, location, direction, connected, dataType }:
             return {
                 ...location,
                 direction,
+                dataType,
             }
         },
     });
@@ -103,7 +104,9 @@ const GeometryJoint = ({ geometryId, location, direction, connected, dataType }:
                 dispatch(geometriesConnectJoints({
                     geometryId,
                     inputJoint: location,
+                    inputDataType: dataType,
                     outputJoint: transfer,
+                    outputDataType: transfer.dataType,
                     undo: {}
                 }));
             }
@@ -112,7 +115,9 @@ const GeometryJoint = ({ geometryId, location, direction, connected, dataType }:
                 dispatch(geometriesConnectJoints({
                     geometryId,
                     inputJoint: transfer,
+                    inputDataType: dataType,
                     outputJoint: location,
+                    outputDataType: transfer.dataType,
                     undo: {}
                 }));
             }
