@@ -3,13 +3,15 @@ import { compileGeometries, GeometriesCompilationError } from '../utils/scenePro
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetProgram } from '../slices/sceneProgramSlice';
-import { NODE_TEMPLATES } from '../utils/geometries/testingTemplates';
 import zipGeometry from '../utils/geometries/zipGeometry';
+import { selectTemplates } from '../slices/templatesSlice';
 
 const SceneProgramCompiler = () =>
 {
     const dispatch = useAppDispatch();
+
     const geometries = useAppSelector(selectGeometries);
+    const { templates, glslSnippets } = useAppSelector(selectTemplates);
 
     const geoZero = Object.values(geometries)[0];
     
@@ -23,11 +25,11 @@ const SceneProgramCompiler = () =>
             return;
         }
 
-        const zippedGeometry = zipGeometry(geoZero, NODE_TEMPLATES);
+        const zippedGeometry = zipGeometry(geoZero, templates);
 
         try
         {
-            const program = compileGeometries(zippedGeometry);
+            const program = compileGeometries(zippedGeometry, glslSnippets);
 
             dispatch(sceneProgramSetProgram({
                 program,
@@ -41,7 +43,7 @@ const SceneProgramCompiler = () =>
                 throw e;
         }
 
-    }, [ geoZero?.validity ])
+    }, [ geoZero?.validity, templates ])
 
     return null;
 }

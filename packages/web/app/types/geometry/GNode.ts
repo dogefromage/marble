@@ -46,6 +46,7 @@ export interface GNodeT
     type: GNodeTypes;
     rows: Array<RowT>;
     operation: GNodeOperation;
+    glslSnippedIds: string[];
 }
 
 export interface GNodeS

@@ -8,6 +8,7 @@ import ViewportView from './ViewportView';
 import { glMatrix } from 'gl-matrix';
 import GeometryEditorView from './GeometryEditorView';
 import SceneProgramCompiler from './SceneProgramCompiler';
+import DefaultTemplateLoader from './DefaultTemplateLoader';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -41,6 +42,7 @@ const AppRoot = ({ projectId }: Props) =>
                 <GeometryEditorView panelId='1234' />
             </Wrapper>
             <SceneProgramCompiler />
+            <DefaultTemplateLoader />
             <DragzonePortalMount />
         </Provider>
     );

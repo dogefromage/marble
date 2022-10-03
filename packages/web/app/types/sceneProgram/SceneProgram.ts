@@ -1,4 +1,3 @@
-import { RowValue } from "../geometry";
 
 export enum ProgramOperationTypes
 {
@@ -89,16 +88,23 @@ export type ProgramOperation =
 
 export interface ProgramConstant
 {
-    value: RowValue;
+    value: any;
     element: string;
     dataType: DataTypes;
 }
 
 export interface SceneProgram
 {
+    includedGLSLCode: string[];
     methodName: string;
     functionArgs: FunctionArg[];
     constants: ProgramConstant[];
     operations: ProgramOperation[];
     methodReturnType: DataTypes;
+}
+
+export interface GLSLSnippet
+{
+    id: string;
+    code: string;
 }

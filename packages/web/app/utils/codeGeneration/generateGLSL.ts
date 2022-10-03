@@ -10,13 +10,17 @@ export function generateGLSL(sceneProgram: SceneProgram)
 
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
 
-    fragCodeTemplate.replace('%INCLUDED_METHODS%', ''); // implement
+    const includedCodeTotal = sceneProgram.includedGLSLCode.join('\n');
+    fragCodeTemplate.replace('%INCLUDED_METHODS%', includedCodeTotal);
+
     fragCodeTemplate.replace('%COMPILED_GEOMETRIES%', method);
 
     const rootMethodCall = `return ${methodName}(p);`; // not final
     fragCodeTemplate.replace('%ROOT_GEOMETRY%', rootMethodCall);
     
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
+
+    console.log(fragCode);
 
     return {
         vertCode: VERT_CODE_TEMPLATE,

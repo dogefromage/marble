@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesAddNode, geometriesNew, selectGeometries } from "../slices/geometriesSlice";
+import { selectTemplates } from "../slices/templatesSlice";
 import { GeometryS, Point } from "../types";
 import { ViewProps } from "../types/View";
 import { generateAdjacencyLists } from "../utils/geometries/generateAdjacencyLists";
-import { NODE_TEMPLATES } from "../utils/geometries/testingTemplates";
 import zipGeometry from "../utils/geometries/zipGeometry";
 import LinkComponent from "./GeometryLink";
 import GeometryNode from "./GeometryNode";
@@ -38,6 +38,8 @@ const GeometryEditor = ({ }: ViewProps) =>
 {
     const [ geometryId, setGeometryId ] = useState<string>();
 
+    const { templates } = useAppSelector(selectTemplates);
+
     const dispatch = useAppDispatch();
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId || ''];
 
@@ -49,28 +51,6 @@ const GeometryEditor = ({ }: ViewProps) =>
             undo: {},
         }));
         setGeometryId(id);
-
-        // let posX = 50;
-        // let posY = 50;
-        // for (const template of Object.values(NODE_TEMPLATES))
-        // {
-        //     dispatch(geometriesAddNode({
-        //         geometryId: id,
-        //         position: { x: posX, y: posY },
-        //         template,
-        //         undo: {},
-        //     }))
-
-        //     posX += 300;
-        //     posY += 60;
-        // }
-        
-        dispatch(geometriesAddNode({
-            geometryId: id,
-            position: { x: 500, y: 200 },
-            template: NODE_TEMPLATES['output'],
-            undo: {},
-        }))
     }, []);
 
     const [ quickDial, setQuickDial ] = useState<{
@@ -79,12 +59,12 @@ const GeometryEditor = ({ }: ViewProps) =>
     
     const zipped = useMemo(() =>
     {
-        if (!geometryS || !NODE_TEMPLATES)
+        if (!geometryS || !templates)
             return;
 
-        return zipGeometry(geometryS, NODE_TEMPLATES);
+        return zipGeometry(geometryS, templates);
 
-    }, [ geometryS, NODE_TEMPLATES ]);
+    }, [ geometryS, templates ]);
 
     const adjacencyLists = useMemo(() =>
     {
@@ -165,7 +145,7 @@ const GeometryEditor = ({ }: ViewProps) =>
             <GeometryNodeQuickdial 
                 geometryId={geometryId}
                 position={quickDial.position}
-                templates={NODE_TEMPLATES}
+                templates={templates}
                 onClose={() => setQuickDial(undefined)}
             />
         }

@@ -45,38 +45,6 @@ vec3 rayAt(Ray ray, float t)
     return ray.o + t * ray.d;
 }
 
-float inc_sdf_sphere(vec3 p, float r)
-{
-    return length(p) - r;
-}
-
-float inc_sdf_cube(vec3 p, float s)
-{
-    vec3 b = vec3(s, s, s);
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-}
-
-float inc_union(float a, float b)
-{
-    return min(a, b);
-}
-
-float inc_difference(float a, float b)
-{
-    return max(a, -b);
-}
-
-float inc_sdf_z_plane(vec3 p, float h)
-{
-    return p.z - h;
-}
-
-vec3 inc_transform(vec3 x, vec3 translate)
-{
-    return x + translate;
-}
-
 %INCLUDED_METHODS%
 
 %COMPILED_GEOMETRIES%

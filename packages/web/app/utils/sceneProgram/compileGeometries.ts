@@ -1,4 +1,4 @@
-import { DefaultFunctionArgs, GeometryZ, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowZ, SceneProgram } from "../../types";
+import { DefaultFunctionArgs, GeometryZ, GLSLSnippet, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, RowZ, SceneProgram } from "../../types";
 import { assertRowHas } from "../geometries/assertions";
 import { generateAdjacencyLists, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
@@ -11,6 +11,7 @@ export enum GeometriesCompilationErrorTypes
 {
     OutputMissing = 'output-missing',
     HasCycle = 'has-cycle',
+    SnippetMissing = 'snippet-missing',
 }
 
 export class GeometriesCompilationError extends Error
@@ -84,6 +85,7 @@ function curriedRowVarNameGenerator(
 
 export function compileGeometries(
     geometry: GeometryZ,
+    glslSnippets: ObjMap<GLSLSnippet>
 )
 {
     /**
@@ -118,9 +120,11 @@ export function compileGeometries(
     const used = findUsedNodes(forwardsAdjList, outputIndex);
     const topoOrder = generateTopologicalOrder(forwardsAdjList, outputIndex);
     const orderedUsedNodes = topoOrder.filter(index => used.has(index));
+        
+    const totalGlslSnippets = new Set<GLSLSnippet>();
 
     const programFunctionArgs = [ ...DefaultFunctionArgs ];
-    
+
     const programConstants: ProgramConstant[] = [];
 
     const programOperations: ProgramOperation[] =
@@ -135,6 +139,16 @@ export function compileGeometries(
             forwardsAdjList[nodeIndex],
             programConstants,
         );
+
+        for (const snippetId of node.glslSnippedIds)
+        {
+            const snippet = glslSnippets[snippetId];
+            if (!snippet) throw new GeometriesCompilationError(
+                GeometriesCompilationErrorTypes.SnippetMissing,
+            );
+
+            totalGlslSnippets.add(snippet);
+        }
 
         const nodeOp = node.operation;
         if (nodeOp.type === ProgramOperationTypes.Output)
@@ -186,8 +200,11 @@ export function compileGeometries(
     const { row: outputRow } = 
         getRowById<OutputRowT>(geometry.nodes[outputIndex], 'input');
 
+    const includedGLSLCode = [ ...totalGlslSnippets ].map(s => s.code);
+
     const program: SceneProgram =
     {
+        includedGLSLCode,
         functionArgs: programFunctionArgs,
         constants: programConstants,
         operations: programOperations,
