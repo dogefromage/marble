@@ -67,6 +67,16 @@ float inc_difference(float a, float b)
     return max(a, -b);
 }
 
+float inc_sdf_z_plane(vec3 p, float h)
+{
+    return p.z - h;
+}
+
+vec3 inc_transform(vec3 x, vec3 translate)
+{
+    return x + translate;
+}
+
 %INCLUDED_METHODS%
 
 %COMPILED_GEOMETRIES%

@@ -1,6 +1,7 @@
 import { template } from 'lodash';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+import useAutoClose from '../hooks/useAutoClose';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { GNodeT, ObjMap, Point } from '../types';
@@ -40,8 +41,11 @@ interface Props
 const GeometryNodeQuickdial = ({ position, templates, onClose, geometryId }: Props) =>
 {
     const dispatch = useAppDispatch();
-
     const [ searchValue, setSearchValue ] = useState('');
+
+    const dialDivRef = useRef<HTMLDivElement>(null);
+
+    useAutoClose(dialDivRef, onClose);
 
     const selectedTemplates = useMemo(() =>
     {
@@ -56,6 +60,7 @@ const GeometryNodeQuickdial = ({ position, templates, onClose, geometryId }: Pro
     return (
         <DialInputDiv
             position={position}
+            ref={dialDivRef}
         >
             <form>
                 <input 

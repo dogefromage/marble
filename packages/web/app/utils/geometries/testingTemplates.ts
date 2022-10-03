@@ -96,6 +96,49 @@ const CUBE: GNodeT =
     }
 }
 
+const PLANE: GNodeT = 
+{
+    id: 'plane',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'z-Plane',
+            color: TemplateColors.Primitives,
+        },
+        {
+            id: 'output',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'SDF',
+        },
+        {
+            id: 'coordinates',
+            type: RowTypes.InputOnly,
+            name: 'Coordinates',
+            dataType: DataTypes.Vec3,
+            value: VEC3_ZERO,
+            alternativeArg: DefaultFunctionArgNames.RayPosition,
+        },
+        {
+            id: 'height',
+            type: RowTypes.Field,
+            dataType: DataTypes.Float,
+            name: 'Height',
+            value: 0,
+        }
+    ],
+    operation: 
+    {
+        type: ProgramOperationTypes.Call,
+        functionName: 'inc_sdf_z_plane',
+        argumentRowIds: [ 'coordinates', 'height' ],
+        outputRowId: 'output',
+        outputDatatype: DataTypes.Float,
+    }
+}
+
 const OUTPUT: GNodeT =
 {
     id: 'output',
@@ -261,16 +304,16 @@ const TRANSFORM: GNodeT =
             color: '#123456',
         },
         {
-            id: 'y',
+            id: 'output',
             type: RowTypes.Output,
             dataType: DataTypes.Vec3,
-            name: 'Y',
+            name: 'Output Pos',
         },
         {
-            id: 'x',
+            id: 'input',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
-            name: 'X',
+            name: 'Input Pos',
             value: VEC3_ZERO,
             alternativeArg: DefaultFunctionArgNames.RayPosition,
         },
@@ -286,89 +329,23 @@ const TRANSFORM: GNodeT =
     {
         type: ProgramOperationTypes.Call,
         functionName: 'inc_transform',
-        argumentRowIds: [ 'x' ],
-        outputRowId: 'y',
-        outputDatatype: DataTypes.Vec3,
-    }
-}
-
-const TESTING: GNodeT =
-{
-    id: 'testing',
-    type: GNodeTypes.Default,
-    rows: [
-        {
-            id: 'name',
-            type: RowTypes.Name,
-            name: 'Testing',
-            color: '#123456',
-        },
-        {
-            id: 'y',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec3,
-            name: 'Y',
-        },
-        {
-            id: 'asd',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'asdsd',
-        },
-        {
-            id: 'asdasd',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec2,
-            name: 'aa',
-        },
-        {
-            id: 'x',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec3,
-            name: 'X',
-            value: VEC3_ZERO,
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
-        },
-        {
-            id: 'test',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec2,
-            name: 'TKJSLKd',
-            value: VEC2_ZERO,
-        },
-        {
-            id: 'sdsa',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
-            name: 'a1231',
-            value: VEC3_ZERO,
-        },
-        {
-            id: 'asdfa',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
-            name: '434',
-            value: 0,
-        },
-    ],
-    operation: 
-    {
-        type: ProgramOperationTypes.Call,
-        functionName: 'inc_transform',
-        argumentRowIds: [ 'x' ],
-        outputRowId: 'y',
+        argumentRowIds: [ 'input', 'translation' ],
+        outputRowId: 'output',
         outputDatatype: DataTypes.Vec3,
     }
 }
 
 export const NODE_TEMPLATES: ObjMap<GNodeT> =
 {
-    [TRANSFORM.id]: TRANSFORM,
-    [CUBE.id]: CUBE,
     [SPHERE.id]: SPHERE,
+    [CUBE.id]: CUBE,
+    [PLANE.id]: PLANE,
+
     [UNION.id]: UNION,
     [DIFFERENCE.id]: DIFFERENCE,
-    [OUTPUT.id]: OUTPUT,
+
+    [TRANSFORM.id]: TRANSFORM,
     [ADD.id]: ADD,
-    // [TESTING.id]: TESTING,
+
+    [OUTPUT.id]: OUTPUT,
 }
