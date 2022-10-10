@@ -10,7 +10,7 @@ export const JOINT_DND_TAG = 'dnd.joint';
 export type RowValuePair = [ number, number ];
 export type RowValueTriple = [ number, number, number ];
 
-interface RowValueMap 
+export interface RowValueMap 
 {
     [DataTypes.Float]: number;
     [DataTypes.Unknown]: number;

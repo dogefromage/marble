@@ -14,7 +14,8 @@ function createGeometry(id: string)
         id,
         name: 'New Geometry',
         nodes: [],
-        validity: 0,
+        compilationValidity: 0,
+        rowStateValidity: 0,
         nextIdIndex: 0,
         outputId: null,
     }
@@ -79,7 +80,7 @@ export const geometriesSlice = createSlice({
             if (a.payload.template.operation.type === ProgramOperationTypes.Output)
             {
                 g.outputId = node.id;
-                g.validity++;
+                g.compilationValidity++;
             }
         },
         removeNode: (s, a: UndoAction<{ geometryId: string, nodeId: string }>) =>
@@ -92,7 +93,7 @@ export const geometriesSlice = createSlice({
             if (g.outputId === a.payload.nodeId)
                 g.outputId = null;
 
-            g.validity++;
+            g.compilationValidity++;
         },
         positionNode: (s, a: UndoAction<{ geometryId: string, nodeId: string, position: Point }>) =>
         {
@@ -117,6 +118,9 @@ export const geometriesSlice = createSlice({
             {
                 delete n.rows[a.payload.rowId];
             }
+        
+            const g = getGeometry(s, a)!;
+            g.rowStateValidity++;
         },
         connectJoints: (s, a: UndoAction<{ 
             geometryId: string, 
@@ -149,7 +153,7 @@ export const geometriesSlice = createSlice({
                 rowId: a.payload.outputJoint.rowId,
             };
 
-            g.validity++;
+            g.compilationValidity++;
         },
         disconnectJoints: (s, a: UndoAction<{ geometryId: string, joints: JointLocation[] }>) =>
         {
@@ -168,7 +172,7 @@ export const geometriesSlice = createSlice({
                 delete node?.rows[joint.rowId]?.connectedOutput;
             }
 
-            g.validity++;
+            g.compilationValidity++;
         },
     }
 });

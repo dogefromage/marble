@@ -24,7 +24,7 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
 
     const methodCodeList: string[] = [];
 
-    for (const { dataType, value, element } of sceneProgram.constants)
+    for (const { dataType, value, element } of sceneProgram.textureVars)
     {
         const formattedValue = formatValueGLSL(value, dataType);
         const line = `${dataType} ${element} = ${formattedValue};`;

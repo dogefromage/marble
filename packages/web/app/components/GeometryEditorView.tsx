@@ -71,7 +71,7 @@ const GeometryEditor = ({ }: ViewProps) =>
         if (!zipped) return;
         return generateAdjacencyLists(zipped);
 
-    }, [ zipped?.validity ]);
+    }, [ zipped?.compilationValidity ]);
 
     const withConnections = useMemo(() =>
     {

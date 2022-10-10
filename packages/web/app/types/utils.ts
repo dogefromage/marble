@@ -1,3 +1,4 @@
+import { DataTypes } from "./sceneProgram";
 
 
 export type ObjMap<T> =
@@ -12,3 +13,5 @@ export interface Point
     x: number;
     y: number;
 }
+
+export type MapEvery<M extends string, T> = { [K in M]: T };

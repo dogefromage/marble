@@ -1,7 +1,7 @@
-import { DataTypes, RowValue } from "../../types";
+import { DataTypes, RowValueMap, RowValuePair } from "../../types";
 
 
-export function formatValueGLSL(value: RowValue, dataType: DataTypes): string
+export function formatValueGLSL<D extends DataTypes>(value: RowValueMap[D], dataType: D): string
 {
     if (dataType === DataTypes.Vec3)
     {

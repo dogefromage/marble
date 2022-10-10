@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { compileGeometries, GeometriesCompilationError } from '../utils/sceneProgram/compileGeometries';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetProgram } from '../slices/sceneProgramSlice';
-import zipGeometry from '../utils/geometries/zipGeometry';
 import { selectTemplates } from '../slices/templatesSlice';
+import zipGeometry from '../utils/geometries/zipGeometry';
+import { compileGeometries, GeometriesCompilationError } from '../utils/sceneProgram/compileGeometries';
 
 const SceneProgramCompiler = () =>
 {
@@ -29,7 +29,7 @@ const SceneProgramCompiler = () =>
 
         try
         {
-            const program = compileGeometries(zippedGeometry, glslSnippets);
+            const program = compileGeometries(zippedGeometry, glslSnippets, 0);
 
             dispatch(sceneProgramSetProgram({
                 program,
@@ -43,7 +43,18 @@ const SceneProgramCompiler = () =>
                 throw e;
         }
 
-    }, [ geoZero?.validity, templates ])
+    }, [ geoZero?.compilationValidity, templates ]);
+
+    useEffect(() =>
+    {
+        // compilation: geometry => programConstants
+        // rowState updated: geometry => programConstants
+
+        // generation: programConstants => texture
+
+        
+        
+    }, [ geoZero?.rowStateValidity ]);
 
     return null;
 }

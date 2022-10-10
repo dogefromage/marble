@@ -1,3 +1,4 @@
+import { MapEvery, ObjMap } from "../utils";
 
 export enum ProgramOperationTypes
 {
@@ -20,6 +21,14 @@ export enum DataTypes
     Float = 'float',
     Vec2 = 'vec2',
     Vec3 = 'vec3',
+}
+
+export const DATA_TYPE_TEXTURE_OCCUPATION: MapEvery<DataTypes, number> =
+{
+    unknown: 0,
+    float: 1,
+    vec2: 2,
+    vec3: 3,
 }
 
 export interface FunctionArg 
@@ -86,19 +95,28 @@ export type ProgramOperation =
     | ProgramArithmeticOperation 
     | ProgramCallOperation
 
-export interface ProgramConstant
+export interface ProgramTextureVar
 {
-    value: any;
-    element: string;
+    // value: any;
+    name: string;
     dataType: DataTypes;
+    textureCoordinate: number;
 }
+
+// export interface ProgramTextureVarMapping
+// {
+//     dataTypes: DataTypes;
+//     textureCoordinate: number;
+//     dataLength: number;
+// }
 
 export interface SceneProgram
 {
     includedGLSLCode: string[];
     methodName: string;
     functionArgs: FunctionArg[];
-    constants: ProgramConstant[];
+    textureVars: ProgramTextureVar[];
+    // lkdfjlköasdflkj: ObjMap<ObjMap<ProgramTextureVarMapping>>;
     operations: ProgramOperation[];
     methodReturnType: DataTypes;
 }
