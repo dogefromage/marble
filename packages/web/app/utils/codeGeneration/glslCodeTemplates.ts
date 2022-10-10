@@ -2,6 +2,8 @@ import { glsl } from "./glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
+export const TEXTURE_LOOKUP_METHOD_NAME = 'lookupTextureVars';
+
 export const VERT_CODE_TEMPLATE = glsl`
 
 precision mediump float;
@@ -43,6 +45,11 @@ struct Ray
 vec3 rayAt(Ray ray, float t)
 {
     return ray.o + t * ray.d;
+}
+
+float lookupTextureVars(int textureCoordinate)
+{
+    return 0.;
 }
 
 %INCLUDED_METHODS%

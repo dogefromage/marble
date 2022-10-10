@@ -1,5 +1,5 @@
+import { getRowMetadata } from "../../components/GeometryRowRoot";
 import { GNodeZ } from "../../types";
-import { getRowHeightRoot } from '../../components/GeometryRowRoot';
 
 export default function countHeightUnits(node: GNodeZ, rowIndex: number)
 {
@@ -7,8 +7,8 @@ export default function countHeightUnits(node: GNodeZ, rowIndex: number)
 
     for (let rowCounter = 0; rowCounter < rowIndex; rowCounter++)
     {
-        const singleRowHeight = getRowHeightRoot(node.rows[rowCounter]);
-        totalHeight += singleRowHeight;
+        const rowMetadata = getRowMetadata(node.rows[rowCounter]);
+        totalHeight += rowMetadata.heightUnits;
     }
 
     return totalHeight;

@@ -9,6 +9,7 @@ export type ViewportPanelsSliceState = ObjMap<ViewportPanelState>;
 export type SceneProgramSliceState = 
 {
     program: SceneProgram | null;
+    textureVarLookupData: number[] | null;
 }
 
 export type TemplatesSliceState = 

@@ -1,7 +1,8 @@
 import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
 import _ from 'lodash';
-import { generateEdgeVarName } from "../sceneProgram/programVarNames";
+import { generateEdgeVarName } from "../sceneProgram/programSymbolNames";
 import { assertRowHas } from "./assertions";
+import rowLocationKey from "./rowLocationKey";
 
 export interface GeometryEdge
 {
@@ -27,11 +28,6 @@ function customizer(objValue: any, srcValue: any)
     }
 }
 
-function locationHash(node: string, row: string)
-{
-    return [ node, row ].join('-');
-}
-
 export function generateAdjacencyLists(g: GeometryZ)
 {
     const N = g.nodes.length;
@@ -49,7 +45,7 @@ export function generateAdjacencyLists(g: GeometryZ)
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
         {
             const row = node.rows[ rowIndex ];
-            const key = locationHash(node.id, row.id);
+            const key = rowLocationKey(node.id, row.id);
             outputIndicesMap.set(key, { nodeIndex, rowIndex });
         }
     }
@@ -62,7 +58,7 @@ export function generateAdjacencyLists(g: GeometryZ)
             const row = node.rows[ rowIndex ];
             if (row.connectedOutput)
             {
-                const outputKey = locationHash(row.connectedOutput.nodeId, row.connectedOutput.rowId);
+                const outputKey = rowLocationKey(row.connectedOutput.nodeId, row.connectedOutput.rowId);
                 const outputIndices = outputIndicesMap.get(outputKey);
                 if (!outputIndices) continue;
 

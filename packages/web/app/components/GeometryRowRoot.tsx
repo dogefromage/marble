@@ -1,5 +1,6 @@
-import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowTypes, RowZ } from '../types';
-import GeometryRowField, { getRowHeightFields } from './GeometryRowField';
+import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowTypes, RowZ } from '../types';
+import rowMeta from '../utils/geometries/rowMeta';
+import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
@@ -12,12 +13,20 @@ export type RowProps<T extends RowZ = RowZ> =
     row: T;
 }
 
-export function getRowHeightRoot(row: RowZ)
+// export function getRowHeightRoot(row: RowZ)
+// {
+//     if (row.type === RowTypes.Field)
+//         return getRowHeightFields(row);
+
+//     return 1;
+// }
+
+export function getRowMetadata(row: RowZ): RowMetadata
 {
     if (row.type === RowTypes.Field)
-        return getRowHeightFields(row);
+        return getRowMetadataField(row);
 
-    return 1;
+    return rowMeta();
 }
 
 const GeometryRowRoot = (props: RowProps) =>

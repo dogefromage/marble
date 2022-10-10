@@ -23,7 +23,7 @@ export enum DataTypes
     Vec3 = 'vec3',
 }
 
-export const DATA_TYPE_TEXTURE_OCCUPATION: MapEvery<DataTypes, number> =
+export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
 {
     unknown: 0,
     float: 1,
@@ -103,21 +103,33 @@ export interface ProgramTextureVar
     textureCoordinate: number;
 }
 
-// export interface ProgramTextureVarMapping
-// {
-//     dataTypes: DataTypes;
-//     textureCoordinate: number;
-//     dataLength: number;
-// }
+export interface ProgramTextureVarMapping
+{
+    dataTypes: DataTypes;
+    textureCoordinate: number;
+    nodeIndex: number;
+    rowIndex: number;
+}
+
+export interface ProgramConstant
+{
+    name: string;
+    dataType: DataTypes;
+    value: any;
+}
 
 export interface SceneProgram
 {
-    includedGLSLCode: string[];
     methodName: string;
     functionArgs: FunctionArg[];
+    includedGLSLCode: string[];
+    
+    constants: ProgramConstant[];
     textureVars: ProgramTextureVar[];
-    // lkdfjlköasdflkj: ObjMap<ObjMap<ProgramTextureVarMapping>>;
+    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
+
     operations: ProgramOperation[];
+    
     methodReturnType: DataTypes;
 }
 

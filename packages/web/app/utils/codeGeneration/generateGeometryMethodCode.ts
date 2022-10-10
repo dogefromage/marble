@@ -1,6 +1,6 @@
-import { ProgramOperationTypes, SceneProgram } from "../../types";
+import { DataTypes, ProgramOperationTypes, SceneProgram } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
-import { formatValueGLSL } from "./formatValue";
+import { formatValueGLSL, textureLookupDatatype } from "./formatValue";
 import { glsl } from "./glslTag";
 
 const geometryMethodTemplate = glsl`
@@ -24,10 +24,17 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
 
     const methodCodeList: string[] = [];
 
-    for (const { dataType, value, element } of sceneProgram.textureVars)
+    for (const c of sceneProgram.constants)
     {
-        const formattedValue = formatValueGLSL(value, dataType);
-        const line = `${dataType} ${element} = ${formattedValue};`;
+        const rhs = formatValueGLSL(c.value, c.dataType);
+        const line = `${c.dataType} ${c.name} = ${rhs};`
+        methodCodeList.push(line);
+    }
+
+    for (const tv of sceneProgram.textureVars)
+    {
+        const rhs = textureLookupDatatype(tv.textureCoordinate, tv.dataType);
+        const line = `${tv.dataType} ${tv.name} = ${rhs};`
         methodCodeList.push(line);
     }
 

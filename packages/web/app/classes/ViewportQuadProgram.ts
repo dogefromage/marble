@@ -4,6 +4,8 @@ import checkShaderError from "../utils/viewport/checkShaderError";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";
 import { setUniform } from "../utils/viewport/setUniform";
 
+export const LOOKUP_TEXTURE_SIZE = 4;
+
 export class ViewportQuadProgram
 {
     private currentProgram: WebGLProgram | null = null;

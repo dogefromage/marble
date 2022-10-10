@@ -1,15 +1,26 @@
 import styled from 'styled-components';
-import { DataTypes, FieldRowT, RowZ } from '../types';
+import { DataTypes, FieldRowT, RowMetadata, RowZ } from '../types';
+import rowMeta from '../utils/geometries/rowMeta';
 import GeometryRowFieldFloat from './GeometryRowFieldFloat';
 import GeometryRowFieldVecN from './GeometryRowFieldVecN';
 import { RowProps } from './GeometryRowRoot';
 
-export function getRowHeightFields(row: RowZ<FieldRowT>)
+// export function getRowHeightFields(row: RowZ<FieldRowT>)
+// {
+//     if (row.connectedOutput) return 1;
+//     if (row.dataType === DataTypes.Vec2) return 3;
+//     if (row.dataType === DataTypes.Vec3) return 4;
+//     return 1;
+// }
+
+export function getRowMetadataField(row: RowZ<FieldRowT>): RowMetadata
 {
-    if (row.connectedOutput) return 1;
-    if (row.dataType === DataTypes.Vec2) return 3;
-    if (row.dataType === DataTypes.Vec3) return 4;
-    return 1;
+    if (row.connectedOutput) return rowMeta(1, true);
+    
+    if (row.dataType === DataTypes.Vec2) return rowMeta(3, true);
+    if (row.dataType === DataTypes.Vec3) return rowMeta(4, true);
+
+    return rowMeta(1, true);
 }
 
 const GeometryRowField = (props: RowProps<FieldRowT>) =>

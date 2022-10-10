@@ -1,11 +1,14 @@
-import { DATA_TYPE_TEXTURE_OCCUPATION, DefaultFunctionArgs, GeometryZ, GLSLSnippet, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, ProgramTextureVar, RowZ, SceneProgram } from "../../types";
+import { getRowMetadata } from "../../components/GeometryRowRoot";
+import { DefaultFunctionArgs, GeometryZ, GLSLSnippet, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, ProgramTextureVar, ProgramTextureVarMapping, RowZ, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { assertRowHas } from "../geometries/assertions";
 import { generateAdjacencyLists, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
+import rowLocationKey from "../geometries/rowLocationKey";
+import { Counter } from "../indexGenerator";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";
-import { generateTextureVarName } from "./programVarNames";
+import { generateConstantName, generateTextureVarName } from "./programSymbolNames";
 
 export enum GeometriesCompilationErrorTypes
 {
@@ -24,7 +27,7 @@ export class GeometriesCompilationError extends Error
     }
 }
 
-function createTextureVarName(nodeIndex: number, rowIndex: number, row: RowZ, textureCoordinate: number)
+function createTextureVar(nodeIndex: number, rowIndex: number, row: RowZ, textureCoordinate: number)
 {
     if (!assertRowHas<InputOnlyRowT>(row, 'value', 'dataType'))
     {
@@ -43,17 +46,35 @@ function createTextureVarName(nodeIndex: number, rowIndex: number, row: RowZ, te
     return variable;
 }
 
+function createConstant(nodeIndex: number, rowIndex: number, row: RowZ)
+{
+    if (!assertRowHas<InputOnlyRowT>(row, 'value', 'dataType'))
+    {
+        console.log({ nodeIndex, rowIndex });
+        throw new Error(`Row (${nodeIndex + ', ' + rowIndex}) must inherit from type BaseInputRowT`);
+    }
+
+    const constant: ProgramConstant =
+    {
+        name: generateConstantName(nodeIndex, rowIndex), 
+        dataType: row.dataType,
+        value: row.value,
+    };
+    
+    return constant;
+}
+
 function curriedRowVarNameGenerator(
     nodeIndex: number,
     node: GNodeZ,
     incomingEdges: ObjMap<GeometryEdge>,
     outgoingEdges: ObjMap<GeometryEdge[]>,
+    constants: ProgramConstant[], 
     textureVars: ProgramTextureVar[],
-    textureStartCoordinate: number,
+    textureCoordinateCounter: Counter,
+    textureVarMappings: ObjMap<ProgramTextureVarMapping>
 )
 {
-    let textureCoordinateCounter = 0;
-
     return (rowId: string, direction: JointDirection) =>
     {
         const { rowIndex, row } = 
@@ -63,28 +84,42 @@ function curriedRowVarNameGenerator(
         {
             // case 1: connection
             const incomingEdgeKey = incomingEdges?.[rowIndex]?.edgeKey;
-            if (incomingEdgeKey) return incomingEdgeKey;
+            if (incomingEdgeKey) 
+                return incomingEdgeKey;
 
             // case 2: fallback function argument
             if (row.alternativeArg)
                 return row.alternativeArg;
 
-            // case 3: parameter texture lookup
-            const textureCoord = textureStartCoordinate + textureCoordinateCounter;
-            const size = DATA_TYPE_TEXTURE_OCCUPATION[row.dataType];
-            textureCoordinateCounter += size;
-            
-            const textureVar = createTextureVarName(nodeIndex, rowIndex, row, textureCoord);
-            textureVars.push(textureVar);
-            return textureVar.name;
+            const rowMetadata = getRowMetadata(row);
 
-            // /**
-            //  * case 3: create constant symbol using row value
-            //  * -> in future, set this to a pixel of a texture, which can be rapidly updated
-            //  */
-            // const constant = createConstantName(nodeIndex, rowIndex, row);
-            // constants.push(constant);
-            // return constant.element;
+            // case 3: parameter texture lookup
+            if (rowMetadata.dynamicValue)
+            {
+                const textureCoord = textureCoordinateCounter.current;
+                const size = TEXTURE_VAR_DATATYPE_SIZE[row.dataType];
+                textureCoordinateCounter.current += size;
+
+                const textureVar = createTextureVar(nodeIndex, rowIndex, row, textureCoord);
+                textureVars.push(textureVar);
+
+                const textureVarMapping: ProgramTextureVarMapping = 
+                {
+                    textureCoordinate: textureVar.textureCoordinate,
+                    dataTypes: textureVar.dataType,
+                    nodeIndex,
+                    rowIndex,
+                };
+                const uniqueRowKey = rowLocationKey(node.id, row.id);
+                textureVarMappings[uniqueRowKey] = textureVarMapping;
+
+                return textureVar.name;
+            }
+
+            // case 4: fixed constant
+            const constant = createConstant(nodeIndex, rowIndex, row);
+            constants.push(constant);
+            return constant.name;
         }
         else
         {
@@ -99,7 +134,7 @@ function curriedRowVarNameGenerator(
 export function compileGeometries(
     geometry: GeometryZ,
     glslSnippets: ObjMap<GLSLSnippet>,
-    textureStartCoordinate: number,
+    textureCoordinateCounter: Counter,
 )
 {
     /**
@@ -138,9 +173,9 @@ export function compileGeometries(
     const usedGLSLSnippets = new Set<GLSLSnippet>();
 
     const functionArgs = [ ...DefaultFunctionArgs ];
-
+    const constants: ProgramConstant[] = [];
     const textureVars: ProgramTextureVar[] = [];
-    // const programVariableMapping: ObjMap<ObjMap<ProgramTextureVarMapping>> = {};
+    const textureVarMappings: ObjMap<ProgramTextureVarMapping> = {};
 
     const operations: ProgramOperation[] =
             orderedUsedNodes.map(nodeIndex =>
@@ -152,8 +187,10 @@ export function compileGeometries(
             node, 
             backwardsAdjList[nodeIndex],
             forwardsAdjList[nodeIndex],
+            constants,
             textureVars,
-            textureStartCoordinate,
+            textureCoordinateCounter,
+            textureVarMappings,
         );
 
         for (const snippetId of node.glslSnippedIds)
@@ -222,7 +259,9 @@ export function compileGeometries(
     {
         includedGLSLCode,
         functionArgs,
+        constants,
         textureVars,
+        textureVarMappings,
         operations,
         methodName: `geometry_${geometry.id}`,
         methodReturnType: outputRow.dataType,
