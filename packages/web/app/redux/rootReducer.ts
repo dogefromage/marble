@@ -1,4 +1,5 @@
 import { combineReducers } from "@reduxjs/toolkit";
+import localStorageEnhancer from "../enhancers/localStorageEnhancer";
 import undoableEnhancer from "../enhancers/undoableEnhancer";
 import geometriesReducer from "../slices/geometriesSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
@@ -7,9 +8,12 @@ import templatesReducer from "../slices/templatesSlice";
 
 const rootReducer = combineReducers({
     project: undoableEnhancer(
-        combineReducers({
-            geometries: geometriesReducer,
-        })
+        localStorageEnhancer(
+            combineReducers({
+                geometries: geometriesReducer,
+            }),
+            'project'
+        )
     ),
     editor: combineReducers({
         panels: combineReducers({

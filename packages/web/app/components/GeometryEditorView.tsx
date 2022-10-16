@@ -36,22 +36,22 @@ const EditorWrapper = styled.div`
 
 const GeometryEditor = ({ }: ViewProps) =>
 {
-    const [ geometryId, setGeometryId ] = useState<string>();
+    // const [ geometryId, setGeometryId ] = useState<string>();
+    const geometryId = '1234';
 
     const { templates } = useAppSelector(selectTemplates);
 
     const dispatch = useAppDispatch();
-    const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId || ''];
+    const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
 
-    useEffect(() =>
+    function createGeometry()
     {
-        const id = '1234';
         dispatch(geometriesNew({
-            geometryId: id,
+            geometryId,
             undo: {},
         }));
-        setGeometryId(id);
-    }, []);
+        // setGeometryId(id);
+    };
 
     const [ quickDial, setQuickDial ] = useState<{
         position: Point;
@@ -62,7 +62,11 @@ const GeometryEditor = ({ }: ViewProps) =>
         if (!geometryS || !templates)
             return;
 
-        return zipGeometry(geometryS, templates);
+        try
+        {
+            return zipGeometry(geometryS, templates);
+        }
+        catch { }
 
     }, [ geometryS, templates ]);
 
@@ -96,9 +100,20 @@ const GeometryEditor = ({ }: ViewProps) =>
             }
         });
 
-    }, [ zipped, adjacencyLists ])
+    }, [ zipped, adjacencyLists ]);
 
     const forwardEdges = adjacencyLists?.forwardsAdjList;
+
+    if (!withConnections)
+    {
+        return (
+            <button
+                onClick={createGeometry}
+            >
+                "Create geometry"
+            </button>
+        )
+    }
 
     return (
         <EditorWrapper

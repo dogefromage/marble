@@ -1,47 +1,63 @@
 import { GeometryS, GeometryZ, GNodeT, GNodeZ } from "../../types";
 import { ObjMap } from "../../types/utils";
 
+class ZipError extends Error
+{
+    constructor(msg: string) 
+    {
+        super(msg);
+    }
+}
+
 export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
 {
     const getTemplate = (templateId: string) =>
     {
         const template = templates[templateId];
         if (!template)
-            throw new Error(`Template "${templateId}" not found`);
+            throw new ZipError(`Template "${templateId}" not found`);
         return template;
     }
 
-    const z: GeometryZ = 
+    try
     {
-        ...g,
-        nodes: g.nodes.map(node =>
+        const z: GeometryZ = 
         {
-            const t = getTemplate(node.templateId);
-
-            const rows = t.rows.map(rowT =>
+            ...g,
+            nodes: g.nodes.map(node =>
             {
-                // @ts-ignore
-                const rowZ: RowZ = 
+                const t = getTemplate(node.templateId);
+    
+                const rows = t.rows.map(rowT =>
                 {
-                    ...rowT,
-                    ...node.rows[rowT.id],
+                    // @ts-ignore
+                    const rowZ: RowZ = 
+                    {
+                        ...rowT,
+                        ...node.rows[rowT.id],
+                    }
+    
+                    return rowZ;
+                });
+    
+                const nodeZ: GNodeZ =
+                {
+                    ...node,
+                    type: t.type,
+                    operation: t.operation,
+                    glslSnippedIds: t.glslSnippedIds,
+                    rows,
                 }
+    
+                return nodeZ;
+            })
+        };
 
-                return rowZ;
-            });
-
-            const nodeZ: GNodeZ =
-            {
-                ...node,
-                type: t.type,
-                operation: t.operation,
-                glslSnippedIds: t.glslSnippedIds,
-                rows,
-            }
-
-            return nodeZ;
-        })
-    };
-
-    return z;
+        return z;
+    }
+    catch (e)
+    {
+        if (e instanceof ZipError) return
+        throw e;
+    }
 }
