@@ -48,7 +48,8 @@ const ViewportCanvas = ({ panelId }: Props) =>
         if (!_gl)
             return setError('WebGL2 is not supported by your browser :(');
 
-        const ext = _gl.getExtension('OES_texture_float');
+        _gl.getExtension('OES_texture_float');
+        
         
         setGl(_gl);
     }, []);

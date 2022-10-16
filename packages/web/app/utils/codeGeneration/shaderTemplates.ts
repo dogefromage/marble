@@ -25,8 +25,8 @@ uniform vec2 invScreenSize;
 
 varying vec3 ray_o;
 varying vec3 ray_d;
-varying vec3 ray_pan_x;
-varying vec3 ray_pan_y;
+varying vec3 ray_dir_pan_x;
+varying vec3 ray_dir_pan_y;
 
 vec3 screenToWorld(vec3 x)
 {
@@ -38,13 +38,14 @@ void main()
 {
     gl_Position = vec4(position, 1.0);
 
-    ray_o = screenToWorld(vec3(position.xy, 0));
-    ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
-    
-    vec3 pan = vec3(invScreenSize * 100.0, 0);
 
-    ray_pan_x = screenToWorld(vec3(position.xy + pan.xz, 0)) - ray_o;
-    ray_pan_y = screenToWorld(vec3(position.xy + pan.zy, 0)) - ray_o;
+    ray_o = screenToWorld(vec3(position.xy, 0));
+
+    vec3 pan = vec3(invScreenSize, 0);
+
+    ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
+    ray_dir_pan_x = screenToWorld(vec3(position.xy + pan.xz, 1)) - ray_o - ray_d;
+    ray_dir_pan_y = screenToWorld(vec3(position.xy + pan.zy, 1)) - ray_o - ray_d;
 }
 `;
 
@@ -59,8 +60,8 @@ precision mediump float;
 uniform sampler2D varSampler;
 varying vec3 ray_o;
 varying vec3 ray_d;
-varying vec3 ray_pan_x;
-varying vec3 ray_pan_y;
+varying vec3 ray_dir_pan_x;
+varying vec3 ray_dir_pan_y;
 
 struct Ray
 {
@@ -176,32 +177,26 @@ vec3 shade(Ray ray)
     return color;
 }
 
-const int AA = 3;
+const int AA = 5;
 
 vec3 render()
 {
-    vec3 normedDir = normalize(ray_d);
-
-    if (AA == 1)
+    if (AA < 2)
     {
-        Ray ray = Ray(ray_o, normedDir);
+        Ray ray = Ray(ray_o, normalize(ray_d));
         return shade(ray);
     }
 
     float factor = 1.0 / float(AA * AA);
-
     vec3 averagePixel;
-    
+
     for (int y = 0; y < AA; y++)
     {
         for (int x = 0; x < AA; x++)
         {
             vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
-
-            vec3 pan = uv.x * ray_pan_x + uv.y * ray_pan_y;
-
-            Ray ray = Ray(ray_o + pan, normedDir);
-
+            vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
+            Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
             vec3 shadingResult = shade(ray);
             averagePixel += factor * shadingResult;
         }

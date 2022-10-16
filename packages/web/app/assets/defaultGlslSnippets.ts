@@ -1,5 +1,6 @@
 import { GLSLSnippet, ObjMap } from "../types";
 import { inc_difference } from "./templates/TemplateDifference";
+import { inc_intersection } from "./templates/TemplateIntersection";
 import { inc_sdf_cube } from "./templates/TemplateSDFCube";
 import { inc_sdf_z_plane } from "./templates/TemplateSDFPlane";
 import { inc_sdf_sphere } from "./templates/TemplateSDFSphere";
@@ -14,6 +15,7 @@ const defaultGlslSnippets: GLSLSnippet[] =
     inc_sdf_sphere,
     inc_transform,
     inc_union,
+    inc_intersection,
 ];
 
 // const glslSnippetsMap: ObjMap<GLSLSnippet> = Object.fromEntries(snippetsMap.map(s => [ s.id, s ]));

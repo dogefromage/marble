@@ -49,7 +49,8 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         if (!sceneProgramState.program ||
             !quadProgram) return;
         const shaders = generateGLSL(sceneProgramState.program);
-        quadProgram.setProgram(shaders.vertCode, shaders.fragCode);
+        quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
+        quadProgram.requestRender();
     }, [ sceneProgramState.program, quadProgram ]);
 
     /**
@@ -59,7 +60,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
     {
         if (!quadProgram) return;
         quadProgram.setVarTextureData(sceneProgramState.textureVarLookupData);
-        quadProgram.render();
+        quadProgram.requestRender();
     }, [ sceneProgramState.textureVarLookupData, quadProgram ])
 
     /**
@@ -77,9 +78,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         const screenToWorld = mat4.invert(mat4.create(), worldToScreen);
         quadProgram.setUniformData('inverseCamera', Array.from(screenToWorld));
 
-
-
-        quadProgram.render();
+        quadProgram.requestRender();
     }, [ quadProgram, viewportPanelState.camera, size ]);
 
     return null;
