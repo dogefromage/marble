@@ -6,7 +6,7 @@ export function generateEdgeVarName(fromNode: number, fromRow: number)
 
 export function generateTextureVarName(node: number, row: number)
 {
-    return [ 'texel_to', node, row ].join('_');
+    return [ 'dynamic_to', node, row ].join('_');
 }
 
 export function generateConstantName(node: number, row: number)

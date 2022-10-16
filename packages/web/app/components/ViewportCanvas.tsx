@@ -67,18 +67,16 @@ const ViewportCanvas = ({ panelId }: Props) =>
         
     }, [ size ]);
 
-    const canvasAspect = size ? (size.width / size.height) : 0;
-
     return (
         <CanvasWrapperDiv ref={wrapperRef}>
             <canvas
                 ref={canvasRef}
             />
             {
-                gl && 
+                gl && size && 
                 <ViewportGLProgram 
                     gl={gl} 
-                    canvasAspect={canvasAspect}
+                    size={size}
                     panelId={panelId}
                 />
             }

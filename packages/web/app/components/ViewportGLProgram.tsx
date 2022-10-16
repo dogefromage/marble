@@ -12,11 +12,11 @@ import { UniformTypes } from '../utils/viewport/setUniform';
 interface Props
 {
     gl: WebGL2RenderingContext;
-    canvasAspect: number;
+    size: DOMRectReadOnly;
     panelId: string;
 }
 
-const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
+const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
 {
     const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
     const viewportPanelState = useAppSelector(selectViewportPanels)[panelId];
@@ -32,6 +32,10 @@ const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
             'inverseCamera': {
                 type: UniformTypes.UniformMatrix4fv,
                 data: Array.from(mat4.create()),
+            },
+            'invScreenSize': {
+                type: UniformTypes.Uniform2fv,
+                data: [ 0, 0 ],
             },
         });
         setQuadProgram(_program);
@@ -64,11 +68,19 @@ const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
     useEffect(() =>
     {
         if (!quadProgram) return;
-        const worldToScreen = createCameraWorldToScreen(viewportPanelState.camera, canvasAspect);
+
+        const invScreenSize = [ 1.0 / size.width, 1.0 / size.height ];
+        quadProgram.setUniformData('invScreenSize', invScreenSize);
+
+        const aspect = size.width / size.height;
+        const worldToScreen = createCameraWorldToScreen(viewportPanelState.camera, aspect);
         const screenToWorld = mat4.invert(mat4.create(), worldToScreen);
         quadProgram.setUniformData('inverseCamera', Array.from(screenToWorld));
+
+
+
         quadProgram.render();
-    }, [ quadProgram, viewportPanelState.camera, canvasAspect ]);
+    }, [ quadProgram, viewportPanelState.camera, size ]);
 
     return null;
 }

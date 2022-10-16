@@ -5,14 +5,28 @@ import { glsl } from "./glslTag";
 
 export const TEXTURE_LOOKUP_METHOD_NAME = 'lookupTextureVars';
 
+const LIGHT_DIR = `vec3(0.312347, 0.15617376, 0.93704257)`;
+const LIGHT_ANGLE = `${ 1.0 * Math.PI / 180.0 }`
+const AMBIENT_COLOR = `vec3(0.2, 0.2, 0.2)`;
+const AMBIENT_OCCLUSION_HALFWAY = `50.0`;
+const AMBIENT_OCCLUSION_ZERO = `5.0`;
+
+const MARCH_MAX_DISTANCE = `1000.0`;
+const MARCH_MAX_ITERATIONS = 1000;
+const MARCH_EPSILON = 0.00001;
+
 export const VERT_CODE_TEMPLATE = glsl`
 
 precision mediump float;
 
 attribute vec3 position;
 uniform mat4 inverseCamera;
+uniform vec2 invScreenSize;
+
 varying vec3 ray_o;
 varying vec3 ray_d;
+varying vec3 ray_pan_x;
+varying vec3 ray_pan_y;
 
 vec3 screenToWorld(vec3 x)
 {
@@ -26,6 +40,11 @@ void main()
 
     ray_o = screenToWorld(vec3(position.xy, 0));
     ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
+    
+    vec3 pan = vec3(invScreenSize * 100.0, 0);
+
+    ray_pan_x = screenToWorld(vec3(position.xy + pan.xz, 0)) - ray_o;
+    ray_pan_y = screenToWorld(vec3(position.xy + pan.zy, 0)) - ray_o;
 }
 `;
 
@@ -40,17 +59,26 @@ precision mediump float;
 uniform sampler2D varSampler;
 varying vec3 ray_o;
 varying vec3 ray_d;
+varying vec3 ray_pan_x;
+varying vec3 ray_pan_y;
 
 struct Ray
 {
     vec3 o;
     vec3 d;
 };
-
 vec3 rayAt(Ray ray, float t)
 {
     return ray.o + t * ray.d;
 }
+
+struct March
+{
+    float t;
+    float minSineAngle;
+    int iterations;
+    bool hasHit;
+};
 
 float lookupTextureVars(int textureCoordinate)
 {
@@ -74,7 +102,7 @@ float sdf(vec3 p)
 vec3 calcNormal(vec3 p)
 {
     // https://iquilezles.org/articles/normalsSDF/
-    const float h = 0.0001;
+    const float h = 10.0 * ${MARCH_EPSILON};
     const vec2 k = vec2(1,-1);
     return normalize( k.xyy * sdf( p + k.xyy*h ) + 
                       k.yyx * sdf( p + k.yyx*h ) + 
@@ -82,60 +110,112 @@ vec3 calcNormal(vec3 p)
                       k.xxx * sdf( p + k.xxx*h ) );
 }
 
-const float MARCH_MAX_DISTANCE = 1000.0;
-const int MARCH_MAX_ITERATIONS = 1000;
-const float MARCH_EPSILON = 0.00001;
-
-float march(Ray ray)
+March march(Ray ray)
 {
-    float t = .0;
+    March march = March(.0, 1.0, 0, false);
 
-    for (int i = 0; i < MARCH_MAX_ITERATIONS; i++)
+    for (int i = 0; i < ${MARCH_MAX_ITERATIONS}; i++)
     {
-        vec3 p = rayAt(ray, t);
+        march.iterations = i + 1;
+
+        vec3 p = rayAt(ray, march.t);
         float d = sdf(p);
 
-        if (d < MARCH_EPSILON) return t;
+        if (d < ${MARCH_EPSILON})
+        {
+            march.hasHit = true;
+            return march;
+        }
 
-        t += d;
+        if (march.t > .0)
+        {
+            march.minSineAngle = min(march.minSineAngle, min(1.0, d / march.t));
+        }
 
-        if (t > MARCH_MAX_DISTANCE) return t;
+        march.t += d;
+
+        if (march.t > ${MARCH_MAX_DISTANCE}) 
+        {
+            break;
+        }
     }
 
-    return MARCH_MAX_DISTANCE;
+    return march;
 }
 
-vec3 render(Ray ray)
+vec3 shade(Ray ray)
 {
-    float t = march(ray);
+    March mainMarch = march(ray);
 
-    if (t > 0.99 * MARCH_MAX_DISTANCE)
+    if (!mainMarch.hasHit) return vec3(1,1,0.5); // clear color
+
+    vec3 p = rayAt(ray, mainMarch.t);
+    vec3 n = calcNormal(p);
+    vec3 pSafe = p + 2.0 * ${MARCH_EPSILON} * n;
+
+    vec3 color = ${AMBIENT_COLOR};
+
+    March shadowMarch = march(Ray(pSafe, ${LIGHT_DIR}));
+
+    if (!shadowMarch.hasHit) // in light
     {
-        return vec3(1,1,1);
+        float dotFactor = max(0.0, dot(${LIGHT_DIR}, n));
+        float minAngle = asin(shadowMarch.minSineAngle);
+        float angleFactor = sqrt(min(1.0, minAngle / ${LIGHT_ANGLE}));
+
+        color += vec3(1, 1, 1) * dotFactor * angleFactor;
+    }
+    else // in shadow
+    {
+        float occlusionLogisticExponent = ${AMBIENT_OCCLUSION_ZERO} * (float(mainMarch.iterations) / ${AMBIENT_OCCLUSION_HALFWAY} - 1.0);
+        float occlusionFactor = 1.0 / (1.0 + exp(occlusionLogisticExponent)); // logistic function
+    
+        color *= occlusionFactor;
     }
 
-    vec3 p = rayAt(ray, t);
-    vec3 n = calcNormal(p);
+    return color;
+}
 
-    vec3 light = normalize(vec3(1, -0.5, 3));
+const int AA = 3;
 
-    float diffuse = max(0.0, dot(light, n));
+vec3 render()
+{
+    vec3 normedDir = normalize(ray_d);
 
-    return vec3(diffuse, diffuse, diffuse);
+    if (AA == 1)
+    {
+        Ray ray = Ray(ray_o, normedDir);
+        return shade(ray);
+    }
+
+    float factor = 1.0 / float(AA * AA);
+
+    vec3 averagePixel;
+    
+    for (int y = 0; y < AA; y++)
+    {
+        for (int x = 0; x < AA; x++)
+        {
+            vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
+
+            vec3 pan = uv.x * ray_pan_x + uv.y * ray_pan_y;
+
+            Ray ray = Ray(ray_o + pan, normedDir);
+
+            vec3 shadingResult = shade(ray);
+            averagePixel += factor * shadingResult;
+        }
+    }
+
+    return averagePixel;
 }
 
 void main()
 {
-    Ray ray = Ray(ray_o, normalize(ray_d));
-    vec3 pixelColor = render(ray);
+    vec3 pixelColor = render();
     gl_FragColor = vec4(pixelColor, 1);
 }
 `;
-
-
-
-
-
 
 // float sdf(vec3 p)
 // {
