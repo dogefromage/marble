@@ -11,6 +11,7 @@ export class ViewportQuadProgram
     private currentProgram: WebGLProgram | null = null;
     private vertexBuffer: WebGLBuffer;
     private indexBuffer: WebGLBuffer;
+    private varTexture: WebGLTexture;
 
     public attributeLocations: {
         buffer?: number;
@@ -24,6 +25,36 @@ export class ViewportQuadProgram
         const buffers = createFullScreenQuad(gl);
         this.vertexBuffer = buffers.vertexBuffer;
         this.indexBuffer = buffers.indexBuffer;
+
+        const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(2);
+
+        this.varTexture = gl.createTexture()!;
+        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
+        gl.texImage2D(
+           gl.TEXTURE_2D, 
+           0,            // level
+           gl.RGBA, // internal format
+           LOOKUP_TEXTURE_SIZE,
+           LOOKUP_TEXTURE_SIZE,
+           0,            // border
+           gl.RED, // format
+           gl.FLOAT,  // type
+           testData,
+        );
+        // gl.texImage2D(
+        //    gl.TEXTURE_2D, 
+        //    0,            // level
+        //    gl.R32F, // internal format
+        //    LOOKUP_TEXTURE_SIZE,
+        //    LOOKUP_TEXTURE_SIZE,
+        //    0,            // border
+        //    gl.RED, // format
+        //    gl.FLOAT,  // type
+        //    testData,
+        // );  
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     }
 
     setProgram(vertCode: string, fragCode: string)
@@ -57,7 +88,7 @@ export class ViewportQuadProgram
         Object.entries(this.uniforms).forEach(([ key, uniform ]) =>
         {
             const location = gl.getUniformLocation(program, key);
-            if (!location) throw new Error(`Uniform not found in program: ${key}`);
+            if (location == null) throw new Error(`Uniform not found in program: ${key}`);
 
             uniform.location = location;
         });
@@ -71,6 +102,26 @@ export class ViewportQuadProgram
             this.uniforms[name].data = data;
     }
 
+    setVarTextureData(data: number[])
+    // setVarTextureData(data: Float32Array)
+    {
+        // const gl = this.gl;
+        
+        // const typedArr = new Float32Array(data);
+
+        // gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
+        // gl.texSubImage2D(
+        //     gl.TEXTURE_2D, 
+        //     0,
+        //     0, 0,
+        //     LOOKUP_TEXTURE_SIZE,
+        //     LOOKUP_TEXTURE_SIZE,
+        //     gl.RED,
+        //     gl.FLOAT,
+        //     typedArr,
+        // );
+    }
+
     render()
     {
         const gl = this.gl;
@@ -79,7 +130,9 @@ export class ViewportQuadProgram
         if (!program) return;
 
         gl.useProgram(program);
-    
+
+        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
+        
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         gl.vertexAttribPointer(this.attributeLocations.buffer!, 3, gl.FLOAT, false, 0, 0);

@@ -4,7 +4,11 @@ import rootReducer from "./rootReducer";
 
 function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
 {
-    const middleware: Middleware[] = getDefaultMiddleWare();
+    const middleware: Middleware[] = getDefaultMiddleWare({
+        serializableCheck: {
+            ignoredPaths: [ 'sceneProgram.textureVarLookupData' ],
+        }
+    });
     
     // middleware.push(createLogger({ collapsed: true }));
 

@@ -1,5 +1,5 @@
 import { DataTypes, TEXTURE_VAR_DATATYPE_SIZE, RowValueMap, RowValuePair } from "../../types";
-import { TEXTURE_LOOKUP_METHOD_NAME } from "./glslCodeTemplates";
+import { TEXTURE_LOOKUP_METHOD_NAME } from "./shaderTemplates";
 
 
 export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTypes): string

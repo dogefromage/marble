@@ -1,3 +1,4 @@
+import { LOOKUP_TEXTURE_SIZE } from "../../classes/ViewportQuadProgram";
 import { glsl } from "./glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
@@ -36,6 +37,10 @@ export const FRAG_CODE_TEMPLATE = glsl`
 
 precision mediump float;
 
+uniform sampler2D varSampler;
+varying vec3 ray_o;
+varying vec3 ray_d;
+
 struct Ray
 {
     vec3 o;
@@ -49,7 +54,14 @@ vec3 rayAt(Ray ray, float t)
 
 float lookupTextureVars(int textureCoordinate)
 {
-    return 0.;
+    int y = textureCoordinate / ${LOOKUP_TEXTURE_SIZE};
+    int x = textureCoordinate - y * ${LOOKUP_TEXTURE_SIZE};
+    
+    // vec2 uv = (vec2(x, y) + 0.5) / float(textureCoordinate);
+    vec2 uv = vec2(0, 0);
+
+    // return texelFetch(varSampler, ivec2(x, y), 0).r;
+    return texture2D(varSampler, uv).r;
 }
 
 %INCLUDED_METHODS%
@@ -113,9 +125,6 @@ vec3 render(Ray ray)
 
     return vec3(diffuse, diffuse, diffuse);
 }
-
-varying vec3 ray_o;
-varying vec3 ray_d;
 
 void main()
 {

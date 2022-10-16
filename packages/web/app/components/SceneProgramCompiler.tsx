@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { LOOKUP_TEXTURE_SIZE } from '../classes/ViewportQuadProgram';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
-import { sceneProgramSetLookup, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
+import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { DataTypes, InputOnlyRowT, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
 import { assertRowHas } from '../utils/geometries/assertions';
@@ -42,7 +42,7 @@ const SceneProgramCompiler = () =>
         catch (e)
         {
             if (e instanceof GeometriesCompilationError)
-                console.error(`Geometry could not be compiled: ${e.type}`);
+                console.info(`Geometry could not be compiled: ${e.type}`);
             else
                 throw e;
         }
@@ -54,15 +54,6 @@ const SceneProgramCompiler = () =>
 
     useEffect(() =>
     {
-        if (!textureVarLookupData)
-        {
-            const lookup = new Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0);
-            dispatch(sceneProgramSetLookup({
-                lookup,
-            }));
-            return;
-        }
-
         if (!program || !zipped)
             return;
 
@@ -89,25 +80,41 @@ const SceneProgramCompiler = () =>
                 const valueList = row.value as number[];
                 const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
 
-                for (let i = 0; i < size; i++)
+                if (!Array.isArray(valueList) || !(valueList.length === size))
                 {
-                    const index = mapping.textureCoordinate + i;
-                    textureVarLookupData[index] = valueList[i];
+                    console.error(`value must be array of length ${size}`);
+                    continue;
                 }
+                
+                dispatch(sceneProgramSetLookupSubarray({
+                    startCoordinate: mapping.textureCoordinate,
+                    subArray: valueList,
+                }));
             }
             else if (mapping.dataTypes === DataTypes.Float)
             {
-                textureVarLookupData[mapping.textureCoordinate] = row.value as number;
+                if (typeof(row.value) !== 'number')
+                {
+                    console.error(`value must be number`);
+                    continue;
+                }
+
+                // dispatch(sceneProgramSetLookupSubarray({
+                //     startCoordinate: mapping.textureCoordinate,
+                //     subArray: [ row.value ],
+                // }));
+
+                dispatch(sceneProgramSetLookupSubarray({
+                    startCoordinate: 0,
+                    subArray: new Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(row.value),
+                }));
             }
         }
-        
-        console.log(textureVarLookupData);
-            
     }, [ 
         program, 
-        textureVarLookupData, 
         zipped?.id,
         zipped?.rowStateValidity, 
+        zipped?.compilationValidity,
     ]);
 
     return null;

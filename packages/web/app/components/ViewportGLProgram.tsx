@@ -59,6 +59,14 @@ const ViewportGLProgram = ({ gl, canvasAspect, panelId }: Props) =>
 
     }, [ sceneProgramState.program, quadProgram ]);
 
+    useEffect(() =>
+    {
+        if (!quadProgram) return;
+
+        quadProgram.setVarTextureData(sceneProgramState.textureVarLookupData);
+
+    }, [ sceneProgramState.textureVarLookupData, quadProgram ])
+
     return null;
 }
 

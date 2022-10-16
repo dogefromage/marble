@@ -1,7 +1,7 @@
 import { SceneProgram } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
 import { generateGeometryMethodCode } from "./generateGeometryMethodCode";
-import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "./glslCodeTemplates";
+import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "./shaderTemplates";
 
 export function generateGLSL(sceneProgram: SceneProgram)
 {
