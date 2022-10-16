@@ -5,7 +5,7 @@ import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 import { DataTypes, FieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
-import { getRowHeightFields } from './GeometryRowField';
+import { getRowMetadataField } from './GeometryRowField';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
 
@@ -36,11 +36,11 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row, connected }: Props) =>
         }));
     }
 
-    const rowHeight = getRowHeightFields(row);
+    const meta = getRowMetadataField(row);
 
     return (
         <GeometryRowDiv
-            heightUnits={rowHeight}
+            heightUnits={meta.heightUnits}
         >
             <GeometryRowNameP
                 align='left'

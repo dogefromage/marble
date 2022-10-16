@@ -5,14 +5,6 @@ import GeometryRowFieldFloat from './GeometryRowFieldFloat';
 import GeometryRowFieldVecN from './GeometryRowFieldVecN';
 import { RowProps } from './GeometryRowRoot';
 
-// export function getRowHeightFields(row: RowZ<FieldRowT>)
-// {
-//     if (row.connectedOutput) return 1;
-//     if (row.dataType === DataTypes.Vec2) return 3;
-//     if (row.dataType === DataTypes.Vec3) return 4;
-//     return 1;
-// }
-
 export function getRowMetadataField(row: RowZ<FieldRowT>): RowMetadata
 {
     if (row.connectedOutput) return rowMeta(1, true);

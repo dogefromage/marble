@@ -12,6 +12,7 @@ export class ViewportQuadProgram
     private vertexBuffer: WebGLBuffer;
     private indexBuffer: WebGLBuffer;
     private varTexture: WebGLTexture;
+    private isRendering = false;
 
     public attributeLocations: {
         buffer?: number;
@@ -26,14 +27,14 @@ export class ViewportQuadProgram
         this.vertexBuffer = buffers.vertexBuffer;
         this.indexBuffer = buffers.indexBuffer;
 
-        const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(2);
+        const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0.5);
 
         this.varTexture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
         gl.texImage2D(
            gl.TEXTURE_2D, 
            0,            // level
-           gl.RGBA, // internal format
+           gl.R16F, // internal format
            LOOKUP_TEXTURE_SIZE,
            LOOKUP_TEXTURE_SIZE,
            0,            // border
@@ -105,25 +106,33 @@ export class ViewportQuadProgram
     setVarTextureData(data: number[])
     // setVarTextureData(data: Float32Array)
     {
-        // const gl = this.gl;
+        const gl = this.gl;
         
-        // const typedArr = new Float32Array(data);
+        const typedArr = new Float32Array(data);
 
-        // gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
-        // gl.texSubImage2D(
-        //     gl.TEXTURE_2D, 
-        //     0,
-        //     0, 0,
-        //     LOOKUP_TEXTURE_SIZE,
-        //     LOOKUP_TEXTURE_SIZE,
-        //     gl.RED,
-        //     gl.FLOAT,
-        //     typedArr,
-        // );
+        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
+        gl.texSubImage2D(
+            gl.TEXTURE_2D, 
+            0, 0, 0,
+            LOOKUP_TEXTURE_SIZE,
+            LOOKUP_TEXTURE_SIZE,
+            gl.RED,
+            gl.FLOAT,
+            typedArr,
+        );
     }
 
     render()
     {
+        if (this.isRendering) return;
+        requestAnimationFrame(() => this.renderContent());
+        this.isRendering = true;
+    }
+
+    renderContent()
+    {
+        this.isRendering = false;
+
         const gl = this.gl;
         const program = this.currentProgram;
 

@@ -99,14 +99,9 @@ const SceneProgramCompiler = () =>
                     continue;
                 }
 
-                // dispatch(sceneProgramSetLookupSubarray({
-                //     startCoordinate: mapping.textureCoordinate,
-                //     subArray: [ row.value ],
-                // }));
-
                 dispatch(sceneProgramSetLookupSubarray({
-                    startCoordinate: 0,
-                    subArray: new Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(row.value),
+                    startCoordinate: mapping.textureCoordinate,
+                    subArray: [ row.value ],
                 }));
             }
         }

@@ -13,14 +13,6 @@ export type RowProps<T extends RowZ = RowZ> =
     row: T;
 }
 
-// export function getRowHeightRoot(row: RowZ)
-// {
-//     if (row.type === RowTypes.Field)
-//         return getRowHeightFields(row);
-
-//     return 1;
-// }
-
 export function getRowMetadata(row: RowZ): RowMetadata
 {
     if (row.type === RowTypes.Field)

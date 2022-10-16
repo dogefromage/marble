@@ -57,10 +57,8 @@ float lookupTextureVars(int textureCoordinate)
     int y = textureCoordinate / ${LOOKUP_TEXTURE_SIZE};
     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_SIZE};
     
-    // vec2 uv = (vec2(x, y) + 0.5) / float(textureCoordinate);
-    vec2 uv = vec2(0, 0);
+    vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_SIZE});
 
-    // return texelFetch(varSampler, ivec2(x, y), 0).r;
     return texture2D(varSampler, uv).r;
 }
 
