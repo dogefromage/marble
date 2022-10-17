@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectViewportPanels, viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { ViewportCamera } from '../types';
 import { clamp } from '../utils/math';
+import { selectPanelState } from '../utils/panelState/selectPanelState';
 import { createCameraWorldToScreen, getViewportDirection, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import ViewportGLProgram from './ViewportGLProgram';
 
@@ -34,7 +35,7 @@ interface Props
 const ViewportCanvas = ({ panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const viewportPanelState = useAppSelector(selectViewportPanels)[panelId];
+    const viewportPanelState = selectPanelState(selectViewportPanels, panelId);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +97,8 @@ const ViewportCanvas = ({ panelId }: Props) =>
     const { catcher: divCatcher, handlers: divHandlers } = useMouseDrag({
         start: (e, cancel) => 
         {
+            if (!viewportPanelState) return;
+
             if (e.button !== 1) cancel();
 
             let mode: CameraDragModes = CameraDragModes.Orbit;
@@ -138,15 +141,15 @@ const ViewportCanvas = ({ panelId }: Props) =>
             {
                 if (!size) return;
 
-                const vpCam = viewportPanelState.uniformSources.viewportCamera;
+                const lastCam = dragRef.current.lastCamera;
                 
-                const { cameraRotation, cameraDir } = getViewportDirection(vpCam);
+                const { cameraRotation, cameraDir } = getViewportDirection(lastCam);
 
                 const factor = 1.0 / (2 * size.height); // somehow this is just about right
 
                 const windowPan = vec3.fromValues(-factor * deltaX, factor * deltaY, 0);
                 const worldPan = vec3.transformQuat(vec3.create(), windowPan, cameraRotation);
-                vec3.scale(worldPan, worldPan, vpCam.distance);
+                vec3.scale(worldPan, worldPan, lastCam.distance);
 
                 const newTarget = vec3.add(vec3.create(), dragRef.current.lastCamera.target, worldPan);
 
@@ -163,6 +166,8 @@ const ViewportCanvas = ({ panelId }: Props) =>
 
     const onWheel: React.WheelEventHandler = e =>
     {
+        if (!viewportPanelState) return;
+        
         const zoomMultiplier = 1.1;
         const zoomFactor = Math.pow(zoomMultiplier, e.deltaY / 100);
 

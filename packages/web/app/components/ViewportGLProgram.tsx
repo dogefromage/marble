@@ -7,6 +7,7 @@ import { selectViewportPanels } from '../slices/panelViewportSlice';
 import { selectSceneProgram } from '../slices/sceneProgramSlice';
 import { generateGLSL } from '../utils/codeGeneration/generateGLSL';
 import { degToRad } from '../utils/math';
+import { selectPanelState } from '../utils/panelState/selectPanelState';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
 
@@ -20,7 +21,7 @@ interface Props
 const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
 {
     const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
-    const viewportPanelState = useAppSelector(selectViewportPanels)[panelId];
+    const viewportPanelState = selectPanelState(selectViewportPanels, panelId);
     const sceneProgramState = useAppSelector(selectSceneProgram);
 
     /**
@@ -89,7 +90,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
      */
     useEffect(() =>
     {
-        if (!quadProgram) return;
+        if (!quadProgram || !viewportPanelState) return;
 
         const targetDistance = viewportPanelState.uniformSources.viewportCamera.distance;
 
@@ -111,7 +112,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         quadProgram.setUniformData('marchParameters', [ maxMarchDist, maxMarchIter, marchEpsilon ]);
 
         quadProgram.requestRender();
-    }, [ quadProgram, viewportPanelState.uniformSources, size ]);
+    }, [ quadProgram, viewportPanelState?.uniformSources, size ]);
 
     return null;
 }

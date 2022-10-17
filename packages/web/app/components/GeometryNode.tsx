@@ -1,11 +1,15 @@
 import { useMouseDrag } from '@marble/interactive';
+import { vec2 } from 'gl-matrix';
 import { useRef } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode, geometriesRemoveNode } from '../slices/geometriesSlice';
-import { GNodeZ } from '../types';
+import { selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
+import { GNodeZ, ViewProps } from '../types';
 import { Point } from '../types/utils';
+import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
+import { selectPanelState } from '../utils/panelState/selectPanelState';
 import GeometryRowRoot from './GeometryRowRoot';
 
 export const NODE_WIDTH = 160;
@@ -37,13 +41,15 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
 
 interface Props
 {
+    viewProps: ViewProps;
     geometryId: string;
     node: GNodeZ;
 }
 
-const GeometryNode = ({ geometryId, node }: Props) =>
+const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
 {
     const dispatch = useAppDispatch();
+    const panelState = selectPanelState(selectGeometryEditorPanels, viewProps.panelId);
 
     const dragRef = useRef<{
         startCursor: Point;
@@ -64,19 +70,25 @@ const GeometryNode = ({ geometryId, node }: Props) =>
         },
         move: e => 
         {
-            const sCursor = dragRef.current!.startCursor;
-            const sPos = dragRef.current!.startPosition;
+            if (!dragRef.current || !panelState) return;
 
-            const position = 
+            const screenMove = vec2.fromValues(
+                e.clientX - dragRef.current.startCursor.x,
+                e.clientY - dragRef.current.startCursor.y,
+            );
+
+            const worldMove = vectorScreenToWorld(panelState.camera, screenMove);
+
+            const newPos = 
             {
-                x: sPos.x + e.clientX - sCursor.x,
-                y: sPos.y + e.clientY - sCursor.y,
-            }
+                x: dragRef.current.startPosition.x + worldMove[0],
+                y: dragRef.current.startPosition.y + worldMove[1],
+            };
 
             dispatch(geometriesPositionNode({
                 geometryId,
                 nodeId: node.id,
-                position,
+                position: newPos,
                 undo: { 
                     actionToken: dragRef.current!.stackToken 
                 },

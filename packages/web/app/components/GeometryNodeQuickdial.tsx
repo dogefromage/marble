@@ -1,68 +1,42 @@
-import { template } from 'lodash';
-import React, { useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
-import useAutoClose from '../hooks/useAutoClose';
-import { useAppDispatch } from '../redux/hooks';
+import { useMemo, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
-import { GNodeT, ObjMap, Point } from '../types';
-
-interface DivProps
-{
-    position: Point;
-}
-
-const DialInputDiv = styled.div.attrs<DivProps>(({ position }) =>
-{
-    return {
-        style: {
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-        }
-    }
-})<DivProps>`
-    
-    position: fixed;
-    transform: translate(-50%, -50%);
-
-    padding: 0.5rem;
-
-    background-color: white;
-    border: solid 1px black;
-`;
+import { selectTemplates } from '../slices/templatesSlice';
+import { Point } from '../types';
+import Menu from './Menu';
+import MenuItem from './MenuItem';
+import MenuTitle from './MenuTitle';
 
 interface Props
 {
-    position: Point;
-    templates: ObjMap<GNodeT>;
-    onClose: () => void;
     geometryId: string;
+    position: Point;
+    onClose: () => void;
 }
 
-const GeometryNodeQuickdial = ({ position, templates, onClose, geometryId }: Props) =>
+const GeometryTemplateSearcher = ({ position, onClose, geometryId }: Props) =>
 {
     const dispatch = useAppDispatch();
+    const templates = useAppSelector(selectTemplates).templates;
+    
     const [ searchValue, setSearchValue ] = useState('');
-
-    const dialDivRef = useRef<HTMLDivElement>(null);
-
-    useAutoClose(dialDivRef, onClose);
 
     const selectedTemplates = useMemo(() =>
     {
         const all = Object.values(templates);
-
         if (!searchValue.length) return all;
-        
         return all.filter(t => t.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
-
-    }, [ template, searchValue ]);
+    }, [ templates, searchValue ]);
 
     return (
-        <DialInputDiv
+        <Menu
             position={position}
-            ref={dialDivRef}
+            onUnfocus={onClose}
         >
-            <form>
+            <MenuTitle 
+                text='Add Node'
+            />
+            {/* <form>
                 <input 
                     type='text'
                     value={searchValue}
@@ -79,10 +53,10 @@ const GeometryNodeQuickdial = ({ position, templates, onClose, geometryId }: Pro
                         setSearchValue((e.currentTarget as HTMLInputElement).value);
                     }}
                 />
-            </form>
+            </form> */}
             {
                 selectedTemplates.map(template =>
-                    <p
+                    <MenuItem
                         onClick={() =>
                         {
                             dispatch(geometriesAddNode({
@@ -94,13 +68,12 @@ const GeometryNodeQuickdial = ({ position, templates, onClose, geometryId }: Pro
                             onClose();
                         }}
                         key={template.id}
-                    >
-                        { template.rows[0].name }
-                    </p>
+                        text={template.rows[0].name}
+                    />
                 )
             }
-        </DialInputDiv>
+        </Menu>
     );
 }
 
-export default GeometryNodeQuickdial;
+export default GeometryTemplateSearcher;

@@ -1,10 +1,9 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { DefaultFunctionArgs, GeometryZ, GLSLSnippet, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, ProgramTextureVar, ProgramTextureVarMapping, RowZ, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { Counter, DefaultFunctionArgs, GeometryZ, GLSLSnippet, GNodeZ, InputOnlyRowT, JointDirection, ObjMap, OutputRowT, ProgramArithmeticOperation, ProgramCallOperation, ProgramConstant, ProgramOperation, ProgramOperationTypes, ProgramOutputOperation, ProgramTextureVar, ProgramTextureVarMapping, RowZ, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { assertRowHas } from "../geometries/assertions";
 import { generateAdjacencyLists, GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
 import rowLocationKey from "../geometries/rowLocationKey";
-import { Counter } from "../indexGenerator";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";

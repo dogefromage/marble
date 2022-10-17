@@ -1,10 +1,8 @@
-import { GeometryS, GLSLSnippet, GNodeT, SceneProgram } from ".";
-import { ViewportPanelState } from "./viewport/PanelViewport";
+import { GeometryEditorPanelState, GeometryS, GLSLSnippet, GNodeT, SceneProgram } from ".";
+import { ViewportPanelState } from "./viewport/ViewportPanel";
 import { ObjMap } from "./utils";
 
 export type GeometriesSliceState = ObjMap<GeometryS>;
-
-export type ViewportPanelsSliceState = ObjMap<ViewportPanelState>;
 
 export type SceneProgramSliceState = 
 {

@@ -5,12 +5,6 @@ import { glsl } from "./glslTag";
 
 export const TEXTURE_LOOKUP_METHOD_NAME = 'lookupTextureVars';
 
-// const LIGHT_DIR = `vec3(0.312347, 0.15617376, 0.93704257)`;
-// const LIGHT_ANGLE = `${ 1.0 * Math.PI / 180.0 }`
-// const AMBIENT_COLOR = `vec3(0.2, 0.2, 0.2)`;
-// const AMBIENT_OCCLUSION_HALFWAY = `50.0`;
-// const AMBIENT_OCCLUSION_ZERO = `5.0`;
-
 export const VERT_CODE_TEMPLATE = glsl`
 
 precision mediump float;
@@ -78,7 +72,7 @@ vec3 rayAt(Ray ray, float t)
 struct March
 {
     float t;
-    float minSineAngle;
+    float penumbra;
     int iterations;
     bool hasHit;
 };
@@ -138,7 +132,7 @@ March march(Ray ray)
 
         if (march.t > .0)
         {
-            march.minSineAngle = min(march.minSineAngle, min(1.0, d / march.t));
+            march.penumbra = min(march.penumbra, d / march.t);
         }
 
         march.t += d;
@@ -171,10 +165,9 @@ vec3 shade(Ray ray)
     if (!shadowMarch.hasHit) // in light
     {
         float dotFactor = max(0.0, dot(sunDir, n));
-        float minAngle = 1.570796 * shadowMarch.minSineAngle; // crude asin
-        float angleFactor = min(1.0, minAngle / sunGeometry.w);
+        float penumbraFactor = clamp(1.570796 * shadowMarch.penumbra / sunGeometry.w, 0., 1.);
 
-        color += sunColor * dotFactor * angleFactor;
+        color += sunColor * dotFactor * penumbraFactor;
     }
     else // in shadow
     {
@@ -214,10 +207,32 @@ vec3 render()
     return averagePixel;
 }
 
+vec3 heatmap()
+{
+    Ray ray = Ray(ray_o, normalize(ray_d));
+    March mainMarch = march(ray);
+
+    float x = float(mainMarch.iterations) / marchParameters.y;
+
+    float r = min(2. * x, 1.);
+    float b = min(2. - 2. * x, 1.);
+
+    return vec3(
+        clamp(r, 0., 1.), 
+        0,
+        clamp(b, 0., 1.)
+    );
+}
+
 void main()
 {
-    vec3 pixelColor = render();
-    gl_FragColor = vec4(pixelColor, 1);
+    // if (true)
+    // {
+    //     gl_FragColor = vec4(heatmap(), 1);
+    //     return;
+    // }
+
+    gl_FragColor = vec4(render(), 1);
 }
 `;
 

@@ -115,6 +115,15 @@ const SlidableInput = ({
         }
     };
 
+    const startWriting = () =>
+    {
+        setIsWriting(true);
+        setTextValue(value.toString());
+
+        inputRef.current?.focus();
+        setTimeout(() => inputRef.current?.select(), 0);
+    }
+
     const dragRef = useRef({
         startX: 0,
         startVal: 0,
@@ -170,15 +179,11 @@ const SlidableInput = ({
                     {...handlers}
                     onMouseUp={e =>
                     {
-                        setIsWriting(true);
-                        setTextValue(value.toString());
-
-                        inputRef.current?.focus();
-                        setTimeout(() => inputRef.current?.select(), 0);
-
+                        startWriting();
                         handlers.onMouseUp(e);
                     }}
-                    onBlur={() => setIsWriting(false)}
+                    onFocus={startWriting}
+                    onBlur={submitText}
                     autoComplete='off'
                     autoCorrect='off'
                     autoSave='off'

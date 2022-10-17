@@ -122,7 +122,7 @@ export class ViewportQuadProgram
         Object.entries(this.uniforms).forEach(([ key, uniform ]) =>
         {
             const location = gl.getUniformLocation(program, key);
-            if (location == null) throw new Error(`Uniform not found in program: ${key}`);
+            if (location == null) console.warn(`Uniform not found in program: ${key}`);
 
             uniform.location = location;
         });

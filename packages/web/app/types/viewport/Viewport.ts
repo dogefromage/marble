@@ -17,5 +17,5 @@ export interface ProgramUniform
 {
     type: UniformTypes;
     data: number[];
-    location?: WebGLUniformLocation;
+    location?: WebGLUniformLocation | null;
 }

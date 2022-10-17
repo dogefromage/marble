@@ -1,4 +1,4 @@
 
 
-export * from './PanelViewport';
+export * from './ViewportPanel';
 export * from './Viewport';

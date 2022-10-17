@@ -2,8 +2,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { vec2, vec3 } from "gl-matrix";
 import panelStateEnhancer from "../enhancers/panelStateEnhancer";
 import { RootState } from "../redux/store";
-import { CreatePanelStateCallback, ViewportCamera, ViewportPanelsSliceState, ViewportPanelState, ViewTypes } from "../types";
+import { CreatePanelStateCallback, ObjMap, ViewportCamera, ViewportPanelState, ViewTypes } from "../types";
 import { clamp, degToRad } from "../utils/math";
+import getPanelState from "../utils/panelState/getPanelState";
 
 export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => 
 {
@@ -15,23 +16,14 @@ export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelSta
                 distance: 15,
                 fov: degToRad(30),
             },
-            maxIterations: 500,
+            maxIterations: 200,
         }
     };
 }
 
-function getPanelState(s: ViewportPanelsSliceState, a: PayloadAction<{ panelId: string }>)
-{
-    const ps = s[a.payload.panelId];
-    if (!ps) return console.error(`Panel state not found panelId=${a.payload.panelId}`);
-    return ps;
-}
-
-const initialState: ViewportPanelsSliceState = {};
-
 export const viewportPanelsSlice = createSlice({
-    name: 'viewportPanel',
-    initialState,
+    name: 'viewportPanels',
+    initialState: {} as ObjMap<ViewportPanelState>,
     reducers: {
         editCamera: (s, a: PayloadAction<{ panelId: string, partialCamera: Partial<ViewportCamera> }>) =>
         {
