@@ -1,8 +1,6 @@
 import { ObjMap } from "./utils";
 
-export type PanelState = any;
+export type PanelState = {};
 
-export type PanelStateEnhancerSliceState = ObjMap<PanelState>;
-
-export type CreatePanelStateCallback =
-    (panelId: string) => PanelState;
+export type CreatePanelStateCallback<T extends PanelState = PanelState> = 
+    (panelId: string) => T;

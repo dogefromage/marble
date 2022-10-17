@@ -4,7 +4,7 @@ import { glsl } from "../../utils/codeGeneration/glslTag";
 const code = glsl`
 vec3 inc_transform(vec3 x, vec3 translate)
 {
-    return x + translate;
+    return x - translate;
 }
 `;
 

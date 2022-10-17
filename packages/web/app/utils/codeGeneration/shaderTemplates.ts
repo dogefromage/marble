@@ -5,15 +5,11 @@ import { glsl } from "./glslTag";
 
 export const TEXTURE_LOOKUP_METHOD_NAME = 'lookupTextureVars';
 
-const LIGHT_DIR = `vec3(0.312347, 0.15617376, 0.93704257)`;
-const LIGHT_ANGLE = `${ 1.0 * Math.PI / 180.0 }`
-const AMBIENT_COLOR = `vec3(0.2, 0.2, 0.2)`;
-const AMBIENT_OCCLUSION_HALFWAY = `50.0`;
-const AMBIENT_OCCLUSION_ZERO = `5.0`;
-
-const MARCH_MAX_DISTANCE = `1000.0`;
-const MARCH_MAX_ITERATIONS = 1000;
-const MARCH_EPSILON = 0.00001;
+// const LIGHT_DIR = `vec3(0.312347, 0.15617376, 0.93704257)`;
+// const LIGHT_ANGLE = `${ 1.0 * Math.PI / 180.0 }`
+// const AMBIENT_COLOR = `vec3(0.2, 0.2, 0.2)`;
+// const AMBIENT_OCCLUSION_HALFWAY = `50.0`;
+// const AMBIENT_OCCLUSION_ZERO = `5.0`;
 
 export const VERT_CODE_TEMPLATE = glsl`
 
@@ -55,13 +51,19 @@ void main()
 
 export const FRAG_CODE_TEMPLATE = glsl`
 
-precision mediump float;
+precision highp float;
 
 uniform sampler2D varSampler;
 varying vec3 ray_o;
 varying vec3 ray_d;
 varying vec3 ray_dir_pan_x;
 varying vec3 ray_dir_pan_y;
+
+uniform vec3 marchParameters;  // vec3(maxDistance, maxIterations, epsilon)
+uniform vec3 ambientColor;
+uniform vec2 ambientOcclusion; // vec2(logisticHalfwayPoint, logisticZero)
+uniform vec4 sunGeometry; // vec4(lightDirection.xyz, lightAngle)
+uniform vec3 sunColor;
 
 struct Ray
 {
@@ -103,8 +105,8 @@ float sdf(vec3 p)
 vec3 calcNormal(vec3 p)
 {
     // https://iquilezles.org/articles/normalsSDF/
-    const float h = 10.0 * ${MARCH_EPSILON};
-    const vec2 k = vec2(1,-1);
+    float h = 10.0 * marchParameters.z;
+    vec2 k = vec2(1,-1);
     return normalize( k.xyy * sdf( p + k.xyy*h ) + 
                       k.yyx * sdf( p + k.yyx*h ) + 
                       k.yxy * sdf( p + k.yxy*h ) + 
@@ -115,14 +117,20 @@ March march(Ray ray)
 {
     March march = March(.0, 1.0, 0, false);
 
-    for (int i = 0; i < ${MARCH_MAX_ITERATIONS}; i++)
+    const int ITERATIONS_HARD_MAX = 10000;
+
+    for (int i = 0; i < ITERATIONS_HARD_MAX; i++)
     {
+        if (i >= int(marchParameters.y)) break; // max iterations parameter
+
         march.iterations = i + 1;
 
         vec3 p = rayAt(ray, march.t);
         float d = sdf(p);
 
-        if (d < ${MARCH_EPSILON})
+        float minAllowedDist = marchParameters.z;
+
+        if (d < minAllowedDist)
         {
             march.hasHit = true;
             return march;
@@ -135,7 +143,7 @@ March march(Ray ray)
 
         march.t += d;
 
-        if (march.t > ${MARCH_MAX_DISTANCE}) 
+        if (march.t > marchParameters.x) 
         {
             break;
         }
@@ -152,25 +160,26 @@ vec3 shade(Ray ray)
 
     vec3 p = rayAt(ray, mainMarch.t);
     vec3 n = calcNormal(p);
-    vec3 pSafe = p + 2.0 * ${MARCH_EPSILON} * n;
+    vec3 pSafe = p + 2.0 * marchParameters.z * n;
 
-    vec3 color = ${AMBIENT_COLOR};
+    vec3 color = ambientColor;
 
-    March shadowMarch = march(Ray(pSafe, ${LIGHT_DIR}));
+    vec3 sunDir = sunGeometry.xyz;
+
+    March shadowMarch = march(Ray(pSafe, sunDir));
 
     if (!shadowMarch.hasHit) // in light
     {
-        float dotFactor = max(0.0, dot(${LIGHT_DIR}, n));
-        float minAngle = asin(shadowMarch.minSineAngle);
-        float angleFactor = sqrt(min(1.0, minAngle / ${LIGHT_ANGLE}));
+        float dotFactor = max(0.0, dot(sunDir, n));
+        float minAngle = 1.570796 * shadowMarch.minSineAngle; // crude asin
+        float angleFactor = min(1.0, minAngle / sunGeometry.w);
 
-        color += vec3(1, 1, 1) * dotFactor * angleFactor;
+        color += sunColor * dotFactor * angleFactor;
     }
     else // in shadow
     {
-        float occlusionLogisticExponent = ${AMBIENT_OCCLUSION_ZERO} * (float(mainMarch.iterations) / ${AMBIENT_OCCLUSION_HALFWAY} - 1.0);
+        float occlusionLogisticExponent = ambientOcclusion.y * (float(mainMarch.iterations) / ambientOcclusion.x - 1.0);
         float occlusionFactor = 1.0 / (1.0 + exp(occlusionLogisticExponent)); // logistic function
-    
         color *= occlusionFactor;
     }
 

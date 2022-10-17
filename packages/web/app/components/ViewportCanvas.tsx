@@ -1,6 +1,13 @@
+import { useMouseDrag } from '@marble/interactive';
 import useResizeObserver from '@react-hook/resize-observer';
+import { mat4, vec2, vec3 } from 'gl-matrix';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { selectViewportPanels, viewportPanelEditCamera } from '../slices/panelViewportSlice';
+import { ViewportCamera } from '../types';
+import { clamp } from '../utils/math';
+import { createCameraWorldToScreen, getViewportDirection, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import ViewportGLProgram from './ViewportGLProgram';
 
 const CanvasWrapperDiv = styled.div`
@@ -26,13 +33,19 @@ interface Props
 
 const ViewportCanvas = ({ panelId }: Props) =>
 {
+    const dispatch = useAppDispatch();
+    const viewportPanelState = useAppSelector(selectViewportPanels)[panelId];
+
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
+    
     const [ gl, setGl  ] = useState<WebGL2RenderingContext>();
-
-    const [ error, setError ] = useState<string>()
     const [ size, setSize ] = useState<DOMRectReadOnly>();
+    const [ error, setError ] = useState<string>();
+
+    /**
+     * CANVAS 
+     */
 
     useEffect(() =>
     {
@@ -47,10 +60,8 @@ const ViewportCanvas = ({ panelId }: Props) =>
         const _gl = canvasRef.current.getContext('webgl2');
         if (!_gl)
             return setError('WebGL2 is not supported by your browser :(');
-
-        _gl.getExtension('OES_texture_float');
-        
-        
+        // if (!_gl.getExtension('OES_texture_float'))
+        //     return setError('OES_texture_float is not supported by your browser :(');
         setGl(_gl);
     }, []);
     
@@ -65,11 +76,112 @@ const ViewportCanvas = ({ panelId }: Props) =>
 
         if (!gl) return;
         gl.viewport(0, 0, size.width, size.height);
-        
     }, [ size ]);
 
+    /**
+     * CAMERA
+     */
+    enum CameraDragModes
+    {
+        Orbit,
+        Pan,
+    }
+
+    const dragRef = useRef<{
+        dragStart: { x: number, y: number };
+        lastCamera: ViewportCamera;
+        mode: CameraDragModes;
+    }>()
+
+    const { catcher: divCatcher, handlers: divHandlers } = useMouseDrag({
+        start: (e, cancel) => 
+        {
+            if (e.button !== 1) cancel();
+
+            let mode: CameraDragModes = CameraDragModes.Orbit;
+            if (e.shiftKey) mode = CameraDragModes.Pan;
+            
+            dragRef.current = 
+            { 
+                dragStart: { x: e.clientX, y: e.clientY },
+                lastCamera: viewportPanelState.uniformSources.viewportCamera,
+                mode,
+            }
+        },
+        move: e =>
+        {
+            if (!dragRef.current) return;
+    
+            const deltaX = e.clientX - dragRef.current.dragStart.x;
+            const deltaY = e.clientY - dragRef.current.dragStart.y;
+
+            if (dragRef.current.mode === CameraDragModes.Orbit)
+            {
+                const verticalSensitivity = -0.8;
+                const horizontalSensitivity = -0.8;
+    
+                const deltaRot = vec2.fromValues(
+                    verticalSensitivity * deltaY,
+                    horizontalSensitivity * deltaX,
+                );
+    
+                const rotation = vec2.add(vec2.create(), dragRef.current.lastCamera.rotation, deltaRot);
+    
+                dispatch(viewportPanelEditCamera({
+                    panelId, 
+                    partialCamera: {
+                        rotation,
+                    }
+                }))
+            }
+            else
+            {
+                if (!size) return;
+
+                const vpCam = viewportPanelState.uniformSources.viewportCamera;
+                
+                const { cameraRotation, cameraDir } = getViewportDirection(vpCam);
+
+                const factor = 1.0 / (2 * size.height); // somehow this is just about right
+
+                const windowPan = vec3.fromValues(-factor * deltaX, factor * deltaY, 0);
+                const worldPan = vec3.transformQuat(vec3.create(), windowPan, cameraRotation);
+                vec3.scale(worldPan, worldPan, vpCam.distance);
+
+                const newTarget = vec3.add(vec3.create(), dragRef.current.lastCamera.target, worldPan);
+
+                dispatch(viewportPanelEditCamera({
+                    panelId,
+                    partialCamera: {
+                        target: newTarget,
+                    }
+                }))
+            }
+
+        },
+    });
+
+    const onWheel: React.WheelEventHandler = e =>
+    {
+        const zoomMultiplier = 1.1;
+        const zoomFactor = Math.pow(zoomMultiplier, e.deltaY / 100);
+
+        const lastDist = viewportPanelState.uniformSources.viewportCamera.distance;
+
+        dispatch(viewportPanelEditCamera({
+            panelId,
+            partialCamera: {
+                distance: lastDist * zoomFactor,
+            }
+        }))
+    }
+
     return (
-        <CanvasWrapperDiv ref={wrapperRef}>
+        <CanvasWrapperDiv 
+            ref={wrapperRef}
+            {...divHandlers}
+            onWheel={onWheel}
+        >
             <canvas
                 ref={canvasRef}
             />
@@ -82,8 +194,9 @@ const ViewportCanvas = ({ panelId }: Props) =>
                 />
             }
             {
-                error && <h1>error</h1>
+                error && <h1>{ error }</h1>
             }
+            { divCatcher }
         </CanvasWrapperDiv>
     );
 }

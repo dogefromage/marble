@@ -1,6 +1,7 @@
 import { AnyAction, PayloadAction, Reducer } from "@reduxjs/toolkit";
-import produce from "immer";
-import { PanelState, PanelStateEnhancerSliceState } from "../types/panelState";
+import produce, { Draft } from "immer";
+import { ObjMap } from "../types";
+import { PanelState } from "../types/panelState";
 import { ViewTypes } from "../types/viewTypes";
 
 enum PanelStateActionTypes
@@ -26,9 +27,9 @@ export const panelStateRemove = (payload: RemovePayload) => ({
     payload,
 });
 
-export default function panelStateEnhancer<A extends AnyAction>
-    (reducer: Reducer<PanelStateEnhancerSliceState, A>, viewType: ViewTypes): 
-        Reducer<PanelStateEnhancerSliceState, A>
+export default function panelStateEnhancer<S extends PanelState, A extends AnyAction>
+    (reducer: Reducer<ObjMap<S>, A>, viewType: ViewTypes): 
+        Reducer<ObjMap<S>, A>
 {
     return (state = {}, action) =>
     {
@@ -40,7 +41,7 @@ export default function panelStateEnhancer<A extends AnyAction>
             {
                 return produce(state, s =>
                 {
-                    s[a.payload.panelId] = a.payload.panelState;
+                    s[a.payload.panelId] = a.payload.panelState as Draft<S>;
                 })
             }
         }

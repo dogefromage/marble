@@ -1,4 +1,5 @@
-import { quat, vec3 } from "gl-matrix";
+import { quat, vec2, vec3 } from "gl-matrix";
+import { PanelState } from "../panelState";
 
 export interface Camera
 {
@@ -7,8 +8,19 @@ export interface Camera
     fov: number;
 }
 
-export interface ViewportPanelState
+export interface ViewportCamera
 {
-    camera: Camera;
+    target: vec3;
+    rotation: vec2;
+    distance: number;
+    fov: number;
+}
+
+export interface ViewportPanelState extends PanelState
+{
+    uniformSources: {
+        viewportCamera: ViewportCamera;
+        maxIterations: number;
+    }
 }
 

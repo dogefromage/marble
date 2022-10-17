@@ -9,7 +9,6 @@ export type ViewportPanelsSliceState = ObjMap<ViewportPanelState>;
 export type SceneProgramSliceState = 
 {
     program: SceneProgram | null;
-    // textureVarLookupData: Float32Array;
     textureVarLookupData: number[];
 }
 
