@@ -18,7 +18,6 @@ const TitleWrapper = styled(GeometryRowDiv)<WrapperProps>`
 
     /* background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAAAHElEQVQYV2NUVFT8f//+fUYGBgYGMAEDcA5IBQCKJQVmn76DhAAAAABJRU5ErkJggg=="); */
     
-
     border-radius: 3px 3px 0 0;
 
     margin: 0;
