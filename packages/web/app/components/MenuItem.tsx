@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const MenuItemDiv = styled.div`
+export const MenuItemDiv = styled.div`
   
     width: 100%;
-    height: 35px;
+    height: 30px;
     margin: 3px 0;
     
     border-radius: 3px;

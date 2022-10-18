@@ -7,7 +7,7 @@ import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, selec
 import { DEFAULT_PLANAR_CAMERA, PlanarCamera, Point, ViewProps } from '../types';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
-import { selectPanelState } from '../utils/panelState/selectPanelState';
+import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryEditorContent from './GeometryEditorContent';
 
 interface DivProps
@@ -72,7 +72,7 @@ interface Props
 const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const panelState = selectPanelState(selectGeometryEditorPanels, viewProps.panelId);
+    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
 

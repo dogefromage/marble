@@ -70,9 +70,9 @@ const LinkComponent = ({ geometryId, edge, fromNode, toNode }: Props) =>
 {
     const dispatch = useAppDispatch();
 
-    const heightA = countHeightUnits(fromNode, edge.fromRowIndex);
+    const heightA = countHeightUnits(fromNode.rows, edge.fromRowIndex);
     const A = getJointPosition(fromNode.position, heightA, 'output');
-    const heightB = countHeightUnits(toNode, edge.toRowIndex);
+    const heightB = countHeightUnits(toNode.rows, edge.toRowIndex);
     const B = getJointPosition(toNode.position, heightB, 'input');
 
     const joints = [

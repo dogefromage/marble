@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectViewportPanels, viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { ViewportCamera } from '../types';
 import { clamp } from '../utils/math';
-import { selectPanelState } from '../utils/panelState/selectPanelState';
+import { usePanelState } from '../utils/panelState/usePanelState';
 import { createCameraWorldToScreen, getViewportDirection, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import ViewportGLProgram from './ViewportGLProgram';
 
@@ -35,7 +35,7 @@ interface Props
 const ViewportCanvas = ({ panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const viewportPanelState = selectPanelState(selectViewportPanels, panelId);
+    const viewportPanelState = usePanelState(selectViewportPanels, panelId);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);

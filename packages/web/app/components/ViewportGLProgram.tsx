@@ -7,7 +7,7 @@ import { selectViewportPanels } from '../slices/panelViewportSlice';
 import { selectSceneProgram } from '../slices/sceneProgramSlice';
 import { generateGLSL } from '../utils/codeGeneration/generateGLSL';
 import { degToRad } from '../utils/math';
-import { selectPanelState } from '../utils/panelState/selectPanelState';
+import { usePanelState } from '../utils/panelState/usePanelState';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
 
@@ -21,7 +21,7 @@ interface Props
 const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
 {
     const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
-    const viewportPanelState = selectPanelState(selectViewportPanels, panelId);
+    const viewportPanelState = usePanelState(selectViewportPanels, panelId);
     const sceneProgramState = useAppSelector(selectSceneProgram);
 
     /**

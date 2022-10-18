@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { vec2 } from "gl-matrix";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { createGeometryEditorPanelState } from "../slices/panelGeometryEditorSlice";
+import { createGeometryEditorPanelState, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
 import { selectTemplates } from "../slices/templatesSlice";
 import { GeometryS, Point, ViewTypes } from "../types";
 import { ViewProps } from "../types/View";
+import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { useBindPanelState } from "../utils/panelState/useBindPanelState";
+import { usePanelState } from "../utils/panelState/usePanelState";
 import GeometryEditorTransform from "./GeometryEditorTransform";
-import GeometryTemplateSearcher from "./GeometryNodeQuickdial";
+import GeometryTemplateSearcher from "./GeometryTemplateSearcher";
 
 const EditorWrapper = styled.div`
 
@@ -32,9 +35,35 @@ const GeometryEditor = (viewProps: ViewProps) =>
     const dispatch = useAppDispatch();
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
 
-    const [ quickDial, setQuickDial ] = useState<{
-        position: Point;
+    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
+
+    const [ showSearcher, setShowSearcher ] = useState<{
+        pagePos: Point;
+        worldPos: Point;
     }>();
+
+    const openSearcher = (e: React.MouseEvent) =>
+    {
+        if (!panelState) return;
+
+        const pagePos = {
+            x: e.pageX,
+            y: e.pageY,
+        };
+
+        const boundingRect = e.currentTarget.getBoundingClientRect();
+        const offsetPos = vec2.fromValues(
+            e.clientX - boundingRect.left, 
+            e.clientY - boundingRect.top
+        );
+        
+        const worldPos = pointScreenToWorld(panelState?.camera, offsetPos);
+
+        setShowSearcher({
+            pagePos,
+            worldPos: { x: worldPos[0], y: worldPos[1] },
+        });
+    }
 
     useEffect(() =>
     {
@@ -49,16 +78,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
 
     return (
         <EditorWrapper
-            onDoubleClick={e =>
-            {
-                const position = {
-                    x: e.pageX,
-                    y: e.pageY,
-                };
-                setQuickDial({
-                    position,
-                })
-            }}
+            onDoubleClick={openSearcher}
         >
             {
                 geometryId && 
@@ -68,12 +88,12 @@ const GeometryEditor = (viewProps: ViewProps) =>
                 />
             }
         {
-            geometryId && quickDial && 
+            geometryId && showSearcher && 
             <GeometryTemplateSearcher 
                 geometryId={geometryId}
-                position={quickDial.position}
-                templates={templates}
-                onClose={() => setQuickDial(undefined)}
+                menuPosition={showSearcher.pagePos}
+                nodeSpawnPosition={showSearcher.worldPos}
+                onClose={() => setShowSearcher(undefined)}
             />
         }
         </EditorWrapper>

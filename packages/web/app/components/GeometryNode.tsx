@@ -9,7 +9,7 @@ import { selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import { GNodeZ, ViewProps } from '../types';
 import { Point } from '../types/utils';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
-import { selectPanelState } from '../utils/panelState/selectPanelState';
+import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryRowRoot from './GeometryRowRoot';
 
 export const NODE_WIDTH = 160;
@@ -49,7 +49,7 @@ interface Props
 const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const panelState = selectPanelState(selectGeometryEditorPanels, viewProps.panelId);
+    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
 
     const dragRef = useRef<{
         startCursor: Point;
