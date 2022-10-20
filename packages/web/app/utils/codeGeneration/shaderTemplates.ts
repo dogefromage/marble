@@ -146,6 +146,32 @@ March march(Ray ray)
     return march;
 }
 
+float aoMarch(Ray ray)
+{
+    const int aoIter = 5;
+    float ao = 0.0;
+    
+    float t = 0.04;
+
+    float factor = 0.5;
+
+    for (int i = 0; i < aoIter; i++)
+    {
+        float d = sdf(rayAt(ray, t));
+        if (d <= 0.) break;
+
+        ao += d / t * factor;
+        factor *= 0.5;
+
+        t = t * 2.;
+    }
+
+    float aoFactor = clamp(ao * 1.05, 0., 1.);
+
+    return 1.0 - (1.0 - aoFactor) * .4;
+    // return clamp(ao / float(aoIter), 0., 1.);
+}
+
 vec3 shade(Ray ray)
 {
     March mainMarch = march(ray);
@@ -156,30 +182,32 @@ vec3 shade(Ray ray)
     vec3 n = calcNormal(p);
     vec3 pSafe = p + 2.0 * marchParameters.z * n;
 
-    vec3 color = ambientColor;
-
     vec3 sunDir = sunGeometry.xyz;
-
     March shadowMarch = march(Ray(pSafe, sunDir));
 
+    float ao = aoMarch(Ray(pSafe, n));
+    vec3 lin = ao * ambientColor;
+    
     if (!shadowMarch.hasHit) // in light
     {
         float dotFactor = max(0.0, dot(sunDir, n));
         float penumbraFactor = clamp(1.570796 * shadowMarch.penumbra / sunGeometry.w, 0., 1.);
 
-        color += sunColor * dotFactor * penumbraFactor;
+        lin += sunColor * dotFactor * penumbraFactor;
     }
     else // in shadow
     {
-        float occlusionLogisticExponent = ambientOcclusion.y * (float(mainMarch.iterations) / ambientOcclusion.x - 1.0);
-        float occlusionFactor = 1.0 / (1.0 + exp(occlusionLogisticExponent)); // logistic function
-        color *= occlusionFactor;
+        // float occlusionLogisticExponent = ambientOcclusion.y * (float(mainMarch.iterations) / ambientOcclusion.x - 1.0);
+        // float occlusionFactor = 1.0 / (1.0 + exp(occlusionLogisticExponent)); // logistic function
+        // lin *= occlusionFactor;
     }
 
-    return color;
+    vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
+
+    return corrected;
 }
 
-const int AA = 5;
+const int AA = 3;
 
 vec3 render()
 {

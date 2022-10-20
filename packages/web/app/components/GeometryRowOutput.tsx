@@ -6,7 +6,7 @@ import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 
-const GeometryRowOutput = ({ geometryId, nodeId, row, connected }: RowProps<OutputRowT>) =>
+const GeometryRowOutput = ({ geometryId, nodeId, row, connections }: RowProps<OutputRowT>) =>
 {
     return (
         <GeometryRowDiv
@@ -21,7 +21,7 @@ const GeometryRowOutput = ({ geometryId, nodeId, row, connected }: RowProps<Outp
                 geometryId={geometryId}
                 location={{ nodeId, rowId: row.id }}
                 direction='output'
-                connected={connected}
+                connected={connections > 0}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

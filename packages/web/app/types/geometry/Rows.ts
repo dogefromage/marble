@@ -1,45 +1,45 @@
-
-/**
- * JOINT
- */
-
 import { DataTypes } from "../sceneProgram";
 
-export const JOINT_DND_TAG = 'dnd.joint';
-
-export type RowValuePair = [ number, number ];
-export type RowValueTriple = [ number, number, number ];
+/**
+ * Values
+ */
 
 export interface RowValueMap 
 {
     [DataTypes.Float]: number;
     [DataTypes.Unknown]: number;
-    [DataTypes.Vec2]: RowValuePair;
-    [DataTypes.Vec3]: RowValueTriple;
-}
-
-export interface JointDndTransfer extends JointLocation
-{
-    direction: JointDirection;
-    dataType: DataTypes;
+    [DataTypes.Vec2]: [ number, number ];
+    [DataTypes.Vec3]: [ number, number, number ];
 }
 
 /**
- * ROWS
+ * super interfaces
+ */
+
+export interface AnyRowT
+{
+    id: string;
+    name: string;
+}
+
+export interface AnyInputCompatibleRowT<D extends DataTypes = DataTypes> extends AnyRowT 
+{
+    dataType: D;
+    value: RowValueMap[D];
+    alternativeArg?: string;
+}
+
+/**
+ * Diverse rows
  */
 
 export enum RowTypes
 {
     Name,
     InputOnly,
+    InputStacked,
     Output,
     Field,
-}
-
-export interface AnyRowT
-{
-    id: string;
-    name: string;
 }
 
 export interface NameRowT extends AnyRowT
@@ -48,21 +48,19 @@ export interface NameRowT extends AnyRowT
     color: string;
 }
 
-export interface AnyInputRowT<D extends DataTypes = DataTypes> extends AnyRowT 
-{
-    dataType: D;
-    value: RowValueMap[D];
-    alternativeArg?: string;
-}
-
-export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends AnyInputRowT<D>
+export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
 {
     type: RowTypes.InputOnly;
 }
 
+export interface StackedInputRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
+{
+    type: RowTypes.InputStacked;
+}
+
 export type AnyInputOnlyRowT = { [T in keyof typeof DataTypes]: InputOnlyRowT<typeof DataTypes[T]> }[keyof typeof DataTypes]
 
-export interface FieldRowT<D extends DataTypes = DataTypes> extends AnyInputRowT<D>
+export interface FieldRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
 {
     type: RowTypes.Field;
 }
@@ -73,9 +71,14 @@ export interface OutputRowT<D extends DataTypes = DataTypes> extends AnyRowT
     dataType: D;
 }
 
+/**
+ * Generic template types
+ */
+
 export type GenericRowT<D extends DataTypes = DataTypes> =
     | NameRowT
     | InputOnlyRowT<D>
+    | StackedInputRowT<D>
     | OutputRowT<D>
     | FieldRowT<D>
 
@@ -85,13 +88,9 @@ type GenericRowTMapped =
 }
 export type RowT = GenericRowTMapped[keyof typeof DataTypes];
 
-export type JointDirection = 'input' | 'output';
-
-export interface JointLocation
-{
-    nodeId: string;
-    rowId: string;
-}
+/**
+ * State and Zipped
+ */
 
 export type RowS<T extends RowT | GenericRowT = GenericRowT> = Partial<T> &
 {
@@ -101,10 +100,34 @@ export type RowS<T extends RowT | GenericRowT = GenericRowT> = Partial<T> &
 
 export type RowZ<T extends RowT | GenericRowT = GenericRowT> = RowS<T> & T;
 
-
+/**
+ * Metadata
+ */
 
 export interface RowMetadata
 {
     heightUnits: number;
     dynamicValue?: boolean;
+}
+
+/**
+ * Locating
+ */
+
+export type JointDirection = 'input' | 'output';
+export interface JointLocation
+{
+    nodeId: string;
+    rowId: string;
+}
+
+/**
+ * Drag and drop
+ */
+
+export const JOINT_DND_TAG = 'dnd.joint';
+export interface JointDndTransfer extends JointLocation
+{
+    direction: JointDirection;
+    dataType: DataTypes;
 }

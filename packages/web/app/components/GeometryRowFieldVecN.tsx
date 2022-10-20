@@ -1,23 +1,19 @@
-import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
+import { IndentRowDiv } from '../styled/IndentRowDiv';
 import { DataTypes, FieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { getRowMetadataField } from './GeometryRowField';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
 
-const IndentFieldRowDiv = styled.div`
-    padding-left: 0.5rem;
-`;
-
 export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z' ];
 
 type Props = RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>;
 
-const GeometryRowFieldVecN = ({ geometryId, nodeId, row, connected }: Props) =>
+const GeometryRowFieldVecN = ({ geometryId, nodeId, row, connections }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -48,9 +44,9 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row, connected }: Props) =>
                 { row.name }
             </GeometryRowNameP>
             {
-                !connected &&
+                !connections &&
                 row.value.map((value, index) =>
-                    <IndentFieldRowDiv
+                    <IndentRowDiv
                         key={index}
                     >
                         <SlidableInput
@@ -58,14 +54,14 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row, connected }: Props) =>
                             onChange={updateValue(index)}
                             name={FIELD_ROW_LIST_NAMES[ index ]} 
                         />
-                    </IndentFieldRowDiv>
+                    </IndentRowDiv>
                 )
             }
             <GeometryJoint 
                 geometryId={ geometryId }
                 location={{ nodeId, rowId: row.id }}
                 direction='input'
-                connected={connected}
+                connected={connections > 0}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

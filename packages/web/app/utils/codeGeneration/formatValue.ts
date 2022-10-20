@@ -1,4 +1,4 @@
-import { DataTypes, TEXTURE_VAR_DATATYPE_SIZE, RowValueMap, RowValuePair } from "../../types";
+import { DataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "./shaderTemplates";
 
 

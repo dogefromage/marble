@@ -1,4 +1,4 @@
-import { GenericRowT, RowT, RowZ } from "../../types";
+import { GenericRowT, RowZ } from "../../types";
 
 // chad function
 

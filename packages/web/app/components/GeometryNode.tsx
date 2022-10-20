@@ -119,8 +119,8 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
                     nodeId={node.id}
                     key={row.id}
                     row={row}
-                    connected={
-                        row.displayConnected || false
+                    connections={
+                        row.displayConnected ? 1 : 0
                     }
                 />
             )

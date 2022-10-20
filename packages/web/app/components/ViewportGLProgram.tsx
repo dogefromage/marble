@@ -45,7 +45,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
             },
             'ambientColor': {
                 type: UniformTypes.Uniform3fv,
-                data: [ 0.2, 0.2, 0.2 ],
+                data: [ 0.07, 0.07, 0.1 ],
             },
             'ambientOcclusion': {
                 type: UniformTypes.Uniform2fv,
@@ -53,7 +53,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
             },
             'sunColor': {
                 type: UniformTypes.Uniform3fv,
-                data: [ 1, 1, 1 ],
+                data: [ 1, 0.95, 0.8 ],
             },
             'sunGeometry': {
                 type: UniformTypes.Uniform4fv,

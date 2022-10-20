@@ -9,7 +9,7 @@ import SlidableInput from './SlideableInput';
 
 type Props = RowProps<FieldRowT<DataTypes.Float>>;
 
-const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: Props) =>
+const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connections }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -18,7 +18,7 @@ const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: Props) =>
             heightUnits={1}
         >
             {
-                connected ? (
+                connections ? (
                     <GeometryRowNameP
                         align='left'
                     >
@@ -42,7 +42,7 @@ const GeometryRowFieldFloat = ({ geometryId, nodeId, row, connected }: Props) =>
                 geometryId={ geometryId }
                 location={{ nodeId, rowId: row.id }}
                 direction='input'
-                connected={connected}
+                connected={connections > 0}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>
