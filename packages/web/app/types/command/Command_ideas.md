@@ -16,13 +16,48 @@ useAddGlobalCommand({
 })
 
 
-// Local command:
+// // Local command:
+// useAddLocalCommand({
+//     name: "Delete Nodes",
+//     description: "Deletes",
+//     actionCreator: () => {
+//         const currentSelectedNodes = [ n1, n2 ... nm ];
+//         return geometriesRemoveNodes(currentSelectedNodes);
+//     },
+// })
+
+
+// alternative:
 useAddLocalCommand({
     name: "Delete Nodes",
     description: "Deletes",
-    actionCreator: () => {
-        const currentSelectedNodes = [ n1, n2 ... nm ];
-        return geometriesRemoveNodes(currentSelectedNodes);
+    scope: CommandScopes.GeometryEditor,
+    actionCreator: ({ active, selection, panelId, etc... }: GeometriesCommandParams) => {
+        return geometriesRemoveNodes(selection);
+    },
+})
+
+// example action
+
+
+useAddLocalCommand({
+    name: "Align vertical",
+    actionCreator: ({ selection }) => {
+        // ...
+    },
+})
+
+useAddLocalCommand({
+    name: "Move to new geometry",
+    actionCreator: ({ selection }) => {
+        // ...
+    },
+})
+
+useAddLocalCommand({
+    name: "Reset values",
+    actionCreator: ({ active }) => {
+        // ...
     },
 })
 

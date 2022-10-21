@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { createViewportPanelState } from '../slices/panelViewportSlice';
 import { ViewTypes } from '../types';
-import { ViewProps } from '../types/View';
+import { ViewProps } from '../types/view/ViewProps';
 import { useBindPanelState } from '../utils/panelState/useBindPanelState';
 import ViewportCanvas from './ViewportCanvas';
 

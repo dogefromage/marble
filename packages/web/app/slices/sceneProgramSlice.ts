@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { LOOKUP_TEXTURE_SIZE } from "../classes/ViewportQuadProgram";
 import { RootState } from "../redux/store";
 import { SceneProgram } from "../types";
-import { SceneProgramSliceState } from "../types/SliceStates";
+import { SceneProgramSliceState } from "../types/sliceStates";
 
 const initialState: SceneProgramSliceState = 
 {

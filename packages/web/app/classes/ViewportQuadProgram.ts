@@ -1,4 +1,4 @@
-import { ObjMap } from "../types/utils";
+import { ObjMap } from "../types/UtilityTypes";
 import { ProgramUniform } from "../types/viewport";
 import checkShaderError from "../utils/viewport/checkShaderError";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";

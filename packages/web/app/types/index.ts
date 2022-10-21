@@ -1,10 +1,10 @@
-
-
-export * from './geometry';
+export * from './geometries';
 export * from './viewport';
-export * from './utils';
-export * from './View';
+export * from './UtilityTypes';
+export * from './view/ViewProps';
 export * from './sceneProgram';
-export * from './panelState';
+export * from './PanelState';
 export * from './viewTypes';
-export * from './SliceStates';
+export * from './sliceStates';
+export * from './command';
+export * from './view';

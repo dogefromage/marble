@@ -1,4 +1,3 @@
-import { ObjMap } from "./utils";
 
 export type PanelState = {};
 

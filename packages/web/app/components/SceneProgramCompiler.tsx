@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import { LOOKUP_TEXTURE_SIZE } from '../classes/ViewportQuadProgram';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';

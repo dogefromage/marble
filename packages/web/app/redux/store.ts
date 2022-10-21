@@ -6,7 +6,10 @@ function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
 {
     const middleware: Middleware[] = getDefaultMiddleWare({
         serializableCheck: {
-            ignoredPaths: [ 'sceneProgram.textureVarLookupData' ],
+            ignoredPaths: [ 
+                'sceneProgram.textureVarLookupData',
+                'commands.commandsBinderIdentities',
+            ],
         }
     });
     

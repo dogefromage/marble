@@ -1,5 +1,5 @@
 import { GeometryS, GeometryZ, GNodeT, GNodeZ } from "../../types";
-import { ObjMap } from "../../types/utils";
+import { ObjMap } from "../../types/UtilityTypes";
 
 class ZipError extends Error
 {

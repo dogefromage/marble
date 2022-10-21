@@ -1,5 +1,5 @@
 import { ArithmeticOperations, DataTypes, ProgramOperationTypes } from "../sceneProgram";
-import { Point, Override } from "../utils";
+import { Point, Override } from "../UtilityTypes";
 import { RowT, RowS, RowZ } from "./Rows";
 
 export interface GNodeBaseOperation {}

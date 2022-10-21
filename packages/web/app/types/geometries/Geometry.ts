@@ -1,4 +1,4 @@
-import { Override } from "../utils";
+import { Override } from "../UtilityTypes";
 import { GNodeS, GNodeZ } from "./GNode";
 
 export interface GeometryS

@@ -1,53 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
+import { useMemo, useState } from 'react';
+import useCommands from '../hooks/useCommands';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
-import { FONT_FAMILY } from '../styled/utils';
 import { GNodeT, Point } from '../types';
 import countHeightUnits from '../utils/geometries/countHeightUnits';
 import { NODE_WIDTH } from './GeometryNode';
 import Menu from './Menu';
-import MenuItem, { MenuItemDiv } from './MenuItem';
+import MenuItem from './MenuItem';
 import MenuSearch from './MenuSearch';
 import MenuTitle from './MenuTitle';
-
-const FormWrapper = styled(MenuItemDiv)`
-
-    /* padding: 0.25rem 0; */
-
-    &:hover
-    {
-        background-color: unset;
-    }
-
-    form
-    {
-        width: 100%;
-        height: 100%;
-
-        input
-        {
-            width: 100%;
-            height: 100%;
-
-            outline: none;
-            border: none;
-            padding: 0 1rem;
-            
-            border-radius: 3px;
-
-            background-color: #e5e4eb;
-            box-shadow: inset 2px 2px #00000033;
-
-            font-weight: normal;
-            font-size: 1rem;
-            font-family: ${FONT_FAMILY};
-        }
-    }
-`;
-
 
 interface Props
 {
@@ -86,6 +49,11 @@ const GeometryTemplateSearcher = ({ menuPosition, onClose, geometryId, nodeSpawn
         }));
         onClose();
     }
+
+    useCommands(() =>
+    {
+
+    }, [])
 
     return (
         <Menu

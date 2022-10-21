@@ -7,7 +7,7 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode, geometriesRemoveNode } from '../slices/geometriesSlice';
 import { selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import { GNodeZ, ViewProps } from '../types';
-import { Point } from '../types/utils';
+import { Point } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryRowRoot from './GeometryRowRoot';

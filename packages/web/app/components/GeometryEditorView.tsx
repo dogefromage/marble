@@ -6,7 +6,7 @@ import { geometriesNew, selectGeometries } from "../slices/geometriesSlice";
 import { createGeometryEditorPanelState, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
 import { selectTemplates } from "../slices/templatesSlice";
 import { GeometryS, Point, ViewTypes } from "../types";
-import { ViewProps } from "../types/View";
+import { ViewProps } from "../types/view/ViewProps";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { useBindPanelState } from "../utils/panelState/useBindPanelState";
 import { usePanelState } from "../utils/panelState/usePanelState";

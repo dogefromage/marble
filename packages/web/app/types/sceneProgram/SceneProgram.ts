@@ -1,4 +1,4 @@
-import { MapEvery, ObjMap } from "../utils";
+import { MapEvery, ObjMap } from "../UtilityTypes";
 
 export enum ProgramOperationTypes
 {
