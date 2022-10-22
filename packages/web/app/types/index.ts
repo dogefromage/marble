@@ -4,7 +4,6 @@ export * from './UtilityTypes';
 export * from './view/ViewProps';
 export * from './sceneProgram';
 export * from './PanelState';
-export * from './viewTypes';
 export * from './sliceStates';
 export * from './command';
 export * from './view';

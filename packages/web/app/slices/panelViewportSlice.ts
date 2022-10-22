@@ -44,7 +44,7 @@ export const {
     editCamera: viewportPanelEditCamera,
 } = viewportPanelsSlice.actions;
 
-export const selectViewportPanels = (state: RootState) => state.editor.panels.viewport;
+export const selectViewportPanels = (state: RootState) => state.editor.panels[ViewTypes.Viewport];
 
 const viewportPanelsReducer = panelStateEnhancer(
     viewportPanelsSlice.reducer,

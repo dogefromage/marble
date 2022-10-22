@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import useCommands from '../hooks/useCommands';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
@@ -49,11 +48,6 @@ const GeometryTemplateSearcher = ({ menuPosition, onClose, geometryId, nodeSpawn
         }));
         onClose();
     }
-
-    useCommands(() =>
-    {
-
-    }, [])
 
     return (
         <Menu

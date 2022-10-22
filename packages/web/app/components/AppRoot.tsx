@@ -9,6 +9,7 @@ import { glMatrix } from 'gl-matrix';
 import GeometryEditorView from './GeometryEditorView';
 import SceneProgramCompiler from './SceneProgramCompiler';
 import DefaultTemplateLoader from './DefaultTemplateLoader';
+import KeyboardCommandListener from './KeyboardCommandListener';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -43,6 +44,7 @@ const AppRoot = ({ projectId }: Props) =>
             </Wrapper>
             <SceneProgramCompiler />
             <DefaultTemplateLoader />
+            <KeyboardCommandListener />
             <DragzonePortalMount />
         </Provider>
     );

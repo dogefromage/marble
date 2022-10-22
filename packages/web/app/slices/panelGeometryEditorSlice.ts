@@ -38,7 +38,7 @@ export const {
     editCamera: geometryEditorPanelsEditCamera,
 } = geometryEditorPanelsSlice.actions;
 
-export const selectGeometryEditorPanels = (state: RootState) => state.editor.panels.geometryEditor;
+export const selectGeometryEditorPanels = (state: RootState) => state.editor.panels[ViewTypes.GeometryEditor];
 
 const geometryEditorPanelsReducer = panelStateEnhancer(
     geometryEditorPanelsSlice.reducer,

@@ -4,9 +4,11 @@ import undoableEnhancer from "../enhancers/undoableEnhancer";
 import commandsReducer from "../slices/commandsSlice";
 import geometriesReducer from "../slices/geometriesSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
+import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import sceneProgramReducer from "../slices/sceneProgramSlice";
 import templatesReducer from "../slices/templatesSlice";
+import { ViewTypes } from "../types";
 
 const rootReducer = combineReducers({
     project: undoableEnhancer(
@@ -19,10 +21,10 @@ const rootReducer = combineReducers({
     ),
     editor: combineReducers({
         panels: combineReducers({
-            viewport: viewportPanelsReducer,
-            geometryEditor: geometryEditorPanelsReducer,
-        })
-        // panelManager: panelManagerReducer,
+            [ViewTypes.GeometryEditor]: geometryEditorPanelsReducer,
+            [ViewTypes.Viewport]: viewportPanelsReducer,
+        }),
+        panelManager: panelManagerReducer,
         // preferences: preferencesReducer,
     }),
     sceneProgram: sceneProgramReducer,

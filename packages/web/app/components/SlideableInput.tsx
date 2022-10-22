@@ -2,9 +2,10 @@ import { useMouseDrag } from '@marble/interactive';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
-import { clamp } from '../utils/math';
-import { FONT_FAMILY } from '../styled/utils';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
+import { FONT_FAMILY } from '../styled/utils';
+import { clamp } from '../utils/math';
+import temporaryPushError from '../utils/temporaryPushError';
 
 const SlidableInputDiv = styled.div`
 
@@ -111,7 +112,7 @@ const SlidableInput = ({
         }
         catch (err)
         {
-            alert(`Error at evaluating user input`);
+            temporaryPushError('Error at evaluating user input');
         }
     };
 

@@ -18,5 +18,9 @@ export type TemplatesSliceState =
 export interface CommandsSliceState
 {
     commands: ObjMap<Command>;
-    commandsBinderIdentities: Map<any, string[]>;
+}
+
+export interface PanelManagerSliceState
+{
+    activePanel?: string;
 }

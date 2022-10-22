@@ -1,12 +1,17 @@
-import { SuperCommandArgs } from "../command";
+import { GeometryEditorPanelState } from "../geometries"
+import { ViewportPanelState } from "../viewport";
 
-export interface GeometryEditorCommandArgs extends SuperCommandArgs
+/**
+ * Serves also as keys of panels slice in store
+ */
+export enum ViewTypes
 {
-    active: string;
-    // selection: string[];
+    GeometryEditor = 'geometryEditor',
+    Viewport = 'viewport'
 }
 
-export interface ViewportCommandArgs extends SuperCommandArgs
+export type PanelStateMap =
 {
-    
+    [ViewTypes.GeometryEditor]: GeometryEditorPanelState;
+    [ViewTypes.Viewport]: ViewportPanelState;
 }

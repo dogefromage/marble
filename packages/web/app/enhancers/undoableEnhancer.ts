@@ -10,7 +10,7 @@ enum UndoableActionTypes
 export const undo = () => ({ type: UndoableActionTypes.Undo, payload: {} });
 export const redo = () => ({ type: UndoableActionTypes.Redo, payload: {} });
 
-export default function undoableEnhancer<S, A extends UndoAction<any>>
+export default function undoableEnhancer<S, A extends UndoAction>
     (reducer: Reducer<S, A>): Reducer<UndoHistory<S>, A>
 {
     const initialState: UndoHistory<S> =
@@ -60,8 +60,8 @@ export default function undoableEnhancer<S, A extends UndoAction<any>>
 
             if (action.payload?.undo && !action.payload?.undo.doNotRecord)
             {
-                if (!action.payload?.undo.stackToken ||
-                    action.payload?.undo.stackToken !== lastStackToken)
+                if (!action.payload?.undo.actionToken ||
+                    action.payload?.undo.actionToken !== lastStackToken)
                 {
                     newPast = [ ...past, present ].slice(-MAX_LENGTH);
                 }
@@ -71,7 +71,7 @@ export default function undoableEnhancer<S, A extends UndoAction<any>>
                 past: newPast,
                 present: newPresent,
                 future: [],
-                lastStackToken: action.payload?.undo?.stackToken,
+                lastStackToken: action.payload?.undo?.actionToken,
             }
         }
     }

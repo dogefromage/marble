@@ -1,8 +1,7 @@
 import { AnyAction, PayloadAction, Reducer } from "@reduxjs/toolkit";
 import produce, { Draft } from "immer";
-import { ObjMap } from "../types";
+import { ObjMap, ViewTypes } from "../types";
 import { PanelState } from "../types/PanelState";
-import { ViewTypes } from "../types/viewTypes";
 
 enum PanelStateActionTypes
 {

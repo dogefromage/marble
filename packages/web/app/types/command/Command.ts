@@ -1,31 +1,45 @@
 import { AnyAction } from '@reduxjs/toolkit';
-import { GeometryEditorCommandArgs, ViewportCommandArgs } from '..';
+import { PanelStateMap, ViewTypes } from '../view';
+import { KeyCombination } from './KeyCombination';
 
-export enum CommandContext
+export enum CommandScope
 {
     Global = 'global',
-    GeometryEditor = 'geometryEditor',
-    Viewport = 'viewport',
+    View = 'view',
 }
 
-export interface SuperCommandArgs {}
+export interface CommandBaseArgs {}
 
-export interface GlobalCommandArgs extends SuperCommandArgs {}
-
-export type ContextedCommandArgs =
+interface GlobalArgs extends CommandBaseArgs {}
+interface ViewArgs extends CommandBaseArgs 
 {
-    [CommandContext.GeometryEditor]: GeometryEditorCommandArgs;
-    [CommandContext.Viewport]: ViewportCommandArgs;
-    [CommandContext.Global]: GlobalCommandArgs;
+    panelState: PanelStateMap[ViewTypes];
 }
 
-export type CommandActionCreator<S extends CommandContext> = 
-    (args: ContextedCommandArgs[S]) => AnyAction
+export type CommandArgs<S extends CommandScope> = CommandBaseArgs &
+    S extends CommandScope.Global ? GlobalArgs : ViewArgs;
 
-export interface Command<S extends CommandContext = CommandContext>
+export type CommandCreator<S extends CommandScope = CommandScope> = 
+    (args: CommandArgs<S>) => AnyAction;
+
+interface BaseCommand
 {
     id: string;
     name: string;
-    context: S;
-    actionCreator: CommandActionCreator<S>;
+    keyCombination?: KeyCombination;
 }
+
+interface GlobalCommand extends BaseCommand
+{
+    scope: CommandScope.Global,
+    actionCreator: CommandCreator<CommandScope.Global>;
+}
+
+interface ViewCommand extends BaseCommand
+{
+    viewType: ViewTypes;
+    scope: CommandScope.View,
+    actionCreator: CommandCreator<CommandScope.View>;
+}
+
+export type Command = GlobalCommand | ViewCommand;

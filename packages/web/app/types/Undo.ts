@@ -10,7 +10,7 @@ export interface UndoHistory<T>
 
 export const MAX_LENGTH = 50;
 
-export type UndoAction<P extends any> = PayloadAction<P & {
+export type UndoAction<P extends {} = {}> = PayloadAction<P & {
     undo: {
         actionToken?: string;
         doNotRecord?: boolean;

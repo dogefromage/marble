@@ -1,10 +1,11 @@
-import { CommandActionCreator, CommandContext } from "../../types";
+import { Command, CommandActionCreator, ViewTypes } from "../../types";
 
-export default function createCommand<S extends CommandContext>(
+export default function createCommand<V extends ViewTypes>(
     id: string, 
     name: string, 
-    scope: S, 
-    actionCreator: CommandActionCreator<S>
-) {
-    return { id, name, scope, actionCreator };
+    viewType: V, 
+    actionCreator: CommandActionCreator<V>
+): Command<V> 
+{
+    return { id, name, viewType, actionCreator };
 }
