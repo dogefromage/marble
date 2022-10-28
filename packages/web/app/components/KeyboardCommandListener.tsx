@@ -14,8 +14,6 @@ const KeyboardCommandListener = () =>
 
     const handler = useCallback((e: KeyboardEvent) =>
     {
-        // console.log(commands);
-
         for (const command of commands)
         {
             if (!command.keyCombination) continue;

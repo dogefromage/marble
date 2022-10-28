@@ -9,6 +9,7 @@ import getPanelState from "../utils/panelState/getPanelState";
 export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => 
 {
     return {
+        viewType: ViewTypes.Viewport,
         uniformSources: {
             viewportCamera: {
                 target: vec3.fromValues(0, 0, 0),

@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { createGeometryEditorPanelState, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
-import { selectTemplates } from "../slices/templatesSlice";
+import { createGeometryEditorPanelState, geometryEditorSetGeometryId, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
 import { GeometryS, Point, ViewTypes } from "../types";
 import { ViewProps } from "../types/view/ViewProps";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
@@ -20,22 +19,35 @@ const EditorWrapper = styled.div`
     user-select: none;
 `;
 
+const TEST_GEOMETRY_ID = '1234';
+
 const GeometryEditor = (viewProps: ViewProps) =>
 {
+    const dispatch = useAppDispatch();
+
+    // ensures state exists for this panel component
     useBindPanelState(
         viewProps.panelId,
         createGeometryEditorPanelState,
         ViewTypes.GeometryEditor,
     );
 
-    // const [ geometryId, setGeometryId ] = useState<string>();
-    const geometryId = '1234';
-    const { templates } = useAppSelector(selectTemplates);
-
-    const dispatch = useAppDispatch();
-    const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
-
+    // binds geometryId to this panelState
     const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
+    useEffect(() =>
+    {
+        if (!panelState?.geometryId)
+        {
+            dispatch(geometryEditorSetGeometryId({
+                panelId: viewProps.panelId,
+                geometryId: TEST_GEOMETRY_ID,
+            }))
+        }
+    }, [ panelState?.geometryId ]);
+
+    // get bound geometry state using bound geometryId
+    const geometryId = panelState?.geometryId;
+    const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId!];
 
     const [ showSearcher, setShowSearcher ] = useState<{
         pagePos: Point;
@@ -65,28 +77,17 @@ const GeometryEditor = (viewProps: ViewProps) =>
         });
     }
 
-    useEffect(() =>
-    {
-        if (!geometryS)
-        {
-            dispatch(geometriesNew({
-                geometryId,
-                undo: {},
-            }));
-        }
-    }, []);
-
     return (
         <EditorWrapper
             onDoubleClick={openSearcher}
         >
-            {
-                geometryId && 
-                <GeometryEditorTransform
-                    geometryId={geometryId}
-                    viewProps={viewProps}
-                />
-            }
+        {
+            geometryId && 
+            <GeometryEditorTransform
+                geometryId={geometryId}
+                viewProps={viewProps}
+            />
+        }
         {
             geometryId && showSearcher && 
             <GeometryTemplateSearcher 
@@ -95,6 +96,21 @@ const GeometryEditor = (viewProps: ViewProps) =>
                 nodeSpawnPosition={showSearcher.worldPos}
                 onClose={() => setShowSearcher(undefined)}
             />
+        }
+        {
+            // only for testing
+            geometryId && !geometryS &&
+            <button
+                onClick={() =>
+                {
+                    dispatch(geometriesNew({
+                        geometryId,
+                        undo: {},
+                    }));
+                }}
+            >
+                Create geometry
+            </button>
         }
         </EditorWrapper>
     )

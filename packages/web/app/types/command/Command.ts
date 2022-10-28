@@ -10,17 +10,12 @@ export enum CommandScope
 
 export interface CommandBaseArgs {}
 
-interface GlobalArgs extends CommandBaseArgs {}
-interface ViewArgs extends CommandBaseArgs 
+interface GlobalCommandArgs extends CommandBaseArgs {}
+
+interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends CommandBaseArgs 
 {
-    panelState: PanelStateMap[ViewTypes];
+    panelState: PanelStateMap[V];
 }
-
-export type CommandArgs<S extends CommandScope> = CommandBaseArgs &
-    S extends CommandScope.Global ? GlobalArgs : ViewArgs;
-
-export type CommandCreator<S extends CommandScope = CommandScope> = 
-    (args: CommandArgs<S>) => AnyAction;
 
 interface BaseCommand
 {
@@ -29,17 +24,27 @@ interface BaseCommand
     keyCombination?: KeyCombination;
 }
 
-interface GlobalCommand extends BaseCommand
+type CommandParameterMap = 
+{ 
+    [ key: string ]: any; 
+};
+
+export type CommandActionCreator<A extends {}> = 
+    (scopedArgs: A, parameters: CommandParameterMap) => AnyAction | void;
+
+export interface GlobalCommand extends BaseCommand
 {
     scope: CommandScope.Global,
-    actionCreator: CommandCreator<CommandScope.Global>;
+    actionCreator: CommandActionCreator<GlobalCommandArgs>;
 }
 
-interface ViewCommand extends BaseCommand
+export interface ViewCommand<V extends ViewTypes> extends BaseCommand
 {
-    viewType: ViewTypes;
     scope: CommandScope.View,
-    actionCreator: CommandCreator<CommandScope.View>;
+    viewType: V;
+    actionCreator: CommandActionCreator<ViewCommandArgs<V>>;
 }
 
-export type Command = GlobalCommand | ViewCommand;
+export type Command = 
+    | GlobalCommand 
+    | { [V in ViewTypes]: ViewCommand<V> }[ViewTypes];

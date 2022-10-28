@@ -16,13 +16,13 @@ export interface RowValueMap
  * super interfaces
  */
 
-export interface AnyRowT
+interface SuperRowT
 {
     id: string;
     name: string;
 }
 
-export interface AnyInputCompatibleRowT<D extends DataTypes = DataTypes> extends AnyRowT 
+interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT 
 {
     dataType: D;
     value: RowValueMap[D];
@@ -42,30 +42,30 @@ export enum RowTypes
     Field,
 }
 
-export interface NameRowT extends AnyRowT
+export interface NameRowT extends SuperRowT
 {
     type: RowTypes.Name;
     color: string;
 }
 
-export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
+export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
 {
     type: RowTypes.InputOnly;
 }
 
-export interface StackedInputRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
+export interface StackedInputRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
 {
     type: RowTypes.InputStacked;
 }
 
 export type AnyInputOnlyRowT = { [T in keyof typeof DataTypes]: InputOnlyRowT<typeof DataTypes[T]> }[keyof typeof DataTypes]
 
-export interface FieldRowT<D extends DataTypes = DataTypes> extends AnyInputCompatibleRowT<D>
+export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
 {
     type: RowTypes.Field;
 }
 
-export interface OutputRowT<D extends DataTypes = DataTypes> extends AnyRowT
+export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT
 {
     type: RowTypes.Output;
     dataType: D;
