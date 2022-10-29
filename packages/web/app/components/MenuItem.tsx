@@ -11,18 +11,9 @@ export const MenuItemDiv = styled.div`
 
     display: flex;
     align-items: center;
+    justify-content: space-between;
 
-    p
-    {
-        margin: 0;
-        padding: 0 1rem;
-        
-        width: 100%;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-
-    }
+    cursor: pointer;
 
     &:hover
     {
@@ -30,19 +21,44 @@ export const MenuItemDiv = styled.div`
     }
 `;
 
+const MenuItemText = styled.p`
+
+    margin: 0;
+    padding: 0 0.5rem;
+    
+    width: 100%;
+    min-width: fit-content;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+`;
+
+const MenuItemInfo = styled(MenuItemText)`
+
+    width: fit-content;
+    opacity: 0.7;
+
+    overflow: hidden;
+`;
+
 interface Props
 {
     text: string;
+    info?: string;
     onClick: (e: React.MouseEvent) => void;
 }
 
-const MenuItem = ({ text, onClick }: Props) =>
+const MenuItem = ({ text, info, onClick }: Props) =>
 {
     return (
         <MenuItemDiv
             onClick={onClick}
         >
-            <p>{ text }</p>
+            <MenuItemText>{ text }</MenuItemText>
+            { 
+                info && 
+                <MenuItemInfo>{ info }</MenuItemInfo>
+            }
         </MenuItemDiv>
     );
 }

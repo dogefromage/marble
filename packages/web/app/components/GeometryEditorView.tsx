@@ -1,16 +1,16 @@
-import { vec2 } from "gl-matrix";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
+import useContextMenu from "../hooks/useContextMenu";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { createGeometryEditorPanelState, geometryEditorSetGeometryId, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
-import { GeometryS, Point, ViewTypes } from "../types";
+import { createGeometryEditorPanelState, geometryEditorPanelOpenTemplateCatalog, geometryEditorSetGeometryId, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
+import { panelManagerSetActive } from "../slices/panelManagerSlice";
+import { GeometryS, ViewTypes } from "../types";
 import { ViewProps } from "../types/view/ViewProps";
-import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { useBindPanelState } from "../utils/panelState/useBindPanelState";
 import { usePanelState } from "../utils/panelState/usePanelState";
 import GeometryEditorTransform from "./GeometryEditorTransform";
-import GeometryTemplateSearcher from "./GeometryTemplateSearcher";
+import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 
 const EditorWrapper = styled.div`
 
@@ -24,6 +24,29 @@ const TEST_GEOMETRY_ID = '1234';
 const GeometryEditor = (viewProps: ViewProps) =>
 {
     const dispatch = useAppDispatch();
+
+    const viewBoundingRect = useRef<HTMLDivElement>(null);
+
+    /**
+     * !!!!!!!!!! ONLY FOR TESTING
+     */
+    useEffect(() =>
+    {
+        if (!viewBoundingRect.current) return;
+        const boundingRect = viewBoundingRect.current.getBoundingClientRect();
+
+        dispatch(panelManagerSetActive({
+            activePanel: {
+                panelId: viewProps.panelId,
+                panelClientRect: {
+                    x: boundingRect.left,
+                    y: boundingRect.top,
+                    w: boundingRect.width,
+                    h: boundingRect.height,
+                },
+            }
+        }))
+    }, []);
 
     // ensures state exists for this panel component
     useBindPanelState(
@@ -49,37 +72,42 @@ const GeometryEditor = (viewProps: ViewProps) =>
     const geometryId = panelState?.geometryId;
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId!];
 
-    const [ showSearcher, setShowSearcher ] = useState<{
-        pagePos: Point;
-        worldPos: Point;
-    }>();
-
-    const openSearcher = (e: React.MouseEvent) =>
+    const getCatalogPositions = (e: React.MouseEvent) =>
     {
-        if (!panelState) return;
-
-        const pagePos = {
-            x: e.pageX,
-            y: e.pageY,
+        const boundingRect = e.currentTarget.getBoundingClientRect();
+        const offsetPos = {
+            x: e.clientX - boundingRect.left, 
+            y: e.clientY - boundingRect.top,
         };
 
-        const boundingRect = e.currentTarget.getBoundingClientRect();
-        const offsetPos = vec2.fromValues(
-            e.clientX - boundingRect.left, 
-            e.clientY - boundingRect.top
-        );
-        
-        const worldPos = pointScreenToWorld(panelState?.camera, offsetPos);
-
-        setShowSearcher({
-            pagePos,
-            worldPos: { x: worldPos[0], y: worldPos[1] },
-        });
+        return {
+            offsetPos,
+            clientPos: {
+                x: e.clientX,
+                y: e.clientY,
+            },
+        }
     }
+
+    const openSearcher = (e: React.MouseEvent) =>  
+        dispatch(geometryEditorPanelOpenTemplateCatalog({
+            panelId: viewProps.panelId,
+            center: false,
+            ...getCatalogPositions(e),
+        }));
+
+    const contextMenu = useContextMenu(
+        viewProps.panelId,
+        'Geometry Editor',
+        [ 'geometryEditor.openTemplateCatalog' ],
+        e => getCatalogPositions(e),
+    )
 
     return (
         <EditorWrapper
             onDoubleClick={openSearcher}
+            onContextMenu={contextMenu}
+            ref={viewBoundingRect}
         >
         {
             geometryId && 
@@ -89,12 +117,9 @@ const GeometryEditor = (viewProps: ViewProps) =>
             />
         }
         {
-            geometryId && showSearcher && 
-            <GeometryTemplateSearcher 
-                geometryId={geometryId}
-                menuPosition={showSearcher.pagePos}
-                nodeSpawnPosition={showSearcher.worldPos}
-                onClose={() => setShowSearcher(undefined)}
+            geometryId &&
+            <GeometryTemplateCatalog 
+                viewProps={viewProps}
             />
         }
         {

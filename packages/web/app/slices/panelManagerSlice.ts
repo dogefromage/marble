@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { PanelManagerSliceState } from "../types";
+import { ActivePanel, PanelManagerSliceState } from "../types";
 
 const initialState: PanelManagerSliceState = {};
 
@@ -8,9 +8,9 @@ export const PanelManagerSlice = createSlice({
     name: 'panelManager',
     initialState,
     reducers: {
-        setActive: (s, a: PayloadAction<{ activeId: string }>) =>
+        setActive: (s, a: PayloadAction<{ activePanel: ActivePanel }>) =>
         {
-            s.activePanel = a.payload.activeId;
+            s.activePanel = a.payload.activePanel;
         }
     }
 });

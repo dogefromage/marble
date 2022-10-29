@@ -51,7 +51,7 @@ const MenuSearch = ({ value, onChange, onSubmit, placeholder, autoFocus }: Props
 
     useEffect(() =>
     {
-        if (!!autoFocus) return;
+        if (!autoFocus) return;
 
         setTimeout(() =>
         {

@@ -8,6 +8,7 @@ interface MenuWrapperProps
     position: Point;
     visible: boolean;
     translateUp: boolean;
+    center?: boolean;
 }
 
 const MenuWrapper = styled.div<MenuWrapperProps>`
@@ -17,10 +18,11 @@ const MenuWrapper = styled.div<MenuWrapperProps>`
     top:  ${({ position }) => position.y }px;
 
     ${({ translateUp }) => translateUp ? 'transform: translateY(-100%);' : '' }
+    ${({ center }) => center ? 'transform: translate(-50%, -50%);' : '' }
 
     visibility: ${({ visible }) => visible ? 'visible' : 'hidden' };
 
-    width: 260px;
+    width: 320px;
 
     padding: 0 0.5rem;
 
@@ -34,9 +36,10 @@ interface Props
     position: Point;
     onUnfocus: () => void;
     children: React.ReactNode;
+    center?: boolean;
 }
 
-const Menu = ({ position, onUnfocus, children }: Props) =>
+const Menu = ({ position, onUnfocus, children, center }: Props) =>
 {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +66,7 @@ const Menu = ({ position, onUnfocus, children }: Props) =>
             position={position}
             visible={visible}
             translateUp={translateUp}
+            center={center}
         >
             { children }
         </MenuWrapper>

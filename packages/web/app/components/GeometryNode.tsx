@@ -3,6 +3,7 @@ import { vec2 } from 'gl-matrix';
 import { useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
+import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode, geometriesRemoveNode } from '../slices/geometriesSlice';
 import { geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
@@ -38,9 +39,8 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
     box-shadow: 5px 5px #00000066;
 
     ${({ isActive }) => isActive ? css`
-
-        outline: solid 2px #8d3333f8;
-        
+        outline: solid 2px #2b2b2b;
+        outline-offset: 2px;
     ` : ''}   
 
     cursor: pointer;
@@ -104,10 +104,18 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
         cursor: 'grab',
     });
 
+    const openContextMenu = useContextMenu(
+        viewProps.panelId,
+        'Geometry Node',
+        [ 'geometryEditor.deleteNode' ],
+        () => ({ nodeId: node.id }),
+    );
+
     const isActive = panelState?.activeNode === node.id;
 
     return (
         <GeometryNodeDiv
+            onContextMenu={openContextMenu}
             position={node.position}
             isActive={isActive}
             {...handlers}
@@ -117,6 +125,8 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
                     panelId: viewProps.panelId,
                     nodeId: node.id,
                 }))
+
+                e.stopPropagation();
             }}
             onDoubleClick={e => 
             {

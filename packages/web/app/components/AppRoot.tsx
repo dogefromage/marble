@@ -10,6 +10,8 @@ import GeometryEditorView from './GeometryEditorView';
 import SceneProgramCompiler from './SceneProgramCompiler';
 import DefaultTemplateLoader from './DefaultTemplateLoader';
 import KeyboardCommandListener from './KeyboardCommandListener';
+import { ContextMenuPortalMount } from './ContextMenuPortalMount';
+import ContextMenu from './ContextMenu';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -38,13 +40,20 @@ const AppRoot = ({ projectId }: Props) =>
     return (
         store &&
         <Provider store={store}>
-            <Wrapper>
+            {/* Views */}
+            <Wrapper
+                onContextMenu={e => e.preventDefault()}
+            >
                 <ViewportView panelId='4321' />
                 <GeometryEditorView panelId='1234' />
             </Wrapper>
+            {/* "Modules" / "Services" */}
             <SceneProgramCompiler />
             <DefaultTemplateLoader />
             <KeyboardCommandListener />
+            <ContextMenu />
+            {/* Portals */}
+            <ContextMenuPortalMount />
             <DragzonePortalMount />
         </Provider>
     );

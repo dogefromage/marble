@@ -15,9 +15,7 @@ const initialState: CommandsSliceState =
 export const CommandsSlice = createSlice({
     name: 'commands',
     initialState,
-    reducers: {
-        
-    }
+    reducers: {}
 });
 
 // export const {

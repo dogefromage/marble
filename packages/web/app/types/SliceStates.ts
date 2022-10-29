@@ -1,4 +1,4 @@
-import { Command, GeometryS, GLSLSnippet, GNodeT, SceneProgram } from ".";
+import { ActiveContextMenu, ActivePanel, Command, GeometryS, GLSLSnippet, GNodeT, SceneProgram } from ".";
 import { ObjMap } from "./UtilityTypes";
 
 export type GeometriesSliceState = ObjMap<GeometryS>;
@@ -22,5 +22,10 @@ export interface CommandsSliceState
 
 export interface PanelManagerSliceState
 {
-    activePanel?: string;
+    activePanel?: ActivePanel;
+}
+
+export interface ContextMenuSliceState 
+{
+    active: ActiveContextMenu | null;
 }

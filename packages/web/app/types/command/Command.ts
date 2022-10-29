@@ -1,4 +1,5 @@
 import { AnyAction } from '@reduxjs/toolkit';
+import { ActivePanel } from '../panelManager';
 import { PanelStateMap, ViewTypes } from '../view';
 import { KeyCombination } from './KeyCombination';
 
@@ -8,12 +9,22 @@ export enum CommandScope
     View = 'view',
 }
 
-export interface CommandBaseArgs {}
-
-interface GlobalCommandArgs extends CommandBaseArgs {}
-
-interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends CommandBaseArgs 
+export enum CommandCallTypes
 {
+    KeyCombination = 'key-combination',
+    ContextMenu = 'context-menu',
+}
+
+export interface CommandBaseArgs 
+{
+    callType: CommandCallTypes;
+}
+
+export interface GlobalCommandArgs extends CommandBaseArgs {}
+
+export interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends CommandBaseArgs 
+{
+    activePanel: ActivePanel;
     panelState: PanelStateMap[V];
 }
 
@@ -21,24 +32,24 @@ interface BaseCommand
 {
     id: string;
     name: string;
-    keyCombination?: KeyCombination;
+    keyCombinations?: KeyCombination[];
 }
 
-type CommandParameterMap = 
+export type CommandParameterMap = 
 { 
     [ key: string ]: any; 
 };
 
-export type CommandActionCreator<A extends {}> = 
+type CommandActionCreator<A extends {}> = 
     (scopedArgs: A, parameters: CommandParameterMap) => AnyAction | void;
 
-export interface GlobalCommand extends BaseCommand
+interface GlobalCommand extends BaseCommand
 {
     scope: CommandScope.Global,
     actionCreator: CommandActionCreator<GlobalCommandArgs>;
 }
 
-export interface ViewCommand<V extends ViewTypes> extends BaseCommand
+interface ViewCommand<V extends ViewTypes> extends BaseCommand
 {
     scope: CommandScope.View,
     viewType: V;

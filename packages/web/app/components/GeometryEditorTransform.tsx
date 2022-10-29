@@ -3,7 +3,7 @@ import { vec2 } from 'gl-matrix';
 import { useRef } from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import { DEFAULT_PLANAR_CAMERA, PlanarCamera, Point, ViewProps } from '../types';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
@@ -15,7 +15,7 @@ interface DivProps
     camera: PlanarCamera;
 }
 
-const WrapperDiv = styled.div.attrs<DivProps>(({ camera }) =>
+const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) =>
 {
     const translate = vec2.fromValues(-camera.position.x, -camera.position.y);
     const gridSize = 20 * camera.zoom;
@@ -171,10 +171,16 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
     };
 
     return (
-        <WrapperDiv
+        <BackgroundDiv
             ref={wrapperRef}
             onWheel={onWheel}
             camera={panelState?.camera || DEFAULT_PLANAR_CAMERA}
+            onClick={() =>
+            {
+                dispatch(geometryEditorSetActiveNode({
+                    panelId: viewProps.panelId,
+                }))
+            }}
             {...handlers}
         >
             <TransformingDiv>
@@ -187,7 +193,7 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
             }
             </TransformingDiv>
             { catcher }
-        </WrapperDiv>
+        </BackgroundDiv>
     );
 }
 

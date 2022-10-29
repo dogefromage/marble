@@ -6,9 +6,11 @@ export default function useAvaliableCommands()
 {
     const { commands } = useAppSelector(selectCommands);
 
-    return useMemo(() =>
-    {
-        const values = Object.values(commands);
-        return values;
-    }, [ commands ]);
+    // return useMemo(() =>
+    // {
+    //     const values = Object.values(commands);
+    //     return values;
+    // }, [ commands ]);
+
+    return commands;
 }

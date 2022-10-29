@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import useAvaliableCommands from '../hooks/useAvailableCommands';
 import useDispatchCommand from '../hooks/useDispatchCommand';
 import { useEventListener } from '../hooks/useEventListener';
+import { CommandCallTypes } from '../types';
 import matchesKeyCombination from '../utils/commands/matchesKeyCombination';
 
 const KeyboardCommandListener = () =>
@@ -14,13 +15,16 @@ const KeyboardCommandListener = () =>
 
     const handler = useCallback((e: KeyboardEvent) =>
     {
-        for (const command of commands)
+        for (const command of Object.values(commands))
         {
-            if (!command.keyCombination) continue;
-            
-            if (matchesKeyCombination(command.keyCombination, e))
+            if (!command.keyCombinations) continue;
+
+            for (const combination of command.keyCombinations)
             {
-                dispatchCommand(command);
+                if (matchesKeyCombination(combination, e))
+                {
+                    dispatchCommand(command, {}, CommandCallTypes.KeyCombination);
+                }
             }
         }
     }, [ dispatchCommand ]);

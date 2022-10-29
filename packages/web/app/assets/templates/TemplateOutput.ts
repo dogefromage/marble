@@ -9,7 +9,7 @@ const template_output: GNodeT =
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'Geometry Output',
+            name: 'Output',
             color: '#a3264e',
         },
         {

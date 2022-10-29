@@ -1,4 +1,4 @@
-import { PanelState } from "../PanelState";
+import { PanelState } from "..";
 import { Point } from "../UtilityTypes";
 
 export interface PlanarCamera
@@ -13,9 +13,17 @@ export const DEFAULT_PLANAR_CAMERA: PlanarCamera =
     zoom: 1,
 }
 
+interface TemplateCatalogState
+{
+    clientPosition: Point;
+    worldPosition: Point;
+    center: boolean,
+}
+
 export interface GeometryEditorPanelState extends PanelState
 {
     geometryId?: string;
     camera: PlanarCamera;
     activeNode?: string;
+    templateCatalog: TemplateCatalogState | null;
 }

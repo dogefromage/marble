@@ -2,7 +2,8 @@
 
 export interface KeyCombination
 {
-    lowerCaseKey: string;
+    key: string;
+    displayName?: string;
     ctrlKey?: boolean;
     shiftKey?: boolean;
     altKey?: boolean;
