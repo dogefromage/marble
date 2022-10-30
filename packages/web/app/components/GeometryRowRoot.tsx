@@ -1,4 +1,4 @@
-import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowTypes, RowZ, StackedInputRowT } from '../types';
+import { FieldRowT, EveryRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
 import rowMeta from '../utils/geometries/rowMeta';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
@@ -6,12 +6,11 @@ import GeometryRowInputStacked from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 
-export type RowProps<T extends RowZ = RowZ> =
+export type RowProps<T extends EveryRowT = EveryRowT> =
 {
     geometryId: string;
     nodeId: string;
-    connections: number;
-    row: T;
+    row: RowZ<T>;
 }
 
 export function getRowMetadata(row: RowZ): RowMetadata

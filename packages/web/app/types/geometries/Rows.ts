@@ -75,7 +75,7 @@ export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT
  * Generic template types
  */
 
-export type GenericRowT<D extends DataTypes = DataTypes> =
+export type EveryRowT<D extends DataTypes = DataTypes> =
     | NameRowT
     | InputOnlyRowT<D>
     | StackedInputRowT<D>
@@ -84,7 +84,7 @@ export type GenericRowT<D extends DataTypes = DataTypes> =
 
 type GenericRowTMapped = 
 {
-    [D in keyof typeof DataTypes]: GenericRowT<typeof DataTypes[D]>;
+    [D in keyof typeof DataTypes]: EveryRowT<typeof DataTypes[D]>;
 }
 export type RowT = GenericRowTMapped[keyof typeof DataTypes];
 
@@ -92,13 +92,13 @@ export type RowT = GenericRowTMapped[keyof typeof DataTypes];
  * State and Zipped
  */
 
-export type RowS<T extends RowT | GenericRowT = GenericRowT> = Partial<T> &
+export type RowS<T extends RowT | EveryRowT = EveryRowT> = Partial<T> &
 {
-    connectedOutput?: JointLocation;
-    displayConnected?: boolean;
+    connectedOutputs: JointLocation[];
+    // displayConnected?: boolean;
 }
 
-export type RowZ<T extends RowT | GenericRowT = GenericRowT> = RowS<T> & T;
+export type RowZ<T extends RowT | EveryRowT = EveryRowT> = RowS<T> & T;
 
 /**
  * Metadata
@@ -119,6 +119,7 @@ export interface JointLocation
 {
     nodeId: string;
     rowId: string;
+    subIndex: number;
 }
 
 /**

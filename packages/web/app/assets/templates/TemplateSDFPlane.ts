@@ -1,19 +1,6 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, DefaultFunctionArgNames, ProgramOperationTypes, GLSLSnippet } from "../../types"
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, DefaultFunctionArgNames, ProgramOperationTypes, ProgramInclude } from "../../types"
 import { glsl } from "../../utils/codeGeneration/glslTag";
 import { TemplateColors } from "../constants";
-
-const code = glsl`
-float inc_sdf_z_plane(vec3 p, float h)
-{
-    return p.z - h;
-}
-`;
-
-export const inc_sdf_z_plane: GLSLSnippet = 
-{
-    id: 'inc_sdf_z_plane',
-    code,
-};
 
 const template_sdf_plane: GNodeT = 
 {
@@ -48,15 +35,15 @@ const template_sdf_plane: GNodeT =
             value: 0,
         }
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_sdf_z_plane',
         argumentRowIds: [ 'coordinates', 'height' ],
         outputRowId: 'output',
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [ inc_sdf_z_plane.id ],
+    includeIds: [ inc_sdf_z_plane.id ],
 }
 
 export default template_sdf_plane

@@ -1,38 +1,6 @@
-import { ArithmeticOperations, DataTypes, ProgramOperationTypes } from "../sceneProgram";
-import { Point, Override } from "../UtilityTypes";
-import { RowT, RowS, RowZ } from "./Rows";
-
-export interface GNodeBaseOperation {}
-
-export interface GNodeArithmeticOperation extends GNodeBaseOperation
-{
-    type: ProgramOperationTypes.Arithmetic;
-    lhsRowId: string;
-    rhsRowId: string;
-    outputRowId: string;
-    outputDatatype: DataTypes;
-    operation: ArithmeticOperations;
-}
-
-export interface GNodeCallOperation extends GNodeBaseOperation
-{
-    type: ProgramOperationTypes.Call;
-    argumentRowIds: string[],
-    functionName: string,
-    outputRowId: string;
-    outputDatatype: DataTypes,
-}
-
-export interface GNodeSpecialOperation extends GNodeBaseOperation
-{
-    type: ProgramOperationTypes.Output;
-    inputRowId: string;
-}
-
-export type GNodeOperation = 
-    | GNodeArithmeticOperation
-    | GNodeCallOperation
-    | GNodeSpecialOperation
+import { ProgramOperationOptions } from "../sceneProgram";
+import { Override, Point } from "../UtilityTypes";
+import { RowS, RowT, RowZ } from "./Rows";
 
 export enum GNodeTypes
 {
@@ -45,8 +13,8 @@ export interface GNodeT
     id: string;
     type: GNodeTypes;
     rows: Array<RowT>;
-    operation: GNodeOperation;
-    glslSnippedIds: string[];
+    operationOptions: ProgramOperationOptions;
+    includeIds: string[];
 }
 
 export interface GNodeS

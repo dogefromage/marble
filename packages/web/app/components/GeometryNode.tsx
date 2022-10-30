@@ -39,8 +39,9 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
     box-shadow: 5px 5px #00000066;
 
     ${({ isActive }) => isActive ? css`
-        outline: solid 2px #2b2b2b;
-        outline-offset: 2px;
+        /* outline: solid 2px #2b2b2b;
+        outline-offset: 2px; */
+        outline: solid 2px #e74a54;
     ` : ''}   
 
     cursor: pointer;
@@ -128,16 +129,16 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
 
                 e.stopPropagation();
             }}
-            onDoubleClick={e => 
-            {
-                dispatch(geometriesRemoveNode({
-                    geometryId: geometryId,
-                    nodeId: node.id,
-                    undo: {}
-                }));
+            // onDoubleClick={e => 
+            // {
+            //     dispatch(geometriesRemoveNode({
+            //         geometryId: geometryId,
+            //         nodeId: node.id,
+            //         undo: {}
+            //     }));
                 
-                e.stopPropagation();
-            }}
+            //     e.stopPropagation();
+            // }}
         >
         {
             node.rows.map((row, rowIndex) =>
@@ -146,9 +147,6 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
                     nodeId={node.id}
                     key={row.id}
                     row={row}
-                    connections={
-                        row.displayConnected ? 1 : 0
-                    }
                 />
             )
         }

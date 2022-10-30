@@ -1,19 +1,6 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, GLSLSnippet } from "../../types";
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, ProgramInclude } from "../../types";
 import { glsl } from "../../utils/codeGeneration/glslTag";
 import { TEMPLATE_FAR_AWAY } from "../constants";
-
-const code = glsl`
-float inc_difference(float a, float b)
-{
-    return max(a, -b);
-}
-`;
-
-export const inc_difference: GLSLSnippet = 
-{
-    id: 'inc_difference',
-    code,
-};
 
 const template_difference: GNodeT =
 {
@@ -47,15 +34,15 @@ const template_difference: GNodeT =
             value: 0,
         },
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_difference',
         argumentRowIds: [ 'a', 'b' ],
         outputRowId: 'c',
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [ inc_difference.id ],
+    includeIds: [ inc_difference.id ],
 }
 
 export default template_difference;

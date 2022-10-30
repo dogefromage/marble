@@ -30,9 +30,9 @@ const ContextMenu = () =>
             position={active.position}
             onUnfocus={closeContext}
         >
-            <MenuTitle 
+            {/* <MenuTitle 
                 text={active.name}
-            />
+            /> */}
             {
                 selectedCommands.map(command =>
                 {

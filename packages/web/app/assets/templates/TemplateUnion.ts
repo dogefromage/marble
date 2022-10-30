@@ -1,19 +1,6 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, GLSLSnippet } from "../../types";
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, ProgramInclude } from "../../types";
 import { glsl } from "../../utils/codeGeneration/glslTag";
 import { TEMPLATE_FAR_AWAY } from "../constants";
-
-const code = glsl`
-float inc_union(float a, float b)
-{
-    return min(a, b);
-}
-`;
-
-export const inc_union: GLSLSnippet = 
-{
-    id: 'inc_union',
-    code,
-};
 
 const template_union: GNodeT =
 {
@@ -47,15 +34,15 @@ const template_union: GNodeT =
             value: TEMPLATE_FAR_AWAY,
         },
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_union',
         argumentRowIds: [ 'a', 'b' ],
         outputRowId: 'c',
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [ inc_union.id ],
+    includeIds: [ inc_union.id ],
 }
 
 export default template_union;

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { GLSLSnippet, GNodeT, TemplatesSliceState } from "../types";
+import { ProgramInclude, GNodeT, TemplatesSliceState } from "../types";
 
 const initialState: TemplatesSliceState = 
 {
@@ -16,7 +16,7 @@ export const templatesSlice = createSlice({
         {
             s.templates[a.payload.template.id] = a.payload.template;
         },
-        addGLSLSnippet: (s, a: PayloadAction<{ glslSnippet: GLSLSnippet }>) =>
+        addGLSLSnippet: (s, a: PayloadAction<{ glslSnippet: ProgramInclude }>) =>
         {
             s.glslSnippets[a.payload.glslSnippet.id] = a.payload.glslSnippet;
         }

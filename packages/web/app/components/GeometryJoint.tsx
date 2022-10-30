@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from '@marble/interactive';
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesConnectJoints } from '../slices/geometriesSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
@@ -11,6 +11,7 @@ export const JOINT_OFFSET = -32;
 const JointDiv = styled.div<{
     direction: JointDirection;
     connected: boolean;
+    additional?: boolean;
     dataType: DataTypes;
     isHovering: boolean;
 }>`
@@ -44,6 +45,12 @@ const JointDiv = styled.div<{
         background-color: ${({ theme, dataType }) => theme.colors.dataTypes[dataType] };
         border-radius: 50%;
 
+        ${({ additional, theme, dataType }) => additional ? css`
+            background-color: unset;
+            outline: solid 3px ${theme.colors.dataTypes[dataType]};
+            outline-offset: -3px;
+        ` : ''} 
+
         opacity: ${({ connected, isHovering }) => 
         {
             if (isHovering) return 1;
@@ -63,11 +70,12 @@ interface Props
     geometryId: string;
     location: JointLocation;
     direction: JointDirection;
-    connected: boolean;
     dataType: DataTypes;
+    connected: boolean;
+    additional?: boolean;
 }
 
-const GeometryJoint = ({ geometryId, location, direction, connected, dataType }: Props) =>
+const GeometryJoint = ({ geometryId, location, direction, dataType, connected, additional }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -130,6 +138,7 @@ const GeometryJoint = ({ geometryId, location, direction, connected, dataType }:
         <JointDiv
             direction={direction}
             connected={connected}
+            additional={additional}
             dataType={dataType}
             { ...drag.handlers }
             { ...drop.handlers }

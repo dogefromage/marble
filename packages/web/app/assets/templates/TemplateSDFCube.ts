@@ -1,21 +1,6 @@
-import { DataTypes, DefaultFunctionArgNames, GLSLSnippet, GNodeT, GNodeTypes, ProgramOperationTypes, RowTypes } from "../../types";
+import { DataTypes, DefaultFunctionArgNames, ProgramInclude, GNodeT, GNodeTypes, ProgramOperationTypes, RowTypes } from "../../types";
 import { glsl } from "../../utils/codeGeneration/glslTag";
 import { TemplateColors } from "../constants";
-
-const code = glsl`
-float inc_sdf_cube(vec3 p, float s)
-{
-    vec3 b = vec3(s, s, s);
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-}
-`;
-
-export const inc_sdf_cube: GLSLSnippet = 
-{
-    id: 'inc_sdf_cube',
-    code,
-};
 
 const template_sdf_cube: GNodeT = 
 {
@@ -50,15 +35,15 @@ const template_sdf_cube: GNodeT =
             value: 1,
         }
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_sdf_cube',
         argumentRowIds: [ 'coordinates', 'size' ],
         outputRowId: 'output',
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [ inc_sdf_cube.id ],
+    includeIds: [ inc_sdf_cube.id ],
 }
 
 export default template_sdf_cube;

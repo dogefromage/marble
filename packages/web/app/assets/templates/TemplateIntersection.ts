@@ -1,19 +1,6 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, GLSLSnippet } from "../../types";
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, ProgramOperationTypes, ProgramInclude } from "../../types";
 import { glsl } from "../../utils/codeGeneration/glslTag";
 import { TEMPLATE_FAR_AWAY } from "../constants";
-
-const code = glsl`
-float inc_intersection(float a, float b)
-{
-    return max(a, b);
-}
-`;
-
-export const inc_intersection: GLSLSnippet = 
-{
-    id: 'inc_intersection',
-    code,
-};
 
 const template_intersection: GNodeT =
 {
@@ -47,15 +34,15 @@ const template_intersection: GNodeT =
             value: 0,
         },
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_intersection',
         argumentRowIds: [ 'a', 'b' ],
         outputRowId: 'c',
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [ inc_intersection.id ],
+    includeIds: [ inc_intersection.id ],
 }
 
 export default template_intersection;

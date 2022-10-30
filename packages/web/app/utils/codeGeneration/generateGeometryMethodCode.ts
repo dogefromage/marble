@@ -40,25 +40,25 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
 
     for (const op of sceneProgram.operations)
     {
-        if (op.type === ProgramOperationTypes.Arithmetic)
+        if (op.type === ProgramOperationTypes.BinaryArithmetic)
         {
-            const { outputDatatype, outputElement, lhs, operation, rhs } = op;
-            const line = `${outputDatatype} ${outputElement} = ${lhs} ${operation} ${rhs};`;
+            const { type_output, var_output, var_lhs, operation, var_rhs } = op;
+            const line = `${type_output} ${var_output} = ${var_lhs} ${operation} ${var_rhs};`;
             methodCodeList.push(line);
         }
-        else if (op.type === ProgramOperationTypes.Call)
+        else if (op.type === ProgramOperationTypes.Invocation)
         {
-            const { outputDatatype, outputElement, functionArgs, functionName } = op;
+            const { type_output, var_output, var_args, name_function } = op;
 
-            const argList = functionArgs.join(', ');
+            const argList = var_args.join(', ');
 
-            const line = `${outputDatatype} ${outputElement} = ${functionName}(${argList});`;
+            const line = `${type_output} ${var_output} = ${name_function}(${argList});`;
             methodCodeList.push(line);
         }
-        else if (op.type === ProgramOperationTypes.Output)
+        else if (op.type === ProgramOperationTypes.Return)
         {
-            const { input } = op;
-            const line = `return ${input};`;
+            const { var_input } = op;
+            const line = `return ${var_input};`;
             methodCodeList.push(line);
         }
     }

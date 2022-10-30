@@ -29,6 +29,8 @@ const MenuWrapper = styled.div<MenuWrapperProps>`
     background-color: white;
     border-radius: 3px;
     box-shadow: 5px 5px #00000066;
+
+    outline: solid 1px black;
 `;
 
 interface Props

@@ -1,10 +1,12 @@
 import { MapEvery, ObjMap } from "../UtilityTypes";
+import { ProgramOperation } from "./ProgramOperation";
 
 export enum ProgramOperationTypes
 {
-    Arithmetic = 'arithmetic',
-    Call = 'call',
-    Output = 'output',
+    BinaryArithmetic = 'binary-arithmetic',
+    InvocationTree = 'invocation-tree',
+    Invocation = 'invocation',
+    Return = 'return',
 }
 
 export enum ArithmeticOperations
@@ -50,56 +52,10 @@ export const DefaultFunctionArgs: FunctionArg[] =
     },
 ];
 
-export interface ProgramOutputOperation
-{
-    type: ProgramOperationTypes.Output;
-    input: string;
-
-    /**
-     *        [element]
-     * return xy       ;
-     */
-}
-
-export interface ProgramArithmeticOperation
-{
-    type: ProgramOperationTypes.Arithmetic;
-    lhs: string;
-    rhs: string;
-    outputElement: string | null;
-    outputDatatype: DataTypes;
-    operation: ArithmeticOperations;
-    
-    /**
-     * [dt_out] [el_out]   [lhs] [operation] [rhs]
-     * float    c        = a     *           b    ;
-     */
-}
-
-export interface ProgramCallOperation
-{
-    type: ProgramOperationTypes.Call;
-    outputElement: string | null;
-    outputDatatype: DataTypes;
-    functionArgs: string[];
-    functionName: string;
-
-    /**
-     * [dt_out] [el_out] [fn] [el_in]
-     * float    y =      f(   x      );
-     */
-}
-
-export type ProgramOperation =
-    | ProgramOutputOperation
-    | ProgramArithmeticOperation 
-    | ProgramCallOperation
-
 export interface ProgramTextureVar
 {
-    // value: any;
-    name: string;
     dataType: DataTypes;
+    name: string;
     textureCoordinate: number;
 }
 
@@ -118,6 +74,15 @@ export interface ProgramConstant
     value: any;
 }
 
+export interface PartialProgram
+{
+    functionArgs: FunctionArg[];
+    constants: ProgramConstant[];
+    textureVars: ProgramTextureVar[];
+    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
+    includeIds: Set<ProgramInclude>;
+}
+
 export interface SceneProgram
 {
     methodName: string;
@@ -133,8 +98,8 @@ export interface SceneProgram
     methodReturnType: DataTypes;
 }
 
-export interface GLSLSnippet
+export interface ProgramInclude
 {
     id: string;
-    code: string;
+    glslCode: string;
 }

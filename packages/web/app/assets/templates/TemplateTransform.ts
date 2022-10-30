@@ -1,18 +1,5 @@
-import { GNodeT, GNodeTypes, RowTypes, DataTypes, DefaultFunctionArgNames, ProgramOperationTypes, GLSLSnippet } from "../../types";
+import { GNodeT, GNodeTypes, RowTypes, DataTypes, DefaultFunctionArgNames, ProgramOperationTypes, ProgramInclude } from "../../types";
 import { glsl } from "../../utils/codeGeneration/glslTag";
-
-const code = glsl`
-vec3 inc_transform(vec3 x, vec3 translate)
-{
-    return x - translate;
-}
-`;
-
-export const inc_transform: GLSLSnippet = 
-{
-    id: 'inc_transform',
-    code,
-};
 
 const template_transform: GNodeT =
 {
@@ -47,15 +34,15 @@ const template_transform: GNodeT =
             value: [ 0, 0, 0 ],
         },
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Call,
+        type: ProgramOperationTypes.Invocation,
         functionName: 'inc_transform',
         argumentRowIds: [ 'input', 'translation' ],
         outputRowId: 'output',
         outputDatatype: DataTypes.Vec3,
     },
-    glslSnippedIds: [ inc_transform.id ],
+    includeIds: [ inc_transform.id ],
 }
 
 export default template_transform;

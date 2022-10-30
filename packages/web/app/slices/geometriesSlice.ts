@@ -1,8 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { stringify } from "querystring";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { GeometryS, GNodeT, Point, GNodeS, GeometriesSliceState, UndoAction, ProgramOperationTypes, JointLocation, DataTypes } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, JointLocation, Point, ProgramOperationTypes, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -75,7 +74,7 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.operation.type === ProgramOperationTypes.Output)
+            if (a.payload.template.operationOptions.type === ProgramOperationTypes.Return)
             {
                 g.outputId = node.id;
                 g.compilationValidity++;
@@ -142,8 +141,7 @@ export const geometriesSlice = createSlice({
             const inputRow = inputNode.rows[a.payload.inputJoint.rowId] || {};
             inputNode.rows[a.payload.inputJoint.rowId] = inputRow;
 
-            if (a.payload.inputDataType !== a.payload.outputDataType)
-                return console.error(`Connected rows must have same dataType`);
+            if (a.payload.inputDataType !== a.payload.outputDataType) return console.error(`Connected rows must have same dataType`);
 
             inputRow.connectedOutput = 
             { 

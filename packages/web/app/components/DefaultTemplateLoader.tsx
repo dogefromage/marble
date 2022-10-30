@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import defaultGlslSnippets from '../assets/defaultGlslSnippets';
+import defaultProgramIncludes from '../assets/defaultIncludes';
 import defaultTemplates from '../assets/defaultTemplates';
 import { useAppDispatch } from '../redux/hooks';
 import { templatesAddGLSLSnippet, templatesAddTemplate } from '../slices/templatesSlice';
@@ -22,7 +22,7 @@ const DefaultTemplateLoader = ({ }: Props) =>
             }));
         }
         
-        for (const glsl of defaultGlslSnippets)
+        for (const glsl of defaultProgramIncludes)
         {
             dispatch(templatesAddGLSLSnippet({
                 glslSnippet: glsl,

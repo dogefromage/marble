@@ -32,16 +32,16 @@ const template_add: GNodeT =
             value: 0,
         },
     ],
-    operation: 
+    operationOptions: 
     {
-        type: ProgramOperationTypes.Arithmetic,
+        type: ProgramOperationTypes.BinaryArithmetic,
         lhsRowId: 'a',
         rhsRowId: 'b',
         outputRowId: 'c',
         operation: ArithmeticOperations.Add,
         outputDatatype: DataTypes.Float,
     },
-    glslSnippedIds: [],
+    includeIds: [],
 }
 
 export default template_add;

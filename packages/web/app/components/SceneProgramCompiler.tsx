@@ -6,7 +6,8 @@ import { selectTemplates } from '../slices/templatesSlice';
 import { DataTypes, InputOnlyRowT, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
 import { assertRowHas } from '../utils/geometries/assertions';
 import zipGeometry from '../utils/geometries/zipGeometry';
-import { compileGeometries, GeometriesCompilationError } from '../utils/sceneProgram/compileGeometries';
+import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
+import { compileGeometries } from '../utils/sceneProgram/compileGeometries';
 
 const SceneProgramCompiler = () =>
 {
