@@ -1,4 +1,4 @@
-import { LOOKUP_TEXTURE_SIZE } from "../../classes/ViewportQuadProgram";
+import { LOOKUP_TEXTURE_SIZE } from "../viewport/ViewportQuadProgram";
 import { glsl } from "./glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////

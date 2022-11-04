@@ -1,10 +1,10 @@
-import { Counter, DefaultFunctionArgs, GeometryZ, PartialProgram, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, SceneProgram } from "../../types";
+import { DefaultFunctionArgs, GeometryZ, PartialProgram, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, SceneProgram, RowTypes } from "../../types";
+import { Counter } from "../Counter";
 import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import { GeometriesCompilationError, GeometriesCompilationErrorTypes } from "./compilationError";
 import { createOperation } from "./createOperations";
-import curriedRowVarNameGenerator from "./curriedRowVarNameGenerator";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";
 
@@ -71,20 +71,19 @@ export function compileGeometries(
             partialProgram.includeIds.add(snippet);
         }
 
-        return createOperation({
+        return createOperation(
             nodeIndex,
             node, 
-            incomingEdges: backwardsAdjList[nodeIndex],
-            outgoingEdges: forwardsAdjList[nodeIndex],
             textureCoordinateCounter,
             partialProgram,
-        });
+            backwardsAdjList[nodeIndex],
+        );
     });
 
     const includedGLSLCode = [ ...partialProgram.includeIds ].map(s => s.glslCode);
 
     const { row: outputRow } = 
-        getRowById<OutputRowT>(geometry.nodes[outputIndex], 'input');
+        getRowById<OutputRowT>(geometry.nodes[outputIndex], 'input', RowTypes.Output);
 
     const finalProgram: SceneProgram =
     {

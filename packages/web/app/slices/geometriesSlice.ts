@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, JointLocation, Point, ProgramOperationTypes, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -20,14 +20,34 @@ function createGeometry(id: string)
     return geometry;
 }
 
+function createDefaultRowState()
+{
+    const rowS: RowS = {
+        connectedOutputs: [],
+    }
+    return rowS;
+}
+
 function createNode(template: GNodeT, nextIdIndex: number, position: Point)
 {
+    const rows = Object.fromEntries(
+        template.rows.map(row => [
+            row.id,
+            createDefaultRowState()
+        ])
+    );
+    
+    template.rows.forEach(row =>
+    {
+        rows[row.id] = createDefaultRowState();
+    });
+
     const node: GNodeS = 
     {
         id: generateAlphabeticalId(nextIdIndex),
         templateId: template.id,
         position: { ...position },
-        rows: {},
+        rows,
     }
 
     return {
@@ -138,16 +158,25 @@ export const geometriesSlice = createSlice({
             }); 
             if (!inputNode) return;
 
-            const inputRow = inputNode.rows[a.payload.inputJoint.rowId] || {};
-            inputNode.rows[a.payload.inputJoint.rowId] = inputRow;
+            const inputRow = inputNode.rows[a.payload.inputJoint.rowId];
 
             if (a.payload.inputDataType !== a.payload.outputDataType) return console.error(`Connected rows must have same dataType`);
 
-            inputRow.connectedOutput = 
-            { 
-                nodeId: a.payload.outputJoint.nodeId,
-                rowId: a.payload.outputJoint.rowId,
-            };
+            const outputs = inputRow.connectedOutputs; 
+            const newSubIndex = a.payload.inputJoint.subIndex;
+
+            if (outputs.length > newSubIndex)
+            {
+                outputs[newSubIndex] = a.payload.outputJoint;
+            }
+            else if (outputs.length === newSubIndex)
+            {
+                outputs.push(a.payload.outputJoint);
+            }
+            else
+            {
+                return console.error(`Sub index is out of range`);
+            }
 
             g.compilationValidity++;
         },
@@ -165,7 +194,15 @@ export const geometriesSlice = createSlice({
                     }
                 }); 
 
-                delete node?.rows[joint.rowId]?.connectedOutput;
+                const outputs = node?.rows[joint.rowId].connectedOutputs;
+                if (!outputs) 
+                {
+                    console.error(`Output not found`);
+                    continue;
+                }
+
+                // Remove desired entry
+                outputs.splice(joint.subIndex, 1);
             }
 
             g.compilationValidity++;

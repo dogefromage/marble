@@ -1,6 +1,6 @@
 import { ProgramOperationOptions } from "../sceneProgram";
-import { Override, Point } from "../UtilityTypes";
-import { RowS, RowT, RowZ } from "./Rows";
+import { Point } from "../UtilityTypes";
+import { RowS, SpecificRowT, RowZ, RowT } from "./Rows";
 
 export enum GNodeTypes
 {
@@ -12,7 +12,7 @@ export interface GNodeT
 {
     id: string;
     type: GNodeTypes;
-    rows: Array<RowT>;
+    rows: Array<SpecificRowT>;
     operationOptions: ProgramOperationOptions;
     includeIds: string[];
 }
@@ -27,4 +27,7 @@ export interface GNodeS
     }
 }
 
-export type GNodeZ = Override<GNodeS & GNodeT, 'rows',  Array<RowZ>>;
+export type GNodeZ = 
+    & Pick<GNodeS, 'id' | 'templateId' | 'position'>
+    & Pick<GNodeT, 'type' | 'operationOptions' | 'includeIds'>
+    & { rows: RowZ[] }

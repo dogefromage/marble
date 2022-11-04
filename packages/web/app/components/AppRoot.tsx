@@ -38,24 +38,26 @@ const AppRoot = ({ projectId }: Props) =>
     }, [])
 
     return (
-        store &&
-        <Provider store={store}>
-            {/* Views */}
-            <Wrapper
-                onContextMenu={e => e.preventDefault()}
-            >
-                <ViewportView panelId='4321' />
-                <GeometryEditorView panelId='1234' />
-            </Wrapper>
-            {/* "Modules" / "Services" */}
-            <SceneProgramCompiler />
-            <DefaultTemplateLoader />
-            <KeyboardCommandListener />
-            <ContextMenu />
-            {/* Portals */}
-            <ContextMenuPortalMount />
-            <DragzonePortalMount />
-        </Provider>
+        store ? 
+        (
+            <Provider store={store}>
+                {/* Views */}
+                <Wrapper
+                    onContextMenu={e => e.preventDefault()}
+                >
+                    <ViewportView panelId='4321' />
+                    <GeometryEditorView panelId='1234' />
+                </Wrapper>
+                {/* "Modules" / "Services" */}
+                {/* <SceneProgramCompiler /> */}
+                <DefaultTemplateLoader />
+                <KeyboardCommandListener />
+                <ContextMenu />
+                {/* Portals */}
+                <ContextMenuPortalMount />
+                <DragzonePortalMount />
+            </Provider>
+        ) : null
     );
 }
 

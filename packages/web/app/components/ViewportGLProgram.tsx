@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import { useEffect, useState } from 'react';
-import { ViewportQuadProgram } from '../classes/ViewportQuadProgram';
+import { ViewportQuadProgram } from '../utils/viewport/ViewportQuadProgram';
 import useEffectTrigger from '../hooks/useEffectTrigger';
 import { useAppSelector } from '../redux/hooks';
 import { selectViewportPanels } from '../slices/panelViewportSlice';

@@ -9,7 +9,7 @@ function topSortDfs(adjList: ForwardAdjacencyList, order: number[], visited: Set
 
     for (const edge of generateEdges(adjList[at]))
     {
-        topSortDfs(adjList, order, visited, edge.toNodeIndex);
+        topSortDfs(adjList, order, visited, edge.toIndices[0]);
     }
 
     order.unshift(at);

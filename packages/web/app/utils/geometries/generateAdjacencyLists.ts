@@ -1,24 +1,21 @@
-import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
 import _ from 'lodash';
-import { generateEdgeVarName } from "../sceneProgram/programSymbolNames";
+import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
 import { assertRowHas } from "./assertions";
-import rowLocationKey from "./rowLocationKey";
+import { rowLocationHash } from "./locationHashes";
 
 export interface GeometryEdge
 {
-    fromNodeIndex: number;
-    fromRowIndex: number;
-    toNodeIndex: number;
-    toRowIndex: number;
+    id: string;
+    fromIndices: [ number, number ];
+    toIndices: [ number, number, number ];
     dataType: DataTypes;
-    edgeKey: string;
-    key: string;
+    // outputHash: string;
 }
 
 export type NestedMap<T> = ObjMap<ObjMap<T>>;
 
 export type ForwardAdjacencyList = NestedMap<GeometryEdge[]>;
-export type BackwardAdjacencyList = NestedMap<GeometryEdge>;
+export type BackwardAdjacencyList = NestedMap<GeometryEdge[]>;
 
 function customizer(objValue: any, srcValue: any)
 {
@@ -32,9 +29,6 @@ export function generateAdjacencyLists(g: GeometryZ)
 {
     const N = g.nodes.length;
 
-    // const forwards: GeometryEdge[][][] = [];
-    // const backwards: GeometryEdge[][] = [];
-
     const forwardsAdjList: ForwardAdjacencyList = {};
     const backwardsAdjList: BackwardAdjacencyList = {};
 
@@ -45,7 +39,11 @@ export function generateAdjacencyLists(g: GeometryZ)
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
         {
             const row = node.rows[ rowIndex ];
-            const key = rowLocationKey(node.id, row.id);
+
+            const key = rowLocationHash({
+                nodeId: node.id,
+                rowId: row.id,
+            });
             outputIndicesMap.set(key, { nodeIndex, rowIndex });
         }
     }
@@ -56,39 +54,47 @@ export function generateAdjacencyLists(g: GeometryZ)
         for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
         {
             const row = node.rows[ rowIndex ];
-            if (row.connectedOutput)
-            {
-                const outputKey = rowLocationKey(row.connectedOutput.nodeId, row.connectedOutput.rowId);
-                const outputIndices = outputIndicesMap.get(outputKey);
-                if (!outputIndices) continue;
 
-                const symbol = generateEdgeVarName(outputIndices.nodeIndex, outputIndices.rowIndex);
-                const key = [ 'edge-key', outputIndices.nodeIndex, outputIndices.rowIndex, nodeIndex, rowIndex ].join('-');
+            for (let subIndex = 0; subIndex < row.connectedOutputs.length; subIndex++)
+            {
+                const output = row.connectedOutputs[subIndex];
+
+                const fromRowKey = rowLocationHash(output);
+                const fromRowCoordinates = outputIndicesMap.get(fromRowKey);
+                if (!fromRowCoordinates) continue;
 
                 if (!assertRowHas<OutputRowT>(row, 'dataType')) 
                     throw new Error(`Property missing 'dataType'`);
 
+                const fromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
+                const toIndices = [ nodeIndex, rowIndex, subIndex ];
+
+                const edgeId = [ 
+                    'edge', 
+                    ...fromIndices,
+                    ...toIndices,
+                ].join('-');
+    
                 const edge: GeometryEdge =
                 {
-                    fromNodeIndex: outputIndices.nodeIndex,
-                    fromRowIndex: outputIndices.rowIndex,
-                    toNodeIndex: nodeIndex,
-                    toRowIndex: rowIndex,
+                    id: edgeId,
+                    fromIndices: fromIndices as [ number, number ],
+                    toIndices: toIndices as [ number, number, number ],
                     dataType: row.dataType,
-                    edgeKey: symbol,
-                    key, 
                 };
 
                 const forwardAddition = { 
-                    [outputIndices.nodeIndex]: {
-                        [outputIndices.rowIndex]: [ edge ],
+                    [fromRowCoordinates.nodeIndex]: {
+                        [fromRowCoordinates.rowIndex]: [ edge ],
                     }
                 };
                 _.mergeWith(forwardsAdjList, forwardAddition, customizer);
 
                 const backwardAddition = { 
                     [nodeIndex]: {
-                        [rowIndex]: edge,
+                        [rowIndex]: {
+                            [subIndex]: edge,
+                        }
                     }
                 };
                 _.mergeWith(backwardsAdjList, backwardAddition, customizer);

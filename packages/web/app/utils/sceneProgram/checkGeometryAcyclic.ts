@@ -24,7 +24,7 @@ function acylicDFS(adjList: ForwardAdjacencyList, at: number, status: ObjMap<Nod
 
     for (const edge of generateEdges(adjList[at]))
     {
-        acylicDFS(adjList, edge.toNodeIndex, status, cycles);
+        acylicDFS(adjList, edge.toIndices[0], status, cycles);
     }
 
     status[at] = NodeStatus.AcyclicDownwards;

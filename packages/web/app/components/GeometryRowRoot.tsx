@@ -1,24 +1,30 @@
-import { FieldRowT, EveryRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
-import rowMeta from '../utils/geometries/rowMeta';
+import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowInputStacked from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 
-export type RowProps<T extends EveryRowT = EveryRowT> =
+export type RowMetaProps<T extends RowT = RowT> = T | RowZ<T>;
+
+export function rowMeta(heightUnits = 1, dynamicValue = false): RowMetadata
+{
+    return { heightUnits, dynamicValue };
+}
+
+export function getRowMetadata(row: RowMetaProps): RowMetadata
+{
+    if (row.type === RowTypes.Field)
+        return getRowMetadataField(row as RowMetaProps<FieldRowT>);
+
+    return rowMeta();
+}
+
+export type RowProps<T extends RowT = RowT> =
 {
     geometryId: string;
     nodeId: string;
     row: RowZ<T>;
-}
-
-export function getRowMetadata(row: RowZ): RowMetadata
-{
-    if (row.type === RowTypes.Field)
-        return getRowMetadataField(row);
-
-    return rowMeta();
 }
 
 const GeometryRowRoot = (props: RowProps) =>

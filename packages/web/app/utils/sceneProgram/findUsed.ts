@@ -7,7 +7,7 @@ function findUsedDFS(adjList: ForwardAdjacencyList, used: Set<number>, at: numbe
 
     for (const edge of generateEdges(adjList[at]))
     {
-        const nextUsed = findUsedDFS(adjList, used, edge.toNodeIndex);
+        const nextUsed = findUsedDFS(adjList, used, edge.toIndices[0]);
 
         if (nextUsed)
         {

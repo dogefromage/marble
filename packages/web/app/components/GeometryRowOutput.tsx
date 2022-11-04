@@ -8,6 +8,8 @@ import GeometryRowNameP from '../styled/GeometryRowNameP';
 
 const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
 {
+    const connected = row.displayConnected || false;
+
     return (
         <GeometryRowDiv
             heightUnits={1}
@@ -21,7 +23,7 @@ const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
                 geometryId={geometryId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='output'
-                connected={row.connectedOutputs.length > 0}
+                connected={connected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

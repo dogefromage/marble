@@ -1,8 +1,7 @@
-import { ObjMap } from "../types/UtilityTypes";
-import { ProgramUniform } from "../types/viewport";
-import checkShaderError from "../utils/viewport/checkShaderError";
-import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "../utils/viewport/createFullscreenQuad";
-import { setUniform } from "../utils/viewport/setUniform";
+import { ObjMap } from "../../types/UtilityTypes";
+import { ProgramUniform } from "../../types/viewport";
+import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "./createFullscreenQuad";
+import { setUniform } from "./setUniform";
 
 export const LOOKUP_TEXTURE_SIZE = 4;
 
@@ -31,7 +30,7 @@ export class ViewportQuadProgram
         this.vertexBuffer = buffers.vertexBuffer;
         this.indexBuffer = buffers.indexBuffer;
 
-        const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0.5);
+        // const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0.5);
 
         this.varTexture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
@@ -44,7 +43,8 @@ export class ViewportQuadProgram
             0,            // border
             gl.RED, // format
             gl.FLOAT,  // type
-            testData,
+            null
+            // testData,
         );
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

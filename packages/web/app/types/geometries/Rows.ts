@@ -1,4 +1,5 @@
 import { DataTypes } from "../sceneProgram";
+import { ObjMap } from "../UtilityTypes";
 
 /**
  * Values
@@ -71,34 +72,30 @@ export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT
     dataType: D;
 }
 
-/**
- * Generic template types
- */
-
-export type EveryRowT<D extends DataTypes = DataTypes> =
+export type RowT<D extends DataTypes = DataTypes> =
     | NameRowT
     | InputOnlyRowT<D>
     | StackedInputRowT<D>
     | OutputRowT<D>
     | FieldRowT<D>
 
-type GenericRowTMapped = 
+type RowTOverDataTypesMap = 
 {
-    [D in keyof typeof DataTypes]: EveryRowT<typeof DataTypes[D]>;
+    [D in keyof typeof DataTypes]: RowT<typeof DataTypes[D]>;
 }
-export type RowT = GenericRowTMapped[keyof typeof DataTypes];
+export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 
 /**
  * State and Zipped
  */
 
-export type RowS<T extends RowT | EveryRowT = EveryRowT> = Partial<T> &
+export type RowS<T extends RowT = RowT> = Partial<T> &
 {
-    connectedOutputs: JointLocation[];
-    // displayConnected?: boolean;
+    connectedOutputs: RowLocation[];
+    displayConnected?: true;
 }
 
-export type RowZ<T extends RowT | EveryRowT = EveryRowT> = RowS<T> & T;
+export type RowZ<T extends RowT = RowT> = RowS<T> & T;
 
 /**
  * Metadata
@@ -114,11 +111,15 @@ export interface RowMetadata
  * Locating
  */
 
-export type JointDirection = 'input' | 'output';
-export interface JointLocation
+export interface RowLocation
 {
     nodeId: string;
     rowId: string;
+}
+
+export type JointDirection = 'input' | 'output';
+export interface JointLocation extends RowLocation
+{
     subIndex: number;
 }
 
@@ -127,8 +128,9 @@ export interface JointLocation
  */
 
 export const JOINT_DND_TAG = 'dnd.joint';
-export interface JointDndTransfer extends JointLocation
+export interface JointDndTransfer
 {
+    location: JointLocation;
     direction: JointDirection;
     dataType: DataTypes;
 }

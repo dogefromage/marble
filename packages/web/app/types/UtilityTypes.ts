@@ -21,8 +21,3 @@ export interface Rect
 }
 
 export type MapEvery<M extends string, T> = { [ K in M ]: T };
-
-export interface Counter
-{
-    current: number;
-}

@@ -1,6 +1,5 @@
 import produce from 'immer';
 import { useMemo } from 'react';
-import styled from 'styled-components';
 import { useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
@@ -37,8 +36,8 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
     const adjacencyLists = useMemo(() =>
     {
         if (!zipped) return;
-        return generateAdjacencyLists(zipped);
-
+        const adjList = generateAdjacencyLists(zipped);
+        return adjList;
     }, [ zipped?.compilationValidity ]);
 
     const withConnections = useMemo(() =>
@@ -56,10 +55,8 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
                 {
                     const row = node.rows[rowIndex];
                     
-                    const inputExists = adjacencyLists.backwardsAdjList[nodeIndex]?.[rowIndex] != null;
                     const outputExists = adjacencyLists.forwardsAdjList[nodeIndex]?.[rowIndex]?.length > 0;
-                    
-                    row.displayConnected = inputExists || outputExists;
+                    row.displayConnected = outputExists;
                 }
             }
         });
@@ -68,19 +65,21 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
 
     const forwardEdges = adjacencyLists?.forwardsAdjList;
 
+    console.log('asdasdasd');
+
     return (
         <>
         {
             forwardEdges && withConnections &&
-            Object.values(forwardEdges).map(nodeEdges =>
-                Object.values(nodeEdges).map(rowEdges =>
-                    rowEdges.map(edge =>
+            Object.values(forwardEdges).map(edgesOfNode =>
+                Object.values(edgesOfNode).map(edgesOfRow =>
+                    edgesOfRow.map(edge =>
                         <LinkComponent 
-                            key={edge.key}
+                            key={edge.id}
                             geometryId={withConnections.id}
                             edge={edge}
-                            fromNode={withConnections.nodes[edge.fromNodeIndex]}
-                            toNode={withConnections.nodes[edge.toNodeIndex]}
+                            fromNode={withConnections.nodes[edge.fromIndices[0]]}
+                            toNode={withConnections.nodes[edge.toIndices[0]]}
                         />
                     )
                 )

@@ -1,6 +1,5 @@
 import { KeyCombination } from "../../types/command/KeyCombination";
 
-
 export default function matchesKeyCombination(
     keyCombination: KeyCombination,
     event: KeyboardEvent

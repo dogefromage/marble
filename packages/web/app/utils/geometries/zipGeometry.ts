@@ -1,4 +1,4 @@
-import { GeometryS, GeometryZ, GNodeT, GNodeZ } from "../../types";
+import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../types";
 import { ObjMap } from "../../types/UtilityTypes";
 
 class ZipError extends Error
@@ -30,6 +30,8 @@ export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
     
                 const rows = t.rows.map(rowT =>
                 {
+                    const rowS = node.rows[rowT.id];
+                    
                     // @ts-ignore
                     const rowZ: RowZ = 
                     {

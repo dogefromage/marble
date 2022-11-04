@@ -4,10 +4,12 @@ import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { DataTypes, InputOnlyRowT, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
+import { Counter } from '../utils/Counter';
 import { assertRowHas } from '../utils/geometries/assertions';
 import zipGeometry from '../utils/geometries/zipGeometry';
 import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
 import { compileGeometries } from '../utils/sceneProgram/compileGeometries';
+import { LOOKUP_TEXTURE_SIZE } from '../utils/viewport/ViewportQuadProgram';
 
 const SceneProgramCompiler = () =>
 {
@@ -15,7 +17,7 @@ const SceneProgramCompiler = () =>
     const geometries = useAppSelector(selectGeometries);
     const { templates, glslSnippets } = useAppSelector(selectTemplates);
     const geoZero = Object.values(geometries)[0];
-    const { program, textureVarLookupData } = useAppSelector(selectSceneProgram);
+    const { program } = useAppSelector(selectSceneProgram);
 
     const zipped = useMemo(() => 
     {
@@ -34,7 +36,8 @@ const SceneProgramCompiler = () =>
 
         try
         {
-            const newProgram = compileGeometries(zipped, glslSnippets, { current: 0 });
+            const textureCoordCounter = new Counter(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE);
+            const newProgram = compileGeometries(zipped, glslSnippets, textureCoordCounter);
             dispatch(sceneProgramSetProgram({
                 program: newProgram,
             }));

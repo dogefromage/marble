@@ -1,14 +1,25 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { EveryRowT } from "../../types";
+import { RowT } from "../../types";
 
-export default function countHeightUnits(rows: EveryRowT[], rowIndex: number)
+export default function countHeightUnits(rows: RowT[], rowIndex: number, subEdgeIndex = 0)
 {
     let totalHeight = 0;
 
-    for (let rowCounter = 0; rowCounter < Math.min(rowIndex, rows.length); rowCounter++)
+    let counterMax = Math.min(rowIndex, rows.length);
+
+    for (let rowCounter = 0; rowCounter < counterMax; rowCounter++)
     {
-        const rowMetadata = getRowMetadata(rows[rowCounter]);
-        totalHeight += rowMetadata.heightUnits;
+        let heightUnits = getRowMetadata(rows[rowCounter]).heightUnits;
+
+        /**
+         * ONLY last row can have subIndices
+         */
+        if (rowCounter === counterMax - 1)
+        {
+            heightUnits += heightUnits * subEdgeIndex;
+        }
+
+        totalHeight += heightUnits;
     }
 
     return totalHeight;

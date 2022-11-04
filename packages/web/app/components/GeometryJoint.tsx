@@ -86,7 +86,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
             e.dataTransfer.setDragImage(new Image(), 0, 0);
 
             return {
-                ...location,
+                location,
                 direction,
                 dataType,
             }
@@ -95,7 +95,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
 
     const droppableHandler = (e: React.DragEvent, transfer: JointDndTransfer) =>
     {
-        if (transfer.nodeId === location.nodeId ||
+        if (transfer.location.nodeId === location.nodeId ||
             transfer.direction === direction)
             return;
 
@@ -115,7 +115,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                     geometryId,
                     inputJoint: location,
                     inputDataType: dataType,
-                    outputJoint: transfer,
+                    outputJoint: transfer.location,
                     outputDataType: transfer.dataType,
                     undo: {}
                 }));
@@ -124,7 +124,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
             {
                 dispatch(geometriesConnectJoints({
                     geometryId,
-                    inputJoint: transfer,
+                    inputJoint: transfer.location,
                     inputDataType: dataType,
                     outputJoint: location,
                     outputDataType: transfer.dataType,
