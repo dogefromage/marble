@@ -17,7 +17,19 @@ const EditorWrapper = styled.div`
     width: 100%;
     height: 100%;
     user-select: none;
+
+    position: relative;
 `;
+
+const TestButton = styled.button`
+    
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%);
+
+    font-size: 25px;
+`
 
 const TEST_GEOMETRY_ID = '1234';
 
@@ -117,7 +129,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
             />
         }
         {
-            geometryId &&
+            geometryS &&
             <GeometryTemplateCatalog 
                 viewProps={viewProps}
             />
@@ -125,7 +137,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
         {
             // only for testing
             geometryId && !geometryS &&
-            <button
+            <TestButton
                 onClick={() =>
                 {
                     dispatch(geometriesNew({
@@ -135,7 +147,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
                 }}
             >
                 Create geometry
-            </button>
+            </TestButton>
         }
         </EditorWrapper>
     )

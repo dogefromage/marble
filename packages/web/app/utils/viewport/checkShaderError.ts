@@ -3,7 +3,7 @@ export default function checkShaderError(gl: WebGL2RenderingContext, shaderName:
 {
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) 
     {
-        console.log('ERROR IN SHADER: ' + shaderName);
+        console.warn('ERROR IN SHADER: ' + shaderName);
         console.error(gl.getShaderInfoLog(shader));
     }
 }

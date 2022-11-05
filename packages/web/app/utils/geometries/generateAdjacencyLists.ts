@@ -1,15 +1,17 @@
 import _ from 'lodash';
-import { DataTypes, GeometryZ, ObjMap, OutputRowT } from "../../types";
+import { DataTypes, GeometryZ, JointLocation, ObjMap, OutputRowT } from "../../types";
 import { assertRowHas } from "./assertions";
 import { rowLocationHash } from "./locationHashes";
+
+type FromIndices = [ number, number ];
+type ToIndices = [ number, number, number ];
 
 export interface GeometryEdge
 {
     id: string;
-    fromIndices: [ number, number ];
-    toIndices: [ number, number, number ];
+    fromIndices: FromIndices;
+    toIndices: ToIndices;
     dataType: DataTypes;
-    // outputHash: string;
 }
 
 export type NestedMap<T> = ObjMap<ObjMap<T>>;
@@ -48,6 +50,8 @@ export function generateAdjacencyLists(g: GeometryZ)
         }
     }
 
+    const strayConnectedJoints: JointLocation[] = [];
+
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
         const node = g.nodes[ nodeIndex ];
@@ -61,13 +65,22 @@ export function generateAdjacencyLists(g: GeometryZ)
 
                 const fromRowKey = rowLocationHash(output);
                 const fromRowCoordinates = outputIndicesMap.get(fromRowKey);
-                if (!fromRowCoordinates) continue;
+
+                if (!fromRowCoordinates)
+                {
+                    strayConnectedJoints.push({
+                        nodeId: node.id,
+                        rowId: row.id,
+                        subIndex,
+                    });
+                    continue;
+                }
 
                 if (!assertRowHas<OutputRowT>(row, 'dataType')) 
                     throw new Error(`Property missing 'dataType'`);
 
-                const fromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
-                const toIndices = [ nodeIndex, rowIndex, subIndex ];
+                const toIndices: ToIndices = [ nodeIndex, rowIndex, subIndex ];
+                const fromIndices: FromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
 
                 const edgeId = [ 
                     'edge', 
@@ -78,8 +91,8 @@ export function generateAdjacencyLists(g: GeometryZ)
                 const edge: GeometryEdge =
                 {
                     id: edgeId,
-                    fromIndices: fromIndices as [ number, number ],
-                    toIndices: toIndices as [ number, number, number ],
+                    fromIndices,
+                    toIndices,
                     dataType: row.dataType,
                 };
 
@@ -105,5 +118,6 @@ export function generateAdjacencyLists(g: GeometryZ)
     return {
         forwardsAdjList,
         backwardsAdjList,
+        strayConnectedJoints,
     }
 }

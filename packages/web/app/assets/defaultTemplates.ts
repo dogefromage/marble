@@ -1,4 +1,4 @@
-import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTypes, ProgramOperationTypes, RowTypes } from "../types";
+import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTypes, MAX_LENGTH, ProgramOperationTypes, RowTypes } from "../types";
 import { inc_difference, inc_intersection, inc_sdf_cube, inc_sdf_sphere, inc_sdf_z_plane, inc_transform, inc_union } from "./defaultIncludes";
 
 enum TemplateColors
@@ -68,6 +68,7 @@ const n_union: GNodeT =
         name_function: 'inc_union',
         row_args: 'inputs',
         row_output: 'output',
+        zero_value: TEMPLATE_FAR_AWAY,
     },
     includeIds: [ inc_union.id ],
 }

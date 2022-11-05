@@ -16,7 +16,7 @@ export function createOperation(
     node: GNodeZ,
     textureCoordinateCounter: Counter,
     partialProgram: PartialProgram,
-    incomingEdges: ObjMap<GeometryEdge>,
+    incomingEdges: ObjMap<GeometryEdge[]>,
 ): ProgramOperation
 {
     const varNameGenerator = new RowVarNameGenerator(
@@ -116,6 +116,7 @@ function createInvocationTreeOperation(props: CreateOperationProps<ProgramOperat
         name_function: operationOps.name_function,
         var_output: g.output(operationOps.row_output),
         type_output: outputRow.dataType,
+        zero_value: operationOps.zero_value,
     }
     return invocTree;
 }

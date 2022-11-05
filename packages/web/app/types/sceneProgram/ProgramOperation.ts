@@ -47,6 +47,7 @@ interface InvocationTreeOperationOptions
     name_function: string;
     row_args: string;
     row_output: string;
+    zero_value: number;
 }
 export interface InvocationTreeOperation
 {
@@ -55,6 +56,7 @@ export interface InvocationTreeOperation
     var_args: string[];
     var_output: string;
     type_output: DataTypes;
+    zero_value: number;
 }
 
 type ProgramOperationOptionsMap =

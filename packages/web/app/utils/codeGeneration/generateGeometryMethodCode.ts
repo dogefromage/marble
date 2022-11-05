@@ -1,6 +1,7 @@
-import { DataTypes, ProgramOperationTypes, SceneProgram } from "../../types";
+import { DataTypes, ProgramOperation, ProgramOperationTypes, SceneProgram } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
 import { formatValueGLSL, textureLookupDatatype } from "./formatValue";
+import { generateBinaryInvocationTree } from "./generateBinaryInvocationTree";
 import { glsl } from "./glslTag";
 
 const geometryMethodTemplate = glsl`
@@ -38,29 +39,11 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
         methodCodeList.push(line);
     }
 
+
     for (const op of sceneProgram.operations)
     {
-        if (op.type === ProgramOperationTypes.BinaryArithmetic)
-        {
-            const { type_output, var_output, var_lhs, operation, var_rhs } = op;
-            const line = `${type_output} ${var_output} = ${var_lhs} ${operation} ${var_rhs};`;
-            methodCodeList.push(line);
-        }
-        else if (op.type === ProgramOperationTypes.Invocation)
-        {
-            const { type_output, var_output, var_args, name_function } = op;
-
-            const argList = var_args.join(', ');
-
-            const line = `${type_output} ${var_output} = ${name_function}(${argList});`;
-            methodCodeList.push(line);
-        }
-        else if (op.type === ProgramOperationTypes.Return)
-        {
-            const { var_input } = op;
-            const line = `return ${var_input};`;
-            methodCodeList.push(line);
-        }
+        const opCode = generateOperationCode(op);
+        methodCodeList.push(opCode);
     }
 
     const methodCodeString = methodCodeList
@@ -75,4 +58,42 @@ export function generateGeometryMethodCode(sceneProgram: SceneProgram)
         method,
         methodName: sceneProgram.methodName,
     };
+}
+
+
+function generateOperationCode(op: ProgramOperation)
+{
+    if (op.type === ProgramOperationTypes.BinaryArithmetic)
+    {
+        const { type_output, var_output, var_lhs, operation, var_rhs } = op;
+        return `${type_output} ${var_output} = ${var_lhs} ${operation} ${var_rhs};`;
+    }
+    if (op.type === ProgramOperationTypes.Invocation)
+    {
+        const { type_output, var_output, var_args, name_function } = op;
+
+        const argList = var_args.join(', ');
+
+        return `${type_output} ${var_output} = ${name_function}(${argList});`;
+    }
+    if (op.type === ProgramOperationTypes.InvocationTree)
+    {
+        const { type_output, var_output, var_args, name_function, zero_value } = op;
+
+        let rhs = formatValueGLSL(zero_value, type_output);
+
+        if (var_args.length > 0)
+        {
+            rhs = generateBinaryInvocationTree(name_function, var_args);
+        }
+
+        return `${type_output} ${var_output} = ${rhs};`;
+    }
+    if (op.type === ProgramOperationTypes.Return)
+    {
+        const { var_input } = op;
+        return `return ${var_input};`;
+    }
+
+    throw new Error(`Operation not found`);
 }

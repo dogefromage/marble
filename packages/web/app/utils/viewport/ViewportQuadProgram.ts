@@ -3,7 +3,7 @@ import { ProgramUniform } from "../../types/viewport";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "./createFullscreenQuad";
 import { setUniform } from "./setUniform";
 
-export const LOOKUP_TEXTURE_SIZE = 4;
+export const LOOKUP_TEXTURE_SIZE = 64;
 
 export class ViewportQuadProgram
 {

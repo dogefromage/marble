@@ -45,9 +45,13 @@ const SceneProgramCompiler = () =>
         catch (e)
         {
             if (e instanceof GeometriesCompilationError)
-                console.info(`Geometry could not be compiled: ${e.type}`);
+            {
+                // console.info(`Geometry could not be compiled: ${e.type}`);
+            }
             else
+            {
                 throw e;
+            }
         }
 
     }, [ 
@@ -65,48 +69,34 @@ const SceneProgramCompiler = () =>
             const node = zipped.nodes[mapping.nodeIndex];
             const row = node?.rows[mapping.rowIndex];
 
-            if (!row)
-            {
-                console.warn(`Row not found while mapping textureVars`);
-                continue;
-            };
+            // can happen because zipped and program are not necessarily equivalend
+            if (!row) continue;
+            if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
 
-            if (!assertRowHas<InputOnlyRowT>(row, 'value'))
-            {
-                console.error(`Row must be input row`);
-                continue;
-            }
+            let subArray: number[];
             
             if (mapping.dataTypes === DataTypes.Vec2 ||
                 mapping.dataTypes === DataTypes.Vec3)
             {
-                const valueList = row.value as number[];
+                subArray = row.value as number[];
                 const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
-
-                if (!Array.isArray(valueList) || !(valueList.length === size))
-                {
-                    console.error(`value must be array of length ${size}`);
-                    continue;
-                }
-                
-                dispatch(sceneProgramSetLookupSubarray({
-                    startCoordinate: mapping.textureCoordinate,
-                    subArray: valueList,
-                }));
+                if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
             }
             else if (mapping.dataTypes === DataTypes.Float)
             {
-                if (typeof(row.value) !== 'number')
-                {
-                    console.error(`value must be number`);
-                    continue;
-                }
-
-                dispatch(sceneProgramSetLookupSubarray({
-                    startCoordinate: mapping.textureCoordinate,
-                    subArray: [ row.value ],
-                }));
+                if (typeof(row.value) !== 'number') continue;
+                subArray = [ row.value ];
             }
+            else
+            {
+                console.error(`Unknown datatype`);
+                continue;
+            }
+            
+            dispatch(sceneProgramSetLookupSubarray({
+                startCoordinate: mapping.textureCoordinate,
+                subArray,
+            }));
         }
     }, [ 
         program, 

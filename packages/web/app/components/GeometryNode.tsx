@@ -5,7 +5,7 @@ import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesPositionNode, geometriesRemoveNode } from '../slices/geometriesSlice';
+import { geometriesPositionNode } from '../slices/geometriesSlice';
 import { geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import { GNodeZ, ViewProps } from '../types';
 import { Point } from '../types/UtilityTypes';

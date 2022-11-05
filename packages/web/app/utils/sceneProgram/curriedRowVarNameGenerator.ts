@@ -12,7 +12,7 @@ export class RowVarNameGenerator
         private node: GNodeZ,
         private textureCoordinateCounter: Counter,
         private partialProgram: PartialProgram,
-        private incomingEdges?: ObjMap<GeometryEdge>,
+        private incomingEdges?: ObjMap<GeometryEdge[]>,
     ) {}
 
     private createConstant(rowIndex: number, row: InputOnlyRowT)
@@ -57,7 +57,7 @@ export class RowVarNameGenerator
         const { row, rowIndex } = getRowById<InputOnlyRowT>(this.node, rowId);
 
         // case 1: connection
-        const incomingEdge = this.getEdgeInto(rowIndex);
+        const incomingEdge = this.getEdgeInto(rowIndex)?.[0];
         if (incomingEdge) 
             return this.hashOutput(...incomingEdge.fromIndices);
 
@@ -109,68 +109,23 @@ export class RowVarNameGenerator
 
     stacked(rowId: string): string[]
     {
-        throw new Error(`Not implemented`);
+        const { row, rowIndex } = getRowById<InputOnlyRowT>(this.node, rowId);
+        const outputVars: string[] = [];
+        const incomingEdges = this.getEdgeInto(rowIndex) || [];
+
+        for (let i = 0; i < row.connectedOutputs.length; i++)
+        {
+            const edge = incomingEdges[i];
+
+            if (!edge) 
+            {
+                console.error(`Stacked edge not found but something is connected`);
+                break;
+            }
+
+            outputVars.push(this.hashOutput(...edge.fromIndices));
+        }
+
+        return outputVars;
     }
 }
-
-// export default function curriedRowVarNameGenerator(info: OperationInformation)
-// {
-//     const { nodeIndex, node, incomingEdges, outgoingEdges, textureCoordinateCounter, partialProgram } = info;
-
-//     return (rowId: string, direction: JointDirection | 'stacked') =>
-//     {
-//         const { rowIndex, row } = 
-//             getRowById<InputOnlyRowT>(node, rowId);
-
-//         if (direction === 'input')
-//         {
-//             // case 1: connection
-//             const incomingEdgeKey = incomingEdges?.[rowIndex]?.outputHash;
-//             if (incomingEdgeKey) 
-//                 return incomingEdgeKey;
-
-//             // case 2: fallback function argument
-//             if (row.alternativeArg)
-//                 return row.alternativeArg;
-
-//             const rowMetadata = getRowMetadata(row);
-
-//             // case 3: parameter texture lookup
-//             if (rowMetadata.dynamicValue)
-//             {
-//                 const textureCoord = textureCoordinateCounter.current;
-//                 const size = TEXTURE_VAR_DATATYPE_SIZE[row.dataType];
-//                 textureCoordinateCounter.current += size;
-
-//                 const textureVar = createTextureVar(nodeIndex, rowIndex, row, textureCoord);
-//                 partialProgram.textureVars.push(textureVar);
-
-//                 const textureVarMapping: ProgramTextureVarMapping = 
-//                 {
-//                     textureCoordinate: textureVar.textureCoordinate,
-//                     dataTypes: textureVar.dataType,
-//                     nodeIndex,
-//                     rowIndex,
-//                 };
-//                 const uniqueRowKey = jointLocationHash(node.id, row.id);
-//                 partialProgram.textureVarMappings[uniqueRowKey] = textureVarMapping;
-
-//                 return textureVar.name;
-//             }
-
-//             // case 4: fixed constant
-//             const constant = createConstant(nodeIndex, rowIndex, row);
-//             partialProgram.constants.push(constant);
-//             return constant.name;
-//         }
-//         else
-//         {
-//             const outgoingEdgeKey = outgoingEdges?.[rowIndex]?.[0]?.outputHash;
-//             if (outgoingEdgeKey) return outgoingEdgeKey;
-
-//             throw new Error(`A node should not be compiled to an operation if it's not needed in the program.`);
-//         }
-//     }
-// }
-
-// export type RowVarNameGenerator = ReturnType<typeof curriedRowVarNameGenerator>;

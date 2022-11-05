@@ -1,7 +1,7 @@
 import produce from 'immer';
-import { useMemo } from 'react';
-import { useAppSelector } from '../redux/hooks';
-import { selectGeometries } from '../slices/geometriesSlice';
+import { useEffect, useMemo } from 'react';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { GeometryS, ViewProps } from '../types';
 import { generateAdjacencyLists } from '../utils/geometries/generateAdjacencyLists';
@@ -17,6 +17,7 @@ interface Props
 
 const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
 {
+    const dispatch = useAppDispatch();
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
     const { templates } = useAppSelector(selectTemplates);
 
@@ -39,6 +40,20 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
         const adjList = generateAdjacencyLists(zipped);
         return adjList;
     }, [ zipped?.compilationValidity ]);
+
+    useEffect(() =>
+    {
+        if (!adjacencyLists) return;
+
+        if (adjacencyLists.strayConnectedJoints.length)
+        {
+            dispatch(geometriesDisconnectJoints({
+                geometryId,
+                joints: adjacencyLists.strayConnectedJoints,
+                undo: { doNotRecord: true },
+            }));
+        }
+    }, [ adjacencyLists ]);
 
     const withConnections = useMemo(() =>
     {
@@ -64,8 +79,6 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
     }, [ zipped, adjacencyLists ]);
 
     const forwardEdges = adjacencyLists?.forwardsAdjList;
-
-    console.log('asdasdasd');
 
     return (
         <>

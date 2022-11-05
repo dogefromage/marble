@@ -13,6 +13,6 @@ export const MAX_LENGTH = 50;
 export type UndoAction<P extends {} = {}> = PayloadAction<P & {
     undo: {
         actionToken?: string;
-        doNotRecord?: boolean;
+        doNotRecord?: true;
     }
 }>;

@@ -36,11 +36,11 @@ interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT
 
 export enum RowTypes
 {
-    Name,
-    InputOnly,
-    InputStacked,
-    Output,
-    Field,
+    Name = 'name',
+    InputOnly = 'input-only',
+    InputStacked = 'input-stacked',
+    Output = 'output',
+    Field = 'field',
 }
 
 export interface NameRowT extends SuperRowT
@@ -92,7 +92,7 @@ export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
     connectedOutputs: RowLocation[];
-    displayConnected?: true;
+    displayConnected?: boolean;
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T;

@@ -1,4 +1,4 @@
-import { DefaultFunctionArgs, GeometryZ, PartialProgram, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, SceneProgram, RowTypes } from "../../types";
+import { DefaultFunctionArgs, GeometryZ, PartialProgram, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, SceneProgram, RowTypes, InputOnlyRowT } from "../../types";
 import { Counter } from "../Counter";
 import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
@@ -17,7 +17,7 @@ export function compileGeometries(
     /**
      * Form of a geometry
      * - must have output
-     * - must be acyclic graph
+     * - must be valid & acyclic graph
      */
 
     const outputIndex = geometry.nodes.findIndex(n => n.id === geometry.outputId);
@@ -26,7 +26,12 @@ export function compileGeometries(
             GeometriesCompilationErrorTypes.OutputMissing,
         );
 
-    const { forwardsAdjList, backwardsAdjList } = generateAdjacencyLists(geometry);
+    const { forwardsAdjList, backwardsAdjList, strayConnectedJoints } = generateAdjacencyLists(geometry);
+    
+    if (strayConnectedJoints.length)
+        throw new GeometriesCompilationError(
+            GeometriesCompilationErrorTypes.InvalidGraph,
+        )
 
     const foundCycles = checkGeometryAcyclic(forwardsAdjList);
     if (foundCycles.length)
@@ -82,20 +87,22 @@ export function compileGeometries(
 
     const includedGLSLCode = [ ...partialProgram.includeIds ].map(s => s.glslCode);
 
-    const { row: outputRow } = 
-        getRowById<OutputRowT>(geometry.nodes[outputIndex], 'input', RowTypes.Output);
+    const { row: outputInputRow } = 
+        getRowById<InputOnlyRowT>(geometry.nodes[outputIndex], 'input', RowTypes.InputOnly);
 
     const finalProgram: SceneProgram =
     {
         includedGLSLCode,
         operations,
         methodName: `geometry_${geometry.id}`,
-        methodReturnType: outputRow.dataType,
+        methodReturnType: outputInputRow.dataType,
         functionArgs: partialProgram.functionArgs,
         constants: partialProgram.constants,
         textureVars: partialProgram.textureVars,
         textureVarMappings: partialProgram.textureVarMappings,
     }
+
+    // console.log(finalProgram);
 
     return finalProgram;
 }

@@ -162,21 +162,13 @@ export const geometriesSlice = createSlice({
 
             if (a.payload.inputDataType !== a.payload.outputDataType) return console.error(`Connected rows must have same dataType`);
 
-            const outputs = inputRow.connectedOutputs; 
             const newSubIndex = a.payload.inputJoint.subIndex;
 
-            if (outputs.length > newSubIndex)
-            {
-                outputs[newSubIndex] = a.payload.outputJoint;
-            }
-            else if (outputs.length === newSubIndex)
-            {
-                outputs.push(a.payload.outputJoint);
-            }
-            else
-            {
-                return console.error(`Sub index is out of range`);
-            }
+            inputRow.connectedOutputs = [
+                ...inputRow.connectedOutputs.slice(0, newSubIndex),
+                a.payload.outputJoint,
+                ...inputRow.connectedOutputs.slice(newSubIndex),
+            ];
 
             g.compilationValidity++;
         },

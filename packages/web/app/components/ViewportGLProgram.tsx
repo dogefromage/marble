@@ -47,10 +47,10 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
                 type: UniformTypes.Uniform3fv,
                 data: [ 0.07, 0.07, 0.1 ],
             },
-            'ambientOcclusion': {
-                type: UniformTypes.Uniform2fv,
-                data: [ 50, 5 ],
-            },
+            // 'ambientOcclusion': {
+            //     type: UniformTypes.Uniform2fv,
+            //     data: [ 50, 5 ],
+            // },
             'sunColor': {
                 type: UniformTypes.Uniform3fv,
                 data: [ 1, 0.95, 0.8 ],

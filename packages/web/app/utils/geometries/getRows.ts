@@ -2,6 +2,7 @@ import { GNodeZ, RowT, RowTypes, RowZ } from "../../types";
 
 export function getRowById<T extends RowT>(node: GNodeZ, id: string, rowType?: RowTypes)
 {
+
     const index = node.rows.findIndex(node => node.id === id);
     const row = node.rows[index];
     
