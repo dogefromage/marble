@@ -1,5 +1,5 @@
 import { DataTypes } from "../sceneProgram";
-import { ObjMap } from "../UtilityTypes";
+import { ObjMap, RotationModels } from "../UtilityTypes";
 
 /**
  * Values
@@ -11,6 +11,7 @@ export interface RowValueMap
     [DataTypes.Unknown]: number;
     [DataTypes.Vec2]: [ number, number ];
     [DataTypes.Vec3]: [ number, number, number ];
+    [DataTypes.Mat3]: [ number, number, number, number, number, number, number, number, number ]
 }
 
 /**
@@ -41,6 +42,7 @@ export enum RowTypes
     InputStacked = 'input-stacked',
     Output = 'output',
     Field = 'field',
+    Rotation = 'rotation',
 }
 
 export interface NameRowT extends SuperRowT
@@ -66,6 +68,15 @@ export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRo
     type: RowTypes.Field;
 }
 
+export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3>
+{
+    type: RowTypes.Rotation;
+    display: {
+        rotationModel: RotationModels;
+        displayValues?: number[]
+    }
+}
+
 export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT
 {
     type: RowTypes.Output;
@@ -78,6 +89,7 @@ export type RowT<D extends DataTypes = DataTypes> =
     | StackedInputRowT<D>
     | OutputRowT<D>
     | FieldRowT<D>
+    | RotationRowT
 
 type RowTOverDataTypesMap = 
 {

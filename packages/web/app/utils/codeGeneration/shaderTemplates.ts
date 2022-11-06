@@ -39,8 +39,6 @@ void main()
 }
 `;
 
-
-
 ////////////////////////////////// FRAGMENT SHADER //////////////////////////////////
 
 export const FRAG_CODE_TEMPLATE = glsl`
@@ -176,7 +174,7 @@ vec3 shade(Ray ray)
 {
     March mainMarch = march(ray);
 
-    if (!mainMarch.hasHit) return vec3(1,1,0.5); // clear color
+    if (!mainMarch.hasHit) return vec3(0.85,0.9,1); // clear color
 
     vec3 p = rayAt(ray, mainMarch.t);
     vec3 n = calcNormal(p);
@@ -211,7 +209,7 @@ const int AA = 3;
 
 vec3 render()
 {
-    if (AA < 2)
+    if (AA <= 1)
     {
         Ray ray = Ray(ray_o, normalize(ray_d));
         return shade(ray);
@@ -252,14 +250,22 @@ vec3 heatmap()
     );
 }
 
+vec3 hitTest()
+{
+    Ray ray = Ray(ray_o, normalize(ray_d));
+    March mainMarch = march(ray);
+
+    vec2 col = vec2(1, 0);
+
+    if (mainMarch.hasHit) return col.xxx;
+    
+    return col.yyy;
+}
+
 void main()
 {
-    // if (true)
-    // {
-    //     gl_FragColor = vec4(heatmap(), 1);
-    //     return;
-    // }
-
+    // gl_FragColor = vec4(hitTest(), 1);
+    // gl_FragColor = vec4(heatmap(), 1);
     gl_FragColor = vec4(render(), 1);
 }
 `;

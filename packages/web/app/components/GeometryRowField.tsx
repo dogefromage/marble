@@ -25,8 +25,8 @@ const GeometryRowField = (props: RowProps<FieldRowT>) =>
     if (props.row.dataType === DataTypes.Vec2 ||
         props.row.dataType === DataTypes.Vec3)
         return <GeometryRowFieldVecN {...props as RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>} />;
-    
-    console.warn('row component missing');
+
+    console.error('row component missing');
     return null;
 }
 

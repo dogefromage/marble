@@ -76,7 +76,8 @@ const SceneProgramCompiler = () =>
             let subArray: number[];
             
             if (mapping.dataTypes === DataTypes.Vec2 ||
-                mapping.dataTypes === DataTypes.Vec3)
+                mapping.dataTypes === DataTypes.Vec3 ||
+                mapping.dataTypes === DataTypes.Mat3)
             {
                 subArray = row.value as number[];
                 const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];

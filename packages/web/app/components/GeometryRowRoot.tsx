@@ -1,9 +1,10 @@
-import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
+import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowInputStacked from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
+import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
 
 export type RowMetaProps<T extends RowT = RowT> = T | RowZ<T>;
 
@@ -16,6 +17,9 @@ export function getRowMetadata(row: RowMetaProps): RowMetadata
 {
     if (row.type === RowTypes.Field)
         return getRowMetadataField(row as RowMetaProps<FieldRowT>);
+
+    if (row.type === RowTypes.Rotation)
+        return getRowMetadataRotation(row as RowMetaProps<RotationRowT>);
 
     return rowMeta();
 }
@@ -43,6 +47,9 @@ const GeometryRowRoot = (props: RowProps) =>
     
     if (props.row.type === RowTypes.Field)
         return <GeometryRowField {...props as RowProps<FieldRowT> } />
+        
+    if (props.row.type === RowTypes.Rotation)
+    return <GeometryRowRotation {...props as RowProps<RotationRowT>} />
 
     console.warn('row component missing');
     

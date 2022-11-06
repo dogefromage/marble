@@ -73,9 +73,10 @@ interface Props
     dataType: DataTypes;
     connected: boolean;
     additional?: boolean;
+    isStackedInput?: true;
 }
 
-const GeometryJoint = ({ geometryId, location, direction, dataType, connected, additional }: Props) =>
+const GeometryJoint = ({ geometryId, location, direction, dataType, connected, additional, isStackedInput }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -117,6 +118,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                     inputDataType: dataType,
                     outputJoint: transfer.location,
                     outputDataType: transfer.dataType,
+                    isStackedInput,
                     undo: {}
                 }));
             }
@@ -128,6 +130,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                     inputDataType: dataType,
                     outputJoint: location,
                     outputDataType: transfer.dataType,
+                    isStackedInput,
                     undo: {}
                 }));
             }

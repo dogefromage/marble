@@ -55,7 +55,7 @@ export function createCameraWorldToScreen(camera: Camera, aspect: number, nearFa
 {
     // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection
     const near = 0.01 * nearFarFactor;
-    const far = 10 * nearFarFactor;
+    const far = 100 * nearFarFactor;
 
     const f = 1.0 / Math.tan(camera.fov / 2);
     const rangeInv = 1 / (near - far);

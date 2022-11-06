@@ -94,7 +94,8 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.operationOptions.type === ProgramOperationTypes.Return)
+            if (a.payload.template.operations.find(
+                op => op.type === ProgramOperationTypes.Return))
             {
                 g.outputId = node.id;
                 g.compilationValidity++;
@@ -145,6 +146,7 @@ export const geometriesSlice = createSlice({
             inputDataType: DataTypes,
             outputJoint: JointLocation,
             outputDataType: DataTypes,
+            isStackedInput?: true,
         }>) =>
         {
             const g = getGeometry(s, a);
@@ -162,13 +164,19 @@ export const geometriesSlice = createSlice({
 
             if (a.payload.inputDataType !== a.payload.outputDataType) return console.error(`Connected rows must have same dataType`);
 
-            const newSubIndex = a.payload.inputJoint.subIndex;
-
-            inputRow.connectedOutputs = [
-                ...inputRow.connectedOutputs.slice(0, newSubIndex),
-                a.payload.outputJoint,
-                ...inputRow.connectedOutputs.slice(newSubIndex),
-            ];
+            if (a.payload.isStackedInput)
+            {
+                const newSubIndex = a.payload.inputJoint.subIndex;
+                inputRow.connectedOutputs = [
+                    ...inputRow.connectedOutputs.slice(0, newSubIndex),
+                    a.payload.outputJoint,
+                    ...inputRow.connectedOutputs.slice(newSubIndex),
+                ];
+            }
+            else
+            {
+                inputRow.connectedOutputs = [ a.payload.outputJoint ];
+            }
 
             g.compilationValidity++;
         },

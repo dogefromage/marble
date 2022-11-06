@@ -9,6 +9,7 @@ const defaultTheme: DefaultTheme =
             float: '#0277BD',
             vec2: '#a84a32',
             vec3: '#6A1B9A',
+            mat3: '#f7b945',
         }
     },
 };

@@ -19,10 +19,11 @@ export enum ArithmeticOperations
 
 export enum DataTypes
 {
-    Unknown = 'unknown',
+    Unknown = 'unknown', 
     Float = 'float',
     Vec2 = 'vec2',
     Vec3 = 'vec3',
+    Mat3 = 'mat3',
 }
 
 export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
@@ -31,6 +32,7 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     float: 1,
     vec2: 2,
     vec3: 3,
+    mat3: 9,
 }
 
 export interface FunctionArg 

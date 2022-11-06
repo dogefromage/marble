@@ -46,7 +46,7 @@ export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
                 {
                     ...node,
                     type: t.type,
-                    operationOptions: t.operationOptions,
+                    operations: t.operations,
                     includeIds: t.includeIds,
                     rows,
                 }

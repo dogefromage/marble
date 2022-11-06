@@ -13,7 +13,7 @@ export interface GNodeT
     id: string;
     type: GNodeTypes;
     rows: Array<SpecificRowT>;
-    operationOptions: ProgramOperationOptions;
+    operations: ProgramOperationOptions[];
     includeIds: string[];
 }
 
@@ -29,5 +29,5 @@ export interface GNodeS
 
 export type GNodeZ = 
     & Pick<GNodeS, 'id' | 'templateId' | 'position'>
-    & Pick<GNodeT, 'type' | 'operationOptions' | 'includeIds'>
+    & Pick<GNodeT, 'type' | 'operations' | 'includeIds'>
     & { rows: RowZ[] }

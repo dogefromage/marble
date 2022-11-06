@@ -4,7 +4,7 @@ import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import { GeometriesCompilationError, GeometriesCompilationErrorTypes } from "./compilationError";
-import { createOperation } from "./createOperations";
+import { parseNodeOperations } from "./createOperations";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";
 
@@ -50,7 +50,7 @@ export function compileGeometries(
 
     const used = findUsedNodes(forwardsAdjList, outputIndex);
     const topoOrder = generateTopologicalOrder(forwardsAdjList, outputIndex);
-    const orderedUsedNodes = topoOrder.filter(index => used.has(index));
+    const orderedUsedNodeIndices = topoOrder.filter(index => used.has(index));
         
     const partialProgram: PartialProgram =
     {
@@ -61,8 +61,9 @@ export function compileGeometries(
         includeIds: new Set(),
     }
 
-    const operations: ProgramOperation[] =
-            orderedUsedNodes.map(nodeIndex =>
+    const operations: ProgramOperation[] = []
+
+    for (const nodeIndex of orderedUsedNodeIndices)
     {
         const node = geometry.nodes[nodeIndex];
 
@@ -76,14 +77,19 @@ export function compileGeometries(
             partialProgram.includeIds.add(snippet);
         }
 
-        return createOperation(
+        const nodeOperations = parseNodeOperations(
             nodeIndex,
             node, 
             textureCoordinateCounter,
             partialProgram,
             backwardsAdjList[nodeIndex],
         );
-    });
+        
+        for (const op of nodeOperations)
+        {
+            operations.push(op);
+        }
+    }
 
     const includedGLSLCode = [ ...partialProgram.includeIds ].map(s => s.glslCode);
 

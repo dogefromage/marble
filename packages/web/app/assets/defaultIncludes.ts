@@ -11,9 +11,18 @@ float inc_union(float a, float b)
 `);
 
 export const inc_transform = create('inc_transform', glsl`
-vec3 inc_transform(vec3 x, vec3 translate)
+vec3 inc_transform(vec3 x, vec3 translation, mat3 rotation)
 {
-    return x - translate;
+    // vec3 s = sin(rotation);
+    // vec3 c = cos(rotation);
+
+    // mat3 transformation = mat3(
+    //     c.y*c.z, s.x*s.y*c.z-c.x*s.z, c.x*s.y*c.z+s.x*s.z,
+    //     c.y*s.z, s.x*s.y*s.z+c.x*c.z, c.x*s.y*s.z-s.x*c.z,
+    //     -s.y,    s.x*c.y,             c.x*c.y
+    // );
+
+    return rotation * (x - translation);
 }
 `);
 
@@ -31,10 +40,9 @@ float inc_sdf_z_plane(vec3 p, float h)
 }
 `);
 
-export const inc_sdf_cube = create('inc_sdf_cube', glsl`
-float inc_sdf_cube(vec3 p, float s)
+export const inc_sdf_box = create('inc_sdf_box', glsl`
+float inc_sdf_box(vec3 p, vec3 b)
 {
-    vec3 b = vec3(s, s, s);
     vec3 q = abs(p) - b;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
@@ -63,7 +71,7 @@ const defaultProgramIncludes: ProgramInclude[] =
     inc_transform,
     inc_union,
     inc_intersection,
-    inc_sdf_cube,
+    inc_sdf_box,
     inc_sdf_z_plane,
     inc_sdf_sphere,
 ];

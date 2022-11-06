@@ -1,23 +1,21 @@
-import { BinaryArithmeticOperation, GNodeZ, InvocationOperation, InvocationTreeOperation, ObjMap, OutputRowT, PartialProgram, ProgramOperation, ProgramOperationOptions, ProgramOperationTypes, ReturnOperation, RowTypes } from "../../types";
+import { BinaryArithmeticOperation, GNodeZ, InvocationOperation, InvocationTreeOperation, ObjMap, PartialProgram, ProgramOperation, ProgramOperationOptions, ProgramOperationTypes, ReturnOperation } from "../../types";
 import { Counter } from "../Counter";
 import { GeometryEdge } from "../geometries/generateAdjacencyLists";
-import { getRowById } from "../geometries/getRows";
 import { RowVarNameGenerator } from "./curriedRowVarNameGenerator";
 
 interface CreateOperationProps<O extends ProgramOperationTypes>
 {
-    node: GNodeZ;
     varNameGenerator: RowVarNameGenerator;
     operationOps: ProgramOperationOptions<O>;
 }
 
-export function createOperation(
+export function parseNodeOperations(
     nodeIndex: number,
     node: GNodeZ,
     textureCoordinateCounter: Counter,
     partialProgram: PartialProgram,
     incomingEdges: ObjMap<GeometryEdge[]>,
-): ProgramOperation
+): ProgramOperation[]
 {
     const varNameGenerator = new RowVarNameGenerator(
         nodeIndex, 
@@ -27,28 +25,30 @@ export function createOperation(
         incomingEdges, 
     );
 
-    const opType = node.operationOptions.type;
-
-    const props: CreateOperationProps<ProgramOperationTypes> = 
-    { 
-        node, 
-        varNameGenerator, 
-        operationOps: node.operationOptions 
-    };
-
-    switch (opType)
+    return node.operations.map(operationOps =>
     {
-        case ProgramOperationTypes.Return:
-            return createReturnOperation(props as CreateOperationProps<typeof opType>);
-        case ProgramOperationTypes.BinaryArithmetic:
-            return createBinaryArithmeticOperation(props as CreateOperationProps<typeof opType>);
-        case ProgramOperationTypes.Invocation:
-            return createInvocationOperation(props as CreateOperationProps<typeof opType>);
-        case ProgramOperationTypes.InvocationTree:
-            return createInvocationTreeOperation(props as CreateOperationProps<typeof opType>);
-        default:
-            throw new Error(`Operation not found`);
-    }
+        const opType = operationOps.type;
+
+        const props: CreateOperationProps<ProgramOperationTypes> = 
+        { 
+            varNameGenerator, 
+            operationOps,
+        };
+
+        switch (opType)
+        {
+            case ProgramOperationTypes.Return:
+                return createReturnOperation(props as CreateOperationProps<typeof opType>);
+            case ProgramOperationTypes.BinaryArithmetic:
+                return createBinaryArithmeticOperation(props as CreateOperationProps<typeof opType>);
+            case ProgramOperationTypes.Invocation:
+                return createInvocationOperation(props as CreateOperationProps<typeof opType>);
+            case ProgramOperationTypes.InvocationTree:
+                return createInvocationTreeOperation(props as CreateOperationProps<typeof opType>);
+            default:
+                throw new Error(`Operation not found`);
+        }
+    });
 }
 
 function createReturnOperation(props: CreateOperationProps<ProgramOperationTypes.Return>)
@@ -65,29 +65,23 @@ function createReturnOperation(props: CreateOperationProps<ProgramOperationTypes
 
 function createBinaryArithmeticOperation(props: CreateOperationProps<ProgramOperationTypes.BinaryArithmetic>)
 {
-    const { node, varNameGenerator: g, operationOps } = props;
-
-    const { row: outputRow } = 
-        getRowById<OutputRowT>(node, operationOps.row_output, RowTypes.Output);
+    const { varNameGenerator: g, operationOps } = props;
 
     const arithmeticOp: BinaryArithmeticOperation = 
     {
         type: ProgramOperationTypes.BinaryArithmetic,
+        operation: operationOps.operation,
         var_lhs: g.input(operationOps.row_lhs),
         var_rhs: g.input(operationOps.row_rhs),
         var_output: g.output(operationOps.row_output),
-        type_output: outputRow.dataType,
-        operation: operationOps.operation,
+        type_output: operationOps.type_output,
     }
     return arithmeticOp;
 }
 
 function createInvocationOperation(props: CreateOperationProps<ProgramOperationTypes.Invocation>)
 {
-    const { node, varNameGenerator: g, operationOps } = props;
-
-    const { row: outputRow } = 
-        getRowById<OutputRowT>(node, operationOps.row_output, RowTypes.Output);
+    const { varNameGenerator: g, operationOps } = props;
 
     const invoc: InvocationOperation = 
     {
@@ -97,26 +91,23 @@ function createInvocationOperation(props: CreateOperationProps<ProgramOperationT
         ),
         name_function: operationOps.name_function,
         var_output: g.output(operationOps.row_output),
-        type_output: outputRow.dataType,
+        type_output: operationOps.type_output,
     }
     return invoc;
 }
 
 function createInvocationTreeOperation(props: CreateOperationProps<ProgramOperationTypes.InvocationTree>)
 {
-    const { node, varNameGenerator: g, operationOps } = props;
-
-    const { row: outputRow } = 
-        getRowById<OutputRowT>(node, operationOps.row_output, RowTypes.Output);
+    const { varNameGenerator: g, operationOps } = props;
 
     const invocTree: InvocationTreeOperation = 
     {
         type: ProgramOperationTypes.InvocationTree,
-        var_args: g.stacked(operationOps.row_args),
         name_function: operationOps.name_function,
-        var_output: g.output(operationOps.row_output),
-        type_output: outputRow.dataType,
+        var_args: g.stacked(operationOps.row_args),
         zero_value: operationOps.zero_value,
+        var_output: g.output(operationOps.row_output),
+        type_output: operationOps.type_output,
     }
     return invocTree;
 }

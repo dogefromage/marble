@@ -9,3 +9,4 @@ export function degToRad(degs: number)
 {
     return degs * Math.PI / 180;
 }
+

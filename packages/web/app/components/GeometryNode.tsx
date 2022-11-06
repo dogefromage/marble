@@ -129,16 +129,6 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
 
                 e.stopPropagation();
             }}
-            // onDoubleClick={e => 
-            // {
-            //     dispatch(geometriesRemoveNode({
-            //         geometryId: geometryId,
-            //         nodeId: node.id,
-            //         undo: {}
-            //     }));
-                
-            //     e.stopPropagation();
-            // }}
         >
         {
             node.rows.map((row, rowIndex) =>

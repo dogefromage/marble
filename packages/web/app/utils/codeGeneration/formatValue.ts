@@ -5,12 +5,13 @@ import { TEXTURE_LOOKUP_METHOD_NAME } from "./shaderTemplates";
 export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTypes): string
 {
     if (dataType === DataTypes.Vec2 ||
-        dataType === DataTypes.Vec3)
+        dataType === DataTypes.Vec3 ||
+        dataType === DataTypes.Mat3)
     {
         const values = (value as number[])
             .map(v => formatValueGLSL(v, DataTypes.Float));
 
-        return `${dataType}(${values.join(', ')})`;
+        return `${dataType}(${values.join(',')})`;
     }
     if (dataType === DataTypes.Float)
     {
@@ -26,7 +27,8 @@ export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTyp
 export function textureLookupDatatype(textureCoordinate: number, dataType: DataTypes): string
 {
     if (dataType === DataTypes.Vec2 ||
-        dataType === DataTypes.Vec3)
+        dataType === DataTypes.Vec3 ||
+        dataType === DataTypes.Mat3)
     {
         const count = TEXTURE_VAR_DATATYPE_SIZE[dataType];
 

@@ -52,9 +52,23 @@ export class RowVarNameGenerator
         return this.incomingEdges?.[rowIndex];
     }
 
-    input(rowId: string)
+    private getTempVar(varIdentifier: string)
     {
-        const { row, rowIndex } = getRowById<InputOnlyRowT>(this.node, rowId);
+        const tempVar = varIdentifier.match(/\$(\d+)/);
+        const capturedNumber = tempVar?.[1];
+        if (capturedNumber) return `temp_${capturedNumber}`;
+    }
+
+    input(varIdentifier: string)
+    {
+        const tempVar = this.getTempVar(varIdentifier);
+        if (tempVar) return tempVar;
+
+        // should be rowId
+        const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
+        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+
+        const { row, rowIndex } = foundRow;
 
         // case 1: connection
         const incomingEdge = this.getEdgeInto(rowIndex)?.[0];
@@ -101,15 +115,25 @@ export class RowVarNameGenerator
         return constant.name;
     }
 
-    output(rowId: string)
+    output(varIdentifier: string)
     {
-        const { rowIndex } = getRowById<OutputRowT>(this.node, rowId);
+        const tempVar = this.getTempVar(varIdentifier);
+        if (tempVar) return tempVar;
+
+        // should be rowId
+        const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
+        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+
+        const { rowIndex } = foundRow;
         return this.hashOutput(this.nodeIndex, rowIndex);
     }
 
     stacked(rowId: string): string[]
     {
-        const { row, rowIndex } = getRowById<InputOnlyRowT>(this.node, rowId);
+        const foundRow = getRowById<InputOnlyRowT>(this.node, rowId);
+        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+
+        const { row, rowIndex } = foundRow;
         const outputVars: string[] = [];
         const incomingEdges = this.getEdgeInto(rowIndex) || [];
 

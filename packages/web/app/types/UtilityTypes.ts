@@ -21,3 +21,14 @@ export interface Rect
 }
 
 export type MapEvery<M extends string, T> = { [ K in M ]: T };
+
+export enum RotationModels
+{
+    Quaternion = 'Quaternion XYZW',
+    Euler_XYZ = 'Euler XYZ',
+    Euler_XZY = 'Euler XZY',
+    Euler_YXZ = 'Euler YXZ',
+    Euler_YZX = 'Euler YZX',
+    Euler_ZXY = 'Euler ZXY',
+    Euler_ZYX = 'Euler ZYX',
+}

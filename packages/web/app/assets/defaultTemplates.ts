@@ -1,5 +1,5 @@
-import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTypes, MAX_LENGTH, ProgramOperationTypes, RowTypes } from "../types";
-import { inc_difference, inc_intersection, inc_sdf_cube, inc_sdf_sphere, inc_sdf_z_plane, inc_transform, inc_union } from "./defaultIncludes";
+import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTypes, ProgramOperationTypes, RotationModels, RowTypes, RowValueMap } from "../types";
+import { inc_difference, inc_intersection, inc_sdf_box, inc_sdf_sphere, inc_sdf_z_plane, inc_transform, inc_union } from "./defaultIncludes";
 
 enum TemplateColors
 {
@@ -8,7 +8,8 @@ enum TemplateColors
     Primitives = '#999966',
 }
 
-export const TEMPLATE_FAR_AWAY = 100000;
+const TEMPLATE_FAR_AWAY = 100000; 
+const MAT3_IDENTITY: RowValueMap[DataTypes.Mat3] = [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ];
 
 const output: GNodeT =
 {
@@ -29,23 +30,24 @@ const output: GNodeT =
             value: TEMPLATE_FAR_AWAY,
         },
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Return,
-        var_input: 'input',
-    },
+    operations: [
+        {
+            type: ProgramOperationTypes.Return,
+            var_input: 'input',
+        },
+    ],
     includeIds: [],
 }
 
-const n_union: GNodeT =
+const op_union: GNodeT =
 {
-    id: 'n_union',
+    id: 'union',
     type: GNodeTypes.Default,
     rows: [
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'N-Union',
+            name: 'Union',
             color: TemplateColors.Operators,
         },
         {
@@ -57,23 +59,116 @@ const n_union: GNodeT =
         {
             id: 'inputs',
             type: RowTypes.InputStacked,
-            name: 'Input',
+            name: 'Solid',
             dataType: DataTypes.Float,
             value: TEMPLATE_FAR_AWAY,
         },
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.InvocationTree,
-        name_function: 'inc_union',
-        row_args: 'inputs',
-        row_output: 'output',
-        zero_value: TEMPLATE_FAR_AWAY,
-    },
+    operations: [
+        {
+            type: ProgramOperationTypes.InvocationTree,
+            name_function: 'inc_union',
+            row_args: 'inputs',
+            zero_value: TEMPLATE_FAR_AWAY,
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
     includeIds: [ inc_union.id ],
 }
 
-const sdf_sphere: GNodeT = 
+const op_difference: GNodeT =
+{
+    id: 'difference',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Difference',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'Difference',
+        },
+        {
+            id: 'positive',
+            type: RowTypes.InputOnly,
+            name: 'Start Solid',
+            dataType: DataTypes.Float,
+            value: TEMPLATE_FAR_AWAY,
+        },
+        {
+            id: 'negatives',
+            type: RowTypes.InputStacked,
+            name: 'Complement',
+            dataType: DataTypes.Float,
+            value: TEMPLATE_FAR_AWAY,
+        },
+    ],
+    operations:
+    [
+        {
+            type: ProgramOperationTypes.InvocationTree,
+            name_function: 'inc_union',
+            row_args: 'negatives',
+            zero_value: TEMPLATE_FAR_AWAY,
+            row_output: '$1',
+            type_output: DataTypes.Float,
+        },
+        {
+            type: ProgramOperationTypes.Invocation,
+            name_function: 'inc_difference',
+            row_args: [ 'positive', '$1' ],
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
+    includeIds: [ inc_union.id, inc_difference.id ],
+}
+
+const op_intersection: GNodeT =
+{
+    id: 'intersection',
+    type: GNodeTypes.Default,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Intersection',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'Intersection',
+        },
+        {
+            id: 'inputs',
+            type: RowTypes.InputStacked,
+            name: 'Solid',
+            dataType: DataTypes.Float,
+            value: TEMPLATE_FAR_AWAY,
+        },
+    ],
+    operations: [
+        {
+            type: ProgramOperationTypes.InvocationTree,
+            name_function: 'inc_intersection',
+            row_args: 'inputs',
+            zero_value: TEMPLATE_FAR_AWAY,
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
+    includeIds: [ inc_intersection.id ],
+}
+
+const sdf_sphere: GNodeT =
 {
     id: 'sdf_sphere',
     type: GNodeTypes.Default,
@@ -106,17 +201,19 @@ const sdf_sphere: GNodeT =
             value: 1,
         }
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_sdf_sphere',
-        row_args: [ 'coordinates', 'radius' ],
-        row_output: 'output',
-    },
+    operations: [
+        {
+            type: ProgramOperationTypes.Invocation,
+            name_function: 'inc_sdf_sphere',
+            row_args: [ 'coordinates', 'radius' ],
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
     includeIds: [ inc_sdf_sphere.id ],
 }
 
-const template_add: GNodeT =
+const add: GNodeT =
 {
     id: 'add',
     type: GNodeTypes.Default,
@@ -148,110 +245,28 @@ const template_add: GNodeT =
             value: 0,
         },
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.BinaryArithmetic,
-        row_lhs: 'a',
-        row_rhs: 'b',
-        row_output: 'c',
-        operation: ArithmeticOperations.Add,
-    },
+    operations: [
+        {
+            type: ProgramOperationTypes.BinaryArithmetic,
+            row_lhs: 'a',
+            row_rhs: 'b',
+            row_output: 'c',
+            operation: ArithmeticOperations.Add,
+            type_output: DataTypes.Float,
+        },
+    ],
     includeIds: [],
 }
 
-const template_difference: GNodeT =
+const sdf_box: GNodeT =
 {
-    id: 'difference',
+    id: 'sdf_box',
     type: GNodeTypes.Default,
     rows: [
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'Difference',
-            color: '#123456',
-        },
-        {
-            id: 'c',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'C',
-        },
-        {
-            id: 'a',
-            type: RowTypes.InputOnly,
-            name: 'A',
-            dataType: DataTypes.Float,
-            value: TEMPLATE_FAR_AWAY,
-        },
-        {
-            id: 'b',
-            type: RowTypes.InputOnly,
-            name: 'B',
-            dataType: DataTypes.Float,
-            value: 0,
-        },
-    ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_difference',
-        row_args: [ 'a', 'b' ],
-        row_output: 'c',
-    },
-    includeIds: [ inc_difference.id ],
-}
-
-const template_intersection: GNodeT =
-{
-    id: 'intersection',
-    type: GNodeTypes.Default,
-    rows: [
-        {
-            id: 'name',
-            type: RowTypes.Name,
-            name: 'Intersection',
-            color: '#123456',
-        },
-        {
-            id: 'c',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'C',
-        },
-        {
-            id: 'a',
-            type: RowTypes.InputOnly,
-            name: 'A',
-            dataType: DataTypes.Float,
-            value: TEMPLATE_FAR_AWAY,
-        },
-        {
-            id: 'b',
-            type: RowTypes.InputOnly,
-            name: 'B',
-            dataType: DataTypes.Float,
-            value: 0,
-        },
-    ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_intersection',
-        row_args: [ 'a', 'b' ],
-        row_output: 'c',
-    },
-    includeIds: [ inc_intersection.id ],
-}
-
-const template_sdf_cube: GNodeT = 
-{
-    id: 'sdf_cube',
-    type: GNodeTypes.Default,
-    rows: [
-        {
-            id: 'name',
-            type: RowTypes.Name,
-            name: 'Cube',
+            name: 'Box',
             color: TemplateColors.Primitives,
         },
         {
@@ -271,22 +286,24 @@ const template_sdf_cube: GNodeT =
         {
             id: 'size',
             type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            dataType: DataTypes.Vec3,
             name: 'Size',
-            value: 1,
+            value: [ 1, 1, 1 ],
         }
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_sdf_cube',
-        row_args: [ 'coordinates', 'size' ],
-        row_output: 'output',
-    },
-    includeIds: [ inc_sdf_cube.id ],
+    operations: [
+        {
+            type: ProgramOperationTypes.Invocation,
+            name_function: 'inc_sdf_box',
+            row_args: [ 'coordinates', 'size' ],
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
+    includeIds: [ inc_sdf_box.id ],
 }
 
-const template_sdf_plane: GNodeT = 
+const sdf_plane: GNodeT =
 {
     id: 'sdf_plane',
     type: GNodeTypes.Default,
@@ -319,17 +336,19 @@ const template_sdf_plane: GNodeT =
             value: 0,
         }
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_sdf_z_plane',
-        row_args: [ 'coordinates', 'height' ],
-        row_output: 'output',
-    },
+    operations: [
+        {
+            type: ProgramOperationTypes.Invocation,
+            name_function: 'inc_sdf_z_plane',
+            row_args: [ 'coordinates', 'height' ],
+            row_output: 'output',
+            type_output: DataTypes.Float,
+        },
+    ],
     includeIds: [ inc_sdf_z_plane.id ],
 }
 
-const template_transform: GNodeT =
+const op_transform: GNodeT =
 {
     id: 'transform',
     type: GNodeTypes.Default,
@@ -361,71 +380,43 @@ const template_transform: GNodeT =
             name: 'Translation',
             value: [ 0, 0, 0 ],
         },
+        {
+            id: 'rotation',
+            type: RowTypes.Rotation,
+            dataType: DataTypes.Mat3,
+            display: {
+                rotationModel: RotationModels.Euler_XYZ,
+            },
+            name: 'Rotation',
+            value: MAT3_IDENTITY,
+        },
     ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_transform',
-        row_args: [ 'input', 'translation' ],
-        row_output: 'output',
-    },
+    operations:
+        [
+            {
+                type: ProgramOperationTypes.Invocation,
+                name_function: 'inc_transform',
+                row_args: [ 'input', 'translation', 'rotation' ],
+                row_output: 'output',
+                type_output: DataTypes.Vec3,
+            },
+        ],
     includeIds: [ inc_transform.id ],
 }
 
-const template_union: GNodeT =
-{
-    id: 'union',
-    type: GNodeTypes.Default,
-    rows: [
-        {
-            id: 'name',
-            type: RowTypes.Name,
-            name: 'Union',
-            color: '#123456',
-        },
-        {
-            id: 'c',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'C',
-        },
-        {
-            id: 'a',
-            type: RowTypes.InputOnly,
-            name: 'A',
-            dataType: DataTypes.Float,
-            value: TEMPLATE_FAR_AWAY,
-        },
-        {
-            id: 'b',
-            type: RowTypes.InputOnly,
-            name: 'B',
-            dataType: DataTypes.Float,
-            value: TEMPLATE_FAR_AWAY,
-        },
-    ],
-    operationOptions: 
-    {
-        type: ProgramOperationTypes.Invocation,
-        name_function: 'inc_union',
-        row_args: [ 'a', 'b' ],
-        row_output: 'c',
-    },
-    includeIds: [ inc_union.id ],
-}
+const defaultTemplates: GNodeT[] =
+    [
+        sdf_sphere,
+        sdf_box,
+        sdf_plane,
 
-const defaultTemplates: GNodeT[] = 
-[ 
-    output,
-    n_union,
-    sdf_sphere,
-    template_add,
-    template_difference,
-    template_intersection,
-    template_sdf_cube,
-    template_sdf_plane,
-    template_transform,
-    template_union,
-];
+        op_union,
+        op_difference,
+        op_intersection,
+        op_transform,
+
+        output,
+        add,
+    ];
 
 export default defaultTemplates;

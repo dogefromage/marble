@@ -14,6 +14,7 @@ interface BinaryArithmeticOperationOptions
     row_lhs: string;
     row_rhs: string;
     row_output: string;
+    type_output: DataTypes;
 }
 export interface BinaryArithmeticOperation
 {
@@ -31,6 +32,7 @@ interface InvocationOperationOptions
     name_function: string;
     row_args: string[];
     row_output: string;
+    type_output: DataTypes;
 }
 export interface InvocationOperation
 {
@@ -46,17 +48,18 @@ interface InvocationTreeOperationOptions
     type: ProgramOperationTypes.InvocationTree;
     name_function: string;
     row_args: string;
-    row_output: string;
     zero_value: number;
+    row_output: string;
+    type_output: DataTypes;
 }
 export interface InvocationTreeOperation
 {
     type: ProgramOperationTypes.InvocationTree;
     name_function: string;
     var_args: string[];
+    zero_value: number;
     var_output: string;
     type_output: DataTypes;
-    zero_value: number;
 }
 
 type ProgramOperationOptionsMap =

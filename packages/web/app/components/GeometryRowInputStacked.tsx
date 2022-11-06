@@ -28,13 +28,11 @@ const GeometryRowInputStacked = ({ geometryId, nodeId, row }: RowProps<StackedIn
                         heightUnits={1}
                         key={`subrow-${subIndex}`}
                     >
-                        <IndentRowDiv>
-                            <GeometryRowNameP
-                                align='left'
-                            >
-                                { rowName }
-                            </GeometryRowNameP>
-                        </IndentRowDiv>
+                        <GeometryRowNameP
+                            align='left'
+                        >
+                            { rowName }
+                        </GeometryRowNameP>
                         <GeometryJoint 
                             geometryId={geometryId}
                             location={{ nodeId, rowId: row.id, subIndex }}
@@ -42,6 +40,7 @@ const GeometryRowInputStacked = ({ geometryId, nodeId, row }: RowProps<StackedIn
                             connected={connected}
                             dataType={row.dataType}
                             additional={!connected}
+                            isStackedInput={true}
                         />
                     </GeometryRowDiv>
                 )
