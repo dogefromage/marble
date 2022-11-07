@@ -1,4 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { ActionCreator, ActionCreatorWithPayload, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { WritableDraft } from "immer/dist/internal";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
 import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
@@ -120,13 +121,14 @@ export const geometriesSlice = createSlice({
 
             n.position = { ...a.payload.position };
         },
-        assignRowData: (s, a: UndoAction<{ geometryId: string, nodeId: string, rowId: string, rowData?: any }>) =>
+        assignRowData: (s, a: UndoAction<{ geometryId: string, nodeId: string, rowId: string, rowData?: Partial<RowS> }>) =>
         {
             const n = getNode(s, a);
             if (!n) return;
 
             if (a.payload.rowData)
             {
+                // @ts-ignore
                 n.rows[a.payload.rowId] = {
                     ...n.rows[a.payload.rowId],
                     ...a.payload.rowData,

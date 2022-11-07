@@ -1,5 +1,5 @@
 import { DataTypes } from "../sceneProgram";
-import { ObjMap, RotationModels } from "../UtilityTypes";
+import { ObjMap, RotationModels, Tuple } from "../UtilityTypes";
 
 /**
  * Values
@@ -9,9 +9,9 @@ export interface RowValueMap
 {
     [DataTypes.Float]: number;
     [DataTypes.Unknown]: number;
-    [DataTypes.Vec2]: [ number, number ];
-    [DataTypes.Vec3]: [ number, number, number ];
-    [DataTypes.Mat3]: [ number, number, number, number, number, number, number, number, number ]
+    [DataTypes.Vec2]: Tuple<number, 2>;
+    [DataTypes.Vec3]: Tuple<number, 3>;
+    [DataTypes.Mat3]: Tuple<number, 9>;
 }
 
 /**
@@ -71,9 +71,10 @@ export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRo
 export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3>
 {
     type: RowTypes.Rotation;
-    display: {
+    rotationModel: RotationModels;
+    currentDisplay?: {
         rotationModel: RotationModels;
-        displayValues?: number[]
+        displayValues: number[]
     }
 }
 
