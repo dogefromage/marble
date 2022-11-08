@@ -10,16 +10,26 @@ import { assertIsZippedRow } from '../utils/geometries/assertions';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
+import SelectOption from './SelectOption';
 import SlidableInput from './SlideableInput';
 
 export function getRowMetadataRotation(row: RowMetaProps<RotationRowT>): RowMetadata
 {
-    if (assertIsZippedRow(row))
+    if (row.connectedOutputs.length) return rowMeta(1, true);
+
+    let totalUnits = 2; // name + model selector
+
+    if (row.currentDisplay && 
+        row.currentDisplay.rotationModel === RotationModels.Quaternion)
     {
-        if (row.connectedOutputs.length) return rowMeta(1, true);
+        totalUnits += 4; // xyzw
+    }
+    else if (row.currentDisplay)
+    {
+        totalUnits += 3; // xyz
     }
     
-    return rowMeta(4, true);
+    return rowMeta(totalUnits, true);
 }
 
 type Props = RowProps<RotationRowT>;
@@ -117,18 +127,26 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
                 { row.name }
             </GeometryRowNameP>
             {
-                !connected && row.currentDisplay &&
-                row.currentDisplay.displayValues.map((value, index) =>
-                    <IndentRowDiv
-                        key={index}
-                    >
-                        <SlidableInput
-                            value={value}
-                            onChange={updateValue(index)}
-                            name={FIELD_ROW_LIST_NAMES[ index ]} 
-                        />
+                !connected && row.currentDisplay && <>
+                {
+                    <IndentRowDiv>
+                        <SelectOption />
                     </IndentRowDiv>
-                )
+                }
+                {
+                    row.currentDisplay.displayValues.map((value, index) =>
+                        <IndentRowDiv
+                            key={index}
+                        >
+                            <SlidableInput
+                                value={value}
+                                onChange={updateValue(index)}
+                                name={FIELD_ROW_LIST_NAMES[ index ]} 
+                            />
+                        </IndentRowDiv>
+                    )
+                }
+                </>
             }
             <GeometryJoint 
                 geometryId={ geometryId }

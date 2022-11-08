@@ -6,10 +6,7 @@ import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
 export function getRowMetadataField(row: RowMetaProps<FieldRowT>): RowMetadata
 {
-    if (assertIsZippedRow(row))
-    {
-        if (row.connectedOutputs.length) return rowMeta(1, true);
-    }
+    if (row.connectedOutputs.length) return rowMeta(1, true);
     
     if (row.dataType === DataTypes.Vec2) return rowMeta(3, true);
     if (row.dataType === DataTypes.Vec3) return rowMeta(4, true);

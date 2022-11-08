@@ -9,6 +9,7 @@ interface MenuWrapperProps
     visible: boolean;
     translateUp: boolean;
     center?: boolean;
+    width?: number;
 }
 
 const MenuWrapper = styled.div<MenuWrapperProps>`
@@ -22,7 +23,7 @@ const MenuWrapper = styled.div<MenuWrapperProps>`
 
     visibility: ${({ visible }) => visible ? 'visible' : 'hidden' };
 
-    width: 320px;
+    width: ${({ width }) => width != null ? width : 320 }px;
 
     padding: 0 0.5rem;
 
@@ -39,9 +40,10 @@ interface Props
     onUnfocus: () => void;
     children: React.ReactNode;
     center?: boolean;
+    width?: number;
 }
 
-const Menu = ({ position, onUnfocus, children, center }: Props) =>
+const Menu = ({ position, onUnfocus, children, center, width }: Props) =>
 {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +71,7 @@ const Menu = ({ position, onUnfocus, children, center }: Props) =>
             visible={visible}
             translateUp={translateUp}
             center={center}
+            width={width}
         >
             { children }
         </MenuWrapper>

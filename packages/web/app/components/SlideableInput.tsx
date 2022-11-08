@@ -71,6 +71,9 @@ const MAX_VALUE = 1e32;
 
 function formatValue(value: number)
 {
+    if (typeof value !== 'number' || 
+        !isFinite(value)) return 'NaN';
+
     let precision = value.toPrecision(4);
     let string = value.toString();
     return precision.length > string.length ? string : precision;
@@ -107,6 +110,7 @@ const SlidableInput = ({
             const evaluatedString = eval(inputRef.current?.value || '');
 
             let numberValue = clamp(Number.parseFloat(evaluatedString), -MAX_VALUE, MAX_VALUE);
+            if (!isFinite(numberValue)) throw new Error(`Not finite`);
             
             onChange(numberValue);
         }

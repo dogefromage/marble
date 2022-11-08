@@ -6,7 +6,7 @@ import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
 
-export type RowMetaProps<T extends RowT = RowT> = T | RowZ<T>;
+export type RowMetaProps<T extends RowT = RowT> = RowZ<T>;
 
 export function rowMeta(heightUnits = 1, dynamicValue = false): RowMetadata
 {

@@ -1,7 +1,7 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { RowT } from "../../types";
+import { RowZ } from "../../types";
 
-export default function countHeightUnits(rows: RowT[], rowIndex: number, subEdgeIndex = 0)
+export default function countHeightUnits(rows: RowZ[], rowIndex: number, subEdgeIndex = 0)
 {
     let totalHeight = 0;
 

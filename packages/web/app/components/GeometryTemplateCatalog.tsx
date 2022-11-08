@@ -3,9 +3,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelCloseTemplateCatalog, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 import { GNodeT, ViewProps } from '../types';
-import countHeightUnits from '../utils/geometries/countHeightUnits';
 import { usePanelState } from '../utils/panelState/usePanelState';
 import { NODE_WIDTH } from './GeometryNode';
 import Menu from './Menu';
@@ -40,14 +38,12 @@ const GeometryTemplateCatalog = ({ viewProps }: Props) =>
         if (!panelState?.geometryId || 
             !panelState?.templateCatalog) return;
 
-        const nodeHeight = GNODE_ROW_UNIT_HEIGHT * countHeightUnits(template.rows, 1000);
-
         dispatch(geometriesAddNode({
             geometryId: panelState.geometryId,
             template,
             position: {
                 x: panelState.templateCatalog.worldPosition.x - 0.5 * NODE_WIDTH,
-                y: panelState.templateCatalog.worldPosition.y - 0.5 * nodeHeight, 
+                y: panelState.templateCatalog.worldPosition.y, 
             },
             undo: {}
         }));
