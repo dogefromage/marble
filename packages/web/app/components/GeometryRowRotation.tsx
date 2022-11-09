@@ -6,7 +6,6 @@ import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 import { IndentRowDiv } from '../styled/IndentRowDiv';
 import { RotationModels, RotationRowT, RowMetadata, RowS, Tuple } from '../types';
-import { assertIsZippedRow } from '../utils/geometries/assertions';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
@@ -41,9 +40,11 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
     const dispatch = useAppDispatch();
     const connected = row.connectedOutputs.length > 0;
 
+    const rowRotationModel = row.rotationModel || RotationModels.Euler_XYZ;
+
     useEffect(() =>
     {
-        if (row.currentDisplay && row.currentDisplay.rotationModel === row.rotationModel) 
+        if (row.currentDisplay && row.currentDisplay.rotationModel === rowRotationModel) 
             return; // all set
 
         // must (re)compute row.currentDisplay
@@ -53,7 +54,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
 
         let newDisplayValues: number[];
 
-        if (row.rotationModel === RotationModels.Quaternion)
+        if (rowRotationModel === RotationModels.Quaternion)
         {
             newDisplayValues = [ ...q ];
         }
@@ -64,7 +65,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
 
         const rowS: Partial<RowS<RotationRowT>> = {
             currentDisplay: {
-                rotationModel: row.rotationModel,
+                rotationModel: rowRotationModel,
                 displayValues: newDisplayValues,
             }
         }
@@ -76,7 +77,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
             rowData: rowS,
             undo: {},
         }));
-    }, [ row.rotationModel, row.currentDisplay ]);
+    }, [ rowRotationModel, row.currentDisplay ]);
 
     const updateValue = (index: number) => 
         (value: number, actionToken: string | undefined) =>
@@ -90,7 +91,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
 
         if (row.currentDisplay.rotationModel === RotationModels.Quaternion)
         {
-            const q = newDisplayValues as quat;
+            const q = quat.normalize(quat.create(), newDisplayValues as quat);
             mat3.fromQuat(rotationMatrix, q);
         }
         else
@@ -100,7 +101,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
 
         const rowS: Partial<RowS<RotationRowT>> = {
             currentDisplay: {
-                rotationModel: row.rotationModel,
+                rotationModel: rowRotationModel,
                 displayValues: newDisplayValues,
             },
             value: [ ...rotationMatrix ] as Tuple<number, 9>,
@@ -112,6 +113,21 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
             rowId: row.id, 
             rowData: rowS,
             undo: { actionToken },
+        }));
+    }
+
+    const switchRotationModel = (newModel: RotationModels) =>
+    {
+        const rowS: Partial<RowS<RotationRowT>> = {
+            rotationModel: newModel,
+        }
+
+        dispatch(geometriesAssignRowData({
+            geometryId: geometryId,
+            nodeId: nodeId,
+            rowId: row.id, 
+            rowData: rowS,
+            undo: {},
         }));
     }
 
@@ -130,7 +146,11 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
                 !connected && row.currentDisplay && <>
                 {
                     <IndentRowDiv>
-                        <SelectOption />
+                        <SelectOption 
+                            value={rowRotationModel} 
+                            onChange={switchRotationModel as (newMode: string) => void}   
+                            options={Object.values(RotationModels)} 
+                        />
                     </IndentRowDiv>
                 }
                 {

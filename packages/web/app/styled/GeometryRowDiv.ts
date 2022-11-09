@@ -17,6 +17,7 @@ const GeometryRowDiv = styled.div<GeometryRowWrapperProps>`
         ${GNODE_ROW_UNIT_HEIGHT}px
     );
     align-items: center;
+    grid-template-columns: 100%;
     
     margin: 0 8px;
 

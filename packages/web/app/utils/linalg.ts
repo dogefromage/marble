@@ -25,29 +25,26 @@ export function eulerToMat3(euler: number[], model: Exclude<RotationModels, Rota
     const [ sx, sy, sz ] = euler.map(euler => Math.sin(euler));
     const [ cx, cy, cz ] = euler.map(euler => Math.cos(euler));
 
-    const Rx: mat3 = [
+    // https://glmatrix.net/
+    // "column major format"
+
+    const Rx = mat3.transpose(mat3.create(), [
          1,   0,   0,
          0,   cx, -sx,
          0,   sx,  cx,
-    ];
+    ]);
 
-    const Ry: mat3 = [
+    const Ry = mat3.transpose(mat3.create(), [
         cy,   0,   sy,
          0,   1,    0,
        -sy,   0,   cy,
-    ];
+    ]);
 
-    const Rz: mat3 = [
+    const Rz = mat3.transpose(mat3.create(), [
         cz, -sz,   0,
         sz,  cz,   0,
          0,   0,   1,
-    ];
-
-    // https://glmatrix.net/
-    // "column major format"
-    mat3.transpose(Rx, Rx);
-    mat3.transpose(Ry, Ry);
-    mat3.transpose(Rz, Rz);
+    ]);
 
     // compose linear map
     const composition = mat3.identity(mat3.create());

@@ -24,13 +24,13 @@ export type MapEvery<M extends string, T> = { [ K in M ]: T };
 
 export enum RotationModels
 {
-    Quaternion = 'Quaternion XYZW',
-    Euler_XYZ = 'Euler XYZ',
-    Euler_XZY = 'Euler XZY',
-    Euler_YXZ = 'Euler YXZ',
-    Euler_YZX = 'Euler YZX',
-    Euler_ZXY = 'Euler ZXY',
-    Euler_ZYX = 'Euler ZYX',
+    Quaternion = 'Quaternion',
+    Euler_XYZ = 'XYZ Euler',
+    // Euler_XZY = 'XZY Euler',
+    // Euler_YXZ = 'YXZ Euler',
+    // Euler_YZX = 'YZX Euler',
+    // Euler_ZXY = 'ZXY Euler',
+    // Euler_ZYX = 'ZYX Euler',
 }
 
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;

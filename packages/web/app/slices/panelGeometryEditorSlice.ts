@@ -48,7 +48,7 @@ export const geometryEditorPanelsSlice = createSlice({
             if (!ps) return;
             ps.activeNode = a.payload.nodeId;
         },
-        openTemplateCatalog: (s, a: PayloadAction<{ panelId: string, clientPos: Point, offsetPos: Point, center: boolean }>) =>
+        openTemplateCatalog: (s, a: PayloadAction<{ panelId: string, offsetPos: Point, center: boolean }>) =>
         {
             const ps = getPanelState(s, a);
             if (!ps) return;
@@ -56,7 +56,7 @@ export const geometryEditorPanelsSlice = createSlice({
             const worldPosition = pointScreenToWorld(ps.camera, p2v(a.payload.offsetPos));
 
             ps.templateCatalog = {
-                clientPosition: a.payload.clientPos,
+                offsetPosition: a.payload.offsetPos,
                 worldPosition: v2p(worldPosition),
                 center: a.payload.center,
             };

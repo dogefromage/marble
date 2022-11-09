@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom';
+import styled from 'styled-components';
 import useAvaliableCommands from '../hooks/useAvailableCommands';
 import useDispatchCommand from '../hooks/useDispatchCommand';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
@@ -8,7 +9,13 @@ import formatKeyCombination from '../utils/formatKeyCombination';
 import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
 import Menu from './Menu';
 import MenuItem from './MenuItem';
-import MenuTitle from './MenuTitle';
+
+const ContextMenuDiv = styled.div`
+    
+    position: fixed;
+    left: 0;
+    top: 0;
+`;
 
 const ContextMenu = () =>
 {

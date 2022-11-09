@@ -14,12 +14,6 @@ const MaterialSymbol = styled.span.attrs(() =>
 })<Props>`
 
     font-size: ${({ size }) => size }px;
-    
-    &::after
-    {
-        display: block;
-        content: "${({ name }) => name }";
-    }
 `;
 
 export default MaterialSymbol;

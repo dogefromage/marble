@@ -15,7 +15,7 @@ export const DEFAULT_PLANAR_CAMERA: PlanarCamera =
 
 interface TemplateCatalogState
 {
-    clientPosition: Point;
+    offsetPosition: Point;
     worldPosition: Point;
     center: boolean,
 }

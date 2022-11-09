@@ -14,6 +14,9 @@ import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 
 const EditorWrapper = styled.div`
 
+
+    position: relative;
+
     width: 100%;
     height: 100%;
     user-select: none;
@@ -84,7 +87,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
     const geometryId = panelState?.geometryId;
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId!];
 
-    const getCatalogPositions = (e: React.MouseEvent) =>
+    const getOffsetPos = (e: React.MouseEvent) =>
     {
         const boundingRect = e.currentTarget.getBoundingClientRect();
         const offsetPos = {
@@ -92,27 +95,21 @@ const GeometryEditor = (viewProps: ViewProps) =>
             y: e.clientY - boundingRect.top,
         };
 
-        return {
-            offsetPos,
-            clientPos: {
-                x: e.clientX,
-                y: e.clientY,
-            },
-        }
+        return offsetPos;
     }
 
     const openSearcher = (e: React.MouseEvent) =>  
         dispatch(geometryEditorPanelOpenTemplateCatalog({
             panelId: viewProps.panelId,
             center: false,
-            ...getCatalogPositions(e),
+            offsetPos: getOffsetPos(e),
         }));
 
     const contextMenu = useContextMenu(
         viewProps.panelId,
         'Geometry Editor',
         [ 'geometryEditor.openTemplateCatalog' ],
-        e => getCatalogPositions(e),
+        e => ({ offsetPos: getOffsetPos(e) }),
     )
 
     return (

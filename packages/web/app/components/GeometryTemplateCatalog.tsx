@@ -59,7 +59,7 @@ const GeometryTemplateCatalog = ({ viewProps }: Props) =>
 
     return (
         <Menu
-            position={panelState.templateCatalog.clientPosition}
+            position={panelState.templateCatalog.offsetPosition}
             onUnfocus={closeMenu}
             center={panelState.templateCatalog.center}
         >

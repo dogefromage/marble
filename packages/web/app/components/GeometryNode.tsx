@@ -13,7 +13,7 @@ import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryRowRoot from './GeometryRowRoot';
 
-export const NODE_WIDTH = 160;
+export const NODE_WIDTH = 180;
 
 interface DivProps
 {

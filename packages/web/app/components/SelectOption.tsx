@@ -1,12 +1,14 @@
-import React, { useRef, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 import MaterialSymbol from './MaterialSymbol';
 import Menu from './Menu';
+import MenuItem from './MenuItem';
 
 const SelectOptionDiv = styled.div`
     position: relative;
-    width: 100%;
+    z-index: 1;
+
     height: ${GNODE_ROW_UNIT_HEIGHT * 0.8}px;
 
     display: flex;
@@ -24,13 +26,15 @@ const SelectOptionDiv = styled.div`
     p
     {
         margin: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 `;
 
 const DownArrow = styled(MaterialSymbol).attrs(() =>
 {
     return {
-        name: 'expand_more',
         size: 20,
     };
 })`
@@ -40,40 +44,44 @@ const DownArrow = styled(MaterialSymbol).attrs(() =>
 interface Props
 {
     value: string;
+    options: string[];
     onChange: (newValue: string) => void;
 }
 
-const SelectOption = ({ value, onChange }: Props) =>
+const SelectOption = ({ value, onChange, options }: Props) =>
 {
-    const [ open, setOpen ] = useState(false);
-    const menuRef = useRef<{
-
-    }>();
-
-    const openSelect = () =>
-    {
-        setOpen(true);
-        menuRef.current = {
-            
-        }
-    };
+    const [ dropdown, setDropdown ] = useState(false);
 
     return (
-        <SelectOptionDiv>
+        <SelectOptionDiv
+            onClick={() => setDropdown(true)}
+        >
         {
-            open ? (
+            dropdown ? (
                 <Menu
-                    position={}
+                    onUnfocus={() => setDropdown(false)}
+                    position={{ x: 0, y: 0 }}
                 >
-
+                {
+                    options.map(option =>
+                        <MenuItem
+                            key={option}
+                            text={option}
+                            onClick={e => 
+                            {
+                                onChange(option);
+                                setDropdown(() => false);
+                                e.stopPropagation();
+                            }}
+                        />   
+                    )
+                }
                 </Menu>
             ) : (
-                <div
-                    onClick={openSelect}
-                >
+                <>
                     <p>{ value }</p>
-                    <DownArrow />
-                </div>
+                    <DownArrow>expand_more</DownArrow>
+                </>
             )
         }
         </SelectOptionDiv>

@@ -14,7 +14,8 @@ interface MenuWrapperProps
 
 const MenuWrapper = styled.div<MenuWrapperProps>`
 
-    position: fixed;
+    position: absolute;
+
     left: ${({ position }) => position.x }px;
     top:  ${({ position }) => position.y }px;
 

@@ -32,13 +32,12 @@ export const DEFAULT_COMMANDS: Command[] =
         name: 'Add Node',
         actionCreator({ callType, activePanel }, params)
         {
-            let clientPos: Point, offsetPos: Point, center = false;
+            let offsetPos: Point, center = false;
 
             switch (callType)
             {
                 case CommandCallTypes.ContextMenu:
                 {
-                    clientPos = params.clientPos;
                     offsetPos = params.offsetPos;
                     break;
                 }
@@ -46,10 +45,6 @@ export const DEFAULT_COMMANDS: Command[] =
                 {
                     const bounds = activePanel.panelClientRect;
                     
-                    clientPos = {
-                        x: bounds.x + 0.5 * bounds.w,
-                        y: bounds.y + 0.5 * bounds.h,
-                    };
                     offsetPos = {
                         x: 0.5 * bounds.w,
                         y: 0.5 * bounds.h,
@@ -65,7 +60,6 @@ export const DEFAULT_COMMANDS: Command[] =
 
             return geometryEditorPanelOpenTemplateCatalog({
                 panelId: activePanel.panelId,
-                clientPos,
                 offsetPos,
                 center,
             });
