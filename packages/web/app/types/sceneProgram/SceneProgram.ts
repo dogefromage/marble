@@ -35,15 +35,15 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     mat3: 9,
 }
 
-export interface FunctionArg 
-{
-    name: string;
-    dataType: DataTypes;
-}
-
 export enum DefaultFunctionArgNames
 {
     RayPosition = 'arg_ray_p'
+}
+
+export interface FunctionArg 
+{
+    name: DefaultFunctionArgNames;
+    dataType: DataTypes;
 }
 
 export const DefaultFunctionArgs: FunctionArg[] = 
@@ -76,32 +76,34 @@ export interface ProgramConstant
     value: any;
 }
 
-export interface PartialProgram
-{
-    functionArgs: FunctionArg[];
-    constants: ProgramConstant[];
-    textureVars: ProgramTextureVar[];
-    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-    includeIds: Set<ProgramInclude>;
-}
-
-export interface SceneProgram
-{
-    methodName: string;
-    functionArgs: FunctionArg[];
-    includedGLSLCode: string[];
-    
-    constants: ProgramConstant[];
-    textureVars: ProgramTextureVar[];
-    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-
-    operations: ProgramOperation[];
-    
-    methodReturnType: DataTypes;
-}
-
 export interface ProgramInclude
 {
     id: string;
     glslCode: string;
+}
+
+export interface IncrementalProgramMetadata
+{
+    constants: ProgramConstant[];
+    textureVars: ProgramTextureVar[];
+    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
+
+}
+
+export interface GeometryProgramMethod
+{
+    methodName: string;
+    functionArgs: FunctionArg[];
+
+    includedTokens: string[];
+    
+    // constants: ProgramConstant[];
+    // textureVars: ProgramTextureVar[];
+
+    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
+
+    programInstructions: string[];
+    // operations: ProgramOperation[];
+    
+    // methodReturnType: DataTypes;
 }

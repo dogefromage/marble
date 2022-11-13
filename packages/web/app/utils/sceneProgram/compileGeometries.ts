@@ -1,16 +1,16 @@
-import { DefaultFunctionArgs, GeometryZ, PartialProgram, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, SceneProgram, RowTypes, InputOnlyRowT } from "../../types";
+import { DefaultFunctionArgs, GeometryZ, IncrementalProgramMetadata, ObjMap, OutputRowT, ProgramConstant, ProgramInclude, ProgramOperation, ProgramTextureVar, ProgramTextureVarMapping, GeometryProgramMethod, RowTypes, InputOnlyRowT } from "../../types";
 import { Counter } from "../Counter";
 import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import { GeometriesCompilationError, GeometriesCompilationErrorTypes } from "./compilationError";
-import { parseNodeOperations } from "./createOperations";
+import { parseNodeOperations } from "./operationCompiler";
 import findUsedNodes from "./findUsed";
 import { generateTopologicalOrder } from "./generateTopologicalOrder";
 
 export function compileGeometries(
     geometry: GeometryZ,
-    glslSnippets: ObjMap<ProgramInclude>,
+    glslIncludes: ObjMap<ProgramInclude>,
     textureCoordinateCounter: Counter,
 )
 {
@@ -52,54 +52,73 @@ export function compileGeometries(
     const topoOrder = generateTopologicalOrder(forwardsAdjList, outputIndex);
     const orderedUsedNodeIndices = topoOrder.filter(index => used.has(index));
         
-    const partialProgram: PartialProgram =
+    const partialProgram: IncrementalProgramMetadata =
     {
         functionArgs: [ ...DefaultFunctionArgs ],
-        constants: [],
-        textureVars: [],
+        // constants: [],
+        // textureVars: [],
         textureVarMappings: {},
-        includeIds: new Set(),
+        includedTokens: new Set(),
     }
 
-    const operations: ProgramOperation[] = []
+    // const operations: ProgramOperation[] = []
+
+    const instructions: string[] = [];
 
     for (const nodeIndex of orderedUsedNodeIndices)
     {
         const node = geometry.nodes[nodeIndex];
 
-        for (const snippetId of node.includeIds)
-        {
-            const snippet = glslSnippets[snippetId];
-            if (!snippet) throw new GeometriesCompilationError(
-                GeometriesCompilationErrorTypes.SnippetMissing,
-            );
+        // for (const snippetId of node.includeIds)
+        // {
+        //     const snippet = glslSnippets[snippetId];
+        //     if (!snippet) throw new GeometriesCompilationError(
+        //         GeometriesCompilationErrorTypes.SnippetMissing,
+        //     );
 
-            partialProgram.includeIds.add(snippet);
-        }
+        //     partialProgram.includeIds.add(snippet);
+        // }
 
-        const nodeOperations = parseNodeOperations(
+        // const nodeOperations = parseNodeOperations(
+        //     nodeIndex,
+        //     node, 
+        //     textureCoordinateCounter,
+        //     partialProgram,
+        //     backwardsAdjList[nodeIndex],
+        // );
+
+        const nodeCompilerOutput = compileNodeInstructions(
             nodeIndex,
-            node, 
+            node,
             textureCoordinateCounter,
-            partialProgram,
             backwardsAdjList[nodeIndex],
         );
         
-        for (const op of nodeOperations)
-        {
-            operations.push(op);
-        }
+        // for (const op of nodeOperations)
+        // {
+        //     operations.push(op);
+        // }
     }
 
-    const includedGLSLCode = [ ...partialProgram.includeIds ].map(s => s.glslCode);
+    // const includedGLSLCode = [ ...partialProgram.includeIds ].map(s => s.glslCode);
+
+    const includedGLSLCode: string[] = [];
+    partialProgram.includeIds.forEach(includeId => 
+    {
+        const include = glslIncludes[includeId];
+        if (!include) throw new GeometriesCompilationError(
+            GeometriesCompilationErrorTypes.IncludeMissing,
+        );
+        includedGLSLCode.push(include.glslCode);
+    })
 
     const { row: outputInputRow } = 
         getRowById<InputOnlyRowT>(geometry.nodes[outputIndex], 'input', RowTypes.InputOnly);
 
-    const finalProgram: SceneProgram =
+    const finalProgram: GeometryProgramMethod =
     {
         includedGLSLCode,
-        operations,
+        // operations,
         methodName: `geometry_${geometry.id}`,
         methodReturnType: outputInputRow.dataType,
         functionArgs: partialProgram.functionArgs,

@@ -1,17 +1,28 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GNodeZ, InputOnlyRowT, JointLocation, ObjMap, OutputRowT, PartialProgram, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GNodeZ, InputOnlyRowT, JointLocation, ObjMap, OutputRowT, IncrementalProgramMetadata, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
 import { GeometryEdge } from "../geometries/generateAdjacencyLists";
 import { getRowById } from "../geometries/getRows";
 import { jointLocationHash } from "../geometries/locationHashes";
 
+function createIncrementalMeta()
+{
+    const d: IncrementalProgramMetadata = {
+        constants: [],
+        textureVars: [],
+        textureVarMappings: {},
+    }
+    return d;
+}
+
 export class RowVarNameGenerator
 {
+    private incrementalMeta = createIncrementalMeta();
+
     constructor(
         private nodeIndex: number,
         private node: GNodeZ,
         private textureCoordinateCounter: Counter,
-        private partialProgram: PartialProgram,
         private incomingEdges?: ObjMap<GeometryEdge[]>,
     ) {}
 
@@ -52,17 +63,17 @@ export class RowVarNameGenerator
         return this.incomingEdges?.[rowIndex];
     }
 
-    private getTempVar(varIdentifier: string)
-    {
-        const tempVar = varIdentifier.match(/\$(\d+)/);
-        const capturedNumber = tempVar?.[1];
-        if (capturedNumber) return `temp_${capturedNumber}`;
-    }
+    // private getTempVar(varIdentifier: string)
+    // {
+    //     const tempVar = varIdentifier.match(/\$(\d+)/);
+    //     const capturedNumber = tempVar?.[1];
+    //     if (capturedNumber) return `temp_${capturedNumber}`;
+    // }
 
     input(varIdentifier: string)
     {
-        const tempVar = this.getTempVar(varIdentifier);
-        if (tempVar) return tempVar;
+        // const tempVar = this.getTempVar(varIdentifier);
+        // if (tempVar) return tempVar;
 
         // should be rowId
         const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
@@ -88,7 +99,7 @@ export class RowVarNameGenerator
             const textureCoord = this.textureCoordinateCounter.nextInts(size);
 
             const textureVar = this.createTextureVar(rowIndex, row, textureCoord);
-            this.partialProgram.textureVars.push(textureVar);
+            this.incrementalMeta.textureVars.push(textureVar);
 
             const textureVarMapping: ProgramTextureVarMapping = 
             {
@@ -104,14 +115,14 @@ export class RowVarNameGenerator
                 subIndex: 0,
             };
             const uniqueRowKey = jointLocationHash(location);
-            this.partialProgram.textureVarMappings[uniqueRowKey] = textureVarMapping;
+            this.incrementalMeta.textureVarMappings[uniqueRowKey] = textureVarMapping;
 
             return textureVar.name;
         }
 
         // case 4: fixed constant
         const constant = this.createConstant(rowIndex, row);
-        this.partialProgram.constants.push(constant);
+        this.incrementalMeta.constants.push(constant);
         return constant.name;
     }
 
@@ -128,28 +139,40 @@ export class RowVarNameGenerator
         return this.hashOutput(this.nodeIndex, rowIndex);
     }
 
-    stacked(rowId: string): string[]
+    // stacked(rowId: string): string[]
+    // {
+    //     const foundRow = getRowById<InputOnlyRowT>(this.node, rowId);
+    //     if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+
+    //     const { row, rowIndex } = foundRow;
+    //     const outputVars: string[] = [];
+    //     const incomingEdges = this.getEdgeInto(rowIndex) || [];
+
+    //     for (let i = 0; i < row.connectedOutputs.length; i++)
+    //     {
+    //         const edge = incomingEdges[i];
+
+    //         if (!edge) 
+    //         {
+    //             console.error(`Stacked edge not found but something is connected`);
+    //             break;
+    //         }
+
+    //         outputVars.push(this.hashOutput(...edge.fromIndices));
+    //     }
+
+    //     return outputVars;
+    // }
+
+    rowToVariable(varIdentifier: string): string
     {
-        const foundRow = getRowById<InputOnlyRowT>(this.node, rowId);
-        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
 
-        const { row, rowIndex } = foundRow;
-        const outputVars: string[] = [];
-        const incomingEdges = this.getEdgeInto(rowIndex) || [];
+    }
 
-        for (let i = 0; i < row.connectedOutputs.length; i++)
-        {
-            const edge = incomingEdges[i];
-
-            if (!edge) 
-            {
-                console.error(`Stacked edge not found but something is connected`);
-                break;
-            }
-
-            outputVars.push(this.hashOutput(...edge.fromIndices));
-        }
-
-        return outputVars;
+    popIncrementalMetadata()
+    {
+        const meta = this.incrementalMeta;
+        this.incrementalMeta = createIncrementalMeta();
+        return meta;
     }
 }

@@ -1,4 +1,4 @@
-import { DataTypes, ProgramOperation, ProgramOperationTypes, SceneProgram } from "../../types";
+import { DataTypes, ProgramOperation, ProgramOperationTypes, GeometryProgramMethod } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
 import { formatValueGLSL, textureLookupDatatype } from "./formatValue";
 import { generateBinaryInvocationTree } from "./generateBinaryInvocationTree";
@@ -12,7 +12,7 @@ const geometryMethodTemplate = glsl`
 }
 `;
 
-export function generateGeometryMethodCode(sceneProgram: SceneProgram)
+export function generateGeometryMethodCode(sceneProgram: GeometryProgramMethod)
 {
     const methodTemplate = new CodeTemplate(geometryMethodTemplate)
 

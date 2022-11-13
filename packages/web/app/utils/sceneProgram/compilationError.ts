@@ -3,7 +3,7 @@ export enum GeometriesCompilationErrorTypes
 {
     OutputMissing = 'output-missing',
     HasCycle = 'has-cycle',
-    SnippetMissing = 'snippet-missing',
+    IncludeMissing = 'include-missing',
     InvalidGraph = 'invalid-graph',
 }
 

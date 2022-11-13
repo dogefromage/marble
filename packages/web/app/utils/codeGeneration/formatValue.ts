@@ -32,7 +32,7 @@ export function textureLookupDatatype(textureCoordinate: number, dataType: DataT
     {
         const count = TEXTURE_VAR_DATATYPE_SIZE[dataType];
 
-        const coords = [];
+        const coords: number[] = [];
         for (let i = 0; i < count; i++)
             coords.push(textureCoordinate + i);
 

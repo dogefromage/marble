@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { LOOKUP_TEXTURE_SIZE } from "../utils/viewport/ViewportQuadProgram";
 import { RootState } from "../redux/store";
-import { SceneProgram, SceneProgramSliceState } from "../types";
+import { GeometryProgramMethod, SceneProgramSliceState } from "../types";
 
 const initialState: SceneProgramSliceState = 
 {
@@ -14,7 +14,7 @@ export const sceneProgramSlice = createSlice({
     name: 'sceneProgram',
     initialState,
     reducers: {
-        setProgram: (s, a: PayloadAction<{ program: SceneProgram | null }>) =>
+        setProgram: (s, a: PayloadAction<{ program: GeometryProgramMethod | null }>) =>
         {
             s.program = a.payload.program;
         },

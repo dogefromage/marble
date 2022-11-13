@@ -3,7 +3,7 @@ import { glsl } from "./glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
-export const TEXTURE_LOOKUP_METHOD_NAME = 'lookupTextureVars';
+export const TEXTURE_LOOKUP_METHOD_NAME = 'tx';
 
 export const VERT_CODE_TEMPLATE = glsl`
 
@@ -75,7 +75,7 @@ struct March
     bool hasHit;
 };
 
-float lookupTextureVars(int textureCoordinate)
+float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
 {
     int y = textureCoordinate / ${LOOKUP_TEXTURE_SIZE};
     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_SIZE};

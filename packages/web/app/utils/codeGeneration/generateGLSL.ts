@@ -1,9 +1,9 @@
-import { SceneProgram } from "../../types";
+import { GeometryProgramMethod } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
 import { generateGeometryMethodCode } from "./generateGeometryMethodCode";
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "./shaderTemplates";
 
-export function generateGLSL(sceneProgram: SceneProgram)
+export function generateGLSL(sceneProgram: GeometryProgramMethod)
 {
     const { methodName, method } = 
         generateGeometryMethodCode(sceneProgram);
