@@ -1,4 +1,4 @@
-import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTypes, ProgramOperationTypes, RotationModels, RowTypes, RowValueMap } from "../types";
+import { ArithmeticOperations, DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTags, GNodeTypes, ProgramOperationTypes, RotationModels, RowTypes, RowValueMap } from "../types";
 import { glsl } from "../utils/codeGeneration/glslTag";
 import { inc_difference, inc_intersection, inc_sdf_box, inc_sdf_sphere, inc_sdf_z_plane, inc_transform, inc_union } from "./defaultIncludes";
 
@@ -16,6 +16,7 @@ const output: GNodeT =
 {
     id: 'output',
     type: GNodeTypes.Default,
+    tags: [ GNodeTags.Output ],
     rows: [
         {
             id: 'name',

@@ -1,18 +1,18 @@
-import { ActiveContextMenu, ActivePanel, Command, GeometryS, ProgramInclude, GNodeT, GeometryProgramMethod } from ".";
+import { ActiveContextMenu, ActivePanel, Command, GeometryS, ProgramInclude, GNodeT, GeometryProgramMethod, SceneProgram } from ".";
 import { ObjMap } from "./UtilityTypes";
 
 export type GeometriesSliceState = ObjMap<GeometryS>;
 
 export type SceneProgramSliceState = 
 {
-    program: GeometryProgramMethod | null;
+    program: SceneProgram | null;
     textureVarLookupData: number[];
 }
 
 export type TemplatesSliceState = 
 {
     templates: ObjMap<GNodeT>;
-    glslSnippets: ObjMap<ProgramInclude>;
+    programIncludes: ObjMap<ProgramInclude>;
 }
 
 export interface CommandsSliceState

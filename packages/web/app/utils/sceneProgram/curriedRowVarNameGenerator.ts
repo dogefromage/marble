@@ -128,12 +128,12 @@ export class RowVarNameGenerator
 
     output(varIdentifier: string)
     {
-        const tempVar = this.getTempVar(varIdentifier);
-        if (tempVar) return tempVar;
+        // const tempVar = this.getTempVar(varIdentifier);
+        // if (tempVar) return tempVar;
 
         // should be rowId
         const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
-        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+        if (!foundRow) throw new Error(`Could not find row`);
 
         const { rowIndex } = foundRow;
         return this.hashOutput(this.nodeIndex, rowIndex);
@@ -163,11 +163,6 @@ export class RowVarNameGenerator
 
     //     return outputVars;
     // }
-
-    rowToVariable(varIdentifier: string): string
-    {
-
-    }
 
     popIncrementalMetadata()
     {

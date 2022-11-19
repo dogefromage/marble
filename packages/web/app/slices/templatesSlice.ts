@@ -5,7 +5,7 @@ import { ProgramInclude, GNodeT, TemplatesSliceState } from "../types";
 const initialState: TemplatesSliceState = 
 {
     templates: {},
-    glslSnippets: {}
+    programIncludes: {}
 };
 
 export const templatesSlice = createSlice({
@@ -18,7 +18,7 @@ export const templatesSlice = createSlice({
         },
         addGLSLSnippet: (s, a: PayloadAction<{ glslSnippet: ProgramInclude }>) =>
         {
-            s.glslSnippets[a.payload.glslSnippet.id] = a.payload.glslSnippet;
+            s.programIncludes[a.payload.glslSnippet.id] = a.payload.glslSnippet;
         }
     }
 });

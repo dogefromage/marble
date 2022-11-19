@@ -87,7 +87,6 @@ export interface IncrementalProgramMetadata
     constants: ProgramConstant[];
     textureVars: ProgramTextureVar[];
     textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-
 }
 
 export interface GeometryProgramMethod
@@ -105,5 +104,11 @@ export interface GeometryProgramMethod
     programInstructions: string[];
     // operations: ProgramOperation[];
     
-    // methodReturnType: DataTypes;
+    methodReturnType: DataTypes;
+}
+
+export interface SceneProgram
+{
+    includes: ProgramInclude[];
+    rootMethod: GeometryProgramMethod;
 }

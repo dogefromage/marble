@@ -32,15 +32,6 @@ const SelectOptionDiv = styled.div`
     }
 `;
 
-const DownArrow = styled(MaterialSymbol).attrs(() =>
-{
-    return {
-        size: 20,
-    };
-})`
-    transform: translate(6.5px);
-`;
-
 interface Props
 {
     value: string;
@@ -80,7 +71,13 @@ const SelectOption = ({ value, onChange, options }: Props) =>
             ) : (
                 <>
                     <p>{ value }</p>
-                    <DownArrow>expand_more</DownArrow>
+                    <MaterialSymbol
+                        name="expand_more"
+                        size={20}
+                        style={{
+                            transform: 'translate(6.5px)',
+                        }}
+                    />
                 </>
             )
         }

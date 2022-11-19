@@ -21,7 +21,7 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
     const updateValue = (index: number) => 
         (value: number, actionToken: string | undefined) =>
     {
-        const combinedValue = row.value.slice();
+        const combinedValue = [ ...row.value ] as typeof row.value;
         combinedValue[index] = value;
 
         dispatch(geometriesAssignRowData({

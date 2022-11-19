@@ -30,24 +30,25 @@ export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
     
                 const rows = t.rows.map(rowT =>
                 {
-                    const rowS = node.rows[rowT.id];
-                    
                     // @ts-ignore
                     const rowZ: RowZ = 
                     {
                         ...rowT,
                         ...node.rows[rowT.id],
                     }
-    
                     return rowZ;
                 });
     
                 const nodeZ: GNodeZ =
                 {
-                    ...node,
+                    id: node.id,
+                    templateId: node.templateId,
+                    position: node.position,
+
                     type: t.type,
-                    operations: t.operations,
-                    includeIds: t.includeIds,
+                    tags: t.tags,
+                    instructionTemplates: t.instructionTemplates,
+
                     rows,
                 }
     

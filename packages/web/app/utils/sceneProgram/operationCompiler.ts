@@ -67,7 +67,24 @@ export function compileNodeInstructions(
             if (!match) break;
 
             const rowName = match[1];
-            const varName = varNameGenerator.rowToVariable(rowName);
+
+            // check if assignation
+            const indexOfVar = compiledLine.indexOf(rowName);
+            const equalsIndex = compiledLine.indexOf('=');
+
+            const isAssignation = equalsIndex >= 0 && indexOfVar < equalsIndex;
+
+            let varName: string;
+
+            if (isAssignation)
+            {
+                varName = varNameGenerator.output(rowName);
+            }
+            else
+            {
+                varName = varNameGenerator.input(rowName);
+            }
+
             compiledLine = compiledLine.replace(rowName, varName);
         }
 

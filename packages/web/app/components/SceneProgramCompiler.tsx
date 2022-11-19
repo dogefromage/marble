@@ -3,19 +3,19 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DataTypes, InputOnlyRowT, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
+import { DataTypes, InputOnlyRowT, ProgramInclude, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
 import { Counter } from '../utils/Counter';
 import { assertRowHas } from '../utils/geometries/assertions';
 import zipGeometry from '../utils/geometries/zipGeometry';
 import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
-import { compileGeometries } from '../utils/sceneProgram/compileGeometries';
+import { compileGeometry } from '../utils/sceneProgram/compileGeometry';
 import { LOOKUP_TEXTURE_SIZE } from '../utils/viewport/ViewportQuadProgram';
 
 const SceneProgramCompiler = () =>
 {
     const dispatch = useAppDispatch();
     const geometries = useAppSelector(selectGeometries);
-    const { templates, glslSnippets } = useAppSelector(selectTemplates);
+    const { templates, programIncludes } = useAppSelector(selectTemplates);
     const geoZero = Object.values(geometries)[0];
     const { program } = useAppSelector(selectSceneProgram);
 
@@ -37,9 +37,24 @@ const SceneProgramCompiler = () =>
         try
         {
             const textureCoordCounter = new Counter(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE);
-            const newProgram = compileGeometries(zipped, glslSnippets, textureCoordCounter);
+            const geometryMethodCode = compileGeometry(zipped, textureCoordCounter);
+
+            const usedIncludes: ProgramInclude[] = [];
+            geometryMethodCode.includedTokens.forEach(includeToken => 
+            {
+                const include = programIncludes[includeToken];
+                if (!include) return console.error(`Include missing "${includeToken}"`);
+                usedIncludes.push(include);
+            })
+
+            const program: SceneProgram = 
+            {
+                rootMethod: geometryMethodCode,
+                includes: usedIncludes,
+            }
+            
             dispatch(sceneProgramSetProgram({
-                program: newProgram,
+                program,
             }));
         }
         catch (e)
@@ -59,52 +74,52 @@ const SceneProgramCompiler = () =>
         zipped?.compilationValidity 
     ]);
 
-    useEffect(() =>
-    {
-        if (!program || !zipped)
-            return;
+    // useEffect(() =>
+    // {
+    //     if (!program || !zipped)
+    //         return;
 
-        for (const mapping of Object.values(program.textureVarMappings))
-        {
-            const node = zipped.nodes[mapping.nodeIndex];
-            const row = node?.rows[mapping.rowIndex];
+    //     for (const mapping of Object.values(program.textureVarMappings))
+    //     {
+    //         const node = zipped.nodes[mapping.nodeIndex];
+    //         const row = node?.rows[mapping.rowIndex];
 
-            // can happen because zipped and program are not necessarily equivalend
-            if (!row) continue;
-            if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
+    //         // can happen because zipped and program are not necessarily equivalend
+    //         if (!row) continue;
+    //         if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
 
-            let subArray: number[];
+    //         let subArray: number[];
             
-            if (mapping.dataTypes === DataTypes.Vec2 ||
-                mapping.dataTypes === DataTypes.Vec3 ||
-                mapping.dataTypes === DataTypes.Mat3)
-            {
-                subArray = row.value as number[];
-                const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
-                if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
-            }
-            else if (mapping.dataTypes === DataTypes.Float)
-            {
-                if (typeof(row.value) !== 'number') continue;
-                subArray = [ row.value ];
-            }
-            else
-            {
-                console.error(`Unknown datatype`);
-                continue;
-            }
+    //         if (mapping.dataTypes === DataTypes.Vec2 ||
+    //             mapping.dataTypes === DataTypes.Vec3 ||
+    //             mapping.dataTypes === DataTypes.Mat3)
+    //         {
+    //             subArray = row.value as number[];
+    //             const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
+    //             if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
+    //         }
+    //         else if (mapping.dataTypes === DataTypes.Float)
+    //         {
+    //             if (typeof(row.value) !== 'number') continue;
+    //             subArray = [ row.value ];
+    //         }
+    //         else
+    //         {
+    //             console.error(`Unknown datatype`);
+    //             continue;
+    //         }
             
-            dispatch(sceneProgramSetLookupSubarray({
-                startCoordinate: mapping.textureCoordinate,
-                subArray,
-            }));
-        }
-    }, [ 
-        program, 
-        zipped?.id,
-        zipped?.rowStateValidity, 
-        zipped?.compilationValidity,
-    ]);
+    //         dispatch(sceneProgramSetLookupSubarray({
+    //             startCoordinate: mapping.textureCoordinate,
+    //             subArray,
+    //         }));
+    //     }
+    // }, [ 
+    //     program, 
+    //     zipped?.id,
+    //     zipped?.rowStateValidity, 
+    //     zipped?.compilationValidity,
+    // ]);
 
     return null;
 }

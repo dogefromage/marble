@@ -1,7 +1,5 @@
 import { mat4 } from 'gl-matrix';
 import { useEffect, useState } from 'react';
-import { ViewportQuadProgram } from '../utils/viewport/ViewportQuadProgram';
-import useEffectTrigger from '../hooks/useEffectTrigger';
 import { useAppSelector } from '../redux/hooks';
 import { selectViewportPanels } from '../slices/panelViewportSlice';
 import { selectSceneProgram } from '../slices/sceneProgramSlice';
@@ -10,6 +8,7 @@ import { degToRad } from '../utils/math';
 import { usePanelState } from '../utils/panelState/usePanelState';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
+import { ViewportQuadProgram } from '../utils/viewport/ViewportQuadProgram';
 
 interface Props
 {

@@ -2,7 +2,7 @@ import { ActionCreator, ActionCreatorWithPayload, createSlice, PayloadAction } f
 import { WritableDraft } from "immer/dist/internal";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTags, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -95,8 +95,7 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.operations.find(
-                op => op.type === ProgramOperationTypes.Return))
+            if (a.payload.template.tags?.includes(GNodeTags.Output))
             {
                 g.outputId = node.id;
                 g.compilationValidity++;
