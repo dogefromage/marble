@@ -1,5 +1,5 @@
 import { quat, vec2, vec3 } from "gl-matrix";
-import { PanelState } from "../PanelState";
+import { PanelState } from "..";
 
 export interface Camera
 {

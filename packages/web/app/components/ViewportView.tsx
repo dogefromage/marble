@@ -4,6 +4,7 @@ import { createViewportPanelState } from '../slices/panelViewportSlice';
 import { ViewTypes } from '../types';
 import { ViewProps } from '../types/view/ViewProps';
 import { useBindPanelState } from '../utils/panelState/useBindPanelState';
+import PanelBody from './PanelBody';
 import ViewportCanvas from './ViewportCanvas';
 
 const ViewPortDiv = styled.div`
@@ -21,9 +22,11 @@ const ViewportView = ({ panelId }: ViewProps) =>
     );
 
     return (
-        <ViewPortDiv>
-            <ViewportCanvas panelId={panelId} />
-        </ViewPortDiv>
+        <PanelBody>
+            <ViewPortDiv>
+                <ViewportCanvas panelId={panelId} />
+            </ViewPortDiv>
+        </PanelBody>
     )
 }
 

@@ -63,21 +63,18 @@ export class RowVarNameGenerator
         return this.incomingEdges?.[rowIndex];
     }
 
-    // private getTempVar(varIdentifier: string)
-    // {
-    //     const tempVar = varIdentifier.match(/\$(\d+)/);
-    //     const capturedNumber = tempVar?.[1];
-    //     if (capturedNumber) return `temp_${capturedNumber}`;
-    // }
-
-    input(varIdentifier: string)
+    private getLocalVarName(varName: string)
     {
-        // const tempVar = this.getTempVar(varIdentifier);
-        // if (tempVar) return tempVar;
+        return `temp_${this.node.id}_${varName}`;
+    }
+
+    input(varToken: string)
+    {
+        const varName = varToken.replace('$', '');
 
         // should be rowId
-        const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
-        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        if (!foundRow) return this.getLocalVarName(varName);
 
         const { row, rowIndex } = foundRow;
 
@@ -126,43 +123,43 @@ export class RowVarNameGenerator
         return constant.name;
     }
 
-    output(varIdentifier: string)
+    output(varToken: string)
     {
-        // const tempVar = this.getTempVar(varIdentifier);
-        // if (tempVar) return tempVar;
+        const varName = varToken.replace('$', '');
 
-        // should be rowId
-        const foundRow = getRowById<InputOnlyRowT>(this.node, varIdentifier);
-        if (!foundRow) throw new Error(`Could not find row`);
+        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        if (!foundRow) return this.getLocalVarName(varName);
 
         const { rowIndex } = foundRow;
         return this.hashOutput(this.nodeIndex, rowIndex);
     }
 
-    // stacked(rowId: string): string[]
-    // {
-    //     const foundRow = getRowById<InputOnlyRowT>(this.node, rowId);
-    //     if (!foundRow) throw new Error(`Could not find row from operationOptions`);
+    stacked(varToken: string): string[]
+    {
+        const varName = varToken.replace('$', '');
 
-    //     const { row, rowIndex } = foundRow;
-    //     const outputVars: string[] = [];
-    //     const incomingEdges = this.getEdgeInto(rowIndex) || [];
+        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        if (!foundRow) throw new Error(`Could not find row from operationOptions`);
 
-    //     for (let i = 0; i < row.connectedOutputs.length; i++)
-    //     {
-    //         const edge = incomingEdges[i];
+        const { row, rowIndex } = foundRow;
+        const outputVars: string[] = [];
+        const incomingEdges = this.getEdgeInto(rowIndex) || [];
 
-    //         if (!edge) 
-    //         {
-    //             console.error(`Stacked edge not found but something is connected`);
-    //             break;
-    //         }
+        for (let i = 0; i < row.connectedOutputs.length; i++)
+        {
+            const edge = incomingEdges[i];
 
-    //         outputVars.push(this.hashOutput(...edge.fromIndices));
-    //     }
+            if (!edge) 
+            {
+                console.error(`Stacked edge not found but something is connected`);
+                break;
+            }
 
-    //     return outputVars;
-    // }
+            outputVars.push(this.hashOutput(...edge.fromIndices));
+        }
+
+        return outputVars;
+    }
 
     popIncrementalMetadata()
     {

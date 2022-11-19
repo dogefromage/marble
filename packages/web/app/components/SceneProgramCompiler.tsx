@@ -61,7 +61,7 @@ const SceneProgramCompiler = () =>
         {
             if (e instanceof GeometriesCompilationError)
             {
-                // console.info(`Geometry could not be compiled: ${e.type}`);
+                console.info(`Geometry could not be compiled: ${e.type}`);
             }
             else
             {
@@ -74,52 +74,52 @@ const SceneProgramCompiler = () =>
         zipped?.compilationValidity 
     ]);
 
-    // useEffect(() =>
-    // {
-    //     if (!program || !zipped)
-    //         return;
+    useEffect(() =>
+    {
+        if (!program || !zipped)
+            return;
 
-    //     for (const mapping of Object.values(program.textureVarMappings))
-    //     {
-    //         const node = zipped.nodes[mapping.nodeIndex];
-    //         const row = node?.rows[mapping.rowIndex];
+        for (const mapping of Object.values(program.rootMethod.textureVarMappings))
+        {
+            const node = zipped.nodes[mapping.nodeIndex];
+            const row = node?.rows[mapping.rowIndex];
 
-    //         // can happen because zipped and program are not necessarily equivalend
-    //         if (!row) continue;
-    //         if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
+            // can happen because zipped and program are not necessarily equivalend
+            if (!row) continue;
+            if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
 
-    //         let subArray: number[];
+            let subArray: number[];
             
-    //         if (mapping.dataTypes === DataTypes.Vec2 ||
-    //             mapping.dataTypes === DataTypes.Vec3 ||
-    //             mapping.dataTypes === DataTypes.Mat3)
-    //         {
-    //             subArray = row.value as number[];
-    //             const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
-    //             if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
-    //         }
-    //         else if (mapping.dataTypes === DataTypes.Float)
-    //         {
-    //             if (typeof(row.value) !== 'number') continue;
-    //             subArray = [ row.value ];
-    //         }
-    //         else
-    //         {
-    //             console.error(`Unknown datatype`);
-    //             continue;
-    //         }
+            if (mapping.dataTypes === DataTypes.Vec2 ||
+                mapping.dataTypes === DataTypes.Vec3 ||
+                mapping.dataTypes === DataTypes.Mat3)
+            {
+                subArray = row.value as number[];
+                const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
+                if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
+            }
+            else if (mapping.dataTypes === DataTypes.Float)
+            {
+                if (typeof(row.value) !== 'number') continue;
+                subArray = [ row.value ];
+            }
+            else
+            {
+                console.error(`Unknown datatype`);
+                continue;
+            }
             
-    //         dispatch(sceneProgramSetLookupSubarray({
-    //             startCoordinate: mapping.textureCoordinate,
-    //             subArray,
-    //         }));
-    //     }
-    // }, [ 
-    //     program, 
-    //     zipped?.id,
-    //     zipped?.rowStateValidity, 
-    //     zipped?.compilationValidity,
-    // ]);
+            dispatch(sceneProgramSetLookupSubarray({
+                startCoordinate: mapping.textureCoordinate,
+                subArray,
+            }));
+        }
+    }, [ 
+        program, 
+        zipped?.id,
+        zipped?.rowStateValidity, 
+        zipped?.compilationValidity,
+    ]);
 
     return null;
 }

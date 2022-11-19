@@ -90,6 +90,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                 location,
                 direction,
                 dataType,
+                mergeStackInput: isStackedInput || false,
             }
         },
     });
@@ -118,7 +119,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                     inputDataType: dataType,
                     outputJoint: transfer.location,
                     outputDataType: transfer.dataType,
-                    isStackedInput,
+                    mergeStackInput: isStackedInput || false,
                     undo: {}
                 }));
             }
@@ -130,7 +131,7 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
                     inputDataType: dataType,
                     outputJoint: location,
                     outputDataType: transfer.dataType,
-                    isStackedInput,
+                    mergeStackInput: transfer.mergeStackInput,
                     undo: {}
                 }));
             }

@@ -2,14 +2,14 @@ import React from 'react';
 import styled from 'styled-components';
 
 const ErrorDisplayDiv = styled.div`
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: none;
 
-    background-color: #e6434366;
+    background-color: #acacac66;
 
     div
     {
@@ -23,21 +23,20 @@ const ErrorDisplayDiv = styled.div`
 
 interface Props
 {
-    error: string;
+    error: Error;
 }
 
-const AppErrorDisplay = ({ error }: Props) =>
+const ErrorDisplay = ({ error }: Props) =>
 {
     return (
         <ErrorDisplayDiv>
             <div>
-                <h1>:(</h1>
-                <p>An error occured and your project could not be displayed.</p>
-                <p>{ error }</p>
+                <h1>{ "An error occured :(" }</h1>
+                <p>{ error.message }</p>
             </div>
         </ErrorDisplayDiv>
 
     );
 }
 
-export default AppErrorDisplay;
+export default ErrorDisplay;

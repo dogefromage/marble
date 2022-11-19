@@ -11,6 +11,7 @@ import { useBindPanelState } from "../utils/panelState/useBindPanelState";
 import { usePanelState } from "../utils/panelState/usePanelState";
 import GeometryEditorTransform from "./GeometryEditorTransform";
 import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
+import PanelBody from "./PanelBody";
 
 const EditorWrapper = styled.div`
 
@@ -113,40 +114,42 @@ const GeometryEditor = (viewProps: ViewProps) =>
     )
 
     return (
-        <EditorWrapper
-            onDoubleClick={openSearcher}
-            onContextMenu={contextMenu}
-            ref={viewBoundingRect}
-        >
-        {
-            geometryId && 
-            <GeometryEditorTransform
-                geometryId={geometryId}
-                viewProps={viewProps}
-            />
-        }
-        {
-            geometryS &&
-            <GeometryTemplateCatalog 
-                viewProps={viewProps}
-            />
-        }
-        {
-            // only for testing
-            geometryId && !geometryS &&
-            <TestButton
-                onClick={() =>
-                {
-                    dispatch(geometriesNew({
-                        geometryId,
-                        undo: {},
-                    }));
-                }}
+        <PanelBody>
+            <EditorWrapper
+                onDoubleClick={openSearcher}
+                onContextMenu={contextMenu}
+                ref={viewBoundingRect}
             >
-                Create geometry
-            </TestButton>
-        }
-        </EditorWrapper>
+            {
+                geometryId && 
+                <GeometryEditorTransform
+                    geometryId={geometryId}
+                    viewProps={viewProps}
+                />
+            }
+            {
+                geometryS &&
+                <GeometryTemplateCatalog 
+                    viewProps={viewProps}
+                />
+            }
+            {
+                // only for testing
+                geometryId && !geometryS &&
+                <TestButton
+                    onClick={() =>
+                    {
+                        dispatch(geometriesNew({
+                            geometryId,
+                            undo: {},
+                        }));
+                    }}
+                >
+                    Create geometry
+                </TestButton>
+            }
+            </EditorWrapper>
+        </PanelBody>
     )
 }
 

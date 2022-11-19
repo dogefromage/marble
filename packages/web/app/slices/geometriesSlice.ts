@@ -2,7 +2,7 @@ import { ActionCreator, ActionCreatorWithPayload, createSlice, PayloadAction } f
 import { WritableDraft } from "immer/dist/internal";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTags, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTemplateTags, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -95,7 +95,7 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.tags?.includes(GNodeTags.Output))
+            if (a.payload.template.tags?.includes(GNodeTemplateTags.Output))
             {
                 g.outputId = node.id;
                 g.compilationValidity++;
@@ -147,7 +147,7 @@ export const geometriesSlice = createSlice({
             inputDataType: DataTypes,
             outputJoint: JointLocation,
             outputDataType: DataTypes,
-            isStackedInput?: true,
+            mergeStackInput: boolean,
         }>) =>
         {
             const g = getGeometry(s, a);
@@ -163,9 +163,9 @@ export const geometriesSlice = createSlice({
 
             const inputRow = inputNode.rows[a.payload.inputJoint.rowId];
 
-            if (a.payload.inputDataType !== a.payload.outputDataType) return console.error(`Connected rows must have same dataType`);
+            if (a.payload.inputDataType !== a.payload.outputDataType) return; // console.error(`Connected rows must have same dataType`);
 
-            if (a.payload.isStackedInput)
+            if (a.payload.mergeStackInput)
             {
                 const newSubIndex = a.payload.inputJoint.subIndex;
                 inputRow.connectedOutputs = [

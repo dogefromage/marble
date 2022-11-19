@@ -146,4 +146,5 @@ export interface JointDndTransfer
     location: JointLocation;
     direction: JointDirection;
     dataType: DataTypes;
+    mergeStackInput: boolean;
 }

@@ -43,7 +43,7 @@ export function compileNodeInstructions(
 
         // 1. includes
         const includeRegex = /#INCLUDE\s+([\w]+(?:\s*\,\s*[\w]+)*)\s*;/;
-        const includeMatch = node.instructionTemplates.match(includeRegex);
+        const includeMatch = trimmedLine.match(includeRegex);
         if (includeMatch)
         {
             const tokensMatch = includeMatch[1] || '';
@@ -53,28 +53,68 @@ export function compileNodeInstructions(
                     includedTokens.push(token.trim())
                 );
             
-            continue;
+            continue; // trim line from instructions
         }
 
-        // 2. instruction
+        // 3. instruction
         let compiledLine = trimmedLine;
 
-        // row injections
+        /** STACKS */
+        const stackRegex = /#STACK\((.+)\)/;
+        while (true)
+        {
+            const match = compiledLine.match(stackRegex);
+            if (!match) break;
+
+            const totalStackCall = match[0];
+
+            const stackParams = match[1]
+                .split(',')
+                .map(s => s.trim());
+            if (stackParams.length !== 3) return console.error(`Stacked params must have three arguments`);
+            const [ fn_name, stackedRowIdentifier, defaultValue ] = stackParams;
+
+            const varNames = varNameGenerator.stacked(stackedRowIdentifier);
+
+            let stackedExpression;
+            
+            if (varNames.length === 0)
+            {
+                stackedExpression = defaultValue;
+            }
+            else if (varNames.length === 1)
+            {
+                stackedExpression = varNames[0];
+            }
+            else 
+            {
+                stackedExpression = varNames[0];
+
+                for (let i = 1; i < varNames.length; i++)
+                {
+                    const newIdentifier = varNames[i];
+                    stackedExpression = `${fn_name}(${stackedExpression}, ${newIdentifier})`;
+                }
+            }
+
+            compiledLine = compiledLine.replace(totalStackCall, stackedExpression);
+        }
+
+        /** ROW INJECTIONS */
         const rowInjectionMatch = /\$\w+/;
         while (true)
         {
             const match = compiledLine.match(rowInjectionMatch);
             if (!match) break;
 
-            const rowName = match[1];
+            const rowName = match[0];
+            
+            let varName: string;
 
             // check if assignation
             const indexOfVar = compiledLine.indexOf(rowName);
             const equalsIndex = compiledLine.indexOf('=');
-
             const isAssignation = equalsIndex >= 0 && indexOfVar < equalsIndex;
-
-            let varName: string;
 
             if (isAssignation)
             {

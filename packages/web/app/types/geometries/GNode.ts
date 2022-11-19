@@ -1,24 +1,34 @@
-import { ProgramOperationOptions } from "../sceneProgram";
 import { Point } from "../UtilityTypes";
-import { RowS, SpecificRowT, RowZ, RowT } from "./Rows";
+import { RowS, RowZ, SpecificRowT } from "./Rows";
 
-export enum GNodeTypes
+export enum GNodeTemplateTypes
 {
     Recursive,
     Default,
 }
 
-export enum GNodeTags
+export enum GNodeTemplateTags
 {
+    Output = 'output',
+}
+
+export enum GNodeTemplateCategories
+{
+    Solids = 'solids',
+    SolidOperators = 'solid-operators',
+    Numbers = 'numbers',
+    Vectors = 'vectors',
+    Input = 'input',
     Output = 'output',
 }
 
 export interface GNodeT
 {
     id: string;
-    type: GNodeTypes;
+    type: GNodeTemplateTypes;
     rows: Array<SpecificRowT>;
-    tags?: GNodeTags[];
+    tags?: GNodeTemplateTags[];
+    category: GNodeTemplateCategories;
     // operations: ProgramOperationOptions[];
     // includeIds: string[];
     instructionTemplates: string;

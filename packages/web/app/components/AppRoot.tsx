@@ -1,18 +1,19 @@
 import { DragzonePortalMount } from '@marble/interactive';
-import { EnhancedStore, AnyAction } from '@reduxjs/toolkit';
-import React, { useEffect, useState } from 'react';
+import { AnyAction, EnhancedStore } from '@reduxjs/toolkit';
+import { glMatrix } from 'gl-matrix';
+import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import styled from 'styled-components';
-import { RootState, initStore } from '../redux/store';
-import ViewportView from './ViewportView';
-import { glMatrix } from 'gl-matrix';
-import GeometryEditorView from './GeometryEditorView';
-import SceneProgramCompiler from './SceneProgramCompiler';
-import DefaultTemplateLoader from './DefaultTemplateLoader';
-import KeyboardCommandListener from './KeyboardCommandListener';
-import { ContextMenuPortalMount } from './ContextMenuPortalMount';
+import { initStore, RootState } from '../redux/store';
+import ErrorDisplay from './ErrorDisplay';
 import ContextMenu from './ContextMenu';
-import { AppErrorBoundary } from './AppErrorBoundary';
+import { ContextMenuPortalMount } from './ContextMenuPortalMount';
+import DefaultTemplateLoader from './DefaultTemplateLoader';
+import { ErrorBoundary } from './ErrorBoundary';
+import GeometryEditorView from './GeometryEditorView';
+import KeyboardCommandListener from './KeyboardCommandListener';
+import SceneProgramCompiler from './SceneProgramCompiler';
+import ViewportView from './ViewportView';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -42,7 +43,9 @@ const AppRoot = ({ projectId }: Props) =>
     return (
         store ? 
         (
-            <AppErrorBoundary>
+            <ErrorBoundary
+                fallbackComponent={ErrorDisplay}
+            >
                 <Provider store={store}>
                     {/* Views */}
                     <Wrapper
@@ -60,7 +63,7 @@ const AppRoot = ({ projectId }: Props) =>
                     <ContextMenuPortalMount />
                     <DragzonePortalMount />
                 </Provider>
-            </AppErrorBoundary>
+            </ErrorBoundary>
         ) : null
     );
 }
