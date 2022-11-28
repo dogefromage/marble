@@ -1,14 +1,18 @@
-import { useMouseDrag } from '@marble/interactive';
+import { useDroppable, useMouseDrag } from '@marble/interactive';
 import produce from 'immer';
 import { useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GeometryS, ViewProps } from '../types';
+import { GeometryS, JointDndTransfer, JOINT_DND_TAG, Point, ViewProps } from '../types';
 import { generateAdjacencyLists } from '../utils/geometries/generateAdjacencyLists';
 import zipGeometry from '../utils/geometries/zipGeometry';
 import LinkComponent from './GeometryLink';
 import GeometryNode from './GeometryNode';
+import GeometryLinkDiv from './GeometryLinkDiv';
+import { usePanelState } from '../utils/panelState/usePanelState';
+import { selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
+import GeometryLinkNew from './GeometryLinkNew';
 
 interface Props
 {
@@ -78,16 +82,6 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
         });
     }, [ zipped, adjacencyLists ]);
 
-    const showNewLink = useState(false);
-
-    const { handlers, catcher } = useMouseDrag({
-        mouseButton: 0,
-        start: (e, cancel) =>
-        {
-
-        }
-    }) 
-
     return (
         <>
         {
@@ -108,6 +102,13 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
         }
         {
             withConnections &&
+            <GeometryLinkNew
+                viewProps={viewProps}
+                geometry={withConnections}
+            />
+        }
+        {
+            withConnections &&
             withConnections.nodes.map(node =>
                 <GeometryNode
                     geometryId={withConnections.id}
@@ -116,16 +117,6 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
                     viewProps={viewProps}
                 />
             )
-        }
-        {
-            activeLink && 
-            <LinkComponent 
-                key={edge.id}
-                geometryId={withConnections.id}
-                edge={edge}
-                fromNode={withConnections.nodes[edge.fromIndices[0]]}
-                toNode={withConnections.nodes[edge.toIndices[0]]}
-            />
         }
         </>
     );

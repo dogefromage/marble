@@ -8,7 +8,7 @@ interface LinkDivProps
     B: Point;
 }
 
-export const LinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }) =>
+const GeometryLinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }) =>
 {
     const dx = B.x - A.x;
     const dy = B.y - A.y;
@@ -45,3 +45,5 @@ export const LinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }
         --radius: 4px
     }
 `;
+
+export default GeometryLinkDiv;

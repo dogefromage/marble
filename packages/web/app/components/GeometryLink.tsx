@@ -4,7 +4,7 @@ import { GNodeZ, JointLocation } from '../types';
 import countHeightUnits from '../utils/geometries/countHeightUnits';
 import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
 import getJointPosition from '../utils/geometries/getJointPosition';
-import { LinkDiv } from './GeometryLinkDiv';
+import GeometryLinkDiv from './GeometryLinkDiv';
 
 interface Props
 {
@@ -38,7 +38,7 @@ const LinkComponent = ({ geometryId, edge, fromNode, toNode }: Props) =>
     ];
 
     return (
-        <LinkDiv
+        <GeometryLinkDiv
             dataType={edge.dataType}
             A={A}
             B={B}

@@ -100,7 +100,6 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
         if (transfer.location.nodeId === location.nodeId ||
             transfer.direction === direction)
             return;
-
         e.preventDefault();
     }
 

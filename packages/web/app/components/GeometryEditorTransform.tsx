@@ -1,10 +1,10 @@
-import { useMouseDrag } from '@marble/interactive';
+import { useDroppable, useMouseDrag } from '@marble/interactive';
 import { vec2 } from 'gl-matrix';
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
-import { DEFAULT_PLANAR_CAMERA, PlanarCamera, Point, ViewProps } from '../types';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorPanelSetNewLink, geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
+import { DEFAULT_PLANAR_CAMERA, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewProps } from '../types';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
 import { usePanelState } from '../utils/panelState/usePanelState';
@@ -83,7 +83,7 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
 
     const actionOngoingRef = useRef(false);
 
-    const { handlers, catcher } = useMouseDrag({
+    const { handlers: panHandlers, catcher: panCatcher } = useMouseDrag({
         mouseButton: 1,
         start: e =>
         {
@@ -170,6 +170,43 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
         }));
     };
 
+    
+    const lastCallTime = useRef(0);
+    const prevDefault = (e: React.DragEvent) => e.preventDefault();
+
+    const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
+        tag: JOINT_DND_TAG,
+        enter: prevDefault,
+        leave: prevDefault,
+        over(e, transfer)
+        {
+            if (!wrapperRef.current) return;
+
+            const time = new Date().getTime();
+            if (lastCallTime.current < time - 15)
+            {
+                lastCallTime.current = time;
+
+                const bounds = wrapperRef.current.getBoundingClientRect();
+                const offsetPos = 
+                {
+                    x: e.clientX - bounds.left,
+                    y: e.clientY - bounds.top,
+                };
+
+                dispatch(geometryEditorPanelSetNewLink({
+                    panelId: viewProps.panelId,
+                    newLink: {
+                        endJointTransfer: transfer,
+                        offsetPos,
+                    },
+                }));
+            }
+            
+            prevDefault(e);
+        },
+    })
+
     return (
         <BackgroundDiv
             ref={wrapperRef}
@@ -181,7 +218,8 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
                     panelId: viewProps.panelId,
                 }))
             }}
-            {...handlers}
+            {...panHandlers}
+            {...dragJointHandler}
         >
             <TransformingDiv>
             {
@@ -192,7 +230,7 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
                 />
             }
             </TransformingDiv>
-            { catcher }
+            { panCatcher }
         </BackgroundDiv>
     );
 }

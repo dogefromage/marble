@@ -1,4 +1,4 @@
-import { PanelState } from "..";
+import { JointDndTransfer, PanelState } from "..";
 import { Point } from "../UtilityTypes";
 
 export interface PlanarCamera
@@ -20,6 +20,12 @@ interface TemplateCatalogState
     center: boolean,
 }
 
+interface NewLink
+{
+    endJointTransfer: JointDndTransfer;
+    offsetPos: Point;
+}
+
 export interface GeometryEditorPanelState extends PanelState
 {
     geometryId?: string;
@@ -27,4 +33,5 @@ export interface GeometryEditorPanelState extends PanelState
     activeNode?: string;
     selectedNodes: string[];
     templateCatalog: TemplateCatalogState | null;
+    newLink: NewLink | null;
 }

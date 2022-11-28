@@ -21,6 +21,7 @@ export const createGeometryEditorPanelState: CreatePanelStateCallback<GeometryEd
         },
         templateCatalog: null,
         selectedNodes: [],
+        newLink: null,
     };
 }
 
@@ -68,11 +69,17 @@ export const geometryEditorPanelsSlice = createSlice({
             if (!ps) return;
             ps.templateCatalog = null;
         },
-        setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
+        // setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
+        // {
+        //     const ps = getPanelState(s, a);
+        //     if (!ps) return;
+        //     ps.selectedNodes = a.payload.selection;
+        // },
+        setNewLink: (s, a: PayloadAction<{ panelId: string, newLink: GeometryEditorPanelState['newLink'] }>) =>
         {
             const ps = getPanelState(s, a);
             if (!ps) return;
-            ps.selectedNodes = a.payload.selection;
+            ps.newLink = a.payload.newLink;
         },
     }
 });
@@ -83,6 +90,7 @@ export const {
     setGeometryId: geometryEditorSetGeometryId,
     openTemplateCatalog: geometryEditorPanelOpenTemplateCatalog,
     closeTemplateCatalog: geometryEditorPanelCloseTemplateCatalog,
+    setNewLink: geometryEditorPanelSetNewLink,
 } = geometryEditorPanelsSlice.actions;
 
 export const selectGeometryEditorPanels = (state: RootState) => state.editor.panels[ViewTypes.GeometryEditor];
