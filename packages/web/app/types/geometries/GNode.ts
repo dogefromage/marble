@@ -20,6 +20,8 @@ export enum GNodeTemplateCategories
     Vectors = 'vectors',
     Input = 'input',
     Output = 'output',
+    Generative = 'generative',
+    Math = 'math',
 }
 
 export interface GNodeT

@@ -6,6 +6,7 @@ import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 import { IndentRowDiv } from '../styled/IndentRowDiv';
 import { RotationModels, RotationRowT, RowMetadata, RowS, Tuple } from '../types';
+import { Metrics } from '../types/world';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
@@ -132,6 +133,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
     }
 
     const meta = getRowMetadataRotation(row);
+    const metric = rowRotationModel == RotationModels.Quaternion ? undefined : Metrics.Angle;
 
     return (
         <GeometryRowDiv
@@ -162,6 +164,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
                                 value={value}
                                 onChange={updateValue(index)}
                                 name={FIELD_ROW_LIST_NAMES[ index ]} 
+                                metric={metric}
                             />
                         </IndentRowDiv>
                     )

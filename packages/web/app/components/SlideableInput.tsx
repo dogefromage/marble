@@ -2,10 +2,13 @@ import { useMouseDrag } from '@marble/interactive';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
+import { useAppSelector } from '../redux/hooks';
+import { selectWorld } from '../slices/worldSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 import { FONT_FAMILY } from '../styled/utils';
-import { clamp } from '../utils/math';
+import { Metrics, UnitNames } from '../types/world';
 import temporaryPushError from '../utils/temporaryPushError';
+import { Units } from '../utils/units';
 
 const SlidableInputDiv = styled.div`
 
@@ -67,34 +70,31 @@ const SlidableInputDiv = styled.div`
     }
 `;
 
-const MAX_VALUE = 1e32;
-
-function formatValue(value: number)
-{
-    if (typeof value !== 'number' || 
-        !isFinite(value)) return 'NaN';
-
-    let precision = value.toPrecision(4);
-    let string = value.toString();
-    return precision.length > string.length ? string : precision;
-}
-
 type Props = 
 {
     value: number;
     onChange: (newValue: number, actionToken?: string) => void; 
     name?: string;
+    metric?: Metrics;
 }
 
 const SlidableInput = ({
     value,
     onChange,
     name,
+    metric,
 }: Props) => 
 {
     const inputRef = useRef<HTMLInputElement>(null);
     const [ isWriting, setIsWriting ] = useState(false);
     const [ textValue, setTextValue ] = useState<string>();
+
+    const { unitSystem } = useAppSelector(selectWorld);
+
+    const unitName = unitSystem[metric!] as UnitNames | undefined;
+
+    const formatValue = (value: number) =>
+        Units.formatNumber(value, unitName);
 
     const submitText = (e: React.FormEvent) =>
     {
@@ -107,12 +107,9 @@ const SlidableInput = ({
 
         try
         {
-            const evaluatedString = eval(inputRef.current?.value || '');
-
-            let numberValue = clamp(Number.parseFloat(evaluatedString), -MAX_VALUE, MAX_VALUE);
-            if (!isFinite(numberValue)) throw new Error(`Not finite`);
-            
-            onChange(numberValue);
+            const input = inputRef.current?.value || '';
+            const parsed = Units.parseInput(input, metric, unitName);
+            onChange(parsed);
         }
         catch (err)
         {
@@ -120,8 +117,11 @@ const SlidableInput = ({
         }
     };
 
-    const startWriting = () =>
+    const startWriting = (e: React.MouseEvent | React.FocusEvent) =>
     {
+        e.stopPropagation();
+        e.preventDefault();
+
         setIsWriting(true);
         setTextValue(value.toString());
 
@@ -166,7 +166,7 @@ const SlidableInput = ({
 
             onChange(value, dragRef.current.actionToken);
         }
-    })
+    });
 
     return (
         <SlidableInputDiv>
@@ -184,10 +184,10 @@ const SlidableInput = ({
                     {...handlers}
                     onMouseUp={e =>
                     {
-                        startWriting();
+                        startWriting(e);
                         handlers.onMouseUp(e);
                     }}
-                    onFocus={startWriting}
+                    onFocus={e => startWriting(e)}
                     onBlur={submitText}
                     autoComplete='off'
                     autoCorrect='off'
@@ -198,16 +198,6 @@ const SlidableInput = ({
             {
                 !isWriting && name &&
                 <p className='name'>{ name }</p>
-            }
-            {
-    //             (type === 'range') ?
-    //             <div
-    //                 className={styles.display}
-    //                 style={{ 
-    //                     width: `${unlerp(value, min, max) * 100}%`
-    //                 }}
-    //             />
-    //             : null
             }
         </SlidableInputDiv>
     )

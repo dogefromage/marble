@@ -9,6 +9,7 @@ import { assertRowHas } from '../utils/geometries/assertions';
 import zipGeometry from '../utils/geometries/zipGeometry';
 import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
 import { compileGeometry } from '../utils/sceneProgram/compileGeometry';
+import temporaryPushError from '../utils/temporaryPushError';
 import { LOOKUP_TEXTURE_SIZE } from '../utils/viewport/ViewportQuadProgram';
 
 const SceneProgramCompiler = () =>
@@ -61,7 +62,7 @@ const SceneProgramCompiler = () =>
         {
             if (e instanceof GeometriesCompilationError)
             {
-                console.info(`Geometry could not be compiled: ${e.type}`);
+                temporaryPushError(`Geometry could not be compiled: ${e.type}`);
             }
             else
             {

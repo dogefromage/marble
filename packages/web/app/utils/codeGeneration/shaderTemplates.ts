@@ -28,7 +28,6 @@ void main()
 {
     gl_Position = vec4(position, 1.0);
 
-
     ray_o = screenToWorld(vec3(position.xy, 0));
 
     vec3 pan = vec3(invScreenSize, 0);
@@ -144,31 +143,31 @@ March march(Ray ray)
     return march;
 }
 
-float aoMarch(Ray ray)
-{
-    const int aoIter = 5;
-    float ao = 0.0;
+// float aoMarch(Ray ray)
+// {
+//     const int aoIter = 5;
+//     float ao = 0.0;
     
-    float t = 0.04;
+//     float t = 0.04;
 
-    float factor = 0.5;
+//     float factor = 0.5;
 
-    for (int i = 0; i < aoIter; i++)
-    {
-        float d = sdf(rayAt(ray, t));
-        if (d <= 0.) break;
+//     for (int i = 0; i < aoIter; i++)
+//     {
+//         float d = sdf(rayAt(ray, t));
+//         if (d <= 0.) break;
 
-        ao += d / t * factor;
-        factor *= 0.5;
+//         ao += d / t * factor;
+//         factor *= 0.5;
 
-        t = t * 2.;
-    }
+//         t = t * 2.;
+//     }
 
-    float aoFactor = clamp(ao * 1.05, 0., 1.);
+//     float aoFactor = clamp(ao * 1.05, 0., 1.);
 
-    return 1.0 - (1.0 - aoFactor) * .4;
-    // return clamp(ao / float(aoIter), 0., 1.);
-}
+//     return 1.0 - (1.0 - aoFactor) * .4;
+//     // return clamp(ao / float(aoIter), 0., 1.);
+// }
 
 vec3 shade(Ray ray)
 {
@@ -183,8 +182,9 @@ vec3 shade(Ray ray)
     vec3 sunDir = sunGeometry.xyz;
     March shadowMarch = march(Ray(pSafe, sunDir));
 
-    float ao = aoMarch(Ray(pSafe, n));
-    vec3 lin = ao * ambientColor;
+    // float ao = aoMarch(Ray(pSafe, n));
+    // vec3 lin = ao * ambientColor;
+    vec3 lin = ambientColor;
     
     if (!shadowMarch.hasHit) // in light
     {
@@ -201,66 +201,65 @@ vec3 shade(Ray ray)
     }
 
     vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
-
     return corrected;
 }
 
-const int AA = 3;
+const int AA = 1;
 
 vec3 render()
 {
-    if (AA <= 1)
+    // if (AA <= 1)
     {
         Ray ray = Ray(ray_o, normalize(ray_d));
         return shade(ray);
     }
 
-    float factor = 1.0 / float(AA * AA);
-    vec3 averagePixel;
+    // float factor = 1.0 / float(AA * AA);
+    // vec3 averagePixel;
 
-    for (int y = 0; y < AA; y++)
-    {
-        for (int x = 0; x < AA; x++)
-        {
-            vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
-            vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
-            Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
-            vec3 shadingResult = shade(ray);
-            averagePixel += factor * shadingResult;
-        }
-    }
+    // for (int y = 0; y < AA; y++)
+    // {
+    //     for (int x = 0; x < AA; x++)
+    //     {
+    //         vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
+    //         vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
+    //         Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
+    //         vec3 shadingResult = shade(ray);
+    //         averagePixel += factor * shadingResult;
+    //     }
+    // }
 
-    return averagePixel;
+    // return averagePixel;
 }
 
-vec3 heatmap()
-{
-    Ray ray = Ray(ray_o, normalize(ray_d));
-    March mainMarch = march(ray);
+// vec3 heatmap()
+// {
+//     Ray ray = Ray(ray_o, normalize(ray_d));
+//     March mainMarch = march(ray);
 
-    float x = float(mainMarch.iterations) / marchParameters.y;
+//     float x = float(mainMarch.iterations) / marchParameters.y;
 
-    float r = min(2. * x, 1.);
-    float b = min(2. - 2. * x, 1.);
+//     float r = min(2. * x, 1.);
+//     float b = min(2. - 2. * x, 1.);
 
-    return vec3(
-        clamp(r, 0., 1.), 
-        0,
-        clamp(b, 0., 1.)
-    );
-}
+//     return vec3(
+//         clamp(r, 0., 1.), 
+//         0,
+//         clamp(b, 0., 1.)
+//     );
+// }
 
-vec3 hitTest()
-{
-    Ray ray = Ray(ray_o, normalize(ray_d));
-    March mainMarch = march(ray);
+// vec3 hitTest()
+// {
+//     Ray ray = Ray(ray_o, normalize(ray_d));
+//     March mainMarch = march(ray);
 
-    vec2 col = vec2(1, 0);
+//     vec2 col = vec2(1, 0);
 
-    if (mainMarch.hasHit) return col.xxx;
+//     if (mainMarch.hasHit) return col.xxx;
     
-    return col.yyy;
-}
+//     return col.yyy;
+// }
 
 void main()
 {
