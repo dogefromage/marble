@@ -7,14 +7,17 @@ import geometriesReducer from "../slices/geometriesSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
 import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
+import preferencesReducer from "../slices/preferencesSlice";
 import sceneProgramReducer from "../slices/sceneProgramSlice";
 import templatesReducer from "../slices/templatesSlice";
+import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
 
 const rootReducer = combineReducers({
     project: undoableEnhancer(
         localStorageEnhancer(
             combineReducers({
+                world: worldReducer,
                 geometries: geometriesReducer,
             }),
             'project'
@@ -26,7 +29,7 @@ const rootReducer = combineReducers({
             [ViewTypes.Viewport]: viewportPanelsReducer,
         }),
         panelManager: panelManagerReducer,
-        // preferences: preferencesReducer,
+        preferences: preferencesReducer,
     }),
     sceneProgram: sceneProgramReducer,
     templates: templatesReducer,

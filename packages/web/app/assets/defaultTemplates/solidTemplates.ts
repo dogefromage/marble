@@ -71,14 +71,14 @@ const solid_torus: GNodeT =
             id: 'large_r',
             type: RowTypes.Field,
             dataType: DataTypes.Float,
-            name: 'Large rad.',
+            name: 'R',
             value: 1,
         },
         {
             id: 'small_r',
             type: RowTypes.Field,
             dataType: DataTypes.Float,
-            name: 'Small rad.',
+            name: 'r',
             value: 0.5,
         }
     ],
@@ -163,7 +163,7 @@ const solid_plane: GNodeT =
         }
     ],
     instructionTemplates: glsl`
-        $output = $coordinates.z - $height;
+        float $output = $coordinates.z - $height;
     `,
 }
 

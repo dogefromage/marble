@@ -15,6 +15,9 @@ const KeyboardCommandListener = () =>
 
     const handler = useCallback((e: KeyboardEvent) =>
     {
+        if (document.activeElement instanceof HTMLInputElement)
+            return;
+
         for (const command of Object.values(commands))
         {
             if (!command.keyCombinations) continue;

@@ -36,21 +36,49 @@ export class RowVarNameGenerator
             dataType: row.dataType,
             value: row.value,
         };
-        return constant;
+        this.incrementalMeta.constants.push(constant);
+        
+        return constant.name;
     }
     
-    private createTextureVar(rowIndex: number, row: InputOnlyRowT, textureCoordinate: number)
+    private createTextureVar(rowIndex: number, row: InputOnlyRowT)
     {
         const name = [ 'tex_to', this.nodeIndex, rowIndex ].join('_');
 
-        const variable: ProgramTextureVar =
+        if (this.incrementalMeta.textureVars.find(t => t.name == name)) 
+            return name;
+
+        // does not exist => create
+        
+        const size = TEXTURE_VAR_DATATYPE_SIZE[row.dataType];
+        const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
+
+        const textureVar: ProgramTextureVar =
         {
             name, 
             dataType: row.dataType,
             textureCoordinate,
         };
         
-        return variable;
+        this.incrementalMeta.textureVars.push(textureVar);
+        
+        const textureVarMapping: ProgramTextureVarMapping = 
+        {
+            textureCoordinate: textureVar.textureCoordinate,
+            dataTypes: textureVar.dataType,
+            nodeIndex: this.nodeIndex,
+            rowIndex,
+        };
+        const location: JointLocation =
+        {
+            nodeId: this.node.id,
+            rowId: row.id,
+            subIndex: 0,
+        };
+        const uniqueRowKey = jointLocationHash(location);
+        this.incrementalMeta.textureVarMappings[uniqueRowKey] = textureVarMapping;
+
+        return textureVar.name;
     }
 
     private hashOutput(nodeIndex: number, rowIndex: number)
@@ -92,35 +120,11 @@ export class RowVarNameGenerator
         // case 3: parameter texture lookup
         if (rowMetadata.dynamicValue)
         {
-            const size = TEXTURE_VAR_DATATYPE_SIZE[row.dataType];
-            const textureCoord = this.textureCoordinateCounter.nextInts(size);
-
-            const textureVar = this.createTextureVar(rowIndex, row, textureCoord);
-            this.incrementalMeta.textureVars.push(textureVar);
-
-            const textureVarMapping: ProgramTextureVarMapping = 
-            {
-                textureCoordinate: textureVar.textureCoordinate,
-                dataTypes: textureVar.dataType,
-                nodeIndex: this.nodeIndex,
-                rowIndex,
-            };
-            const location: JointLocation =
-            {
-                nodeId: this.node.id,
-                rowId: row.id,
-                subIndex: 0,
-            };
-            const uniqueRowKey = jointLocationHash(location);
-            this.incrementalMeta.textureVarMappings[uniqueRowKey] = textureVarMapping;
-
-            return textureVar.name;
+            return this.createTextureVar(rowIndex, row);
         }
 
         // case 4: fixed constant
-        const constant = this.createConstant(rowIndex, row);
-        this.incrementalMeta.constants.push(constant);
-        return constant.name;
+        return this.createConstant(rowIndex, row);
     }
 
     output(varToken: string)
