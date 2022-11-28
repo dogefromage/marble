@@ -163,7 +163,7 @@ const solid_plane: GNodeT =
         }
     ],
     instructionTemplates: glsl`
-        $output = $coordinates.z - $height;
+        float $output = $coordinates.z - $height;
     `,
 }
 

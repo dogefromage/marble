@@ -20,6 +20,7 @@ export const createGeometryEditorPanelState: CreatePanelStateCallback<GeometryEd
             zoom: 1,
         },
         templateCatalog: null,
+        selectedNodes: [],
     };
 }
 
@@ -66,7 +67,13 @@ export const geometryEditorPanelsSlice = createSlice({
             const ps = getPanelState(s, a);
             if (!ps) return;
             ps.templateCatalog = null;
-        }
+        },
+        setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
+        {
+            const ps = getPanelState(s, a);
+            if (!ps) return;
+            ps.selectedNodes = a.payload.selection;
+        },
     }
 });
 

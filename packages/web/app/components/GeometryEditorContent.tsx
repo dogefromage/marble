@@ -1,5 +1,6 @@
+import { useMouseDrag } from '@marble/interactive';
 import produce from 'immer';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
@@ -75,16 +76,23 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
                 }
             }
         });
-
     }, [ zipped, adjacencyLists ]);
 
-    const forwardEdges = adjacencyLists?.forwardsAdjList;
+    const showNewLink = useState(false);
+
+    const { handlers, catcher } = useMouseDrag({
+        mouseButton: 0,
+        start: (e, cancel) =>
+        {
+
+        }
+    }) 
 
     return (
         <>
         {
-            forwardEdges && withConnections &&
-            Object.values(forwardEdges).map(edgesOfNode =>
+            adjacencyLists?.forwardsAdjList && withConnections &&
+            Object.values(adjacencyLists?.forwardsAdjList).map(edgesOfNode =>
                 Object.values(edgesOfNode).map(edgesOfRow =>
                     edgesOfRow.map(edge =>
                         <LinkComponent 
@@ -108,6 +116,16 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
                     viewProps={viewProps}
                 />
             )
+        }
+        {
+            activeLink && 
+            <LinkComponent 
+                key={edge.id}
+                geometryId={withConnections.id}
+                edge={edge}
+                fromNode={withConnections.nodes[edge.fromIndices[0]]}
+                toNode={withConnections.nodes[edge.toIndices[0]]}
+            />
         }
         </>
     );

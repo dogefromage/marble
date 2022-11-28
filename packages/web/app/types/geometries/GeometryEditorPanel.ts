@@ -25,5 +25,6 @@ export interface GeometryEditorPanelState extends PanelState
     geometryId?: string;
     camera: PlanarCamera;
     activeNode?: string;
+    selectedNodes: string[];
     templateCatalog: TemplateCatalogState | null;
 }
