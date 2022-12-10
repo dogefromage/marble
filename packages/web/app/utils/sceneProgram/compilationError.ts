@@ -5,6 +5,7 @@ export enum GeometriesCompilationErrorTypes
     HasCycle = 'has-cycle',
     IncludeMissing = 'include-missing',
     InvalidGraph = 'invalid-graph',
+    TemplateMissing = 'template-missing',
 }
 
 export class GeometriesCompilationError extends Error

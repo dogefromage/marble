@@ -1,7 +1,5 @@
-import { DefaultFunctionArgs, GeometryProgramMethod, GeometryZ, InputOnlyRowT, ObjMap, ProgramInclude, ProgramTextureVarMapping, RowTypes } from "../../types";
+import { DefaultFunctionArgs, GeometryConnectionData, GeometryProgramMethod, GeometryS, GNodeT, InputOnlyRowT, ObjMap, ProgramInclude, ProgramTextureVarMapping, RowTypes } from "../../types";
 import { Counter } from "../Counter";
-import { generateAdjacencyLists } from "../geometries/generateAdjacencyLists";
-import { getRowById } from "../geometries/getRows";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import { GeometriesCompilationError, GeometriesCompilationErrorTypes } from "./compilationError";
 import findUsedNodes from "./findUsed";
@@ -9,7 +7,8 @@ import { generateTopologicalOrder } from "./generateTopologicalOrder";
 import { compileNodeInstructions } from "./operationCompiler";
 
 export function compileGeometry(
-    geometry: GeometryZ,
+    geometry: GeometryS,
+    connectionData: GeometryConnectionData,
     textureCoordinateCounter: Counter,
 )
 {
@@ -25,14 +24,12 @@ export function compileGeometry(
             GeometriesCompilationErrorTypes.OutputMissing,
         );
 
-    const { forwardsAdjList, backwardsAdjList, strayConnectedJoints } = generateAdjacencyLists(geometry);
-    
-    if (strayConnectedJoints.length)
+    if (connectionData.strayConnectedJoints.length > 0)
         throw new GeometriesCompilationError(
             GeometriesCompilationErrorTypes.InvalidGraph,
         )
 
-    const foundCycles = checkGeometryAcyclic(forwardsAdjList);
+    const foundCycles = checkGeometryAcyclic(connectionData.forwardEdges);
     if (foundCycles.length)
         throw new GeometriesCompilationError(
             GeometriesCompilationErrorTypes.HasCycle,
@@ -47,8 +44,8 @@ export function compileGeometry(
      * - generate operation using topological order and variable names
      */
 
-    const used = findUsedNodes(forwardsAdjList, outputIndex);
-    const topoOrder = generateTopologicalOrder(forwardsAdjList, outputIndex);
+    const used = findUsedNodes(connectionData.forwardEdges, outputIndex);
+    const topoOrder = generateTopologicalOrder(connectionData.forwardEdges, outputIndex);
     const orderedUsedNodeIndices = topoOrder.filter(index => used.has(index));
 
     /**
@@ -62,12 +59,17 @@ export function compileGeometry(
     for (const nodeIndex of orderedUsedNodeIndices)
     {
         const node = geometry.nodes[nodeIndex];
+        const template = connectionData.templateMap.get(node.id);
+    
+        if (!template)
+        {
+            throw new GeometriesCompilationError(GeometriesCompilationErrorTypes.TemplateMissing);
+        }
 
         const nodeCompilerOutput = compileNodeInstructions(
-            nodeIndex,
-            node,
+            nodeIndex, node, template,
             textureCoordinateCounter,
-            backwardsAdjList[nodeIndex],
+            connectionData.backwardEdges[nodeIndex],
         );
         
         nodeCompilerOutput.includedTokens
@@ -82,17 +84,21 @@ export function compileGeometry(
     const includedTokens = [ ...includedTokenSet ];
 
     // not final, must choose right output row (or construct object if multiple rows maybe)
-    const { row } = getRowById<InputOnlyRowT>(
-        geometry.nodes[outputIndex], 'input', RowTypes.InputOnly)!;
+    const outputNodeId = geometry.nodes[outputIndex].id;
+    const outputTemplate = connectionData.templateMap.get(outputNodeId)!;
+    const outputInputRow = outputTemplate.rows.find(row => row.id === 'input');
+    const methodReturnType = (outputInputRow as InputOnlyRowT).dataType;
 
     const finalProgram: GeometryProgramMethod =
     {
+        geometryId: geometry.id,
+        compilationValidity: geometry.compilationValidity,
         includedTokens,
         programInstructions,
         methodName: `geometry_${geometry.id}`,
         functionArgs,
         textureVarMappings,
-        methodReturnType: row.dataType,
+        methodReturnType,
     }
 
     // console.log(finalProgram);

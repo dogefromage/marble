@@ -1,6 +1,6 @@
-import { ForwardAdjacencyList } from "../geometries/generateAdjacencyLists";
+import { GeometryAdjacencyList } from "../geometries/generateAdjacencyLists";
 
-export function *generateEdges(adjListNode: ForwardAdjacencyList[number])
+export function *generateEdges(adjListNode: GeometryAdjacencyList[number])
 {
     for (const rowIndex in adjListNode)
     {

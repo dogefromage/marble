@@ -1,15 +1,11 @@
-import React from 'react';
-import { OutputRowT } from '../types';
-import GeometryJoint from './GeometryJoint';
-import GeometryRowName from './GeometryRowName';
-import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
+import { OutputRowT } from '../types';
+import GeometryJoint from './GeometryJoint';
+import { RowProps } from './GeometryRowRoot';
 
 const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
 {
-    const connected = row.displayConnected || false;
-
     return (
         <GeometryRowDiv
             heightUnits={1}
@@ -23,7 +19,7 @@ const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
                 geometryId={geometryId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='output'
-                connected={connected}
+                connected={row.isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

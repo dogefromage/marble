@@ -1,21 +1,16 @@
 import { useMouseDrag } from '@marble/interactive';
 import { vec2 } from 'gl-matrix';
-import React from 'react';
-import { useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
-import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
 import { geometryEditorSetActiveNode } from '../slices/panelGeometryEditorSlice';
-import GeometryRowDiv from '../styled/GeometryRowDiv';
-import { GNodeZ, PlanarCamera, ViewProps, ViewTypes } from '../types';
+import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
 import { Point } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import GeometryRowRoot from './GeometryRowRoot';
-import { useWhatChanged } from '@simbathesailor/use-what-changed';
 
 export const NODE_WIDTH = 180;
 
@@ -55,19 +50,17 @@ interface Props
 {
     panelId: string;
     geometryId: string;
-    node: GNodeZ;
+    nodeState: GNodeS;
+    nodeTemplate?: GNodeT;
+    connectedRows: Set<string>;
     getCamera: () => PlanarCamera | undefined;
+    isActive: boolean;
 }
 
-const GeometryNode = ({ panelId, geometryId, node, getCamera }: Props) =>
+const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedRows, getCamera, isActive }: Props) =>
 {
-    console.log('rendererd node');
-
-    useWhatChanged([ panelId, geometryId, node, getCamera ])
-
     const dispatch = useAppDispatch();
-    // const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, viewProps.panelId));
-    
+ 
     const dragRef = useRef<{
         startCursor: Point;
         startPosition: Point;
@@ -81,7 +74,7 @@ const GeometryNode = ({ panelId, geometryId, node, getCamera }: Props) =>
             dragRef.current = 
             {
                 startCursor: { x: e.clientX, y: e.clientY },
-                startPosition: { ...node.position },
+                startPosition: { ...nodeState.position },
                 stackToken: 'drag_node:' + uuidv4(),
             };
         },
@@ -106,7 +99,7 @@ const GeometryNode = ({ panelId, geometryId, node, getCamera }: Props) =>
 
             dispatch(geometriesPositionNode({
                 geometryId,
-                nodeId: node.id,
+                nodeId: nodeState.id,
                 position: newPos,
                 undo: { 
                     actionToken: dragRef.current!.stackToken 
@@ -116,46 +109,51 @@ const GeometryNode = ({ panelId, geometryId, node, getCamera }: Props) =>
         cursor: 'grab',
     });
 
-    // const openContextMenu = useContextMenu(
-    //     viewProps.panelId,
-    //     'Geometry Node',
-    //     [ 'geometryEditor.deleteNode' ],
-    //     () => ({ nodeId: node.id }),
-    // );
-
-    const isActive = false;
-    // const isActive = panelState?.activeNode === node.id;
+    const openContextMenu = useContextMenu(
+        panelId, 'Geometry Node',
+        [ 'geometryEditor.deleteNode' ],
+        () => ({ nodeId: nodeState.id }),
+    );
 
     return (
         <GeometryNodeDiv
-            // onContextMenu={openContextMenu}
-            position={node.position}
+            onContextMenu={openContextMenu}
+            position={nodeState.position}
             isActive={isActive}
             {...handlers}
             onClick={e =>
             {
                 dispatch(geometryEditorSetActiveNode({
                     panelId,
-                    nodeId: node.id,
+                    nodeId: nodeState.id,
                 }))
 
                 e.stopPropagation();
             }}
         >
         {
-            <GeometryRowDiv
-                heightUnits={2}
-            >
-                Test
-            </GeometryRowDiv>
-            // node.rows.map((row, rowIndex) =>
-            //     <GeometryRowRoot
-            //         geometryId={geometryId}
-            //         nodeId={node.id}
-            //         key={row.id}
-            //         row={row}
-            //     />
-            // )
+            nodeTemplate &&
+            nodeTemplate.rows.map(rowTemplate =>
+            {
+                const rowState = nodeState.rows[rowTemplate.id];
+                const isConnected = connectedRows.has(rowTemplate.id);
+                
+                // @ts-ignore
+                const rowZ: RowZ = { 
+                    ...rowTemplate, 
+                    ...rowState,
+                    isConnected,
+                } // merge rows
+
+                return (
+                    <GeometryRowRoot
+                        geometryId={geometryId}
+                        nodeId={nodeState.id}
+                        key={rowZ.id}
+                        row={rowZ}
+                    />
+                );
+            })
         }
         { catcher }
         </GeometryNodeDiv>

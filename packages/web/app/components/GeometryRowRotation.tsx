@@ -13,20 +13,18 @@ import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 import SelectOption from './SelectOption';
 import SlidableInput from './SlideableInput';
 
-export function getRowMetadataRotation(row: RowMetaProps<RotationRowT>): RowMetadata
+export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMetadata
 {
-    if (row.connectedOutputs.length) return rowMeta(1, true);
+    if (props.isConnected) return rowMeta(1, true);
 
     let totalUnits = 2; // name + model selector
 
-    if (row.currentDisplay && 
-        row.currentDisplay.rotationModel === RotationModels.Quaternion)
+    if (props.state.currentDisplay)
     {
-        totalUnits += 4; // xyzw
-    }
-    else if (row.currentDisplay)
-    {
-        totalUnits += 3; // xyz
+        if (props.state.currentDisplay.rotationModel === RotationModels.Quaternion)
+            totalUnits += 4; // xyzw
+        else
+            totalUnits += 3; // xyz
     }
     
     return rowMeta(totalUnits, true);
@@ -36,11 +34,9 @@ type Props = RowProps<RotationRowT>;
 
 export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z', 'W' ];
 
-const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
+const GeometryRowRotation = ({ geometryId, nodeId, row: row }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const connected = row.connectedOutputs.length > 0;
-
     const rowRotationModel = row.rotationModel || RotationModels.Euler_XYZ;
 
     useEffect(() =>
@@ -132,7 +128,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
         }));
     }
 
-    const meta = getRowMetadataRotation(row);
+    const meta = getRowMetadataRotation({ state: row, template: row, isConnected: row.isConnected });
     const metric = rowRotationModel == RotationModels.Quaternion ? undefined : Metrics.Angle;
 
     return (
@@ -145,7 +141,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
                 { row.name }
             </GeometryRowNameP>
             {
-                !connected && row.currentDisplay && <>
+                !row.isConnected && row.currentDisplay && <>
                 {
                     <IndentRowDiv>
                         <SelectOption 
@@ -175,7 +171,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row }: Props) =>
                 geometryId={ geometryId }
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
-                connected={connected}
+                connected={row.isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

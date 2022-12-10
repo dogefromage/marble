@@ -1,5 +1,5 @@
 import { Point } from "../UtilityTypes";
-import { RowS, RowZ, SpecificRowT } from "./Rows";
+import { RowS, SpecificRowT } from "./Rows";
 
 export enum GNodeTemplateTypes
 {
@@ -31,8 +31,6 @@ export interface GNodeT
     rows: Array<SpecificRowT>;
     tags?: GNodeTemplateTags[];
     category: GNodeTemplateCategories;
-    // operations: ProgramOperationOptions[];
-    // includeIds: string[];
     instructionTemplates: string;
 }
 
@@ -46,7 +44,7 @@ export interface GNodeS
     }
 }
 
-export type GNodeZ = 
-    & Pick<GNodeS, 'id' | 'templateId' | 'position'>
-    & Pick<GNodeT, 'type' | 'instructionTemplates' | 'tags'>
-    & { rows: RowZ[] }
+// export type GNodeZ = 
+//     & Pick<GNodeS, 'id' | 'templateId' | 'position'>
+//     & Pick<GNodeT, 'type' | 'instructionTemplates' | 'tags'>
+//     & { rows: RowZ[] }

@@ -1,4 +1,4 @@
-import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
+import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
 import GeometryRowInputStacked from './GeometryRowInputStacked';
@@ -6,20 +6,26 @@ import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
 
-export type RowMetaProps<T extends RowT = RowT> = RowZ<T>;
+export type RowMetaProps<T extends RowT = RowT> = 
+{
+    template: T | RowZ<T>;
+    state: RowS<T> | RowZ<T>;
+    isConnected: boolean;
+};
+// export type RowMetaProps<T extends RowT = RowT> = RowZ<T>;
 
 export function rowMeta(heightUnits = 1, dynamicValue = false): RowMetadata
 {
     return { heightUnits, dynamicValue };
 }
 
-export function getRowMetadata(row: RowMetaProps): RowMetadata
+export function getRowMetadata(props: RowMetaProps): RowMetadata
 {
-    if (row.type === RowTypes.Field)
-        return getRowMetadataField(row as RowMetaProps<FieldRowT>);
+    if (props.template.type === RowTypes.Field)
+        return getRowMetadataField(props as RowMetaProps<FieldRowT>);
 
-    if (row.type === RowTypes.Rotation)
-        return getRowMetadataRotation(row as RowMetaProps<RotationRowT>);
+    if (props.template.type === RowTypes.Rotation)
+        return getRowMetadataRotation(props as RowMetaProps<RotationRowT>);
 
     return rowMeta();
 }

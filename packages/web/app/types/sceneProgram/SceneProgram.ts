@@ -93,19 +93,13 @@ export interface IncrementalProgramMetadata
 
 export interface GeometryProgramMethod
 {
+    geometryId: string;
+    compilationValidity: number;
     methodName: string;
     functionArgs: FunctionArg[];
-
     includedTokens: string[];
-    
-    // constants: ProgramConstant[];
-    // textureVars: ProgramTextureVar[];
-
     textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-
     programInstructions: string[];
-    // operations: ProgramOperation[];
-    
     methodReturnType: DataTypes;
 }
 

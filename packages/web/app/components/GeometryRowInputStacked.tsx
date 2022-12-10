@@ -8,7 +8,7 @@ import { RowProps } from './GeometryRowRoot';
 
 const MAX_ROWS = 64;
 
-const GeometryRowInputStacked = ({ geometryId, nodeId, row }: RowProps<StackedInputRowT>) =>
+const GeometryRowInputStacked = ({ geometryId, nodeId, row: row }: RowProps<StackedInputRowT>) =>
 {
     // const connections = 5;
     const connections = row.connectedOutputs.length;

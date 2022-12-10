@@ -1,5 +1,5 @@
 import { DataTypes } from "../sceneProgram";
-import { ObjMap, RotationModels, Tuple } from "../UtilityTypes";
+import { RotationModels, Tuple } from "../UtilityTypes";
 
 /**
  * Values
@@ -106,10 +106,11 @@ export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
     connectedOutputs: RowLocation[];
-    displayConnected?: boolean;
 }
 
-export type RowZ<T extends RowT = RowT> = RowS<T> & T;
+export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
+    isConnected: boolean;
+};
 
 /**
  * Metadata

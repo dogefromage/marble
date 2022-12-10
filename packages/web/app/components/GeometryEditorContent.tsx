@@ -1,13 +1,12 @@
-import produce from 'immer';
 import React, { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GeometryS, PlanarCamera, ViewProps } from '../types';
-import { generateAdjacencyLists } from '../utils/geometries/generateAdjacencyLists';
-import zipGeometry from '../utils/geometries/zipGeometry';
+import { GeometryS, PlanarCamera, ViewTypes } from '../types';
+import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import LinkComponent from './GeometryLink';
-import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
 
 interface Props
@@ -17,102 +16,83 @@ interface Props
     getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryEditorContent = ({ panelId, geometryId, getCamera }: Props) =>
+const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
+    const geometry: GeometryS | undefined = useAppSelector(selectGeometries)[ geometryId ];
     const { templates } = useAppSelector(selectTemplates);
+    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
 
-    const zipped = useMemo(() =>
+    const connectionData = useMemo(() =>
     {
-        if (!geometryS || !templates)
+        try {
+            return generateGeometryConnectionData(geometry, templates);
+        } catch (e) {
+            console.error(e);
             return;
-
-        try
-        {
-            return zipGeometry(geometryS, templates);
         }
-        catch { }
-
-    }, [ geometryS, templates ]);
-
-    const adjacencyLists = useMemo(() =>
-    {
-        if (!zipped) return;
-        const adjList = generateAdjacencyLists(zipped);
-        return adjList;
-    }, [ zipped?.compilationValidity ]);
+    }, [ geometry?.id, geometry?.compilationValidity ]);
 
     useEffect(() =>
     {
-        if (!adjacencyLists) return;
-
-        if (adjacencyLists.strayConnectedJoints.length)
+        if (!connectionData) return;
+        if (connectionData.strayConnectedJoints.length)
         {
             dispatch(geometriesDisconnectJoints({
                 geometryId,
-                joints: adjacencyLists.strayConnectedJoints,
+                joints: connectionData.strayConnectedJoints,
                 undo: { doNotRecord: true },
             }));
         }
-    }, [ adjacencyLists ]);
+    }, [ connectionData ]);
 
-    const withConnections = useMemo(() =>
-    {
-        if (!zipped || !adjacencyLists) 
-            return;
+    if (!connectionData) return null;
 
-        return produce(zipped, z =>
-        {
-            for (let nodeIndex = 0; nodeIndex < z.nodes.length; nodeIndex++)
-            {
-                const node = z.nodes[nodeIndex];
-
-                for (let rowIndex = 0; rowIndex < node.rows.length; rowIndex++)
-                {
-                    const row = node.rows[rowIndex];
-                    
-                    const outputExists = adjacencyLists.forwardsAdjList[nodeIndex]?.[rowIndex]?.length > 0;
-                    row.displayConnected = outputExists;
-                }
-            }
-        });
-    }, [ zipped, adjacencyLists ]);
+    const { forwardEdges, templateMap, connectedRows } = connectionData;
 
     return (
         <>
         {
-            adjacencyLists?.forwardsAdjList && withConnections &&
-            Object.values(adjacencyLists?.forwardsAdjList).map(edgesOfNode =>
+            Object.values(forwardEdges).map(edgesOfNode =>
                 Object.values(edgesOfNode).map(edgesOfRow =>
                     edgesOfRow.map(edge =>
-                        <LinkComponent 
-                            key={edge.id}
-                            geometryId={withConnections.id}
-                            edge={edge}
-                            fromNode={withConnections.nodes[edge.fromIndices[0]]}
-                            toNode={withConnections.nodes[edge.toIndices[0]]}
-                        />
-                    )
+                    {
+                        const fromNodeState = geometry.nodes[ edge.fromIndices[0] ];
+                        const fromNodeTemplate = templateMap.get(fromNodeState.id)!;
+                        const toNodeState = geometry.nodes[ edge.toIndices[0] ];
+                        const toNodeTemplate = templateMap.get(toNodeState.id)!;
+
+                        return (
+                            <LinkComponent
+                                key={edge.id}
+                                geometryId={geometry.id}
+                                edge={edge}
+                                fromNodeTemplate={fromNodeTemplate}
+                                fromNodeState={fromNodeState}
+                                toNodeTemplate={toNodeTemplate}
+                                toNodeState={toNodeState}
+                            />
+                        );
+                    })
                 )
             )
-        }
-        {
-            withConnections &&
-            <GeometryLinkNew
-                panelId={panelId}
-                geometry={withConnections}
-            />
-        }
-        {
-            withConnections &&
-            withConnections.nodes.map(node =>
+        }{
+            // withConnections &&
+            // <GeometryLinkNew
+            //     panelId={panelId}
+            //     geometry={withConnections}
+            // /> 
+        }{
+            geometry.nodes.map(node =>
                 <GeometryNode
-                    geometryId={withConnections.id}
-                    key={node.id}
-                    node={node}
+                    geometryId={geometry.id}
                     panelId={panelId}
+                    key={node.id}
+                    nodeState={node}
+                    nodeTemplate={templateMap.get(node.id)!}
+                    connectedRows={connectedRows.get(node.id)!}
                     getCamera={getCamera}
+                    isActive={panelState?.activeNode === node.id}
                 />
             )
         }

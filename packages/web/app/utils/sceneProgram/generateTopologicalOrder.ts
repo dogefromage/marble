@@ -1,7 +1,7 @@
-import { ForwardAdjacencyList, GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { GeometryAdjacencyList } from "../../types";
 import { generateEdges } from "./generateEdges";
 
-function topSortDfs(adjList: ForwardAdjacencyList, order: number[], visited: Set<number>, at: number)
+function topSortDfs(adjList: GeometryAdjacencyList, order: number[], visited: Set<number>, at: number)
 {
     if (visited.has(at)) return;
 
@@ -15,7 +15,7 @@ function topSortDfs(adjList: ForwardAdjacencyList, order: number[], visited: Set
     order.unshift(at);
 }
 
-export function generateTopologicalOrder(adjList: ForwardAdjacencyList, outputIndex: number)
+export function generateTopologicalOrder(adjList: GeometryAdjacencyList, outputIndex: number)
 {
     const order: number[] = [];
     const visited = new Set<number>();

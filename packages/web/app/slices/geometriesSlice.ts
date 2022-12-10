@@ -98,8 +98,9 @@ export const geometriesSlice = createSlice({
             if (a.payload.template.tags?.includes(GNodeTemplateTags.Output))
             {
                 g.outputId = node.id;
-                g.compilationValidity++;
             }
+            
+            g.compilationValidity++;
         },
         removeNode: (s, a: UndoAction<{ geometryId: string, nodeId: string }>) =>
         {

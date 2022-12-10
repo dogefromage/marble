@@ -1,5 +1,4 @@
-import { ObjMap } from "../../types";
-import { ForwardAdjacencyList } from "../geometries/generateAdjacencyLists";
+import { GeometryAdjacencyList, ObjMap } from "../../types";
 import { generateEdges } from "./generateEdges";
 
 enum NodeStatus
@@ -9,7 +8,7 @@ enum NodeStatus
     AcyclicDownwards,
 }
 
-function acylicDFS(adjList: ForwardAdjacencyList, at: number, status: ObjMap<NodeStatus>, cycles: number[]): number | undefined
+function acylicDFS(adjList: GeometryAdjacencyList, at: number, status: ObjMap<NodeStatus>, cycles: number[]): number | undefined
 {
     if (status[at] === NodeStatus.AcyclicDownwards) 
         return;
@@ -30,7 +29,7 @@ function acylicDFS(adjList: ForwardAdjacencyList, at: number, status: ObjMap<Nod
     status[at] = NodeStatus.AcyclicDownwards;
 }
 
-export function checkGeometryAcyclic(adjList: ForwardAdjacencyList)
+export function checkGeometryAcyclic(adjList: GeometryAdjacencyList)
 {
     const N = Object.keys(adjList).length;
     const status: ObjMap<NodeStatus> = {};

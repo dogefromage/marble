@@ -1,8 +1,6 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GNodeZ, InputOnlyRowT, JointLocation, ObjMap, OutputRowT, IncrementalProgramMetadata, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryEdge, GNodeS, GNodeT, IncrementalProgramMetadata, InputOnlyRowT, JointLocation, ObjMap, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, RowT, RowZ, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
-import { GeometryEdge } from "../geometries/generateAdjacencyLists";
-import { getRowById } from "../geometries/getRows";
 import { jointLocationHash } from "../geometries/locationHashes";
 
 function createIncrementalMeta()
@@ -21,7 +19,8 @@ export class RowVarNameGenerator
 
     constructor(
         private nodeIndex: number,
-        private node: GNodeZ,
+        private node: GNodeS,
+        private template: GNodeT,
         private textureCoordinateCounter: Counter,
         private incomingEdges?: ObjMap<GeometryEdge[]>,
     ) {}
@@ -101,12 +100,28 @@ export class RowVarNameGenerator
         return `temp_${this.node.id}_${varName}`;
     }
 
+    private getRowZ<T extends RowT>(rowId: string)
+    {
+        const rowIndex = this.template.rows.findIndex(row => row.id === rowId);
+        const rowT = this.template.rows[rowIndex];
+        const rowS = this.node.rows[rowId];
+
+        if (!rowT) return;
+
+        // @ts-ignore
+        const row: RowZ<T> = {
+            ...rowT,
+            ...rowS,
+        };
+        return { row, rowIndex };
+    }
+
     input(varToken: string)
     {
         const varName = varToken.replace('$', '');
 
         // should be rowId
-        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        const foundRow = this.getRowZ<InputOnlyRowT>(varName);
         if (!foundRow) return this.getLocalVarName(varName);
 
         const { row, rowIndex } = foundRow;
@@ -120,7 +135,7 @@ export class RowVarNameGenerator
         if (row.alternativeArg)
             return row.alternativeArg;
 
-        const rowMetadata = getRowMetadata(row);
+        const rowMetadata = getRowMetadata({ state: row, template: row, isConnected: false });
 
         // case 3: parameter texture lookup
         if (rowMetadata.dynamicValue)
@@ -136,7 +151,7 @@ export class RowVarNameGenerator
     {
         const varName = varToken.replace('$', '');
 
-        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        const foundRow = this.getRowZ<InputOnlyRowT>(varName);
         if (!foundRow) return this.getLocalVarName(varName);
 
         const { rowIndex } = foundRow;
@@ -147,7 +162,7 @@ export class RowVarNameGenerator
     {
         const varName = varToken.replace('$', '');
 
-        const foundRow = getRowById<InputOnlyRowT>(this.node, varName);
+        const foundRow = this.getRowZ<InputOnlyRowT>(varName);
         if (!foundRow) throw new Error(`Could not find row from operationOptions`);
 
         const { row, rowIndex } = foundRow;

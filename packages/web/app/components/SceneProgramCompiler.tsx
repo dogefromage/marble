@@ -3,10 +3,9 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DataTypes, InputOnlyRowT, ProgramInclude, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
+import { DataTypes, GeometryS, ProgramInclude, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
 import { Counter } from '../utils/Counter';
-import { assertRowHas } from '../utils/geometries/assertions';
-import zipGeometry from '../utils/geometries/zipGeometry';
+import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
 import { compileGeometry } from '../utils/sceneProgram/compileGeometry';
 import temporaryPushError from '../utils/temporaryPushError';
@@ -17,28 +16,27 @@ const SceneProgramCompiler = () =>
     const dispatch = useAppDispatch();
     const geometries = useAppSelector(selectGeometries);
     const { templates, programIncludes } = useAppSelector(selectTemplates);
-    const geoZero = Object.values(geometries)[0];
     const { program } = useAppSelector(selectSceneProgram);
 
-    const zipped = useMemo(() => 
+    const geometry: GeometryS | undefined = Object.values(geometries)?.[0];
+    const connectionData = useMemo(() => 
     {
-        if (!geoZero) return;
-        return zipGeometry(geoZero, templates);
-    }, [ 
-        geoZero?.id,
-        geoZero?.rowStateValidity, 
-        geoZero?.compilationValidity, 
-        templates 
-    ]);
+        if (!geometry || !templates || !Object.values(templates).length) return;
+        try {
+            return generateGeometryConnectionData(geometry, templates);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [ geometry?.id, geometry?.compilationValidity, templates ]);
     
     useEffect(() =>
     {
-        if (!zipped) return;
+        if (!connectionData || !geometry) return;
 
         try
         {
             const textureCoordCounter = new Counter(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE);
-            const geometryMethodCode = compileGeometry(zipped, textureCoordCounter);
+            const geometryMethodCode = compileGeometry(geometry, connectionData, textureCoordCounter);
 
             const usedIncludes: ProgramInclude[] = [];
             geometryMethodCode.includedTokens.forEach(includeToken => 
@@ -71,23 +69,31 @@ const SceneProgramCompiler = () =>
         }
 
     }, [ 
-        zipped?.id, 
-        zipped?.compilationValidity 
+        geometry?.id,
+        connectionData,
     ]);
 
     useEffect(() =>
     {
-        if (!program || !zipped)
+        if (!program || !geometry || !connectionData)
+            return;
+
+        if (program.rootMethod.geometryId !== geometry.id ||
+            connectionData.geometryId !== geometry.id)
+            return;
+        
+        if (program.rootMethod.compilationValidity !== geometry.compilationValidity ||
+            connectionData.compilationValidity !== geometry.compilationValidity)
             return;
 
         for (const mapping of Object.values(program.rootMethod.textureVarMappings))
         {
-            const node = zipped.nodes[mapping.nodeIndex];
-            const row = node?.rows[mapping.rowIndex];
+            const nodeState = geometry.nodes[mapping.nodeIndex];
+            const template = connectionData.templateMap.get(nodeState.id)!;
+            const rowT = template.rows[mapping.rowIndex];
+            const rowS = nodeState.rows[rowT.id];
 
-            // can happen because zipped and program are not necessarily equivalend
-            if (!row) continue;
-            if (!assertRowHas<InputOnlyRowT>(row, 'value')) continue;
+            const rowValue: number | number[] = (rowS as any).value || (rowT as any).value;
 
             let subArray: number[];
             
@@ -95,31 +101,30 @@ const SceneProgramCompiler = () =>
                 mapping.dataTypes === DataTypes.Vec3 ||
                 mapping.dataTypes === DataTypes.Mat3)
             {
-                subArray = row.value as number[];
+                subArray = rowValue as number[];
                 const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
                 if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
             }
             else if (mapping.dataTypes === DataTypes.Float)
             {
-                if (typeof(row.value) !== 'number') continue;
-                subArray = [ row.value ];
+                subArray = [ rowValue as number ];
             }
             else
             {
                 console.error(`Unknown datatype`);
                 continue;
             }
-            
+
             dispatch(sceneProgramSetLookupSubarray({
                 startCoordinate: mapping.textureCoordinate,
                 subArray,
             }));
         }
     }, [ 
-        program, 
-        zipped?.id,
-        zipped?.rowStateValidity, 
-        zipped?.compilationValidity,
+        geometry?.id,
+        geometry?.rowStateValidity,
+        program,
+        connectionData,
     ]);
 
     return null;

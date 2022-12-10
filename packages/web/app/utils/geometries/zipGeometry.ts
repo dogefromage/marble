@@ -1,66 +1,68 @@
-import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../types";
-import { ObjMap } from "../../types/UtilityTypes";
+// import { GeometryS, GeometryZ, GNodeT, GNodeZ, RowZ } from "../../types";
+// import { ObjMap } from "../../types/UtilityTypes";
 
-class ZipError extends Error
-{
-    constructor(msg: string) 
-    {
-        super(msg);
-    }
-}
+// class ZipError extends Error
+// {
+//     constructor(msg: string) 
+//     {
+//         super(msg);
+//     }
+// }
 
-export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
-{
-    const getTemplate = (templateId: string) =>
-    {
-        const template = templates[templateId];
-        if (!template)
-            throw new ZipError(`Template "${templateId}" not found`);
-        return template;
-    }
+// export default function zipGeometry(g: GeometryS, templates: ObjMap<GNodeT>)
+// {
+//     const getTemplate = (templateId: string) =>
+//     {
+//         const template = templates[templateId];
+//         if (!template)
+//             throw new ZipError(`Template "${templateId}" not found`);
+//         return template;
+//     }
 
-    try
-    {
-        const z: GeometryZ = 
-        {
-            ...g,
-            nodes: g.nodes.map(node =>
-            {
-                const t = getTemplate(node.templateId);
+//     try
+//     {
+//         const z: GeometryZ = 
+//         {
+//             ...g,
+//             nodes: g.nodes.map(node =>
+//             {
+//                 const t = getTemplate(node.templateId);
     
-                const rows = t.rows.map(rowT =>
-                {
-                    // @ts-ignore
-                    const rowZ: RowZ = 
-                    {
-                        ...rowT,
-                        ...node.rows[rowT.id],
-                    }
-                    return rowZ;
-                });
+//                 const rows = t.rows.map(rowT =>
+//                 {
+//                     // @ts-ignore
+//                     const rowZ: RowZ = 
+//                     {
+//                         ...rowT,
+//                         ...node.rows[rowT.id],
+//                     }
+//                     return rowZ;
+//                 });
     
-                const nodeZ: GNodeZ =
-                {
-                    id: node.id,
-                    templateId: node.templateId,
-                    position: node.position,
+//                 const nodeZ: GNodeZ =
+//                 {
+//                     id: node.id,
+//                     templateId: node.templateId,
+//                     position: node.position,
 
-                    type: t.type,
-                    tags: t.tags,
-                    instructionTemplates: t.instructionTemplates,
+//                     type: t.type,
+//                     tags: t.tags,
+//                     instructionTemplates: t.instructionTemplates,
 
-                    rows,
-                }
+//                     rows,
+//                 }
     
-                return nodeZ;
-            })
-        };
+//                 return nodeZ;
+//             })
+//         };
 
-        return z;
-    }
-    catch (e)
-    {
-        if (e instanceof ZipError) return
-        throw e;
-    }
-}
+//         return z;
+//     }
+//     catch (e)
+//     {
+//         if (e instanceof ZipError) return
+//         throw e;
+//     }
+// }
+
+export {}

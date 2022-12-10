@@ -1,5 +1,4 @@
-import { Override } from "../UtilityTypes";
-import { GNodeS, GNodeZ } from "./GNode";
+import { GNodeS } from "./GNode";
 
 export interface GeometryS
 {
@@ -12,4 +11,4 @@ export interface GeometryS
     nextIdIndex: number;
 }
 
-export type GeometryZ = Override<GeometryS, 'nodes', Array<GNodeZ>>;
+// export type GeometryZ = Override<GeometryS, 'nodes', Array<GNodeZ>>;

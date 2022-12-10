@@ -1,7 +1,7 @@
-import { ForwardAdjacencyList, GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { GeometryAdjacencyList } from "../../types";
 import { generateEdges } from "./generateEdges";
 
-function findUsedDFS(adjList: ForwardAdjacencyList, used: Set<number>, at: number)
+function findUsedDFS(adjList: GeometryAdjacencyList, used: Set<number>, at: number)
 {
     if (used.has(at)) return true;
 
@@ -19,7 +19,7 @@ function findUsedDFS(adjList: ForwardAdjacencyList, used: Set<number>, at: numbe
     return false;
 }
 
-export default function findUsedNodes(adjList: ForwardAdjacencyList, outputIndex: number)
+export default function findUsedNodes(adjList: GeometryAdjacencyList, outputIndex: number)
 {
     const used = new Set<number>();
     used.add(outputIndex);

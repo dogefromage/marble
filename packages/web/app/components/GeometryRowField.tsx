@@ -1,15 +1,14 @@
 import { DataTypes, FieldRowT, RowMetadata } from '../types';
-import { assertIsZippedRow } from '../utils/geometries/assertions';
 import GeometryRowFieldFloat from './GeometryRowFieldFloat';
 import GeometryRowFieldVecN from './GeometryRowFieldVecN';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
-export function getRowMetadataField(row: RowMetaProps<FieldRowT>): RowMetadata
+export function getRowMetadataField(props: RowMetaProps<FieldRowT>): RowMetadata
 {
-    if (row.connectedOutputs.length) return rowMeta(1, true);
+    if (props.isConnected) return rowMeta(1, true);
     
-    if (row.dataType === DataTypes.Vec2) return rowMeta(3, true);
-    if (row.dataType === DataTypes.Vec3) return rowMeta(4, true);
+    if (props.template.dataType === DataTypes.Vec2) return rowMeta(3, true);
+    if (props.template.dataType === DataTypes.Vec3) return rowMeta(4, true);
 
     return rowMeta(1, true);
 }

@@ -16,7 +16,6 @@ type Props = RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>;
 const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const connected = row.connectedOutputs.length > 0;
 
     const updateValue = (index: number) => 
         (value: number, actionToken: string | undefined) =>
@@ -33,7 +32,11 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
         }));
     }
 
-    const meta = getRowMetadataField(row);
+    const meta = getRowMetadataField({ 
+        state: row, 
+        template: row, 
+        isConnected: row.isConnected 
+    });
 
     return (
         <GeometryRowDiv
@@ -45,7 +48,7 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
                 { row.name }
             </GeometryRowNameP>
             {
-                !connected &&
+                !row.isConnected &&
                 row.value.map((value, index) =>
                     <IndentRowDiv
                         key={index}
@@ -62,7 +65,7 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
                 geometryId={ geometryId }
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
-                connected={connected}
+                connected={row.isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

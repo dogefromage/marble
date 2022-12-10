@@ -30,7 +30,7 @@ const NodeTitle = styled(GeometryRowNameP)`
     white-space: nowrap;
 `
 
-const GeometryRowName = ({ geometryId, nodeId, row }: RowProps<NameRowT>) =>
+const GeometryRowName = ({ row }: RowProps<NameRowT>) =>
 {
     return (
         <TitleWrapper
