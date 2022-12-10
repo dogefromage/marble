@@ -29,6 +29,11 @@ export class RowVarNameGenerator
     private createConstant(rowIndex: number, row: InputOnlyRowT)
     {
         const name = [ 'const_to', this.nodeIndex, rowIndex ].join('_');
+
+        if (this.incrementalMeta.constants.find(t => t.name == name)) 
+            return name;
+            
+        // does not exist => create
         
         const constant: ProgramConstant =
         {

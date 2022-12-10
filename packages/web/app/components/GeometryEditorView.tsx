@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
+import { selectPanelState } from "../enhancers/panelStateEnhancer";
 import useContextMenu from "../hooks/useContextMenu";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesNew, selectGeometries } from "../slices/geometriesSlice";
-import { createGeometryEditorPanelState, geometryEditorPanelOpenTemplateCatalog, geometryEditorSetGeometryId, selectGeometryEditorPanels } from "../slices/panelGeometryEditorSlice";
+import { createGeometryEditorPanelState, geometryEditorPanelOpenTemplateCatalog, geometryEditorSetGeometryId } from "../slices/panelGeometryEditorSlice";
 import { panelManagerSetActive } from "../slices/panelManagerSlice";
 import { GeometryS, ViewTypes } from "../types";
 import { ViewProps } from "../types/view/ViewProps";
 import { useBindPanelState } from "../utils/panelState/useBindPanelState";
-import { usePanelState } from "../utils/panelState/usePanelState";
 import GeometryEditorTransform from "./GeometryEditorTransform";
 import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 import PanelBody from "./PanelBody";
@@ -37,7 +38,7 @@ const TestButton = styled.button`
 
 const TEST_GEOMETRY_ID = '1234';
 
-const GeometryEditor = (viewProps: ViewProps) =>
+const GeometryEditorView = (viewProps: ViewProps) =>
 {
     const dispatch = useAppDispatch();
 
@@ -72,7 +73,7 @@ const GeometryEditor = (viewProps: ViewProps) =>
     );
 
     // binds geometryId to this panelState
-    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
+    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, viewProps.panelId));
     useEffect(() =>
     {
         if (!panelState?.geometryId)
@@ -124,13 +125,13 @@ const GeometryEditor = (viewProps: ViewProps) =>
                 geometryId && 
                 <GeometryEditorTransform
                     geometryId={geometryId}
-                    viewProps={viewProps}
+                    panelId={viewProps.panelId}
                 />
             }
             {
                 geometryS &&
                 <GeometryTemplateCatalog 
-                    viewProps={viewProps}
+                    panelId={viewProps.panelId}
                 />
             }
             {
@@ -153,4 +154,4 @@ const GeometryEditor = (viewProps: ViewProps) =>
     )
 }
 
-export default GeometryEditor;
+export default GeometryEditorView;

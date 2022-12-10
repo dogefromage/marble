@@ -1,6 +1,8 @@
 import { AnyAction, PayloadAction, Reducer } from "@reduxjs/toolkit";
 import produce, { Draft } from "immer";
-import { ObjMap, PanelState, ViewTypes } from "../types";
+import { useCallback } from "react";
+import { RootState } from "../redux/store";
+import { ObjMap, PanelState, PanelStateMap, ViewTypes } from "../types";
 
 enum PanelStateActionTypes
 {
@@ -54,4 +56,16 @@ export default function panelStateEnhancer<S extends PanelState, A extends AnyAc
 
         return reducer(state, action);
     }
+}
+
+/**
+ * Returns memoized typed selector with viewType and panelId
+ */
+export function selectPanelState<T extends ViewTypes>(viewType: T, panelId: string): 
+    (state: RootState) => PanelStateMap[T] | undefined 
+{
+    return useCallback((state: RootState) => 
+        state.editor.panels[viewType][panelId] as PanelStateMap[T], 
+        [ viewType, panelId ]
+    );
 }

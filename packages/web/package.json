@@ -25,6 +25,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@simbathesailor/use-what-changed": "^2.0.0",
     "@types/gl-matrix": "^3.2.0",
     "@types/lodash": "^4.14.186",
     "@types/node": "18.7.17",

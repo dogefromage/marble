@@ -1,6 +1,33 @@
-import { DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types"
+import { DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
 import { glsl } from "../../utils/codeGeneration/glslTag"
 import { TemplateColors } from "./templateConstants"
+
+const outputRow: SpecificRowT = 
+{
+    id: 'output',
+    type: RowTypes.Output,
+    dataType: DataTypes.Solid,
+    name: 'Solid',
+};
+
+const coordinateRow: SpecificRowT = 
+{
+    id: 'coordinates',
+    type: RowTypes.InputOnly,
+    name: 'Coordinates',
+    dataType: DataTypes.Vec3,
+    value: [ 0, 0, 0 ],
+    alternativeArg: DefaultFunctionArgNames.RayPosition,
+};
+
+const colorRow: SpecificRowT = 
+{
+    id: 'color',
+    type: RowTypes.InputOnly,
+    name: 'Color',
+    dataType: DataTypes.Vec3,
+    value: [ 1, 1, 1 ],
+};
 
 const solid_sphere: GNodeT =
 {
@@ -14,30 +41,19 @@ const solid_sphere: GNodeT =
             name: 'Sphere',
             color: TemplateColors.Primitives,
         },
-        {
-            id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'SDF',
-        },
-        {
-            id: 'coordinates',
-            type: RowTypes.InputOnly,
-            name: 'Coordinates',
-            dataType: DataTypes.Vec3,
-            value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
-        },
+        outputRow,
+        coordinateRow,
         {
             id: 'radius',
             type: RowTypes.Field,
             dataType: DataTypes.Float,
             name: 'Radius',
             value: 1,
-        }
+        },
+        colorRow,
     ],
     instructionTemplates: glsl`
-        float $output = length($coordinates) - $radius;
+        Solid $output = Solid(length($coordinates) - $radius, $color);
     `,
 }
 
@@ -53,20 +69,8 @@ const solid_torus: GNodeT =
             name: 'Torus',
             color: TemplateColors.Primitives,
         },
-        {
-            id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'SDF',
-        },
-        {
-            id: 'coordinates',
-            type: RowTypes.InputOnly,
-            name: 'Coordinates',
-            dataType: DataTypes.Vec3,
-            value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
-        },
+        outputRow,
+        coordinateRow,
         {
             id: 'large_r',
             type: RowTypes.Field,
@@ -80,11 +84,12 @@ const solid_torus: GNodeT =
             dataType: DataTypes.Float,
             name: 'r',
             value: 0.5,
-        }
+        },
+        colorRow,
     ],
     instructionTemplates: glsl`
         vec2 $q = vec2(length($coordinates.xz) - $large_r, $coordinates.y);
-        float $output = length($q) - $small_r;
+        Solid $output = Solid(length($q) - $small_r, $color);
     `,
 }
 
@@ -100,31 +105,20 @@ const solid_box: GNodeT =
             name: 'Box',
             color: TemplateColors.Primitives,
         },
-        {
-            id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'SDF',
-        },
-        {
-            id: 'coordinates',
-            type: RowTypes.InputOnly,
-            name: 'Coordinates',
-            dataType: DataTypes.Vec3,
-            value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
-        },
+        outputRow,
+        coordinateRow,
         {
             id: 'size',
             type: RowTypes.Field,
             dataType: DataTypes.Vec3,
             name: 'Size',
             value: [ 1, 1, 1 ],
-        }
+        },
+        colorRow,
     ],
     instructionTemplates: glsl`
         vec3 $q = abs($coordinates) - $size;
-        float $output = length(max($q, 0.0)) + min(max($q.x, max($q.y, $q.z)), 0.0);
+        Solid $output = Solid(length(max($q, 0.0)) + min(max($q.x, max($q.y, $q.z)), 0.0), $color);
     `,
 }
 
@@ -140,30 +134,55 @@ const solid_plane: GNodeT =
             name: 'z-Plane',
             color: TemplateColors.Primitives,
         },
-        {
-            id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
-            name: 'SDF',
-        },
-        {
-            id: 'coordinates',
-            type: RowTypes.InputOnly,
-            name: 'Coordinates',
-            dataType: DataTypes.Vec3,
-            value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
-        },
+        outputRow,
+        coordinateRow,
         {
             id: 'height',
             type: RowTypes.Field,
             dataType: DataTypes.Float,
             name: 'Height',
             value: 0,
-        }
+        },
+        colorRow,
     ],
     instructionTemplates: glsl`
-        float $output = $coordinates.z - $height;
+        Solid $output = Solid($coordinates.z - $height, $color);
+    `,
+}
+
+const solid_cylinder: GNodeT =
+{
+    id: 'cylinder',
+    type: GNodeTemplateTypes.Default,
+    category: GNodeTemplateCategories.Solids,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Cylinder',
+            color: TemplateColors.Primitives,
+        },
+        outputRow,
+        coordinateRow,
+        {
+            id: 'height',
+            type: RowTypes.Field,
+            dataType: DataTypes.Float,
+            name: 'Height',
+            value: 1,
+        },
+        {
+            id: 'radius',
+            type: RowTypes.Field,
+            dataType: DataTypes.Float,
+            name: 'Radius',
+            value: 1,
+        },
+        colorRow,
+    ],
+    instructionTemplates: glsl`
+        vec2 $d = abs(vec2(length($coordinates.xz), $coordinates.y)) - vec2($radius, $height);
+        Solid $output = Solid(min(max($d.x,$d.y),0.0) + length(max($d,0.0)), $color);
     `,
 }
 
@@ -172,4 +191,5 @@ export default [
     solid_torus,
     solid_box,
     solid_plane,
+    solid_cylinder,
 ];

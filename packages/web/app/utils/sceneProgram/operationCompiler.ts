@@ -2,6 +2,7 @@ import { GNodeZ, ObjMap, ProgramConstant, ProgramTextureVar } from "../../types"
 import { formatValueGLSL, textureLookupDatatype } from "../codeGeneration/formatValue";
 import { Counter } from "../Counter";
 import { GeometryEdge } from "../geometries/generateAdjacencyLists";
+import { GeometriesCompilationError } from "./compilationError";
 import { RowVarNameGenerator } from "./curriedRowVarNameGenerator";
 
 function createConstantCode(c: ProgramConstant)
@@ -68,10 +69,16 @@ export function compileNodeInstructions(
 
             const totalStackCall = match[0];
 
-            const stackParams = match[1]
-                .split(',')
-                .map(s => s.trim());
-            if (stackParams.length !== 3) return console.error(`Stacked params must have three arguments`);
+            const args = match[1];
+
+            const stackParams = [ ...args.matchAll(/([^,(\s]+(?=,|$)|[\w]+\(.*\)(?=,|$))/g) ]
+                .map(regMatch => regMatch[0]);
+
+            if (stackParams.length !== 3) 
+            {
+                console.log(match[1]);
+                throw new GeometriesCompilationError(`Stacked arguments must have three arguments`)
+            }
             const [ fn_name, stackedRowIdentifier, defaultValue ] = stackParams;
 
             const varNames = varNameGenerator.stacked(stackedRowIdentifier);

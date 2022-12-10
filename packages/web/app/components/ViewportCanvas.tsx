@@ -1,14 +1,14 @@
 import { useMouseDrag } from '@marble/interactive';
 import useResizeObserver from '@react-hook/resize-observer';
-import { mat4, vec2, vec3 } from 'gl-matrix';
+import { vec2, vec3 } from 'gl-matrix';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectViewportPanels, viewportPanelEditCamera } from '../slices/panelViewportSlice';
-import { ViewportCamera } from '../types';
-import { clamp } from '../utils/math';
-import { usePanelState } from '../utils/panelState/usePanelState';
-import { createCameraWorldToScreen, getViewportDirection, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
+import { useAppDispatch } from '../redux/hooks';
+import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
+import { ViewportCamera, ViewTypes } from '../types';
+import { getViewportDirection } from '../utils/viewport/cameraMath';
 import ViewportGLProgram from './ViewportGLProgram';
 
 const CanvasWrapperDiv = styled.div`
@@ -35,7 +35,7 @@ interface Props
 const ViewportCanvas = ({ panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const viewportPanelState = usePanelState(selectViewportPanels, panelId);
+    const viewportPanelState = useSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -93,8 +93,6 @@ export const {
     setNewLink: geometryEditorPanelSetNewLink,
 } = geometryEditorPanelsSlice.actions;
 
-export const selectGeometryEditorPanels = (state: RootState) => state.editor.panels[ViewTypes.GeometryEditor];
-
 const geometryEditorPanelsReducer = panelStateEnhancer(
     geometryEditorPanelsSlice.reducer,
     ViewTypes.GeometryEditor,

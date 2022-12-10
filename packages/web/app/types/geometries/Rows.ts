@@ -12,6 +12,7 @@ export interface RowValueMap
     [DataTypes.Vec2]: Tuple<number, 2>;
     [DataTypes.Vec3]: Tuple<number, 3>;
     [DataTypes.Mat3]: Tuple<number, 9>;
+    [DataTypes.Solid]: Tuple<number, 4>;
 }
 
 /**

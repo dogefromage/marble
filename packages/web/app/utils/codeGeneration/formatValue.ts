@@ -1,9 +1,17 @@
-import { DataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { DataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE, Tuple } from "../../types";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "./shaderTemplates";
 
 
 export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTypes): string
 {
+    if (dataType === DataTypes.Float)
+    {
+        const str = value.toString();
+        if (/\./.test(str)) 
+            return str;
+        return `${str}.`;
+    }
+
     if (dataType === DataTypes.Vec2 ||
         dataType === DataTypes.Vec3 ||
         dataType === DataTypes.Mat3)
@@ -13,12 +21,13 @@ export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTyp
 
         return `${dataType}(${values.join(',')})`;
     }
-    if (dataType === DataTypes.Float)
+    
+    if (dataType === DataTypes.Solid)
     {
-        const str = value.toString();
-        if (/\./.test(str)) 
-            return str;
-        return `${str}.`;
+        const values = (value as number[]);
+        const dist = formatValueGLSL(values[0], DataTypes.Float);
+        const color = formatValueGLSL(values.slice(1) as Tuple<number, 3>, DataTypes.Vec3);
+        return `${DataTypes.Solid}(${dist}, ${color})`;
     }
 
     throw new Error(`Cannot convert dataType "${dataType}" to GLSL value`);
@@ -26,6 +35,11 @@ export function formatValueGLSL(value: RowValueMap[DataTypes], dataType: DataTyp
 
 export function textureLookupDatatype(textureCoordinate: number, dataType: DataTypes): string
 {
+    if (dataType === DataTypes.Float)
+    {
+        return `${TEXTURE_LOOKUP_METHOD_NAME}(${textureCoordinate})`;
+    }
+
     if (dataType === DataTypes.Vec2 ||
         dataType === DataTypes.Vec3 ||
         dataType === DataTypes.Mat3)
@@ -42,9 +56,12 @@ export function textureLookupDatatype(textureCoordinate: number, dataType: DataT
 
         return `${dataType}(${dataTypeParams})`;
     }
-    if (dataType === DataTypes.Float)
+
+    if (dataType === DataTypes.Solid)
     {
-        return `${TEXTURE_LOOKUP_METHOD_NAME}(${textureCoordinate})`;
+        const lookupDist = textureLookupDatatype(textureCoordinate, DataTypes.Float);
+        const lookupCol = textureLookupDatatype(textureCoordinate + 1, DataTypes.Vec3);
+        return `${DataTypes.Solid}(${lookupDist}, ${lookupCol})`;
     }
 
     throw new Error(`Cannot lookup texture for dataType "${dataType}"`);

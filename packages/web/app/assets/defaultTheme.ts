@@ -6,10 +6,11 @@ const defaultTheme: DefaultTheme =
     {
         dataTypes: {
             unknown: '#636363',
-            float: '#0277BD',
-            vec2: '#a84a32',
-            vec3: '#6A1B9A',
-            mat3: '#f7b945',
+            float: '#5f91c9',
+            vec2: '#5f64c9',
+            vec3: '#5d48b0',
+            mat3: '#b03bd4',
+            Solid: '#d4a63b',
         }
     },
 };

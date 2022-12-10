@@ -10,9 +10,14 @@ export enum GeometriesCompilationErrorTypes
 export class GeometriesCompilationError extends Error
 {
     constructor(
-        public type: GeometriesCompilationErrorTypes
+        public msg: GeometriesCompilationErrorTypes | string
     )
     {
-        super(`Error "${type}" at compiling geometry`);
+        super();
+
+        if (msg in GeometriesCompilationErrorTypes)
+            this.message = `Error "${msg}" at compiling geometry`;
+        else 
+            this.message = "CompilationError: " + msg;
     }
 }

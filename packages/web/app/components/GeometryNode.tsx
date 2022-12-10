@@ -1,17 +1,21 @@
 import { useMouseDrag } from '@marble/interactive';
 import { vec2 } from 'gl-matrix';
+import React from 'react';
 import { useRef } from 'react';
+import { useSelector } from 'react-redux';
 import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
-import { geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
-import { GNodeZ, ViewProps } from '../types';
+import { geometryEditorSetActiveNode } from '../slices/panelGeometryEditorSlice';
+import GeometryRowDiv from '../styled/GeometryRowDiv';
+import { GNodeZ, PlanarCamera, ViewProps, ViewTypes } from '../types';
 import { Point } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
-import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryRowRoot from './GeometryRowRoot';
+import { useWhatChanged } from '@simbathesailor/use-what-changed';
 
 export const NODE_WIDTH = 180;
 
@@ -49,16 +53,21 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
 
 interface Props
 {
-    viewProps: ViewProps;
+    panelId: string;
     geometryId: string;
     node: GNodeZ;
+    getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
+const GeometryNode = ({ panelId, geometryId, node, getCamera }: Props) =>
 {
-    const dispatch = useAppDispatch();
-    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
+    console.log('rendererd node');
 
+    useWhatChanged([ panelId, geometryId, node, getCamera ])
+
+    const dispatch = useAppDispatch();
+    // const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, viewProps.panelId));
+    
     const dragRef = useRef<{
         startCursor: Point;
         startPosition: Point;
@@ -78,14 +87,16 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
         },
         move: e => 
         {
-            if (!dragRef.current || !panelState) return;
+            const camera = getCamera();
+
+            if (!dragRef.current || !camera) return;
 
             const screenMove = vec2.fromValues(
                 e.clientX - dragRef.current.startCursor.x,
                 e.clientY - dragRef.current.startCursor.y,
             );
 
-            const worldMove = vectorScreenToWorld(panelState.camera, screenMove);
+            const worldMove = vectorScreenToWorld(camera, screenMove);
 
             const newPos = 
             {
@@ -105,25 +116,26 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
         cursor: 'grab',
     });
 
-    const openContextMenu = useContextMenu(
-        viewProps.panelId,
-        'Geometry Node',
-        [ 'geometryEditor.deleteNode' ],
-        () => ({ nodeId: node.id }),
-    );
+    // const openContextMenu = useContextMenu(
+    //     viewProps.panelId,
+    //     'Geometry Node',
+    //     [ 'geometryEditor.deleteNode' ],
+    //     () => ({ nodeId: node.id }),
+    // );
 
-    const isActive = panelState?.activeNode === node.id;
+    const isActive = false;
+    // const isActive = panelState?.activeNode === node.id;
 
     return (
         <GeometryNodeDiv
-            onContextMenu={openContextMenu}
+            // onContextMenu={openContextMenu}
             position={node.position}
             isActive={isActive}
             {...handlers}
             onClick={e =>
             {
                 dispatch(geometryEditorSetActiveNode({
-                    panelId: viewProps.panelId,
+                    panelId,
                     nodeId: node.id,
                 }))
 
@@ -131,18 +143,23 @@ const GeometryNode = ({ viewProps, geometryId, node }: Props) =>
             }}
         >
         {
-            node.rows.map((row, rowIndex) =>
-                <GeometryRowRoot
-                    geometryId={geometryId}
-                    nodeId={node.id}
-                    key={row.id}
-                    row={row}
-                />
-            )
+            <GeometryRowDiv
+                heightUnits={2}
+            >
+                Test
+            </GeometryRowDiv>
+            // node.rows.map((row, rowIndex) =>
+            //     <GeometryRowRoot
+            //         geometryId={geometryId}
+            //         nodeId={node.id}
+            //         key={row.id}
+            //         row={row}
+            //     />
+            // )
         }
         { catcher }
         </GeometryNodeDiv>
     );
 }
 
-export default GeometryNode;
+export default React.memo(GeometryNode);

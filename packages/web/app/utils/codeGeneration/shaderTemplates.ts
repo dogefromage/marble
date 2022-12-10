@@ -72,6 +72,13 @@ struct March
     float penumbra;
     int iterations;
     bool hasHit;
+    vec3 color;
+};
+
+struct Solid
+{
+    float sd;
+    vec3 color;
 };
 
 float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
@@ -88,7 +95,7 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
 
 %COMPILED_GEOMETRIES%
 
-float sdf(vec3 p)
+Solid sdf(vec3 p)
 {
     %ROOT_GEOMETRY%
 }
@@ -98,15 +105,15 @@ vec3 calcNormal(vec3 p)
     // https://iquilezles.org/articles/normalsSDF/
     float h = 10.0 * marchParameters.z;
     vec2 k = vec2(1,-1);
-    return normalize( k.xyy * sdf( p + k.xyy*h ) + 
-                      k.yyx * sdf( p + k.yyx*h ) + 
-                      k.yxy * sdf( p + k.yxy*h ) + 
-                      k.xxx * sdf( p + k.xxx*h ) );
+    return normalize( k.xyy * sdf( p + k.xyy*h ).sd + 
+                      k.yyx * sdf( p + k.yyx*h ).sd + 
+                      k.yxy * sdf( p + k.yxy*h ).sd + 
+                      k.xxx * sdf( p + k.xxx*h ).sd );
 }
 
 March march(Ray ray)
 {
-    March march = March(.0, 1.0, 0, false);
+    March march = March(.0, 1.0, 0, false, vec3(0,0,0));
 
     const int ITERATIONS_HARD_MAX = 10000;
 
@@ -117,22 +124,23 @@ March march(Ray ray)
         march.iterations = i + 1;
 
         vec3 p = rayAt(ray, march.t);
-        float d = sdf(p);
+        Solid solid = sdf(p);
 
         float minAllowedDist = marchParameters.z;
 
-        if (d < minAllowedDist)
+        if (solid.sd < minAllowedDist)
         {
             march.hasHit = true;
+            march.color = solid.color;
             return march;
         }
 
         if (march.t > .0)
         {
-            march.penumbra = min(march.penumbra, d / march.t);
+            march.penumbra = min(march.penumbra, solid.sd / march.t);
         }
 
-        march.t += d;
+        march.t += solid.sd;
 
         if (march.t > marchParameters.x) 
         {
@@ -199,6 +207,8 @@ vec3 shade(Ray ray)
         // float occlusionFactor = 1.0 / (1.0 + exp(occlusionLogisticExponent)); // logistic function
         // lin *= occlusionFactor;
     }
+
+    lin *= mainMarch.color;
 
     vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
     return corrected;

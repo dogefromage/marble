@@ -17,10 +17,10 @@ const output_output: GNodeT =
         },
         {
             id: 'input',
-            name: 'SDF',
+            name: 'Solid',
             type: RowTypes.InputOnly,
-            dataType: DataTypes.Float,
-            value: TEMPLATE_FAR_AWAY,
+            dataType: DataTypes.Solid,
+            value: [ TEMPLATE_FAR_AWAY, 0, 0, 0 ],
         },
     ],
     instructionTemplates: glsl`

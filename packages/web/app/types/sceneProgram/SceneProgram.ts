@@ -24,6 +24,7 @@ export enum DataTypes
     Vec2 = 'vec2',
     Vec3 = 'vec3',
     Mat3 = 'mat3',
+    Solid = 'Solid',
 }
 
 export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
@@ -33,6 +34,7 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     vec2: 2,
     vec3: 3,
     mat3: 9,
+    Solid: 4,
 }
 
 export enum DefaultFunctionArgNames

@@ -21,29 +21,6 @@ export function generateGeometryMethodCode(programMethod: GeometryProgramMethod)
         .map(arg => arg.dataType + ' ' + arg.name).join(', ');
     methodTemplate.replace('%ARGUMENT_LIST%', argumentList);
 
-    // const methodCodeList: string[] = [];
-
-    // for (const c of sceneProgram.constants)
-    // {
-    //     const rhs = formatValueGLSL(c.value, c.dataType);
-    //     const line = `${c.dataType} ${c.name} = ${rhs};`
-    //     methodCodeList.push(line);
-    // }
-
-    // for (const tv of sceneProgram.textureVars)
-    // {
-    //     const rhs = textureLookupDatatype(tv.textureCoordinate, tv.dataType);
-    //     const line = `${tv.dataType} ${tv.name} = ${rhs};`
-    //     methodCodeList.push(line);
-    // }
-
-
-    // for (const op of sceneProgram.operations)
-    // {
-    //     const opCode = generateOperationCode(op);
-    //     methodCodeList.push(opCode);
-    // }
-
     const methodCodeList = programMethod.programInstructions;
 
     const methodCodeString = methodCodeList
@@ -54,48 +31,10 @@ export function generateGeometryMethodCode(programMethod: GeometryProgramMethod)
 
     const method = methodTemplate.getFinishedCode(/%.*%/)
 
-    console.log(method);
+    // console.log(method);
 
     return {
         method,
         methodName: programMethod.methodName,
     };
 }
-
-
-// function generateOperationCode(op: ProgramOperation)
-// {
-//     if (op.type === ProgramOperationTypes.BinaryArithmetic)
-//     {
-//         const { type_output, var_output, var_lhs, operation, var_rhs } = op;
-//         return `${type_output} ${var_output} = ${var_lhs} ${operation} ${var_rhs};`;
-//     }
-//     if (op.type === ProgramOperationTypes.Invocation)
-//     {
-//         const { type_output, var_output, var_args, name_function } = op;
-
-//         const argList = var_args.join(', ');
-
-//         return `${type_output} ${var_output} = ${name_function}(${argList});`;
-//     }
-//     if (op.type === ProgramOperationTypes.InvocationTree)
-//     {
-//         const { type_output, var_output, var_args, name_function, zero_value } = op;
-
-//         let rhs = formatValueGLSL(zero_value, type_output);
-
-//         if (var_args.length > 0)
-//         {
-//             rhs = generateBinaryInvocationTree(name_function, var_args);
-//         }
-
-//         return `${type_output} ${var_output} = ${rhs};`;
-//     }
-//     if (op.type === ProgramOperationTypes.Return)
-//     {
-//         const { var_input } = op;
-//         return `return ${var_input};`;
-//     }
-
-//     throw new Error(`Operation not found`);
-// }

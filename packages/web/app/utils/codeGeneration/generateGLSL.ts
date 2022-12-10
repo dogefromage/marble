@@ -30,6 +30,8 @@ export function generateGLSL(sceneProgram: SceneProgram)
     
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
 
+    // console.log(logCode(fragCode));
+
     return {
         vertCode: VERT_CODE_TEMPLATE,
         fragCode,

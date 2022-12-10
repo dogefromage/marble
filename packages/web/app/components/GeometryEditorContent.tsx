@@ -1,26 +1,23 @@
-import { useDroppable, useMouseDrag } from '@marble/interactive';
 import produce from 'immer';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GeometryS, JointDndTransfer, JOINT_DND_TAG, Point, ViewProps } from '../types';
+import { GeometryS, PlanarCamera, ViewProps } from '../types';
 import { generateAdjacencyLists } from '../utils/geometries/generateAdjacencyLists';
 import zipGeometry from '../utils/geometries/zipGeometry';
 import LinkComponent from './GeometryLink';
-import GeometryNode from './GeometryNode';
-import GeometryLinkDiv from './GeometryLinkDiv';
-import { usePanelState } from '../utils/panelState/usePanelState';
-import { selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
 import GeometryLinkNew from './GeometryLinkNew';
+import GeometryNode from './GeometryNode';
 
 interface Props
 {
-    viewProps: ViewProps;
+    panelId: string;
     geometryId: string;
+    getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
+const GeometryEditorContent = ({ panelId, geometryId, getCamera }: Props) =>
 {
     const dispatch = useAppDispatch();
     const geometryS: GeometryS | undefined = useAppSelector(selectGeometries)[geometryId];
@@ -103,7 +100,7 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
         {
             withConnections &&
             <GeometryLinkNew
-                viewProps={viewProps}
+                panelId={panelId}
                 geometry={withConnections}
             />
         }
@@ -114,7 +111,8 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
                     geometryId={withConnections.id}
                     key={node.id}
                     node={node}
-                    viewProps={viewProps}
+                    panelId={panelId}
+                    getCamera={getCamera}
                 />
             )
         }
@@ -122,4 +120,4 @@ const GeometryEditorContent = ({ viewProps, geometryId }: Props) =>
     );
 }
 
-export default GeometryEditorContent;
+export default React.memo(GeometryEditorContent);

@@ -62,7 +62,7 @@ const SceneProgramCompiler = () =>
         {
             if (e instanceof GeometriesCompilationError)
             {
-                temporaryPushError(`Geometry could not be compiled: ${e.type}`);
+                temporaryPushError(`Geometry could not be compiled: ${e.msg}`);
             }
             else
             {

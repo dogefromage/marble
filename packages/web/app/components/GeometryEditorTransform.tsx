@@ -1,13 +1,14 @@
-import { useDroppable, useMouseDrag } from '@marble/interactive';
+import { useMouseDrag } from '@marble/interactive';
 import { vec2 } from 'gl-matrix';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch } from '../redux/hooks';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorPanelSetNewLink, geometryEditorSetActiveNode, selectGeometryEditorPanels } from '../slices/panelGeometryEditorSlice';
-import { DEFAULT_PLANAR_CAMERA, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewProps } from '../types';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorSetActiveNode } from '../slices/panelGeometryEditorSlice';
+import { DEFAULT_PLANAR_CAMERA, PlanarCamera, Point, ViewProps, ViewTypes } from '../types';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
-import { usePanelState } from '../utils/panelState/usePanelState';
 import GeometryEditorContent from './GeometryEditorContent';
 
 interface DivProps
@@ -66,13 +67,17 @@ const TransformingDiv = styled.div`
 interface Props
 {
     geometryId: string;
-    viewProps: ViewProps;
+    panelId: string;
 }
 
-const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
+const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const panelState = usePanelState(selectGeometryEditorPanels, viewProps.panelId);
+    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+
+    const cameraRef = useRef(panelState?.camera);
+    cameraRef.current = panelState?.camera;
+    const getCamera = useCallback(() => cameraRef.current, [ cameraRef ]);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -118,7 +123,7 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
             };
 
             dispatch(geometryEditorPanelsEditCamera({
-                panelId: viewProps.panelId,
+                panelId,
                 partialCamera: { position }
             }))
 
@@ -165,47 +170,47 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
         };
 
         dispatch(geometryEditorPanelsEditCamera({
-            panelId: viewProps.panelId,
+            panelId,
             partialCamera: newCamera,
         }));
     };
 
     
-    const lastCallTime = useRef(0);
-    const prevDefault = (e: React.DragEvent) => e.preventDefault();
+    // const lastCallTime = useRef(0);
+    // const prevDefault = (e: React.DragEvent) => e.preventDefault();
 
-    const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
-        tag: JOINT_DND_TAG,
-        enter: prevDefault,
-        leave: prevDefault,
-        over(e, transfer)
-        {
-            if (!wrapperRef.current) return;
+    // const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
+    //     tag: JOINT_DND_TAG,
+    //     enter: prevDefault,
+    //     leave: prevDefault,
+    //     over(e, transfer)
+    //     {
+    //         if (!wrapperRef.current) return;
 
-            const time = new Date().getTime();
-            if (lastCallTime.current < time - 15)
-            {
-                lastCallTime.current = time;
+    //         const time = new Date().getTime();
+    //         if (lastCallTime.current < time - 15)
+    //         {
+    //             lastCallTime.current = time;
 
-                const bounds = wrapperRef.current.getBoundingClientRect();
-                const offsetPos = 
-                {
-                    x: e.clientX - bounds.left,
-                    y: e.clientY - bounds.top,
-                };
+    //             const bounds = wrapperRef.current.getBoundingClientRect();
+    //             const offsetPos = 
+    //             {
+    //                 x: e.clientX - bounds.left,
+    //                 y: e.clientY - bounds.top,
+    //             };
 
-                dispatch(geometryEditorPanelSetNewLink({
-                    panelId: viewProps.panelId,
-                    newLink: {
-                        endJointTransfer: transfer,
-                        offsetPos,
-                    },
-                }));
-            }
+    //             dispatch(geometryEditorPanelSetNewLink({
+    //                 panelId: viewProps.panelId,
+    //                 newLink: {
+    //                     endJointTransfer: transfer,
+    //                     offsetPos,
+    //                 },
+    //             }));
+    //         }
             
-            prevDefault(e);
-        },
-    })
+    //         prevDefault(e);
+    //     },
+    // })
 
     return (
         <BackgroundDiv
@@ -215,18 +220,19 @@ const GeometryEditorTransform = ({ geometryId, viewProps }: Props) =>
             onClick={() =>
             {
                 dispatch(geometryEditorSetActiveNode({
-                    panelId: viewProps.panelId,
+                    panelId,
                 }))
             }}
             {...panHandlers}
-            {...dragJointHandler}
+            // {...dragJointHandler}
         >
             <TransformingDiv>
             {
                 geometryId && 
                 <GeometryEditorContent 
-                    viewProps={viewProps}
+                    panelId={panelId}
                     geometryId={geometryId}
+                    getCamera={getCamera}
                 />
             }
             </TransformingDiv>

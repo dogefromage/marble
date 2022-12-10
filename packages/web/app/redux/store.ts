@@ -14,7 +14,7 @@ function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
         }
     });
     
-    // middleware.push(createLogger({ collapsed: true }));
+    middleware.push(createLogger({ collapsed: true }));
 
     return middleware;
 }
