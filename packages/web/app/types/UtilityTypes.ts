@@ -35,3 +35,10 @@ export enum RotationModels
 
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
 type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>;
+
+export enum SelectionStatus
+{
+    Nothing = 0,
+    Selected = 1,
+    Active = 2,
+}

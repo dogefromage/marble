@@ -1,4 +1,5 @@
 import { DefaultTheme } from "styled-components";
+import { SelectionStatus } from "../types";
 
 const defaultTheme: DefaultTheme = 
 {
@@ -11,6 +12,10 @@ const defaultTheme: DefaultTheme =
             vec3: '#5d48b0',
             mat3: '#b03bd4',
             Solid: '#d4a63b',
+        },
+        selectionStatus: {
+            [SelectionStatus.Selected]: '#e7b84a',
+            [SelectionStatus.Active]: '#e74a54',
         }
     },
 };

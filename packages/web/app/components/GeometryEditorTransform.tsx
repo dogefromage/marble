@@ -1,13 +1,14 @@
-import { useMouseDrag } from '@marble/interactive';
+import { useDroppable, useMouseDrag } from '@marble/interactive';
 import { vec2 } from 'gl-matrix';
-import React, { useCallback, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
-import { useAppDispatch } from '../redux/hooks';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorSetActiveNode } from '../slices/panelGeometryEditorSlice';
-import { DEFAULT_PLANAR_CAMERA, PlanarCamera, Point, ViewProps, ViewTypes } from '../types';
-import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { selectGeometry } from '../slices/geometriesSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorPanelsSetNewLink, geometryEditorPanelsSetActiveNode, geometryEditorPanelsSetSelection } from '../slices/panelGeometryEditorSlice';
+import MouseSelectionDiv from '../styled/MouseSelectionDiv';
+import { DEFAULT_PLANAR_CAMERA, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
+import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
 import GeometryEditorContent from './GeometryEditorContent';
 
@@ -36,11 +37,9 @@ const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) =>
 
     width: 100%;
     height: 100%;
-    
     overflow: hidden;
-    
-    background-color: #e0e0e0;
 
+    background-color: #e0e0e0;
     --grid-thick: 1px;
     --grid-color: #c6c8cc;
 
@@ -73,13 +72,32 @@ interface Props
 const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const geometry = useAppSelector(selectGeometry(geometryId));
 
     const cameraRef = useRef(panelState?.camera);
     cameraRef.current = panelState?.camera;
     const getCamera = useCallback(() => cameraRef.current, [ cameraRef ]);
 
     const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const getOffsetPoint = (e: React.MouseEvent) => 
+    {
+        if (!wrapperRef.current) return;
+        const bounds = wrapperRef.current.getBoundingClientRect();
+        return {
+            x: e.clientX - bounds.left,
+            y: e.clientY - bounds.top,
+        };
+    }
+
+    const selectionRef = useRef<{
+        startPoint: Point;
+    }>();
+    const [ selection, setSelection ] = useState<{
+        x: number, y: number, w: number, h: number,
+    }>();
+
 
     const panRef = useRef<{
         lastMouse: Point;
@@ -88,66 +106,104 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
 
     const actionOngoingRef = useRef(false);
 
-    const { handlers: panHandlers, catcher: panCatcher } = useMouseDrag({
-        mouseButton: 1,
-        start: e =>
+    const { handlers: panHandlers, catcher: panCatcher } = useMouseDrag([
         {
-            if (!panelState || actionOngoingRef.current) return;
+            mouseButton: 0,
+            start: e => {
+                const startPoint = getOffsetPoint(e);
+                if (!startPoint) return;
+                selectionRef.current = { startPoint };
+            },
+            move: e => {
+                const startPoint = selectionRef.current?.startPoint;
+                const endPoint = getOffsetPoint(e);
+                if (!startPoint || !endPoint) return;
 
-            panRef.current = {
-                lastMouse: {
-                    x: e.clientX,
-                    y: e.clientY,
-                },
-                lastCamera: panelState.camera,
+                const left =   Math.min(startPoint.x, endPoint.x);
+                const top =    Math.min(startPoint.y, endPoint.y);
+                const right =  Math.max(startPoint.x, endPoint.x);
+                const bottom = Math.max(startPoint.y, endPoint.y);
+
+                setSelection({
+                    x: left,
+                    y: top,
+                    w: right - left,
+                    h: bottom - top,
+                });
+                actionOngoingRef.current = true;
+            },
+            end: e => {
+                setSelection(undefined);
+                actionOngoingRef.current = false;
+
+                if (!selection || !panelState?.camera || !geometry) return;
+
+                const screenPos = vec2.fromValues(selection.x, selection.y);
+                const screenSize = vec2.fromValues(selection.w, selection.h);
+
+                const [ x, y ] = pointScreenToWorld(panelState.camera, screenPos);
+                const [ w, h ] = vectorScreenToWorld(panelState.camera, screenSize);
+
+                const selectedIds: string[] = [];
+                
+                for (const node of geometry.nodes)
+                {
+                    const { x: n_x, y: n_y } = node.position;
+
+                    if (x <= n_x && n_x <= x + w &&
+                        y <= n_y && n_y <= y + h)
+                    {
+                        selectedIds.push(node.id);
+                    }
+                }
+                
+                dispatch(geometryEditorPanelsSetSelection({
+                    panelId,
+                    selection: selectedIds,
+                })); 
             }
-
-            actionOngoingRef.current = true;
-
         },
-        move: e =>
         {
-            if (!panRef.current) return;
-
-            const deltaScreen = vec2.fromValues(
-                panRef.current.lastMouse.x - e.clientX,
-                panRef.current.lastMouse.y - e.clientY,
-            );
-
-            const deltaWorld = vectorScreenToWorld(panRef.current.lastCamera, deltaScreen);
-
-            const position: Point =
-            {
-                x: panRef.current.lastCamera.position.x + deltaWorld[0],
-                y: panRef.current.lastCamera.position.y + deltaWorld[1],
-            };
-
-            dispatch(geometryEditorPanelsEditCamera({
-                panelId,
-                partialCamera: { position }
-            }))
-
-            e.preventDefault();
+            mouseButton: 1,
+            start: e => {
+                if (!panelState || actionOngoingRef.current) return;
+                panRef.current = {
+                    lastMouse: { x: e.clientX, y: e.clientY },
+                    lastCamera: panelState.camera,
+                }
+            },
+            move: e => {
+                if (!panRef.current) return;
+                const deltaScreen = vec2.fromValues(
+                    panRef.current.lastMouse.x - e.clientX,
+                    panRef.current.lastMouse.y - e.clientY,
+                );
+                const deltaWorld = vectorScreenToWorld(panRef.current.lastCamera, deltaScreen);
+                const position: Point =
+                {
+                    x: panRef.current.lastCamera.position.x + deltaWorld[0],
+                    y: panRef.current.lastCamera.position.y + deltaWorld[1],
+                };
+                dispatch(geometryEditorPanelsEditCamera({
+                    panelId,
+                    partialCamera: { position }
+                }));
+                e.preventDefault();
+                actionOngoingRef.current = true;
+            },
+            end: e => { actionOngoingRef.current = false; }
         },
-        end: e =>
-        {
-            actionOngoingRef.current = false;
-        }
-    })
+    ]);
 
     const onWheel = (e: React.WheelEvent) =>
     {
-        if (!wrapperRef.current || !panelState || actionOngoingRef.current) return;
+        if (!panelState || actionOngoingRef.current) return;
 
         const zoomFactor = 1.1;
         const k = Math.pow(zoomFactor, -e.deltaY / 100);
 
-        const bounds = wrapperRef.current.getBoundingClientRect();
-        const ps = 
-        {
-            x: e.clientX - bounds.left,
-            y: e.clientY - bounds.top,
-        };
+        const ps = getOffsetPoint(e);
+        if (!ps) return;
 
         const cam = panelState.camera;
 
@@ -175,56 +231,60 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
         }));
     };
 
-    
-    // const lastCallTime = useRef(0);
-    // const prevDefault = (e: React.DragEvent) => e.preventDefault();
+    const prevDefault = (e: React.DragEvent) => e.preventDefault();
+    const lastCallTime = useRef(0);
 
-    // const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
-    //     tag: JOINT_DND_TAG,
-    //     enter: prevDefault,
-    //     leave: prevDefault,
-    //     over(e, transfer)
-    //     {
-    //         if (!wrapperRef.current) return;
+    const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
+        tag: JOINT_DND_TAG,
+        enter: prevDefault,
+        leave: prevDefault,
+        over(e, transfer)
+        {
+            if (!wrapperRef.current) return;
 
-    //         const time = new Date().getTime();
-    //         if (lastCallTime.current < time - 15)
-    //         {
-    //             lastCallTime.current = time;
+            const time = new Date().getTime();
+            if (lastCallTime.current < time - 20)
+            {
+                lastCallTime.current = time;
 
-    //             const bounds = wrapperRef.current.getBoundingClientRect();
-    //             const offsetPos = 
-    //             {
-    //                 x: e.clientX - bounds.left,
-    //                 y: e.clientY - bounds.top,
-    //             };
+                const bounds = wrapperRef.current.getBoundingClientRect();
+                const offsetPos = 
+                {
+                    x: e.clientX - bounds.left,
+                    y: e.clientY - bounds.top,
+                };
 
-    //             dispatch(geometryEditorPanelSetNewLink({
-    //                 panelId: viewProps.panelId,
-    //                 newLink: {
-    //                     endJointTransfer: transfer,
-    //                     offsetPos,
-    //                 },
-    //             }));
-    //         }
-            
-    //         prevDefault(e);
-    //     },
-    // })
+                dispatch(geometryEditorPanelsSetNewLink({
+                    panelId,
+                    newLink: {
+                        endJointTransfer: transfer,
+                        offsetPos,
+                    },
+                }));
+            }
+            prevDefault(e);
+        },
+    });
+
+    const clearSelectionAndActive = (e: React.MouseEvent) =>
+    {
+        dispatch(geometryEditorPanelsSetActiveNode({
+            panelId,
+        }));
+        dispatch(geometryEditorPanelsSetSelection({
+            panelId, selection: [],
+        }));
+        e.stopPropagation();
+    }
 
     return (
         <BackgroundDiv
             ref={wrapperRef}
             onWheel={onWheel}
             camera={panelState?.camera || DEFAULT_PLANAR_CAMERA}
-            onClick={() =>
-            {
-                dispatch(geometryEditorSetActiveNode({
-                    panelId,
-                }))
-            }}
+            onClick={clearSelectionAndActive}
             {...panHandlers}
-            // {...dragJointHandler}
+            {...dragJointHandler}
         >
             <TransformingDiv>
             {
@@ -236,7 +296,12 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
                 />
             }
             </TransformingDiv>
-            { panCatcher }
+            { 
+                panCatcher 
+            }{
+                selection &&
+                <MouseSelectionDiv rect={selection} />
+            }
         </BackgroundDiv>
     );
 }

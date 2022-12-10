@@ -7,7 +7,7 @@ export default function useDispatchCommand()
 {
     const dispatch = useAppDispatch();
 
-    const editorStateNotRef = useAppSelector(state => state.editor);
+    const editorStateNotRef = useAppSelector(useCallback(state => state.editor, []));
     const editorStateRef = useRef(editorStateNotRef);
     editorStateRef.current = editorStateNotRef;
 

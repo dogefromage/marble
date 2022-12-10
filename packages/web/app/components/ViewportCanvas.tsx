@@ -2,10 +2,9 @@ import { useMouseDrag } from '@marble/interactive';
 import useResizeObserver from '@react-hook/resize-observer';
 import { vec2, vec3 } from 'gl-matrix';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
-import { useAppDispatch } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { ViewportCamera, ViewTypes } from '../types';
 import { getViewportDirection } from '../utils/viewport/cameraMath';
@@ -35,7 +34,7 @@ interface Props
 const ViewportCanvas = ({ panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const viewportPanelState = useSelector(selectPanelState(ViewTypes.Viewport, panelId));
+    const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -95,11 +94,10 @@ const ViewportCanvas = ({ panelId }: Props) =>
     }>()
 
     const { catcher: divCatcher, handlers: divHandlers } = useMouseDrag({
-        start: (e, cancel) => 
+        mouseButton: 1,
+        start: e => 
         {
             if (!viewportPanelState) return;
-
-            if (e.button !== 1) cancel();
 
             let mode: CameraDragModes = CameraDragModes.Orbit;
             if (e.shiftKey) mode = CameraDragModes.Pan;
@@ -160,7 +158,6 @@ const ViewportCanvas = ({ panelId }: Props) =>
                     }
                 }))
             }
-
         },
     });
 

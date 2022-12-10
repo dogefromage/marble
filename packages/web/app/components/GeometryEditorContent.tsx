@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesDisconnectJoints, selectGeometries } from '../slices/geometriesSlice';
+import { geometriesDisconnectJoints, selectGeometry } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GeometryS, PlanarCamera, ViewTypes } from '../types';
+import { PlanarCamera, SelectionStatus, ViewTypes } from '../types';
 import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import LinkComponent from './GeometryLink';
+import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
 
 interface Props
@@ -19,12 +19,13 @@ interface Props
 const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const geometry: GeometryS | undefined = useAppSelector(selectGeometries)[ geometryId ];
+    const geometry = useAppSelector(selectGeometry(geometryId));
     const { templates } = useAppSelector(selectTemplates);
-    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
 
     const connectionData = useMemo(() =>
     {
+        if (!geometry || !Object.values(templates).length) return;
         try {
             return generateGeometryConnectionData(geometry, templates);
         } catch (e) {
@@ -50,9 +51,15 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 
     const { forwardEdges, templateMap, connectedRows } = connectionData;
 
+    // New link
+    const newLink = panelState?.newLink;
+    const newLinkNode = geometry?.nodes.find(node => node.id === newLink?.endJointTransfer.location.nodeId);
+    const newLinkTemplate = connectionData.templateMap.get(newLinkNode?.id!);
+
     return (
         <>
         {
+            geometry &&
             Object.values(forwardEdges).map(edgesOfNode =>
                 Object.values(edgesOfNode).map(edgesOfRow =>
                     edgesOfRow.map(edge =>
@@ -77,24 +84,37 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 )
             )
         }{
-            // withConnections &&
-            // <GeometryLinkNew
-            //     panelId={panelId}
-            //     geometry={withConnections}
-            // /> 
+            newLink && newLinkNode && newLinkTemplate &&
+            <GeometryLinkNew
+                panelId={panelId}
+                newLink={newLink}
+                node={newLinkNode}
+                template={newLinkTemplate}
+                getCamera={getCamera}
+            /> 
         }{
+            geometry && panelState &&
             geometry.nodes.map(node =>
-                <GeometryNode
-                    geometryId={geometry.id}
-                    panelId={panelId}
-                    key={node.id}
-                    nodeState={node}
-                    nodeTemplate={templateMap.get(node.id)!}
-                    connectedRows={connectedRows.get(node.id)!}
-                    getCamera={getCamera}
-                    isActive={panelState?.activeNode === node.id}
-                />
-            )
+            {
+                let selectionStatus = SelectionStatus.Nothing;
+                if (panelState.selectedNodes.includes(node.id))
+                    selectionStatus = SelectionStatus.Selected;
+                if (panelState.activeNode === node.id)
+                    selectionStatus = SelectionStatus.Active;
+
+                return (
+                    <GeometryNode
+                        geometryId={geometry.id}
+                        panelId={panelId}
+                        key={node.id}
+                        nodeState={node}
+                        nodeTemplate={templateMap.get(node.id)!}
+                        connectedRows={connectedRows.get(node.id)!}
+                        getCamera={getCamera}
+                        selectionStatus={selectionStatus}
+                    />
+                );
+            })
         }
         </>
     );

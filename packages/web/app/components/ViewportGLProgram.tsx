@@ -1,6 +1,5 @@
 import { mat4 } from 'gl-matrix';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppSelector } from '../redux/hooks';
 import { selectSceneProgram } from '../slices/sceneProgramSlice';
@@ -22,7 +21,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
 {
     const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
     const sceneProgramState = useAppSelector(selectSceneProgram);
-    const viewportPanelState = useSelector(selectPanelState(ViewTypes.Viewport, panelId));
+    const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
     /**
      * Create class instance

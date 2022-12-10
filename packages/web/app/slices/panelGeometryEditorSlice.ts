@@ -69,12 +69,12 @@ export const geometryEditorPanelsSlice = createSlice({
             if (!ps) return;
             ps.templateCatalog = null;
         },
-        // setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
-        // {
-        //     const ps = getPanelState(s, a);
-        //     if (!ps) return;
-        //     ps.selectedNodes = a.payload.selection;
-        // },
+        setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
+        {
+            const ps = getPanelState(s, a);
+            if (!ps) return;
+            ps.selectedNodes = a.payload.selection;
+        },
         setNewLink: (s, a: PayloadAction<{ panelId: string, newLink: GeometryEditorPanelState['newLink'] }>) =>
         {
             const ps = getPanelState(s, a);
@@ -86,11 +86,12 @@ export const geometryEditorPanelsSlice = createSlice({
 
 export const {
     editCamera: geometryEditorPanelsEditCamera,
-    setActiveNode: geometryEditorSetActiveNode,
-    setGeometryId: geometryEditorSetGeometryId,
-    openTemplateCatalog: geometryEditorPanelOpenTemplateCatalog,
-    closeTemplateCatalog: geometryEditorPanelCloseTemplateCatalog,
-    setNewLink: geometryEditorPanelSetNewLink,
+    setActiveNode: geometryEditorPanelsSetActiveNode,
+    setGeometryId: geometryEditorPanelsSetGeometryId,
+    openTemplateCatalog: geometryEditorPanelsOpenTemplateCatalog,
+    closeTemplateCatalog: geometryEditorPanelsCloseTemplateCatalog,
+    setSelection: geometryEditorPanelsSetSelection,
+    setNewLink: geometryEditorPanelsSetNewLink,
 } = geometryEditorPanelsSlice.actions;
 
 const geometryEditorPanelsReducer = panelStateEnhancer(

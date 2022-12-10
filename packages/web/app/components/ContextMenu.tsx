@@ -10,12 +10,12 @@ import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
 import Menu from './Menu';
 import MenuItem from './MenuItem';
 
-const ContextMenuDiv = styled.div`
+// const ContextMenuDiv = styled.div`
     
-    position: fixed;
-    left: 0;
-    top: 0;
-`;
+//     position: fixed;
+//     left: 0;
+//     top: 0;
+// `;
 
 const ContextMenu = () =>
 {

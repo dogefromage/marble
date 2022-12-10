@@ -1,5 +1,6 @@
 import { ActionCreator, ActionCreatorWithPayload, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WritableDraft } from "immer/dist/internal";
+import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
 import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTemplateTags, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
@@ -224,6 +225,12 @@ export const {
 } = geometriesSlice.actions;
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;
+
+export const selectGeometry = (geometryId: string) => 
+    useCallback((state: RootState) => 
+        selectGeometries(state)[geometryId] as GeometryS | undefined,
+        [ geometryId ]
+    );
 
 const geometriesReducer = geometriesSlice.reducer;
 

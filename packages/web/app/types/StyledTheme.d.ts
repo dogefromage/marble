@@ -1,6 +1,6 @@
 // https://styled-components.com/docs/api#typescript
 import 'styled-components';
-import { DataTypes } from '.';
+import { DataTypes, SelectionStatus } from '.';
 
 declare module 'styled-components' 
 {
@@ -11,6 +11,9 @@ declare module 'styled-components'
             dataTypes:
             {
                 [D in DataTypes]: string;
+            }
+            selectionStatus: {
+                [S in SelectionStatus]?: string;
             }
         }
     }

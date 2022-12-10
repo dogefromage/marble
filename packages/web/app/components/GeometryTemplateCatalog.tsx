@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
-import { geometryEditorPanelCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
+import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GNodeT, ViewProps, ViewTypes } from '../types';
+import { GNodeT, ViewTypes } from '../types';
 import { NODE_WIDTH } from './GeometryNode';
 import Menu from './Menu';
 import MenuItem from './MenuItem';
@@ -20,8 +19,8 @@ interface Props
 const GeometryTemplateCatalog = ({ panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const templates = useAppSelector(selectTemplates).templates;
-    const panelState = useSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const { templates } = useAppSelector(selectTemplates);
+    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     
     const [ searchValue, setSearchValue ] = useState('');
 
@@ -32,7 +31,7 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
         return all.filter(t => t.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
     }, [ templates, searchValue ]);
 
-    const closeMenu = () => dispatch(geometryEditorPanelCloseTemplateCatalog({ panelId }));
+    const closeMenu = () => dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }));
 
     const addNode = (template: GNodeT) =>
     {

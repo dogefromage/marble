@@ -20,7 +20,7 @@ interface TemplateCatalogState
     center: boolean,
 }
 
-interface NewLink
+export interface GeometryNewLink
 {
     endJointTransfer: JointDndTransfer;
     offsetPos: Point;
@@ -33,5 +33,5 @@ export interface GeometryEditorPanelState extends PanelState
     activeNode?: string;
     selectedNodes: string[];
     templateCatalog: TemplateCatalogState | null;
-    newLink: NewLink | null;
+    newLink: GeometryNewLink | null;
 }

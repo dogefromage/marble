@@ -1,6 +1,6 @@
 import { redo, undo } from "../enhancers/undoableEnhancer";
 import { geometriesRemoveNode } from "../slices/geometriesSlice";
-import { geometryEditorPanelOpenTemplateCatalog } from "../slices/panelGeometryEditorSlice";
+import { geometryEditorPanelsOpenTemplateCatalog } from "../slices/panelGeometryEditorSlice";
 import { Command, CommandCallTypes, CommandScope, Point, ViewTypes } from "../types";
 
 export const DEFAULT_COMMANDS: Command[] =
@@ -58,7 +58,7 @@ export const DEFAULT_COMMANDS: Command[] =
                 }
             }
 
-            return geometryEditorPanelOpenTemplateCatalog({
+            return geometryEditorPanelsOpenTemplateCatalog({
                 panelId: activePanel.panelId,
                 offsetPos,
                 center,

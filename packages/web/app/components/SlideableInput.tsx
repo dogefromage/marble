@@ -139,8 +139,6 @@ const SlidableInput = ({
 
     const { handlers, catcher } = useMouseDrag({
         mouseButton: 0,
-        deadzone: 3,
-        cursor: 'ew-resize',
         start: e =>
         {
             dragRef.current = {
@@ -166,6 +164,9 @@ const SlidableInput = ({
 
             onChange(value, dragRef.current.actionToken);
         }
+    }, {
+        deadzone: 3,
+        cursor: 'ew-resize',
     });
 
     return (

@@ -1,18 +1,29 @@
 import React, { useRef, useState } from "react";
 import { Dragzone } from "../components/Dragzone";
 
-export function useMouseDrag(props:
-    {
-        mouseButton?: number,
-        deadzone?: number,
-        start?: (e: React.MouseEvent, cancel: () => void) => void;
-        move?: (e: React.MouseEvent) => void;
-        end?: (e: React.MouseEvent) => void;
-        cursor?: string;
-    })
+interface MouseDragInteraction
 {
+    mouseButton: number,
+    start: (e: React.MouseEvent, cancel: () => void) => void;
+    move: (e: React.MouseEvent) => void;
+    end: (e: React.MouseEvent) => void;
+}
+
+interface MouseDragOptions
+{
+    cursor: string;
+    deadzone: number,
+}
+
+export function useMouseDrag(
+    interactions: Partial<MouseDragInteraction> | Partial<MouseDragInteraction>[], 
+    options?: Partial<MouseDragOptions>)
+{
+    const interactionArr = Array.isArray(interactions) ? interactions : [ interactions ];
+
     const [ dragging, setDragging ] = useState(false);
     const moveRef = useRef({
+        activeInteractions: [] as number[],
         mouseDown: false,
         startPos: {
             x: 0,
@@ -22,15 +33,26 @@ export function useMouseDrag(props:
 
     const start = (e: React.MouseEvent) =>
     {
-        if (props.mouseButton && e.button !== props.mouseButton)
-            return;
+        const activeInteractions: number[] = [];
 
-        let out = { cancel: false };
-        props.start?.(e, () => { out.cancel = true });
-        if (out.cancel) return;
+        for (let i = 0; i < interactionArr.length; i++)
+        {
+            const interaction = interactionArr[i];
 
-        moveRef.current.mouseDown = true;
-        moveRef.current.startPos = { x: e.clientX, y: e.clientY };
+            if (interaction.mouseButton != null && e.button !== interaction.mouseButton)
+                continue;
+
+            let out = { cancelFlag: false };
+            interaction.start?.(e, () => { out.cancelFlag = true });
+            if (out.cancelFlag) continue;
+            activeInteractions.push(i);
+        }
+
+        moveRef.current = {
+            activeInteractions,
+            mouseDown: activeInteractions.length > 0,
+            startPos: { x: e.clientX, y: e.clientY },
+        };
     };
 
     const moveFirst = (e: React.MouseEvent) =>
@@ -42,8 +64,10 @@ export function useMouseDrag(props:
                 moveRef.current.startPos.y - e.clientY,
             );
 
-            if (props.deadzone && deltaMove < props.deadzone)
+            if (options?.deadzone && deltaMove < options.deadzone)
+            {
                 return;
+            }
 
             setDragging(true);
             moveRef.current.mouseDown = false;
@@ -57,12 +81,24 @@ export function useMouseDrag(props:
 
     const zoneMove = (e: React.MouseEvent) =>
     {
-        props.move?.(e);
+        if (moveRef.current.mouseDown) return;
+
+        for (const index of moveRef.current.activeInteractions)
+        {
+            const interaction = interactionArr[index];
+            interaction.move?.(e);
+        }
     }
 
     const zoneEnd = (e: React.MouseEvent) =>
     {
-        props.end?.(e);
+        if (moveRef.current.mouseDown) return;
+
+        for (const index of moveRef.current.activeInteractions)
+        {
+            const interaction = interactionArr[index];
+            interaction.end?.(e);
+        }
         setDragging(false);
     }
 
@@ -78,7 +114,7 @@ export function useMouseDrag(props:
                     onMouseMove={zoneMove}
                     onMouseUp={zoneEnd}
                     onMouseLeave={zoneEnd}
-                    cursor={props.cursor}
+                    cursor={options?.cursor}
                 />
                 : null
         )

@@ -6,9 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesPositionNode } from '../slices/geometriesSlice';
-import { geometryEditorSetActiveNode } from '../slices/panelGeometryEditorSlice';
+import { geometryEditorPanelsSetActiveNode } from '../slices/panelGeometryEditorSlice';
 import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
-import { Point } from '../types/UtilityTypes';
+import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import GeometryRowRoot from './GeometryRowRoot';
 
@@ -17,7 +17,7 @@ export const NODE_WIDTH = 180;
 interface DivProps
 {
     position: Point;
-    isActive: boolean;
+    selectionStatus: SelectionStatus;
 }
 
 const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
@@ -37,11 +37,12 @@ const GeometryNodeDiv = styled.div.attrs<DivProps>(({ position }) =>
     border-radius: 3px;
     box-shadow: 5px 5px #00000066;
 
-    ${({ isActive }) => isActive ? css`
-        /* outline: solid 2px #2b2b2b;
-        outline-offset: 2px; */
-        outline: solid 2px #e74a54;
-    ` : ''}   
+    ${({ selectionStatus, theme }) => (selectionStatus !== SelectionStatus.Nothing) ? 
+        css`
+            outline: solid calc(3px / var(--zoom)) ${theme.colors.selectionStatus[selectionStatus]};
+            /* outline-offset: 1px; */
+        ` : ``
+    }
 
     cursor: pointer;
 `;
@@ -54,10 +55,10 @@ interface Props
     nodeTemplate?: GNodeT;
     connectedRows: Set<string>;
     getCamera: () => PlanarCamera | undefined;
-    isActive: boolean;
+    selectionStatus: SelectionStatus;
 }
 
-const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedRows, getCamera, isActive }: Props) =>
+const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedRows, getCamera, selectionStatus }: Props) =>
 {
     const dispatch = useAppDispatch();
  
@@ -77,6 +78,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
                 startPosition: { ...nodeState.position },
                 stackToken: 'drag_node:' + uuidv4(),
             };
+            e.stopPropagation();
         },
         move: e => 
         {
@@ -106,6 +108,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
                 },
             }));
         },
+    }, {
         cursor: 'grab',
     });
 
@@ -119,11 +122,11 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
         <GeometryNodeDiv
             onContextMenu={openContextMenu}
             position={nodeState.position}
-            isActive={isActive}
+            selectionStatus={selectionStatus}
             {...handlers}
             onClick={e =>
             {
-                dispatch(geometryEditorSetActiveNode({
+                dispatch(geometryEditorPanelsSetActiveNode({
                     panelId,
                     nodeId: nodeState.id,
                 }))
