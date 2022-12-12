@@ -5,11 +5,11 @@ import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesPositionNode } from '../slices/geometriesSlice';
-import { geometryEditorPanelsSetActiveNode } from '../slices/panelGeometryEditorSlice';
+import { geometriesMoveNodes, geometriesPositionNode, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
 import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
+import { v2p } from '../utils/linalg';
 import GeometryRowRoot from './GeometryRowRoot';
 
 export const NODE_WIDTH = 180;
@@ -64,9 +64,18 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
  
     const dragRef = useRef<{
         startCursor: Point;
+        lastCursor: Point;
         startPosition: Point;
         stackToken: string;
     }>();
+
+    // const setSelected = () => {
+    //     dispatch(geometriesSetSelectedNodes({
+    //         geometryId,
+    //         selection: [ nodeState.id ],
+    //         undo: {},
+    //     }))
+    // }
 
     const { handlers, catcher } = useMouseDrag({
         mouseButton: 0,
@@ -75,10 +84,19 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
             dragRef.current = 
             {
                 startCursor: { x: e.clientX, y: e.clientY },
+                lastCursor: { x: e.clientX, y: e.clientY },
                 startPosition: { ...nodeState.position },
                 stackToken: 'drag_node:' + uuidv4(),
             };
             e.stopPropagation();
+
+            if (selectionStatus == SelectionStatus.Nothing) {
+                dispatch(geometriesSetSelectedNodes({
+                    geometryId,
+                    selection: [ nodeState.id ],
+                    undo: {},
+                }))
+            }
         },
         move: e => 
         {
@@ -86,51 +104,50 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
 
             if (!dragRef.current || !camera) return;
 
-            const screenMove = vec2.fromValues(
-                e.clientX - dragRef.current.startCursor.x,
-                e.clientY - dragRef.current.startCursor.y,
+            const screenDelta = vec2.fromValues(
+                e.clientX - dragRef.current.lastCursor.x,
+                e.clientY - dragRef.current.lastCursor.y,
             );
+            dragRef.current.lastCursor = { x: e.clientX, y: e.clientY };
+            const worldMove = vectorScreenToWorld(camera, screenDelta);
+            const delta = v2p(worldMove);
 
-            const worldMove = vectorScreenToWorld(camera, screenMove);
-
-            const newPos = 
-            {
-                x: dragRef.current.startPosition.x + worldMove[0],
-                y: dragRef.current.startPosition.y + worldMove[1],
-            };
-
-            dispatch(geometriesPositionNode({
+            dispatch(geometriesMoveNodes({
                 geometryId,
-                nodeId: nodeState.id,
-                position: newPos,
-                undo: { 
-                    actionToken: dragRef.current!.stackToken 
-                },
+                delta,
+                undo: { actionToken: dragRef.current!.stackToken },
             }));
+
+            // const screenMove = vec2.fromValues(
+            //     e.clientX - dragRef.current.startCursor.x,
+            //     e.clientY - dragRef.current.startCursor.y,
+            // );
+            // const worldMove = vectorScreenToWorld(camera, screenMove);
+
+
+            // const newPos = 
+            // {
+            //     x: dragRef.current.startPosition.x + worldMove[0],
+            //     y: dragRef.current.startPosition.y + worldMove[1],
+            // };
+
+            // dispatch(geometriesPositionNode({
+            //     geometryId,
+            //     nodeId: nodeState.id,
+            //     position: newPos,
+            //     undo: { actionToken: dragRef.current!.stackToken },
+            // }));
         },
     }, {
         cursor: 'grab',
     });
 
-    const openContextMenu = useContextMenu(
-        panelId, 'Geometry Node',
-        [ 'geometryEditor.deleteNode' ],
-        () => ({ nodeId: nodeState.id }),
-    );
-
     return (
         <GeometryNodeDiv
-            onContextMenu={openContextMenu}
             position={nodeState.position}
             selectionStatus={selectionStatus}
             {...handlers}
-            onClick={e =>
-            {
-                dispatch(geometryEditorPanelsSetActiveNode({
-                    panelId,
-                    nodeId: nodeState.id,
-                }))
-
+            onClick={e => {
                 e.stopPropagation();
             }}
         >

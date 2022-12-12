@@ -31,7 +31,7 @@ export function generateGeometryMethodCode(programMethod: GeometryProgramMethod)
 
     const method = methodTemplate.getFinishedCode(/%.*%/)
 
-    // console.log(method);
+    console.log(method);
 
     return {
         method,

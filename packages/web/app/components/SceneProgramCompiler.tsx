@@ -93,7 +93,7 @@ const SceneProgramCompiler = () =>
             const rowT = template.rows[mapping.rowIndex];
             const rowS = nodeState.rows[rowT.id];
 
-            const rowValue: number | number[] = (rowS as any).value || (rowT as any).value;
+            const rowValue: number | number[] = (rowS as any).value ?? (rowT as any).value;
 
             let subArray: number[];
             

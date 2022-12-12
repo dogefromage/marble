@@ -4,8 +4,8 @@ import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectGeometry } from '../slices/geometriesSlice';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsEditCamera, geometryEditorPanelsSetNewLink, geometryEditorPanelsSetActiveNode, geometryEditorPanelsSetSelection } from '../slices/panelGeometryEditorSlice';
+import { geometriesSetSelectedNodes, selectGeometry } from '../slices/geometriesSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsUpdateCamera, geometryEditorPanelsSetNewLink } from '../slices/panelGeometryEditorSlice';
 import MouseSelectionDiv from '../styled/MouseSelectionDiv';
 import { DEFAULT_PLANAR_CAMERA, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
 import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
@@ -157,9 +157,10 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
                     }
                 }
                 
-                dispatch(geometryEditorPanelsSetSelection({
-                    panelId,
+                dispatch(geometriesSetSelectedNodes({
+                    geometryId,
                     selection: selectedIds,
+                    undo: {},
                 })); 
             }
         },
@@ -184,9 +185,9 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
                     x: panRef.current.lastCamera.position.x + deltaWorld[0],
                     y: panRef.current.lastCamera.position.y + deltaWorld[1],
                 };
-                dispatch(geometryEditorPanelsEditCamera({
+                dispatch(geometryEditorPanelsUpdateCamera({
                     panelId,
-                    partialCamera: { position }
+                    newCamera: { position }
                 }));
                 e.preventDefault();
                 actionOngoingRef.current = true;
@@ -225,9 +226,9 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
             zoom: z2,
         };
 
-        dispatch(geometryEditorPanelsEditCamera({
+        dispatch(geometryEditorPanelsUpdateCamera({
             panelId,
-            partialCamera: newCamera,
+            newCamera: newCamera,
         }));
     };
 
@@ -268,12 +269,15 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
 
     const clearSelectionAndActive = (e: React.MouseEvent) =>
     {
-        dispatch(geometryEditorPanelsSetActiveNode({
-            panelId,
+        const actionToken = `clear-active-and-selection:${new Date().getTime()}`
+        dispatch(geometriesSetSelectedNodes({
+            geometryId, selection: [],
+            undo: { actionToken },
         }));
-        dispatch(geometryEditorPanelsSetSelection({
-            panelId, selection: [],
-        }));
+        // dispatch(geometriesSetActiveNode({
+        //     geometryId, nodeId: null,
+        //     undo: { actionToken },
+        // }));
         e.stopPropagation();
     }
 

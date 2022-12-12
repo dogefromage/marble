@@ -93,14 +93,14 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 getCamera={getCamera}
             /> 
         }{
-            geometry && panelState &&
+            geometry &&
             geometry.nodes.map(node =>
             {
                 let selectionStatus = SelectionStatus.Nothing;
-                if (panelState.selectedNodes.includes(node.id))
+                if (geometry.selectedNodes.includes(node.id))
                     selectionStatus = SelectionStatus.Selected;
-                if (panelState.activeNode === node.id)
-                    selectionStatus = SelectionStatus.Active;
+                // if (geometry.activeNode === node.id)
+                //     selectionStatus = SelectionStatus.Active;
 
                 return (
                     <GeometryNode

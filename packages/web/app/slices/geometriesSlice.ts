@@ -1,9 +1,8 @@
-import { ActionCreator, ActionCreatorWithPayload, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { WritableDraft } from "immer/dist/internal";
+import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTemplateTags, JointLocation, Point, ProgramOperationTypes, RowS, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTemplateTags, JointLocation, Point, RowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -17,6 +16,8 @@ function createGeometry(id: string)
         rowStateValidity: 0,
         nextIdIndex: 0,
         outputId: null,
+        // activeNode: null,
+        selectedNodes: [],
     }
 
     return geometry;
@@ -103,15 +104,20 @@ export const geometriesSlice = createSlice({
             
             g.compilationValidity++;
         },
-        removeNode: (s, a: UndoAction<{ geometryId: string, nodeId: string }>) =>
+        removeNode: (s, a: UndoAction<{ geometryId: string, nodeId?: string }>) =>
         {
             const g = getGeometry(s, a);
             if (!g) return;
 
-            g.nodes = g.nodes.filter(n => n.id !== a.payload.nodeId);
+            const targets = a.payload.nodeId != null ? 
+                [ a.payload.nodeId ] : g.selectedNodes;
+
+            g.nodes = g.nodes.filter(n => !targets.includes(n.id));
             
-            if (g.outputId === a.payload.nodeId)
+            if (targets.includes(g.outputId!))
+            {
                 g.outputId = null;
+            }
 
             g.compilationValidity++;
         },
@@ -121,6 +127,18 @@ export const geometriesSlice = createSlice({
             if (!n) return;
 
             n.position = { ...a.payload.position };
+        },
+        moveNodes: (s, a: UndoAction<{ geometryId: string, delta: Point }>) =>
+        {
+            const g = getGeometry(s, a);
+            if (!g) return;
+
+            const selectedNodes = g.nodes.filter(node => g.selectedNodes.includes(node.id));
+            for (const selected of selectedNodes)
+            {
+                selected.position.x += a.payload.delta.x;
+                selected.position.y += a.payload.delta.y;
+            }
         },
         assignRowData: (s, a: UndoAction<{ geometryId: string, nodeId: string, rowId: string, rowData?: Partial<RowS> }>) =>
         {
@@ -210,6 +228,18 @@ export const geometriesSlice = createSlice({
 
             g.compilationValidity++;
         },
+        // setActiveNode: (s, a: UndoAction<{ geometryId: string, nodeId: string | null }>) =>
+        // {
+        //     const g = getGeometry(s, a);
+        //     if (!g) return;
+        //     g.activeNode = a.payload.nodeId;
+        // },
+        setSelectedNodes: (s, a: UndoAction<{ geometryId: string, selection: string[] }>) =>
+        {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            g.selectedNodes = a.payload.selection;
+        },
     }
 });
 
@@ -219,9 +249,12 @@ export const {
     addNode: geometriesAddNode,
     removeNode: geometriesRemoveNode,
     positionNode: geometriesPositionNode,
+    moveNodes: geometriesMoveNodes,
     assignRowData: geometriesAssignRowData,
     connectJoints: geometriesConnectJoints,
     disconnectJoints: geometriesDisconnectJoints,
+    // setActiveNode: geometriesSetActiveNode,
+    setSelectedNodes: geometriesSetSelectedNodes,
 } = geometriesSlice.actions;
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;

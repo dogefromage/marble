@@ -101,8 +101,10 @@ const GeometryEditorView = (viewProps: ViewProps) =>
 
     const contextMenu = useContextMenu(
         viewProps.panelId,
-        'Geometry Editor',
-        [ 'geometryEditor.openTemplateCatalog' ],
+        'Geometry Nodes', [ 
+            'geometryEditor.openTemplateCatalog',
+            'geometryEditor.deleteSelected' 
+        ],
         e => ({ offsetPos: getOffsetPos(e) }),
     )
 

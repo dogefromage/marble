@@ -1,28 +1,23 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { vec2 } from "gl-matrix";
 import panelStateEnhancer from "../enhancers/panelStateEnhancer";
-import { RootState } from "../redux/store";
 import { CreatePanelStateCallback, GeometryEditorPanelState, ObjMap, PlanarCamera, Point, ViewTypes } from "../types";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
+import { p2v, v2p } from "../utils/linalg";
 import { clamp } from "../utils/math";
 import getPanelState from "../utils/panelState/getPanelState";
-import { p2v, v2p } from "../utils/linalg";
 
 export const CAMERA_MIN_ZOOM = 1e-2;
 export const CAMERA_MAX_ZOOM = 1e+2;
 
 export const createGeometryEditorPanelState: CreatePanelStateCallback<GeometryEditorPanelState> = () => 
 {
-    return {
+    const panelState: GeometryEditorPanelState = {
         viewType: ViewTypes.GeometryEditor,
-        camera: {
-            position: { x: 0, y: 0 },
-            zoom: 1,
-        },
+        camera: { position: { x: 0, y: 0 }, zoom: 1, },
         templateCatalog: null,
-        selectedNodes: [],
         newLink: null,
     };
+    return panelState;
 }
 
 export const geometryEditorPanelsSlice = createSlice({
@@ -35,20 +30,14 @@ export const geometryEditorPanelsSlice = createSlice({
             if (!ps) return;
             ps.geometryId = a.payload.geometryId;
         },
-        editCamera: (s, a: PayloadAction<{ panelId: string, partialCamera: Partial<PlanarCamera> }>) =>
+        updateCamera: (s, a: PayloadAction<{ panelId: string, newCamera: Partial<PlanarCamera> }>) =>
         {
             const ps = getPanelState(s, a);
             if (!ps) return;
 
-            Object.assign(ps.camera, a.payload.partialCamera);
+            Object.assign(ps.camera, a.payload.newCamera);
 
             ps.camera.zoom = clamp(ps.camera.zoom, CAMERA_MIN_ZOOM, CAMERA_MAX_ZOOM);
-        },
-        setActiveNode: (s, a: PayloadAction<{ panelId: string, nodeId?: string }>) =>
-        {
-            const ps = getPanelState(s, a);
-            if (!ps) return;
-            ps.activeNode = a.payload.nodeId;
         },
         openTemplateCatalog: (s, a: PayloadAction<{ panelId: string, offsetPos: Point, center: boolean }>) =>
         {
@@ -69,12 +58,6 @@ export const geometryEditorPanelsSlice = createSlice({
             if (!ps) return;
             ps.templateCatalog = null;
         },
-        setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) =>
-        {
-            const ps = getPanelState(s, a);
-            if (!ps) return;
-            ps.selectedNodes = a.payload.selection;
-        },
         setNewLink: (s, a: PayloadAction<{ panelId: string, newLink: GeometryEditorPanelState['newLink'] }>) =>
         {
             const ps = getPanelState(s, a);
@@ -85,12 +68,10 @@ export const geometryEditorPanelsSlice = createSlice({
 });
 
 export const {
-    editCamera: geometryEditorPanelsEditCamera,
-    setActiveNode: geometryEditorPanelsSetActiveNode,
     setGeometryId: geometryEditorPanelsSetGeometryId,
+    updateCamera: geometryEditorPanelsUpdateCamera,
     openTemplateCatalog: geometryEditorPanelsOpenTemplateCatalog,
     closeTemplateCatalog: geometryEditorPanelsCloseTemplateCatalog,
-    setSelection: geometryEditorPanelsSetSelection,
     setNewLink: geometryEditorPanelsSetNewLink,
 } = geometryEditorPanelsSlice.actions;
 

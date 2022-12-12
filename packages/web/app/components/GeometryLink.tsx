@@ -1,8 +1,7 @@
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesDisconnectJoints } from '../slices/geometriesSlice';
-import { GNodeS, GNodeT, GNodeZ, JointLocation } from '../types';
+import { GeometryEdge, GNodeS, GNodeT, JointLocation } from '../types';
 import countHeightUnits from '../utils/geometries/countHeightUnits';
-import { GeometryEdge } from '../utils/geometries/generateAdjacencyLists';
 import getJointPosition from '../utils/geometries/getJointPosition';
 import GeometryLinkDiv from './GeometryLinkDiv';
 

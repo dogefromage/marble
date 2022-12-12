@@ -9,6 +9,6 @@ export interface GeometryS
     compilationValidity: number;
     rowStateValidity: number;
     nextIdIndex: number;
+    selectedNodes: string[];
+    // activeNode: string | null;
 }
-
-// export type GeometryZ = Override<GeometryS, 'nodes', Array<GNodeZ>>;

@@ -69,18 +69,13 @@ export const DEFAULT_COMMANDS: Command[] =
     {
         scope: CommandScope.View,
         viewType: ViewTypes.GeometryEditor,
-        id: 'geometryEditor.deleteNode',
-        name: 'Delete Node',
-        actionCreator: (({ panelState: { geometryId, activeNode }}, params) => 
+        id: 'geometryEditor.deleteSelected',
+        name: 'Delete Selected',
+        actionCreator: (({ panelState: { geometryId }}, params) => 
         {
-            // preference list of which node will be selected
-            const targetNode = params.nodeId || activeNode;
-            if (typeof targetNode !== 'string') return;
             if (!geometryId) return;
-
             return geometriesRemoveNode({
-                geometryId, 
-                nodeId: targetNode,
+                geometryId,
                 undo: {},
             });
         }),
