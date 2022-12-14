@@ -1,12 +1,11 @@
 import { useEffect } from "react";
-import { selectPanelState } from "../enhancers/panelStateEnhancer";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
-import { useAppSelector, useAppDispatch } from "../redux/hooks";
+import { useAppDispatch } from "../redux/hooks";
 import { geometryEditorPanelsSetNewLink } from "../slices/panelGeometryEditorSlice";
-import { GeometryNewLink, GeometryS, GNodeS, GNodeT, PlanarCamera, ViewTypes } from "../types";
-import countHeightUnits from "../utils/geometries/countHeightUnits";
+import { GeometryNewLink, GNodeS, GNodeT, PlanarCamera } from "../types";
 import getJointPosition from "../utils/geometries/getJointPosition";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
+import { countHeightUnits } from "../utils/geometries/rowHeights";
 import { p2v, v2p } from "../utils/linalg";
 import GeometryLinkDiv from "./GeometryLinkDiv";
 
@@ -24,8 +23,7 @@ const GeometryLinkNew = ({ panelId, newLink, node, template, getCamera }: Props)
     const dispatch = useAppDispatch();
     
     // delete old link
-    const debouncedTrigger = useDebouncedValue(newLink, 150, undefined);
-    console.log(debouncedTrigger);
+    const debouncedTrigger = useDebouncedValue(newLink, 200, undefined);
     useEffect(() =>
     {
         if (!debouncedTrigger) return;

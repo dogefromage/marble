@@ -1,7 +1,7 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GNodeS, RowT } from "../../types";
+import { GNodeS, GNodeT, RowT } from "../../types";
 
-export default function countHeightUnits(rowTemplates: RowT[], nodeState: GNodeS, rowIndex: number, subEdgeIndex = 0)
+export function countHeightUnits(rowTemplates: RowT[], nodeState: GNodeS, rowIndex: number, subEdgeIndex = 0)
 {
     let totalHeight = 0;
     let counterMax = Math.min(rowIndex, rowTemplates.length);
@@ -32,4 +32,25 @@ export default function countHeightUnits(rowTemplates: RowT[], nodeState: GNodeS
     }
 
     return totalHeight;
+}
+
+export function generateNodeRowHeights(state: GNodeS, template: GNodeT, connections: Set<string>) {
+
+    const heights: number[] = [ 0 ];
+
+    for (let i = 0; i < template.rows.length - 1; i++)
+    {
+        const rowTemplate = template.rows[i];
+        const rowId = rowTemplate.id;
+
+        const meta = getRowMetadata({ 
+            template: rowTemplate, 
+            state: state.rows[rowId], 
+            isConnected: connections.has(rowId),
+        });
+
+        heights.push(heights[i] + meta.heightUnits)
+    }
+
+    return heights;
 }

@@ -168,6 +168,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
                 return (
                     <GeometryRowRoot
                         geometryId={geometryId}
+                        panelId={panelId}
                         nodeId={nodeState.id}
                         key={rowZ.id}
                         row={rowZ}

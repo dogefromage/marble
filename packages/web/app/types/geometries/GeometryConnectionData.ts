@@ -5,6 +5,7 @@ import { GNodeT, JointLocation } from ".";
 export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
 export type GeometryTemplateMap = Map<string, GNodeT>; // nodeId -> template
 export type GeometryConnectedRows = Map<string, Set<string>>; // nodeId -> { rowId | row connected }
+export type GeometryRowHeights = Map<string, number[]>;
 
 export type GeometryFromIndices = [ number, number ];
 export type GeometryToIndices = [ number, number, number ];
@@ -27,6 +28,7 @@ export interface GeometryConnectionData
     templateMap: GeometryTemplateMap;
     rowOrders: GeometryNodeRowOrder;
     forwardEdges: GeometryAdjacencyList;
+    rowHeights: GeometryRowHeights;
     backwardEdges: GeometryAdjacencyList;
     connectedRows: GeometryConnectedRows;
     strayConnectedJoints: JointLocation[];

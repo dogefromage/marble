@@ -4,7 +4,7 @@ import { RowProps } from './GeometryRowRoot';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
 
-const GeometryRowInputOnly = ({ geometryId, nodeId, row: row }: RowProps<InputOnlyRowT>) =>
+const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row: row }: RowProps<InputOnlyRowT>) =>
 {
     return (
         <GeometryRowDiv
@@ -17,6 +17,7 @@ const GeometryRowInputOnly = ({ geometryId, nodeId, row: row }: RowProps<InputOn
             </GeometryRowNameP>
             <GeometryJoint 
                 geometryId={geometryId}
+                panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
                 connected={row.isConnected}

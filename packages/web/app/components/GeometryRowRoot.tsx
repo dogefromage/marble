@@ -33,6 +33,7 @@ export function getRowMetadata(props: RowMetaProps): RowMetadata
 export type RowProps<T extends RowT = RowT> =
 {
     geometryId: string;
+    panelId: string;
     nodeId: string;
     row: RowZ<T>;
 }

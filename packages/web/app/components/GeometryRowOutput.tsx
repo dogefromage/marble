@@ -4,7 +4,7 @@ import { OutputRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { RowProps } from './GeometryRowRoot';
 
-const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
+const GeometryRowOutput = ({ geometryId, panelId, nodeId, row }: RowProps<OutputRowT>) =>
 {
     return (
         <GeometryRowDiv
@@ -17,6 +17,7 @@ const GeometryRowOutput = ({ geometryId, nodeId, row }: RowProps<OutputRowT>) =>
             </GeometryRowNameP>
             <GeometryJoint 
                 geometryId={geometryId}
+                panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='output'
                 connected={row.isConnected}

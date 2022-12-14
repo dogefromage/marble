@@ -25,7 +25,9 @@ const JointDiv = styled.div<{
             'left' : 'right'}: ${JOINT_OFFSET}px` 
     };
 
-    width: 24px;
+    /* width: 24px; */
+    width: 30px;
+    border-radius: 50%;
     aspect-ratio: 1;
 
     transform: translateY(-50%);
@@ -68,6 +70,7 @@ const JointDiv = styled.div<{
 interface Props
 {
     geometryId: string;
+    panelId: string;
     location: JointLocation;
     direction: JointDirection;
     dataType: DataTypes;
@@ -76,7 +79,7 @@ interface Props
     isStackedInput?: true;
 }
 
-const GeometryJoint = ({ geometryId, location, direction, dataType, connected, additional, isStackedInput }: Props) =>
+const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, connected, additional, isStackedInput }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -95,12 +98,16 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
         },
     });
 
-    const droppableHandler = (e: React.DragEvent, transfer: JointDndTransfer) =>
-    {
-        if (transfer.location.nodeId === location.nodeId ||
-            transfer.direction === direction)
-            return;
-        e.preventDefault();
+    const canDrop = (transfer: JointDndTransfer) => {
+        if (transfer.location.nodeId === location.nodeId)
+            return false;
+        if (transfer.direction === direction)
+            return false;
+        return true;
+    }
+
+    const droppableHandler = (e: React.DragEvent, transfer: JointDndTransfer) => {
+        if (canDrop(transfer)) e.preventDefault();
     }
 
     const drop = useDroppable<JointDndTransfer>({
@@ -110,6 +117,8 @@ const GeometryJoint = ({ geometryId, location, direction, dataType, connected, a
         leave: droppableHandler,
         drop: (e, transfer) => 
         {
+            if (!canDrop(transfer)) return;
+
             if (direction === 'input')
             {
                 dispatch(geometriesConnectJoints({

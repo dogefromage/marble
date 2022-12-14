@@ -34,7 +34,7 @@ type Props = RowProps<RotationRowT>;
 
 export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z', 'W' ];
 
-const GeometryRowRotation = ({ geometryId, nodeId, row: row }: Props) =>
+const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =>
 {
     const dispatch = useAppDispatch();
     const rowRotationModel = row.rotationModel || RotationModels.Euler_XYZ;
@@ -169,6 +169,7 @@ const GeometryRowRotation = ({ geometryId, nodeId, row: row }: Props) =>
             }
             <GeometryJoint 
                 geometryId={ geometryId }
+                panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
                 connected={row.isConnected}

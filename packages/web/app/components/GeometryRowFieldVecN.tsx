@@ -13,7 +13,7 @@ export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z' ];
 
 type Props = RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>;
 
-const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
+const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -63,6 +63,7 @@ const GeometryRowFieldVecN = ({ geometryId, nodeId, row }: Props) =>
             }
             <GeometryJoint 
                 geometryId={ geometryId }
+                panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
                 connected={row.isConnected}

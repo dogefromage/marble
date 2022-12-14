@@ -265,6 +265,12 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
             }
             prevDefault(e);
         },
+        drop: e => {
+            dispatch(geometryEditorPanelsSetNewLink({
+                panelId,
+                newLink: null,
+            }));
+        }
     });
 
     const clearSelectionAndActive = (e: React.MouseEvent) =>

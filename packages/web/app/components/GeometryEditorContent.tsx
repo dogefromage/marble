@@ -3,7 +3,7 @@ import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesDisconnectJoints, selectGeometry } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { PlanarCamera, SelectionStatus, ViewTypes } from '../types';
+import { JointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
 import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
@@ -65,19 +65,41 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                     edgesOfRow.map(edge =>
                     {
                         const fromNodeState = geometry.nodes[ edge.fromIndices[0] ];
+                        const toNodeState =   geometry.nodes[ edge.toIndices[0] ];
+
                         const fromNodeTemplate = templateMap.get(fromNodeState.id)!;
-                        const toNodeState = geometry.nodes[ edge.toIndices[0] ];
-                        const toNodeTemplate = templateMap.get(toNodeState.id)!;
+                        const toNodeTemplate =   templateMap.get(toNodeState.id)!;
+
+                        const fromRowHeights = connectionData.rowHeights.get(fromNodeState.id)!;
+                        const toRowHeights =   connectionData.rowHeights.get(toNodeState.id)!;
+                        
+                        const fromHeightUnits = fromRowHeights[ edge.fromIndices[1] ];
+                        const toHeightUnits = toRowHeights[ edge.toIndices[1] ] + edge.toIndices[2]; // add subindex
+                                                
+                        const joints: JointLocation[] = 
+                        [
+                            {
+                                nodeId: fromNodeState.id,
+                                rowId: fromNodeTemplate.rows[edge.fromIndices[1]].id,
+                                subIndex: 0,
+                            },
+                            {
+                                nodeId: toNodeState.id,
+                                rowId: toNodeTemplate.rows[edge.toIndices[1]].id,
+                                subIndex: edge.toIndices[2],
+                            },
+                        ];
 
                         return (
                             <LinkComponent
                                 key={edge.id}
                                 geometryId={geometry.id}
                                 edge={edge}
-                                fromNodeTemplate={fromNodeTemplate}
-                                fromNodeState={fromNodeState}
-                                toNodeTemplate={toNodeTemplate}
-                                toNodeState={toNodeState}
+                                fromPosition={fromNodeState.position}
+                                fromHeightUnits={fromHeightUnits}
+                                toPosition={toNodeState.position}
+                                toHeightUnits={toHeightUnits}
+                                joints={joints}
                             />
                         );
                     })
