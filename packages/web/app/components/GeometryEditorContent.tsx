@@ -49,7 +49,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 
     if (!connectionData) return null;
 
-    const { forwardEdges, templateMap, connectedRows } = connectionData;
+    const { forwardEdges, templateMap, connectedRows, nodeHeights } = connectionData;
 
     // New link
     const newLink = panelState?.newLink;
@@ -121,8 +121,6 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 let selectionStatus = SelectionStatus.Nothing;
                 if (geometry.selectedNodes.includes(node.id))
                     selectionStatus = SelectionStatus.Selected;
-                // if (geometry.activeNode === node.id)
-                //     selectionStatus = SelectionStatus.Active;
 
                 return (
                     <GeometryNode

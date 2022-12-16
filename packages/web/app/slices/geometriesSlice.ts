@@ -15,7 +15,7 @@ function createGeometry(id: string)
         compilationValidity: 0,
         rowStateValidity: 0,
         nextIdIndex: 0,
-        outputId: null,
+        // outputId: null,
         // activeNode: null,
         selectedNodes: [],
     }
@@ -36,20 +36,16 @@ function createNode(template: GNodeT, nextIdIndex: number, position: Point)
     const rows = Object.fromEntries(
         template.rows.map(row => [
             row.id,
-            createDefaultRowState()
+            createDefaultRowState(),
         ])
     );
     
-    template.rows.forEach(row =>
-    {
-        rows[row.id] = createDefaultRowState();
-    });
-
     const node: GNodeS = 
     {
         id: generateAlphabeticalId(nextIdIndex),
         templateId: template.id,
         position: { ...position },
+        tags: template.tags,
         rows,
     }
 
@@ -97,10 +93,10 @@ export const geometriesSlice = createSlice({
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
 
-            if (a.payload.template.tags?.includes(GNodeTemplateTags.Output))
-            {
-                g.outputId = node.id;
-            }
+            // if (a.payload.template.tags?.includes(GNodeTemplateTags.Output))
+            // {
+            //     g.outputId = node.id;
+            // }
             
             g.compilationValidity++;
         },
@@ -114,10 +110,10 @@ export const geometriesSlice = createSlice({
 
             g.nodes = g.nodes.filter(n => !targets.includes(n.id));
             
-            if (targets.includes(g.outputId!))
-            {
-                g.outputId = null;
-            }
+            // if (targets.includes(g.outputId!))
+            // {
+            //     g.outputId = null;
+            // }
 
             g.compilationValidity++;
         },

@@ -135,7 +135,7 @@ export class RowVarNameGenerator
         if (row.alternativeArg)
             return row.alternativeArg;
 
-        const rowMetadata = getRowMetadata({ state: row, template: row, isConnected: false });
+        const rowMetadata = getRowMetadata({ state: row, template: row, numConnectedJoints: 0 });
 
         // case 3: parameter texture lookup
         if (rowMetadata.dynamicValue)

@@ -109,7 +109,7 @@ export type RowS<T extends RowT = RowT> = Partial<T> &
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
-    isConnected: boolean;
+    numConnectedJoints: number;
 };
 
 /**

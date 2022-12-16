@@ -35,8 +35,10 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
     const meta = getRowMetadataField({ 
         state: row, 
         template: row, 
-        isConnected: row.isConnected 
+        numConnectedJoints: row.numConnectedJoints, 
     });
+
+    const isConnected = row.numConnectedJoints > 0;
 
     return (
         <GeometryRowDiv
@@ -48,7 +50,7 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
                 { row.name }
             </GeometryRowNameP>
             {
-                !row.isConnected &&
+                !isConnected &&
                 row.value.map((value, index) =>
                     <IndentRowDiv
                         key={index}
@@ -66,7 +68,7 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
                 panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
-                connected={row.isConnected}
+                connected={isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

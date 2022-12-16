@@ -1,26 +1,30 @@
 import GeometryRowDiv from '../styled/GeometryRowDiv';
 import GeometryRowNameP from '../styled/GeometryRowNameP';
-import { IndentRowDiv } from '../styled/IndentRowDiv';
-import { StackedInputRowT } from '../types';
+import { RowMetadata, StackedInputRowT } from '../types';
 import { arrayRange } from '../utils/array';
 import GeometryJoint from './GeometryJoint';
-import { RowProps } from './GeometryRowRoot';
+import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
 const MAX_ROWS = 64;
 
-const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row: row }: RowProps<StackedInputRowT>) =>
+export function getRowMetadataStackedInput(props: RowMetaProps<StackedInputRowT>): RowMetadata
 {
-    // const connections = 5;
-    const connections = row.connectedOutputs.length;
+    const heightUnits = Math.min(MAX_ROWS, props.numConnectedJoints + 1);
+    return rowMeta(heightUnits, false);
+}
 
-    let numberRows = Math.min(MAX_ROWS, connections + 1);
-    const indices = arrayRange(numberRows);
+const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<StackedInputRowT>) =>
+{
+    const rowMeta = getRowMetadataStackedInput({ state: row, template: row, numConnectedJoints: row.connectedOutputs.length })
+    const heightUnits = rowMeta.heightUnits;
+    const indices = arrayRange(heightUnits);
 
     return (<>
         {
             indices.map(subIndex =>
             {
-                const connected = subIndex < connections;
+
+                const isConnected = subIndex < heightUnits - 1;
                 const rowName = `${row.name} ${subIndex + 1}`
 
                 return (
@@ -38,9 +42,9 @@ const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row: row }: RowP
                             panelId={panelId}
                             location={{ nodeId, rowId: row.id, subIndex }}
                             direction='input'
-                            connected={connected}
+                            connected={isConnected}
                             dataType={row.dataType}
-                            additional={!connected}
+                            additional={!isConnected}
                             isStackedInput={true}
                         />
                     </GeometryRowDiv>

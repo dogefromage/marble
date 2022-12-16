@@ -10,12 +10,11 @@ export function countHeightUnits(rowTemplates: RowT[], nodeState: GNodeS, rowInd
     {
         const rowTemplate = rowTemplates[rowCounter];
         const rowState = nodeState.rows[rowTemplate.id];
-        const isConnected = false;
 
         const meta = getRowMetadata({ 
             template: rowTemplate, 
             state: rowState, 
-            isConnected
+            numConnectedJoints: 0,
         });
         
         let heightUnits = meta.heightUnits;
@@ -34,19 +33,21 @@ export function countHeightUnits(rowTemplates: RowT[], nodeState: GNodeS, rowInd
     return totalHeight;
 }
 
-export function generateNodeRowHeights(state: GNodeS, template: GNodeT, connections: Set<string>) {
+export function generateNodeRowHeights(state: GNodeS, template: GNodeT, connectedRows: Set<string>) {
 
     const heights: number[] = [ 0 ];
 
-    for (let i = 0; i < template.rows.length - 1; i++)
+    for (let i = 0; i < template.rows.length; i++)
     {
         const rowTemplate = template.rows[i];
-        const rowId = rowTemplate.id;
+        const rowState = state.rows[rowTemplate.id];
+        const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
+        const numConnectedJoints = Math.max(rowState.connectedOutputs.length, ingoingConnection);
 
         const meta = getRowMetadata({ 
             template: rowTemplate, 
-            state: state.rows[rowId], 
-            isConnected: connections.has(rowId),
+            state: rowState,
+            numConnectedJoints,
         });
 
         heights.push(heights[i] + meta.heightUnits)

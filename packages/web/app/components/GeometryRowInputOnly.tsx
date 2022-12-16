@@ -20,7 +20,7 @@ const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row: row }: RowProp
                 panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
-                connected={row.isConnected}
+                connected={row.numConnectedJoints > 0}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

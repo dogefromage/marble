@@ -20,7 +20,7 @@ const GeometryRowOutput = ({ geometryId, panelId, nodeId, row }: RowProps<Output
                 panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='output'
-                connected={row.isConnected}
+                connected={row.numConnectedJoints > 0}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

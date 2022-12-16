@@ -1,4 +1,4 @@
-import { GeometryS, ObjMap, GNodeT, GeometryTemplateMap, GeometryNodeRowOrder, GeometryConnectionData, GeometryRowHeights } from "../../types";
+import { GeometryS, ObjMap, GNodeT, GeometryTemplateMap, GeometryNodeRowOrder, GeometryConnectionData, GeometryRowHeights, Rect, RowTypes, Size } from "../../types";
 import findConnectedRows from "./findConnectedRows";
 import { generateAdjacencyLists } from "./generateAdjacencyLists";
 import { generateNodeRowHeights } from "./rowHeights";
@@ -23,13 +23,17 @@ export default function generateGeometryConnectionData(geometry: GeometryS, temp
     // connectedRows
     const connectedRows = findConnectedRows(geometry, rowOrders, forwardEdges);
 
-    // rowHeights
+    // rowHeights, hitbox
     const rowHeights: GeometryRowHeights = new Map();
+    const nodeHeights = new Map<string, number>();
     for (const node of geometry.nodes) {
         const template = templateMap.get(node.id)!;
         const connections = connectedRows.get(node.id)!;
         const heightList = generateNodeRowHeights(node, template, connections);
         rowHeights.set(node.id, heightList);
+        // total height
+        const totalHeightUnits = heightList[heightList.length];
+        nodeHeights.set(node.id, totalHeightUnits);
     }
 
     const connectionData: GeometryConnectionData = {
@@ -38,6 +42,7 @@ export default function generateGeometryConnectionData(geometry: GeometryS, temp
         templateMap,
         rowOrders,
         rowHeights,
+        nodeHeights,
         forwardEdges,
         backwardEdges,
         connectedRows,

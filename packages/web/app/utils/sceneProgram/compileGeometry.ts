@@ -1,4 +1,4 @@
-import { DefaultFunctionArgs, GeometryConnectionData, GeometryProgramMethod, GeometryS, GNodeT, InputOnlyRowT, ObjMap, ProgramInclude, ProgramTextureVarMapping, RowTypes } from "../../types";
+import { DefaultFunctionArgs, GeometryConnectionData, GeometryProgramMethod, GeometryS, GNodeT, GNodeTemplateTags, InputOnlyRowT, ObjMap, ProgramInclude, ProgramTextureVarMapping, RowTypes } from "../../types";
 import { Counter } from "../Counter";
 import { checkGeometryAcyclic } from "./checkGeometryAcyclic";
 import { GeometriesCompilationError, GeometriesCompilationErrorTypes } from "./compilationError";
@@ -18,7 +18,14 @@ export function compileGeometry(
      * - must be valid & acyclic graph
      */
 
-    const outputIndex = geometry.nodes.findIndex(n => n.id === geometry.outputId);
+    // find lowest index where a node has an output tag
+    let outputIndex = -1;
+    for (let i = geometry.nodes.length - 1; i >= 0; i--) {
+        if (geometry.nodes[i].tags?.includes(GNodeTemplateTags.Output)) {
+            outputIndex = i;
+            break;
+        }
+    }
     if (outputIndex < 0)
         throw new GeometriesCompilationError(
             GeometriesCompilationErrorTypes.OutputMissing,

@@ -39,12 +39,8 @@ export interface GNodeS
     id: string;
     templateId: string;
     position: Point;
+    tags?: GNodeTemplateTags[];
     rows: {
         [ rowId: string ]: RowS;
     }
 }
-
-// export type GNodeZ = 
-//     & Pick<GNodeS, 'id' | 'templateId' | 'position'>
-//     & Pick<GNodeT, 'type' | 'instructionTemplates' | 'tags'>
-//     & { rows: RowZ[] }

@@ -1,4 +1,4 @@
-import { ActiveContextMenu, ActivePanel, Command, GeometryS, GNodeT, ProgramInclude, SceneProgram } from ".";
+import { ContextMenuState, ActivePanel, Command, GeometryS, GNodeT, ProgramInclude, SceneProgram } from ".";
 import { ObjMap } from "./UtilityTypes";
 import { World } from "./world";
 
@@ -28,7 +28,7 @@ export interface PanelManagerSliceState
 
 export interface ContextMenuSliceState 
 {
-    active: ActiveContextMenu | null;
+    active: ContextMenuState | null;
 }
 
 export type PreferencesSliceState = {};

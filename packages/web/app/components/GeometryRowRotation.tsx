@@ -15,7 +15,7 @@ import SlidableInput from './SlideableInput';
 
 export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMetadata
 {
-    if (props.isConnected) return rowMeta(1, true);
+    if (props.numConnectedJoints > 0) return rowMeta(1, true);
 
     let totalUnits = 2; // name + model selector
 
@@ -128,7 +128,8 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
         }));
     }
 
-    const meta = getRowMetadataRotation({ state: row, template: row, isConnected: row.isConnected });
+    const numConnectedJoints = row.isConnected ? 1 : 0;
+    const meta = getRowMetadataRotation({ state: row, template: row, numConnectedJoints });
     const metric = rowRotationModel == RotationModels.Quaternion ? undefined : Metrics.Angle;
 
     return (

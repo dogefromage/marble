@@ -13,12 +13,14 @@ const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
 
+    const isConnected = row.numConnectedJoints > 0;
+
     return (
         <GeometryRowDiv
             heightUnits={1}
         >
             {
-                row.isConnected ? (
+                isConnected ? (
                     <GeometryRowNameP
                         align='left'
                     >
@@ -43,7 +45,7 @@ const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
                 panelId={panelId}
                 location={{ nodeId, rowId: row.id, subIndex: 0 }}
                 direction='input'
-                connected={row.isConnected}
+                connected={isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

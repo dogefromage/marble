@@ -1,7 +1,7 @@
 import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowTypes, RowZ, StackedInputRowT } from '../types';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInputOnly';
-import GeometryRowInputStacked from './GeometryRowInputStacked';
+import GeometryRowInputStacked, { getRowMetadataStackedInput } from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
@@ -10,7 +10,7 @@ export type RowMetaProps<T extends RowT = RowT> =
 {
     template: T | RowZ<T>;
     state: RowS<T> | RowZ<T>;
-    isConnected: boolean;
+    numConnectedJoints: number;
 };
 // export type RowMetaProps<T extends RowT = RowT> = RowZ<T>;
 
@@ -23,9 +23,11 @@ export function getRowMetadata(props: RowMetaProps): RowMetadata
 {
     if (props.template.type === RowTypes.Field)
         return getRowMetadataField(props as RowMetaProps<FieldRowT>);
-
     if (props.template.type === RowTypes.Rotation)
         return getRowMetadataRotation(props as RowMetaProps<RotationRowT>);
+    if (props.template.type === RowTypes.InputStacked)
+        return getRowMetadataStackedInput(props as RowMetaProps<StackedInputRowT>);
+    
 
     return rowMeta();
 }

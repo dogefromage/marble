@@ -3,9 +3,8 @@ import { vec2 } from 'gl-matrix';
 import React, { useRef } from 'react';
 import styled, { css } from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
-import useContextMenu from '../hooks/useContextMenu';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesMoveNodes, geometriesPositionNode, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
+import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
 import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
@@ -69,13 +68,15 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
         stackToken: string;
     }>();
 
-    // const setSelected = () => {
-    //     dispatch(geometriesSetSelectedNodes({
-    //         geometryId,
-    //         selection: [ nodeState.id ],
-    //         undo: {},
-    //     }))
-    // }
+    const ensureSelection = () => {
+        if (selectionStatus == SelectionStatus.Nothing) {
+            dispatch(geometriesSetSelectedNodes({
+                geometryId,
+                selection: [ nodeState.id ],
+                undo: {},
+            }))
+        }
+    }
 
     const { handlers, catcher } = useMouseDrag({
         mouseButton: 0,
@@ -89,14 +90,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
                 stackToken: 'drag_node:' + uuidv4(),
             };
             e.stopPropagation();
-
-            if (selectionStatus == SelectionStatus.Nothing) {
-                dispatch(geometriesSetSelectedNodes({
-                    geometryId,
-                    selection: [ nodeState.id ],
-                    undo: {},
-                }))
-            }
+            ensureSelection();
         },
         move: e => 
         {
@@ -117,26 +111,6 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
                 delta,
                 undo: { actionToken: dragRef.current!.stackToken },
             }));
-
-            // const screenMove = vec2.fromValues(
-            //     e.clientX - dragRef.current.startCursor.x,
-            //     e.clientY - dragRef.current.startCursor.y,
-            // );
-            // const worldMove = vectorScreenToWorld(camera, screenMove);
-
-
-            // const newPos = 
-            // {
-            //     x: dragRef.current.startPosition.x + worldMove[0],
-            //     y: dragRef.current.startPosition.y + worldMove[1],
-            // };
-
-            // dispatch(geometriesPositionNode({
-            //     geometryId,
-            //     nodeId: nodeState.id,
-            //     position: newPos,
-            //     undo: { actionToken: dragRef.current!.stackToken },
-            // }));
         },
     }, {
         cursor: 'grab',
@@ -150,19 +124,21 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
             onClick={e => {
                 e.stopPropagation();
             }}
+            onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
         >
         {
             nodeTemplate &&
             nodeTemplate.rows.map(rowTemplate =>
             {
                 const rowState = nodeState.rows[rowTemplate.id];
-                const isConnected = connectedRows.has(rowTemplate.id);
+                const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
+                const numConnectedJoints = Math.max(rowState.connectedOutputs.length, ingoingConnection);
                 
                 // @ts-ignore
                 const rowZ: RowZ = { 
                     ...rowTemplate, 
                     ...rowState,
-                    isConnected,
+                    numConnectedJoints,
                 } // merge rows
 
                 return (

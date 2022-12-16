@@ -5,7 +5,7 @@ import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
 export function getRowMetadataField(props: RowMetaProps<FieldRowT>): RowMetadata
 {
-    if (props.isConnected) return rowMeta(1, true);
+    if (props.numConnectedJoints > 0) return rowMeta(1, true);
     
     if (props.template.dataType === DataTypes.Vec2) return rowMeta(3, true);
     if (props.template.dataType === DataTypes.Vec3) return rowMeta(4, true);

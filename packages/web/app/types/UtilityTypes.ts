@@ -12,6 +12,12 @@ export interface Point
     y: number;
 }
 
+export interface Size
+{
+    w: number;
+    h: number;
+}
+
 export interface Rect
 { 
     x: number;

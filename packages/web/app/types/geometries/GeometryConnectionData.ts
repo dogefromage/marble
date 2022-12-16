@@ -1,6 +1,6 @@
+import { GNodeT, JointLocation } from ".";
 import { DataTypes } from "../sceneProgram";
 import { ObjMap } from "../UtilityTypes";
-import { GNodeT, JointLocation } from ".";
 
 export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
 export type GeometryTemplateMap = Map<string, GNodeT>; // nodeId -> template
@@ -29,6 +29,7 @@ export interface GeometryConnectionData
     rowOrders: GeometryNodeRowOrder;
     forwardEdges: GeometryAdjacencyList;
     rowHeights: GeometryRowHeights;
+    nodeHeights: Map<string, number>;
     backwardEdges: GeometryAdjacencyList;
     connectedRows: GeometryConnectedRows;
     strayConnectedJoints: JointLocation[];
