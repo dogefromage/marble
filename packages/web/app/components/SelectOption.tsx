@@ -72,12 +72,9 @@ const SelectOption = ({ value, onChange, options }: Props) =>
                 <>
                     <p>{ value }</p>
                     <MaterialSymbol
-                        name="expand_more"
                         size={20}
-                        style={{
-                            transform: 'translate(6.5px)',
-                        }}
-                    />
+                        style={{ transform: 'translate(6.5px)' }}
+                    >expand_more</MaterialSymbol>
                 </>
             )
         }

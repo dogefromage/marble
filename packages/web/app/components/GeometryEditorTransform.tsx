@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesSetSelectedNodes, selectGeometry } from '../slices/geometriesSlice';
 import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsUpdateCamera, geometryEditorPanelsSetNewLink } from '../slices/panelGeometryEditorSlice';
 import MouseSelectionDiv from '../styled/MouseSelectionDiv';
-import { DEFAULT_PLANAR_CAMERA, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
+import { DEFAULT_PLANAR_CAMERA, GeometryIncomingElementTypes, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
 import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
 import GeometryEditorContent from './GeometryEditorContent';
@@ -241,7 +241,10 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
         leave: prevDefault,
         over(e, transfer)
         {
-            if (!wrapperRef.current) return;
+            if (wrapperRef.current == null || 
+                transfer.elementType !== GeometryIncomingElementTypes.RowOutput) {
+                    return;
+                }
 
             const time = new Date().getTime();
             if (lastCallTime.current < time - 20)
@@ -258,7 +261,9 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
                 dispatch(geometryEditorPanelsSetNewLink({
                     panelId,
                     newLink: {
-                        endJointTransfer: transfer,
+                        location: transfer.location,
+                        dataType: transfer.dataType,
+                        direction: transfer.direction,
                         offsetPos,
                     },
                 }));

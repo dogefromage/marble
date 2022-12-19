@@ -15,13 +15,25 @@ export enum GNodeTemplateTags
 export enum GNodeTemplateCategories
 {
     Solids = 'solids',
-    SolidOperators = 'solid-operators',
+    SolidOperators = 'solid_operators',
     Numbers = 'numbers',
     Vectors = 'vectors',
     Input = 'input',
     Output = 'output',
     Generative = 'generative',
     Math = 'math',
+}
+
+export const TEMPLATE_CATEGORY_NAMES: { [C in GNodeTemplateCategories]: string } =
+{
+    [GNodeTemplateCategories.Solids]: 'Solids',
+    [GNodeTemplateCategories.SolidOperators]: 'Solid Operators',
+    [GNodeTemplateCategories.Numbers]: 'Numbers',
+    [GNodeTemplateCategories.Vectors]: 'Vectors',
+    [GNodeTemplateCategories.Input]: 'Input',
+    [GNodeTemplateCategories.Output]: 'Output',
+    [GNodeTemplateCategories.Generative]: 'Generative',
+    [GNodeTemplateCategories.Math]: 'Math',
 }
 
 export interface GNodeT

@@ -10,14 +10,15 @@ interface MenuWrapperProps
     translateUp: boolean;
     center?: boolean;
     width?: number;
+    anchorRight?: boolean;
 }
 
 const MenuWrapper = styled.div<MenuWrapperProps>`
 
     position: absolute;
 
-    left: ${({ position }) => position.x }px;
-    top:  ${({ position }) => position.y }px;
+    ${({ position, anchorRight }) => anchorRight ? `left: calc(100% + ${position.x}px);` : `left: ${position.x}px;` }
+    ${({ position }) => `top: ${position.y}px;` }
 
     ${({ translateUp }) => translateUp ? 'transform: translateY(-100%);' : '' }
     ${({ center }) => center ? 'transform: translate(-50%, -50%);' : '' }
@@ -40,11 +41,12 @@ interface Props
     position: Point;
     onUnfocus: () => void;
     children: React.ReactNode;
-    center?: boolean;
     width?: number;
+    center?: boolean;
+    anchorRight?: boolean;
 }
 
-const Menu = ({ position, onUnfocus, children, center, width }: Props) =>
+const Menu = ({ position, onUnfocus, children, center, width, anchorRight }: Props) =>
 {
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +75,7 @@ const Menu = ({ position, onUnfocus, children, center, width }: Props) =>
             translateUp={translateUp}
             center={center}
             width={width}
+            anchorRight={anchorRight}
         >
             { children }
         </MenuWrapper>

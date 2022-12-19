@@ -1,6 +1,6 @@
-import { JointLocation } from "../../types";
+import { GeometryJointLocation } from "../../types";
 
-export function jointLocationHash(location: JointLocation)
+export function jointLocationHash(location: GeometryJointLocation)
 {
     return [ location.nodeId, location.rowId, location.subIndex ].join('_');
 }

@@ -1,5 +1,6 @@
 import { AnyAction, configureStore, Dispatch, Middleware, ThunkDispatch } from "@reduxjs/toolkit";
 import { CurriedGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
+import { createLogger } from "redux-logger";
 import rootReducer from "./rootReducer";
 
 function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)

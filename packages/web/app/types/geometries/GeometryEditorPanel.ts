@@ -1,4 +1,4 @@
-import { JointDndTransfer, PanelState } from "..";
+import { DataTypes, GeometryJointDirection, GeometryJointLocation, PanelState } from "..";
 import { Point } from "../UtilityTypes";
 
 export interface PlanarCamera
@@ -22,7 +22,9 @@ interface TemplateCatalogState
 
 export interface GeometryNewLink
 {
-    endJointTransfer: JointDndTransfer;
+    location: GeometryJointLocation;
+    direction: GeometryJointDirection;
+    dataType: DataTypes;
     offsetPos: Point;
 }
 

@@ -7,7 +7,7 @@ export const TEXTURE_LOOKUP_METHOD_NAME = 'tx';
 
 export const VERT_CODE_TEMPLATE = glsl`
 
-precision mediump float;
+precision highp float;
 
 attribute vec3 position;
 uniform mat4 inverseCamera;
@@ -125,10 +125,11 @@ March march(Ray ray)
 
         vec3 p = rayAt(ray, march.t);
         Solid solid = sdf(p);
+        float d = 0.99 * solid.sd;
 
         float minAllowedDist = marchParameters.z;
 
-        if (solid.sd < minAllowedDist)
+        if (d < minAllowedDist)
         {
             march.hasHit = true;
             march.color = solid.color;
@@ -137,10 +138,10 @@ March march(Ray ray)
 
         if (march.t > .0)
         {
-            march.penumbra = min(march.penumbra, solid.sd / march.t);
+            march.penumbra = min(march.penumbra, d / march.t);
         }
 
-        march.t += solid.sd;
+        march.t += d;
 
         if (march.t > marchParameters.x) 
         {
@@ -162,10 +163,10 @@ March march(Ray ray)
 
 //     for (int i = 0; i < aoIter; i++)
 //     {
-//         float d = sdf(rayAt(ray, t));
-//         if (d <= 0.) break;
+//         Solid s = sdf(rayAt(ray, t));
+//         if (s.sd <= 0.) break;
 
-//         ao += d / t * factor;
+//         ao += s.sd / t * factor;
 //         factor *= 0.5;
 
 //         t = t * 2.;
@@ -174,7 +175,6 @@ March march(Ray ray)
 //     float aoFactor = clamp(ao * 1.05, 0., 1.);
 
 //     return 1.0 - (1.0 - aoFactor) * .4;
-//     // return clamp(ao / float(aoIter), 0., 1.);
 // }
 
 vec3 shade(Ray ray)
@@ -218,28 +218,28 @@ const int AA = 1;
 
 vec3 render()
 {
-    // if (AA <= 1)
+    if (AA <= 1)
     {
         Ray ray = Ray(ray_o, normalize(ray_d));
         return shade(ray);
     }
 
-    // float factor = 1.0 / float(AA * AA);
-    // vec3 averagePixel;
+    float factor = 1.0 / float(AA * AA);
+    vec3 averagePixel;
 
-    // for (int y = 0; y < AA; y++)
-    // {
-    //     for (int x = 0; x < AA; x++)
-    //     {
-    //         vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
-    //         vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
-    //         Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
-    //         vec3 shadingResult = shade(ray);
-    //         averagePixel += factor * shadingResult;
-    //     }
-    // }
+    for (int y = 0; y < AA; y++)
+    {
+        for (int x = 0; x < AA; x++)
+        {
+            vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
+            vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
+            Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
+            vec3 shadingResult = shade(ray);
+            averagePixel += factor * shadingResult;
+        }
+    }
 
-    // return averagePixel;
+    return averagePixel;
 }
 
 // vec3 heatmap()

@@ -1,5 +1,6 @@
 import { redo, undo } from "../enhancers/undoableEnhancer";
-import { geometriesRemoveNode } from "../slices/geometriesSlice";
+import { consoleClearMessages } from "../slices/consoleSlice";
+import { geometriesRemoveNode, geometriesResetStateSelected } from "../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../slices/panelGeometryEditorSlice";
 import { Command, CommandCallTypes, CommandScope, Point, ViewTypes } from "../types";
 
@@ -71,14 +72,44 @@ export const DEFAULT_COMMANDS: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.deleteSelected',
         name: 'Delete Selected',
-        actionCreator: (({ panelState: { geometryId }}, params) => 
+        actionCreator({ panelState: { geometryId }}, params)
         {
             if (!geometryId) return;
             return geometriesRemoveNode({
                 geometryId,
                 undo: {},
             });
-        }),
+        },
         keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
-    }
+    },
+    {
+        scope: CommandScope.View,
+        viewType: ViewTypes.GeometryEditor,
+        id: 'geometryEditor.resetSelected',
+        name: 'Reset Selected',
+        actionCreator({ panelState: { geometryId }}, params)
+        {
+            if (!geometryId) return;
+            return geometriesResetStateSelected({
+                geometryId,
+                undo: {},
+            });
+        },
+        // keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
+    },
+    /**
+     * Console view
+     */
+    {
+        scope: CommandScope.View,
+        viewType: ViewTypes.Console,
+        id: 'console.clearMessages',
+        name: 'Clear Messages',
+        actionCreator()
+        {
+            return consoleClearMessages({
+                undo: {}
+            });
+        },
+    },
 ]

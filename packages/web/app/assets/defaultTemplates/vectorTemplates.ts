@@ -3,16 +3,16 @@ import { GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from ".
 import { glsl } from "../../utils/codeGeneration/glslTag"
 import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
 
-const vectors_mirror_x: GNodeT =
+const vectors_mirror_plane: GNodeT =
 {
-    id: 'mirror_x',
+    id: 'mirror_plane',
     type: GNodeTemplateTypes.Default,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'Mirror X',
+            name: 'Mirror on Plane',
             color: TemplateColors.Operators,
         },
         {
@@ -22,16 +22,72 @@ const vectors_mirror_x: GNodeT =
             name: 'Mirrored',
         },
         {
-            id: 'input',
+            id: 'x',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
+            defaultArgument: DefaultFunctionArgNames.RayPosition,
             value: [ 0, 0, 0 ],
-            name: 'Point',
+            name: 'Coordinate',
+        },
+        {
+            id: 'o',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec3,
+            value: [ 0, 0, 0 ],
+            name: 'Plane Origin',
+        },
+        {
+            id: 'n',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec3,
+            value: [ 1, 0, 0 ],
+            name: 'Plane Normal',
         }
     ],
     instructionTemplates: glsl`
-        vec3 $output = vec3(abs($input.x), $input.yz);
+        vec3 $norm = normalize($n);
+        float $xn = dot($norm, $x - $o);
+        vec3 $output = $x - $norm * (abs($xn) + $xn); // mirror if dot negative, nothing if positive
+    `,
+}
+
+const vectors_repeat_cell: GNodeT =
+{
+    id: 'repeat_cell',
+    type: GNodeTemplateTypes.Default,
+    category: GNodeTemplateCategories.Vectors,
+    rows: [
+        {
+            id: 'name',
+            type: RowTypes.Name,
+            name: 'Repeat Cell',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: RowTypes.Output,
+            dataType: DataTypes.Vec3,
+            name: 'Cell Coord',
+        },
+        {
+            id: 'x',
+            type: RowTypes.InputOnly,
+            dataType: DataTypes.Vec3,
+            defaultArgument: DefaultFunctionArgNames.RayPosition,
+            value: [ 0, 0, 0 ],
+            name: 'Coordinate',
+        },
+        {
+            id: 'size',
+            type: RowTypes.Field,
+            dataType: DataTypes.Vec3,
+            value: [ 1, 1, 1 ],
+            name: 'Cell Size',
+        },
+    ],
+    instructionTemplates: glsl`
+        // vec3 c = floor((p + size*0.5)/size);
+        vec3 $output = mod($x + $size*0.5, $size) - $size*0.5;
     `,
 }
 
@@ -54,12 +110,18 @@ const vectors_transform: GNodeT =
             name: 'Output Pos',
         },
         {
+            id: 'sd_correction',
+            type: RowTypes.Output,
+            dataType: DataTypes.Float,
+            name: 'SD Correction',
+        },
+        {
             id: 'input',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
             name: 'Input Pos',
             value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
+            defaultArgument: DefaultFunctionArgNames.RayPosition,
         },
         {
             id: 'translation',
@@ -76,9 +138,17 @@ const vectors_transform: GNodeT =
             name: 'Rotation',
             value: MAT3_IDENTITY,
         },
+        {
+            id: 'scale',
+            type: RowTypes.Field,
+            dataType: DataTypes.Float,
+            name: 'Scale',
+            value: 1,
+        }
     ],
     instructionTemplates: glsl`
-        vec3 $output = $rotation * ($input - $translation);
+        vec3 $output = $rotation * ($input - $translation) / $scale;
+        float $sd_correction = $scale;
     `,
 }
 
@@ -166,7 +236,8 @@ const vectors_separate_2x1: GNodeT =
 }
 
 export default [
-    vectors_mirror_x,
+    vectors_mirror_plane,
+    vectors_repeat_cell,
     vectors_transform,
     vectors_separate_3x1,
     vectors_separate_2x1,

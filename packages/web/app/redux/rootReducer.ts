@@ -2,6 +2,7 @@ import { combineReducers } from "@reduxjs/toolkit";
 import localStorageEnhancer from "../enhancers/localStorageEnhancer";
 import undoableEnhancer from "../enhancers/undoableEnhancer";
 import commandsReducer from "../slices/commandsSlice";
+import consoleReducer from "../slices/consoleSlice";
 import contextMenuReducer from "../slices/contextMenuSlice";
 import geometriesReducer from "../slices/geometriesSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
     templates: templatesReducer,
     commands: commandsReducer,
     contextMenu: contextMenuReducer,
+    console: consoleReducer,
 });
 
 export default rootReducer;

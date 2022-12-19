@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
@@ -8,7 +9,6 @@ import { Counter } from '../utils/Counter';
 import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
 import { compileGeometry } from '../utils/sceneProgram/compileGeometry';
-import temporaryPushError from '../utils/temporaryPushError';
 import { LOOKUP_TEXTURE_SIZE } from '../utils/viewport/ViewportQuadProgram';
 
 const SceneProgramCompiler = () =>
@@ -22,11 +22,7 @@ const SceneProgramCompiler = () =>
     const connectionData = useMemo(() => 
     {
         if (!geometry || !templates || !Object.values(templates).length) return;
-        try {
-            return generateGeometryConnectionData(geometry, templates);
-        } catch (e) {
-            console.error(e);
-        }
+        return generateGeometryConnectionData(geometry, templates);
     }, [ geometry?.id, geometry?.compilationValidity, templates ]);
     
     useEffect(() =>
@@ -56,14 +52,15 @@ const SceneProgramCompiler = () =>
                 program,
             }));
         }
-        catch (e)
+        catch (e: any)
         {
             if (e instanceof GeometriesCompilationError)
             {
-                temporaryPushError(`Geometry could not be compiled: ${e.msg}`);
-            }
-            else
-            {
+                dispatch(consoleAppendMessage({
+                    text: `Geometry ${geometry.id} could not be compiled: ${e.message}`,
+                    type: `warning`,
+                }));
+            } else {
                 throw e;
             }
         }

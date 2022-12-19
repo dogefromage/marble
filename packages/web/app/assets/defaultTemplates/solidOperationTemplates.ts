@@ -144,7 +144,7 @@ const solid_operation_set_color: GNodeT =
     `,
 }
 
-const solid_operation_reduce_step_size: GNodeT =
+const solid_operation_correct_distance: GNodeT =
 {
     id: 'reduce_step_size',
     type: GNodeTemplateTypes.Default,
@@ -153,7 +153,7 @@ const solid_operation_reduce_step_size: GNodeT =
         {
             id: 'name',
             type: RowTypes.Name,
-            name: 'Reduce Stepsize',
+            name: 'Correct Distance',
             color: TemplateColors.Operators,
         },
         {
@@ -187,5 +187,5 @@ export default [
     solid_operation_difference,
     solid_operation_intersection,
     solid_operation_set_color,
-    solid_operation_reduce_step_size,
+    solid_operation_correct_distance,
 ];

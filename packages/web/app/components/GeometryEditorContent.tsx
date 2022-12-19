@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesDisconnectJoints, selectGeometry } from '../slices/geometriesSlice';
+import { geometriesRemoveIncomingElements, selectGeometry } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { JointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
+import { GeometryJointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
 import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
@@ -39,7 +39,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
         if (!connectionData) return;
         if (connectionData.strayConnectedJoints.length)
         {
-            dispatch(geometriesDisconnectJoints({
+            dispatch(geometriesRemoveIncomingElements({
                 geometryId,
                 joints: connectionData.strayConnectedJoints,
                 undo: { doNotRecord: true },
@@ -53,7 +53,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 
     // New link
     const newLink = panelState?.newLink;
-    const newLinkNode = geometry?.nodes.find(node => node.id === newLink?.endJointTransfer.location.nodeId);
+    const newLinkNode = geometry?.nodes.find(node => node.id === newLink?.location.nodeId);
     const newLinkTemplate = connectionData.templateMap.get(newLinkNode?.id!);
 
     return (
@@ -76,7 +76,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                         const fromHeightUnits = fromRowHeights[ edge.fromIndices[1] ];
                         const toHeightUnits = toRowHeights[ edge.toIndices[1] ] + edge.toIndices[2]; // add subindex
                                                 
-                        const joints: JointLocation[] = 
+                        const joints: GeometryJointLocation[] = 
                         [
                             {
                                 nodeId: fromNodeState.id,

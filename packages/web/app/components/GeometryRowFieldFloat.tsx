@@ -1,3 +1,4 @@
+import useSlidableInputError from '../hooks/useSlidableInputError';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
@@ -12,8 +13,9 @@ type Props = RowProps<FieldRowT<DataTypes.Float>>;
 const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
-
     const isConnected = row.numConnectedJoints > 0;
+
+    const onError = useSlidableInputError();
 
     return (
         <GeometryRowDiv
@@ -37,14 +39,15 @@ const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
                             undo: { actionToken },
                         }))}
                         name={row.name}
+                        onError={onError}
                     />
                 )
             }
             <GeometryJoint 
                 geometryId={ geometryId }
                 panelId={panelId}
-                location={{ nodeId, rowId: row.id, subIndex: 0 }}
-                direction='input'
+                jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
+                jointDirection='input'
                 connected={isConnected}
                 dataType={row.dataType}
             />

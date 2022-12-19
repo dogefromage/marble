@@ -7,11 +7,13 @@ import { ViewportPanelState } from "../viewport";
 export enum ViewTypes
 {
     GeometryEditor = 'geometryEditor',
-    Viewport = 'viewport'
+    Viewport = 'viewport',
+    Console = 'console',
 }
 
 export type PanelStateMap =
 {
     [ViewTypes.GeometryEditor]: GeometryEditorPanelState;
     [ViewTypes.Viewport]: ViewportPanelState;
+    [ViewTypes.Console]: {}
 }

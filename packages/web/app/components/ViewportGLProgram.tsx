@@ -101,9 +101,9 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         quadProgram.setUniformData('inverseCamera', Array.from(screenToWorld));
 
         // marchParams
-        const maxMarchDist = 1e3 * targetDistance;
+        const maxMarchDist = 1e4 * targetDistance;
         const maxMarchIter = viewportPanelState.uniformSources.maxIterations;
-        const marchEpsilon = 1e-5 * targetDistance;
+        const marchEpsilon = 1e-6 * targetDistance;
         quadProgram.setUniformData('marchParameters', [ maxMarchDist, maxMarchIter, marchEpsilon ]);
 
         quadProgram.requestRender();

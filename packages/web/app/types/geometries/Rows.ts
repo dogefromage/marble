@@ -29,7 +29,7 @@ interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT
 {
     dataType: D;
     value: RowValueMap[D];
-    alternativeArg?: string;
+    defaultArgument?: string;
 }
 
 /**
@@ -99,13 +99,17 @@ type RowTOverDataTypesMap =
 }
 export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 
-/**
- * State and Zipped
- */
+export enum GeometryIncomingElementTypes {
+    RowOutput = 'row-output',
+    Argument = 'argument',
+}
+export type GeometryIncomingElement = 
+    | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
+    | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
 
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
-    connectedOutputs: RowLocation[];
+    incomingElement: GeometryIncomingElement[];
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
@@ -126,27 +130,41 @@ export interface RowMetadata
  * Locating
  */
 
-export interface RowLocation
+export interface GeometryRowLocation
 {
     nodeId: string;
     rowId: string;
 }
 
-export type JointDirection = 'input' | 'output';
-export interface JointLocation extends RowLocation
+export type GeometryJointDirection = 'input' | 'output';
+export interface GeometryJointLocation extends GeometryRowLocation
 {
     subIndex: number;
 }
 
 /**
+ * Arguments
+ */
+export interface GeometryArgument
+{
+    id: string;
+    dataType: DataTypes;
+}
+
+/**
  * Drag and drop
  */
-
-export const JOINT_DND_TAG = 'dnd.joint';
-export interface JointDndTransfer
-{
-    location: JointLocation;
-    direction: JointDirection;
+interface JointDndTransferRowOutput {
+    elementType: GeometryIncomingElementTypes.RowOutput;
+    location: GeometryJointLocation;
+    direction: GeometryJointDirection;
     dataType: DataTypes;
     mergeStackInput: boolean;
 }
+interface JointDndTransferArgument {
+    elementType: GeometryIncomingElementTypes.Argument;
+    argument: GeometryArgument;
+}
+export type JointDndTransfer = JointDndTransferRowOutput | JointDndTransferArgument;
+
+export const JOINT_DND_TAG = 'geometry.joint';

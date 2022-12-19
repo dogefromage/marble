@@ -103,13 +103,16 @@ const GeometryEditorView = (viewProps: ViewProps) =>
         viewProps.panelId,
         'Geometry Nodes', [ 
             'geometryEditor.openTemplateCatalog',
-            'geometryEditor.deleteSelected' 
+            'geometryEditor.deleteSelected', 
+            'geometryEditor.resetSelected',
         ],
         e => ({ offsetPos: getOffsetPos(e) }),
     )
 
     return (
-        <PanelBody>
+        <PanelBody
+            viewProps={viewProps}
+        >
             <EditorWrapper
                 onDoubleClick={openSearcher}
                 onContextMenu={contextMenu}

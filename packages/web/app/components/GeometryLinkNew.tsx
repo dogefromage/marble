@@ -36,11 +36,11 @@ const GeometryLinkNew = ({ panelId, newLink, node, template, getCamera }: Props)
     const cam = getCamera();
     if (!cam) return null;
 
-    const endLocation = newLink.endJointTransfer.location;
+    const endLocation = newLink.location;
     const rowIndex = template.rows.findIndex(r => r.id == endLocation.rowId);
 
     const endJointHeight = countHeightUnits(template.rows, node, rowIndex, endLocation.subIndex);
-    const endJointPos = getJointPosition(node.position, endJointHeight, newLink.endJointTransfer.direction);
+    const endJointPos = getJointPosition(node.position, endJointHeight, newLink.direction);
 
     const offsetPosVec = p2v(newLink.offsetPos);
     const worldCursor = pointScreenToWorld(cam, offsetPosVec);
@@ -50,7 +50,7 @@ const GeometryLinkNew = ({ panelId, newLink, node, template, getCamera }: Props)
         <GeometryLinkDiv 
             A={endJointPos}
             B={worldPoint}
-            dataType={newLink.endJointTransfer.dataType}
+            dataType={newLink.dataType}
         />
     );
 }

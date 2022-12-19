@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, JointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows } from "../../types";
+import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, GeometryJointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows, GeometryIncomingElementTypes } from "../../types";
 import { assertRowTHas } from "./assertions";
 import { rowLocationHash } from "./locationHashes";
 
@@ -37,7 +37,8 @@ export function generateAdjacencyLists(
         }
     }
 
-    const strayConnectedJoints: JointLocation[] = [];
+    const argumentConsumers: GeometryJointLocation[] = [];
+    const strayConnectedJoints: GeometryJointLocation[] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
@@ -50,20 +51,28 @@ export function generateAdjacencyLists(
             const rowId = rowOrder[rowIndex];
             const row = node.rows[rowId];
 
-            for (let subIndex = 0; subIndex < row.connectedOutputs.length; subIndex++)
+            for (let subIndex = 0; subIndex < row.incomingElement.length; subIndex++)
             {
-                const output = row.connectedOutputs[subIndex];
+                const jointLocation = {
+                    nodeId: node.id,
+                    rowId,
+                    subIndex,
+                };
+                
+                const incoming = row.incomingElement[subIndex];
+                if (incoming.type === GeometryIncomingElementTypes.Argument) {
+                    argumentConsumers.push(jointLocation);
+                    continue;
+                }
+
+                const output = incoming.location;
 
                 const fromRowKey = rowLocationHash(output);
                 const fromRowCoordinates = outputIndicesMap.get(fromRowKey);
 
                 if (!fromRowCoordinates)
                 {
-                    strayConnectedJoints.push({
-                        nodeId: node.id,
-                        rowId,
-                        subIndex,
-                    });
+                    strayConnectedJoints.push(jointLocation);
                     continue;
                 }
 
@@ -113,5 +122,6 @@ export function generateAdjacencyLists(
         forwardEdges,
         backwardEdges,
         strayConnectedJoints,
+        argumentConsumers,
     }
 }

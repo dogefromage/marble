@@ -7,7 +7,6 @@ import { selectWorld } from '../slices/worldSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
 import { FONT_FAMILY } from '../styled/utils';
 import { Metrics, UnitNames } from '../types/world';
-import temporaryPushError from '../utils/temporaryPushError';
 import { Units } from '../utils/units';
 
 const SlidableInputDiv = styled.div`
@@ -67,6 +66,11 @@ const SlidableInputDiv = styled.div`
 
         pointer-events: none;
         font-size: 16px;
+
+        width: 60%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 `;
 
@@ -74,6 +78,7 @@ type Props =
 {
     value: number;
     onChange: (newValue: number, actionToken?: string) => void; 
+    onError: (e: Error) => void;
     name?: string;
     metric?: Metrics;
 }
@@ -83,6 +88,7 @@ const SlidableInput = ({
     onChange,
     name,
     metric,
+    onError,
 }: Props) => 
 {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -111,9 +117,13 @@ const SlidableInput = ({
             const parsed = Units.parseInput(input, metric, unitName);
             onChange(parsed);
         }
-        catch (err)
+        catch (e)
         {
-            temporaryPushError('Error at evaluating user input');
+            if (onError != null) {
+                onError(e as Error)
+            } else {
+                throw e;
+            }
         }
     };
 

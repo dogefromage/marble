@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { vec2, vec3 } from "gl-matrix";
 import panelStateEnhancer from "../enhancers/panelStateEnhancer";
-import { RootState } from "../redux/store";
 import { CreatePanelStateCallback, ObjMap, ViewportCamera, ViewportPanelState, ViewTypes } from "../types";
 import { clamp, degToRad } from "../utils/math";
 import getPanelState from "../utils/panelState/getPanelState";
@@ -17,7 +16,7 @@ export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelSta
                 distance: 15,
                 fov: degToRad(30),
             },
-            maxIterations: 100,
+            maxIterations: 500,
         }
     };
 }

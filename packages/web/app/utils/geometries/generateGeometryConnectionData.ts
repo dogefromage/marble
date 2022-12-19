@@ -18,7 +18,7 @@ export default function generateGeometryConnectionData(geometry: GeometryS, temp
     }
 
     // adjacenyList
-    const { forwardEdges, backwardEdges, strayConnectedJoints } = generateAdjacencyLists(geometry, rowOrders, templateMap);
+    const { forwardEdges, backwardEdges, strayConnectedJoints, argumentConsumers } = generateAdjacencyLists(geometry, rowOrders, templateMap);
 
     // connectedRows
     const connectedRows = findConnectedRows(geometry, rowOrders, forwardEdges);
@@ -47,6 +47,7 @@ export default function generateGeometryConnectionData(geometry: GeometryS, temp
         backwardEdges,
         connectedRows,
         strayConnectedJoints,
+        argumentConsumers,
     }
 
     return connectionData;

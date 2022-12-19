@@ -25,7 +25,7 @@ const generative_perlin_noise: GNodeT =
             name: 'Coordinates',
             dataType: DataTypes.Vec3,
             value: [ 0, 0, 0 ],
-            alternativeArg: DefaultFunctionArgNames.RayPosition,
+            defaultArgument: DefaultFunctionArgNames.RayPosition,
         }
     ],
     instructionTemplates: glsl`

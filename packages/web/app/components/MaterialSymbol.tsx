@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 interface Props
 {
-    name: string;
+    // name: string;
     size: number;
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { MenuItemText, MenuItemInfo } from '../styled/MenuItemText';
 
 export const MenuItemDiv = styled.div`
   
@@ -21,43 +22,30 @@ export const MenuItemDiv = styled.div`
     }
 `;
 
-const MenuItemText = styled.p`
-
-    margin: 0;
-    padding: 0 0.5rem;
-    
-    width: 100%;
-    min-width: fit-content;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-`;
-
-const MenuItemInfo = styled(MenuItemText)`
-
-    width: fit-content;
-    opacity: 0.7;
-
-    overflow: hidden;
-`;
-
 interface Props
 {
-    text: string;
+    text?: string;
     info?: string;
-    onClick: (e: React.MouseEvent) => void;
+    onClick?: (e: React.MouseEvent) => void;
+    children?: React.ReactNode;
 }
 
-const MenuItem = ({ text, info, onClick }: Props) =>
+const MenuItem = ({ text, info, onClick, children }: Props) =>
 {
     return (
         <MenuItemDiv
             onClick={onClick}
         >
-            <MenuItemText>{ text }</MenuItemText>
+            {
+                text && 
+                <MenuItemText>{ text }</MenuItemText>
+            }
             { 
                 info && 
                 <MenuItemInfo>{ info }</MenuItemInfo>
+            }
+            {
+                children
             }
         </MenuItemDiv>
     );

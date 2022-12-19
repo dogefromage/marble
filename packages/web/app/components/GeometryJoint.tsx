@@ -1,85 +1,24 @@
 import { useDraggable, useDroppable } from '@marble/interactive';
 import React from 'react';
-import styled, { css } from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesConnectJoints } from '../slices/geometriesSlice';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styled/GeometryRowDiv';
-import { DataTypes, JointDirection, JointDndTransfer, JointLocation, JOINT_DND_TAG } from '../types';
-
-export const JOINT_OFFSET = -32;
-
-const JointDiv = styled.div<{
-    direction: JointDirection;
-    connected: boolean;
-    additional?: boolean;
-    dataType: DataTypes;
-    isHovering: boolean;
-}>`
-    position: absolute;
-
-    /* top: 50%; */
-    top: ${0.5 * GNODE_ROW_UNIT_HEIGHT}px;
-
-    ${({ direction }) => 
-        `${ direction === 'input' ? 
-            'left' : 'right'}: ${JOINT_OFFSET}px` 
-    };
-
-    /* width: 24px; */
-    width: 30px;
-    border-radius: 50%;
-    aspect-ratio: 1;
-
-    transform: translateY(-50%);
-
-    /* background-color: #ff000033; */
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .joint-inner
-    {
-        width: 12px;
-        ${({ isHovering }) => isHovering ? `width: 16px` : '' };
-        aspect-ratio: 1;
-
-        background-color: ${({ theme, dataType }) => theme.colors.dataTypes[dataType] };
-        border-radius: 50%;
-
-        ${({ additional, theme, dataType }) => additional ? css`
-            background-color: unset;
-            outline: solid 3px ${theme.colors.dataTypes[dataType]};
-            outline-offset: -3px;
-        ` : ''} 
-
-        opacity: ${({ connected, isHovering }) => 
-        {
-            if (isHovering) return 1;
-            if (connected) return 0;
-            return 0.5;
-        }};
-    }
-    
-    &:hover .joint-inner
-    {
-        opacity: 1;
-    }
-`;
+import { geometriesInsertIncomingElement } from '../slices/geometriesSlice';
+import { GeometryJointDiv } from '../styled/GeometryJointDiv';
+import { DataTypes, GeometryJointDirection, JointDndTransfer, GeometryJointLocation, JOINT_DND_TAG, GeometryIncomingElementTypes } from '../types';
 
 interface Props
 {
     geometryId: string;
-    panelId: string;
-    location: JointLocation;
-    direction: JointDirection;
+    
+    jointLocation: GeometryJointLocation;
+    jointDirection: GeometryJointDirection;
+    
     dataType: DataTypes;
     connected: boolean;
     additional?: boolean;
-    isStackedInput?: true;
+    isStackedInput?: boolean;
 }
 
-const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, connected, additional, isStackedInput }: Props) =>
+const GeometryJoint = ({ geometryId, jointLocation, jointDirection: direction, dataType, connected, additional, isStackedInput }: Props) =>
 {
     const dispatch = useAppDispatch();
 
@@ -90,7 +29,8 @@ const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, con
             e.dataTransfer.setDragImage(new Image(), 0, 0);
 
             return {
-                location,
+                elementType: GeometryIncomingElementTypes.RowOutput,
+                location: jointLocation,
                 direction,
                 dataType,
                 mergeStackInput: isStackedInput || false,
@@ -99,15 +39,24 @@ const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, con
     });
 
     const canDrop = (transfer: JointDndTransfer) => {
-        if (transfer.location.nodeId === location.nodeId)
-            return false;
-        if (transfer.direction === direction)
-            return false;
-        return true;
+        if (transfer.elementType === GeometryIncomingElementTypes.Argument) {
+            return (
+                transfer.argument.dataType === dataType &&
+                direction === 'input'
+            );
+        } else {
+            return (
+                transfer.dataType === dataType &&
+                transfer.location.nodeId !== jointLocation.nodeId &&
+                transfer.direction !== direction
+            );
+        }
     }
 
     const droppableHandler = (e: React.DragEvent, transfer: JointDndTransfer) => {
-        if (canDrop(transfer)) e.preventDefault();
+        if (canDrop(transfer)) {
+            e.preventDefault();
+        }
     }
 
     const drop = useDroppable<JointDndTransfer>({
@@ -119,27 +68,34 @@ const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, con
         {
             if (!canDrop(transfer)) return;
 
-            if (direction === 'input')
-            {
-                dispatch(geometriesConnectJoints({
+            if (transfer.elementType === GeometryIncomingElementTypes.Argument) {
+                dispatch(geometriesInsertIncomingElement({
                     geometryId,
-                    inputJoint: location,
-                    inputDataType: dataType,
-                    outputJoint: transfer.location,
-                    outputDataType: transfer.dataType,
-                    mergeStackInput: isStackedInput || false,
+                    jointLocation: jointLocation,
+                    incomingElement: { 
+                        type: GeometryIncomingElementTypes.Argument,
+                        argument: transfer.argument,
+                    },
+                    isStackedInput,
                     undo: {}
                 }));
-            }
-            else
-            {
-                dispatch(geometriesConnectJoints({
+            } else {
+                let outputJointLocation = transfer.location;
+                let inputJointLocation = jointLocation;
+    
+                if (direction === 'output') { // swap
+                    outputJointLocation = jointLocation;
+                    inputJointLocation = transfer.location;
+                }
+    
+                dispatch(geometriesInsertIncomingElement({
                     geometryId,
-                    inputJoint: transfer.location,
-                    inputDataType: dataType,
-                    outputJoint: location,
-                    outputDataType: transfer.dataType,
-                    mergeStackInput: transfer.mergeStackInput,
+                    jointLocation: inputJointLocation,
+                    incomingElement: {
+                        type: GeometryIncomingElementTypes.RowOutput,
+                        location: outputJointLocation,
+                    },
+                    isStackedInput,
                     undo: {}
                 }));
             }
@@ -147,7 +103,7 @@ const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, con
     });
 
     return (
-        <JointDiv
+        <GeometryJointDiv
             direction={direction}
             connected={connected}
             additional={additional}
@@ -158,7 +114,7 @@ const GeometryJoint = ({ geometryId, panelId, location, direction, dataType, con
             isHovering={drop.isHovering}
         >
             <div className='joint-inner'/>
-        </JointDiv>
+        </GeometryJointDiv>
     );
 }
 

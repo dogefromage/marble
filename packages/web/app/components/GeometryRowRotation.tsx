@@ -1,5 +1,6 @@
 import { mat3, quat } from 'gl-matrix';
 import { useEffect } from 'react';
+import useSlidableInputError from '../hooks/useSlidableInputError';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styled/GeometryRowDiv';
@@ -34,9 +35,10 @@ type Props = RowProps<RotationRowT>;
 
 export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z', 'W' ];
 
-const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =>
+const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
+    const onError = useSlidableInputError();
     const rowRotationModel = row.rotationModel || RotationModels.Euler_XYZ;
 
     useEffect(() =>
@@ -67,12 +69,16 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
             }
         }
 
+        const doNotRecord = row.currentDisplay == null;
+
+        console.log(doNotRecord);
+
         dispatch(geometriesAssignRowData({
             geometryId,
             nodeId,
             rowId: row.id,
             rowData: rowS,
-            undo: {},
+            undo: { doNotRecord },
         }));
     }, [ rowRotationModel, row.currentDisplay ]);
 
@@ -128,9 +134,13 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
         }));
     }
 
-    const numConnectedJoints = row.isConnected ? 1 : 0;
-    const meta = getRowMetadataRotation({ state: row, template: row, numConnectedJoints });
+    const meta = getRowMetadataRotation({ 
+        state: row, template: row, 
+        numConnectedJoints: row.numConnectedJoints,
+    });
     const metric = rowRotationModel == RotationModels.Quaternion ? undefined : Metrics.Angle;
+
+    const isConnected = row.numConnectedJoints > 0;
 
     return (
         <GeometryRowDiv
@@ -142,7 +152,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
                 { row.name }
             </GeometryRowNameP>
             {
-                !row.isConnected && row.currentDisplay && <>
+                !isConnected && row.currentDisplay && <>
                 {
                     <IndentRowDiv>
                         <SelectOption 
@@ -162,6 +172,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
                                 onChange={updateValue(index)}
                                 name={FIELD_ROW_LIST_NAMES[ index ]} 
                                 metric={metric}
+                                onError={onError}
                             />
                         </IndentRowDiv>
                     )
@@ -171,9 +182,9 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row: row }: Props) =
             <GeometryJoint 
                 geometryId={ geometryId }
                 panelId={panelId}
-                location={{ nodeId, rowId: row.id, subIndex: 0 }}
-                direction='input'
-                connected={row.isConnected}
+                jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
+                jointDirection='input'
+                connected={isConnected}
                 dataType={row.dataType}
             />
         </GeometryRowDiv>

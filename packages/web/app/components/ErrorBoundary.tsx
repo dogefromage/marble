@@ -2,8 +2,8 @@ import React from "react";
 
 interface Props
 {
-    children: JSX.Element;
-    fallbackComponent: (props: { error: Error }) => JSX.Element;
+    children: React.ReactNode;
+    fallbackComponent: (props: { error: Error }) => JSX.Element | null;
 }
 
 interface State

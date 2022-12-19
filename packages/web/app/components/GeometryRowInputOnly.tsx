@@ -18,8 +18,8 @@ const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row: row }: RowProp
             <GeometryJoint 
                 geometryId={geometryId}
                 panelId={panelId}
-                location={{ nodeId, rowId: row.id, subIndex: 0 }}
-                direction='input'
+                jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
+                jointDirection='input'
                 connected={row.numConnectedJoints > 0}
                 dataType={row.dataType}
             />

@@ -1,4 +1,5 @@
 import { ContextMenuState, ActivePanel, Command, GeometryS, GNodeT, ProgramInclude, SceneProgram } from ".";
+import { ConsoleMessage } from "./console";
 import { ObjMap } from "./UtilityTypes";
 import { World } from "./world";
 
@@ -34,3 +35,7 @@ export interface ContextMenuSliceState
 export type PreferencesSliceState = {};
 
 export type WorldSliceState = World;
+
+export type ConsoleSliceState = {
+    feed: ConsoleMessage[];
+}

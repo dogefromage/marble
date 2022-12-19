@@ -7,7 +7,7 @@ export default function useContextMenu(
     panelId: string,
     menuName: string,
     commandIds: string[],
-    paramMapCallback: (e: React.MouseEvent) => CommandParameterMap,
+    paramMapCallback?: (e: React.MouseEvent) => CommandParameterMap,
 )
 {
     const dispatch = useAppDispatch();
@@ -22,7 +22,7 @@ export default function useContextMenu(
             y: e.clientY,
         };
 
-        const paramMap = paramMapCallback(e);
+        const paramMap = paramMapCallback?.(e) || {};
 
         dispatch(contextMenuOpen({
             active: {

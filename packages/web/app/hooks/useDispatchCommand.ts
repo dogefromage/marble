@@ -33,16 +33,10 @@ export default function useDispatchCommand()
         else
         {
             if (!editorStateRef.current.panelManager.activePanel) return;
-
             const activePanel = editorStateRef.current.panelManager.activePanel;
 
-            // if (!targetPanelId)
-            // {
-            //     targetPanelId = editorStateRef.current.panelManager.activePanel?.panelId;
-            // }
-
-            const panelState = editorStateRef.current.panels[command.viewType][activePanel.panelId];
-            if (!panelState) return console.error(`Active panel not candidate for available command`);
+            const panelState = editorStateRef.current.panels[command.viewType]?.[activePanel.panelId];
+            if (!panelState) console.error(`No panelstate found for active panel`);
     
             const viewArgs: ViewCommandArgs = 
             {

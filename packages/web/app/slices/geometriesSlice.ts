@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryS, GNodeS, GNodeT, GNodeTemplateTags, JointLocation, Point, RowS, UndoAction } from "../types";
+import { GeometriesSliceState, GeometryArgument, GeometryIncomingElement, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GNodeS, GNodeT, InputOnlyRowT, Point, RowS, RowT, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -15,18 +15,26 @@ function createGeometry(id: string)
         compilationValidity: 0,
         rowStateValidity: 0,
         nextIdIndex: 0,
-        // outputId: null,
-        // activeNode: null,
         selectedNodes: [],
     }
 
     return geometry;
 }
 
-function createDefaultRowState()
-{
+function createRowState(rowT: RowT) {
     const rowS: RowS = {
-        connectedOutputs: [],
+        incomingElement: [],
+    };
+    const inputRowT = rowT as InputOnlyRowT;
+    if (inputRowT.defaultArgument != null) {
+        const argEl: GeometryIncomingElement = {
+            type: GeometryIncomingElementTypes.Argument,
+            argument: {
+                id: inputRowT.defaultArgument,
+                dataType: inputRowT.dataType,
+            },
+        }
+        rowS.incomingElement = [ argEl ];
     }
     return rowS;
 }
@@ -36,7 +44,7 @@ function createNode(template: GNodeT, nextIdIndex: number, position: Point)
     const rows = Object.fromEntries(
         template.rows.map(row => [
             row.id,
-            createDefaultRowState(),
+            createRowState(row),
         ])
     );
     
@@ -92,12 +100,6 @@ export const geometriesSlice = createSlice({
             const { node, nextIdIndex } = createNode(a.payload.template, g.nextIdIndex, a.payload.position);
             g.nodes.push(node);
             g.nextIdIndex = nextIdIndex;
-
-            // if (a.payload.template.tags?.includes(GNodeTemplateTags.Output))
-            // {
-            //     g.outputId = node.id;
-            // }
-            
             g.compilationValidity++;
         },
         removeNode: (s, a: UndoAction<{ geometryId: string, nodeId?: string }>) =>
@@ -109,12 +111,6 @@ export const geometriesSlice = createSlice({
                 [ a.payload.nodeId ] : g.selectedNodes;
 
             g.nodes = g.nodes.filter(n => !targets.includes(n.id));
-            
-            // if (targets.includes(g.outputId!))
-            // {
-            //     g.outputId = null;
-            // }
-
             g.compilationValidity++;
         },
         positionNode: (s, a: UndoAction<{ geometryId: string, nodeId: string, position: Point }>) =>
@@ -157,48 +153,78 @@ export const geometriesSlice = createSlice({
             const g = getGeometry(s, a)!;
             g.rowStateValidity++;
         },
-        connectJoints: (s, a: UndoAction<{ 
+        insertIncomingElement: (s, a: UndoAction<{ 
             geometryId: string, 
-            inputJoint: JointLocation, 
-            inputDataType: DataTypes,
-            outputJoint: JointLocation,
-            outputDataType: DataTypes,
-            mergeStackInput: boolean,
-        }>) =>
-        {
+            jointLocation: GeometryJointLocation,
+            incomingElement: GeometryIncomingElement
+            isStackedInput?: boolean,
+        }>) => {
             const g = getGeometry(s, a);
             if (!g) return;
 
             const inputNode = getNode(s, { 
                 payload: {
-                    nodeId: a.payload.inputJoint.nodeId,
+                    nodeId: a.payload.jointLocation.nodeId,
                     geometryId: a.payload.geometryId, 
                 }
             }); 
             if (!inputNode) return;
 
-            const inputRow = inputNode.rows[a.payload.inputJoint.rowId];
+            const inputRow = inputNode.rows[a.payload.jointLocation.rowId];
 
-            if (a.payload.inputDataType !== a.payload.outputDataType) return; // console.error(`Connected rows must have same dataType`);
-
-            if (a.payload.mergeStackInput)
+            if (a.payload.isStackedInput)
             {
-                const newSubIndex = a.payload.inputJoint.subIndex;
-                inputRow.connectedOutputs = [
-                    ...inputRow.connectedOutputs.slice(0, newSubIndex),
-                    a.payload.outputJoint,
-                    ...inputRow.connectedOutputs.slice(newSubIndex),
+                const newSubIndex = a.payload.jointLocation.subIndex;
+                inputRow.incomingElement = [
+                    ...inputRow.incomingElement.slice(0, newSubIndex),
+                    a.payload.incomingElement,
+                    ...inputRow.incomingElement.slice(newSubIndex),
                 ];
-            }
-            else
-            {
-                inputRow.connectedOutputs = [ a.payload.outputJoint ];
+            } else {
+                inputRow.incomingElement = [ a.payload.incomingElement ];
             }
 
             g.compilationValidity++;
         },
-        disconnectJoints: (s, a: UndoAction<{ geometryId: string, joints: JointLocation[] }>) =>
-        {
+        // connectJoints: (s, a: UndoAction<{ 
+        //     geometryId: string, 
+        //     inputJoint: GeometryJointLocation, 
+        //     inputDataType: DataTypes,
+        //     outputJoint: GeometryJointLocation,
+        //     outputDataType: DataTypes,
+        //     mergeStackInput: boolean,
+        // }>) =>
+        // {
+        //     const g = getGeometry(s, a);
+        //     if (!g) return;
+
+        //     const inputNode = getNode(s, { 
+        //         payload: {
+        //             nodeId: a.payload.inputJoint.nodeId,
+        //             geometryId: a.payload.geometryId, 
+        //         }
+        //     }); 
+        //     if (!inputNode) return;
+
+        //     const inputRow = inputNode.rows[a.payload.inputJoint.rowId];
+
+        //     if (a.payload.inputDataType !== a.payload.outputDataType) return;
+
+        //     if (a.payload.mergeStackInput)
+        //     {
+        //         const newSubIndex = a.payload.inputJoint.subIndex;
+        //         inputRow.incomingElement = [
+        //             ...inputRow.incomingElement.slice(0, newSubIndex),
+        //             a.payload.outputJoint,
+        //             ...inputRow.incomingElement.slice(newSubIndex),
+        //         ];
+        //     } else {
+        //         inputRow.incomingElement = [ a.payload.outputJoint ];
+        //     }
+
+        //     g.compilationValidity++;
+        // },
+        removeIncomingElements: (s, a: UndoAction<{ geometryId: string, joints: GeometryJointLocation[] }>) => {
             const g = getGeometry(s, a);
             if (!g) return;
 
@@ -210,31 +236,71 @@ export const geometriesSlice = createSlice({
                         nodeId: joint.nodeId,
                     }
                 }); 
-
-                const outputs = node?.rows[joint.rowId].connectedOutputs;
-                if (!outputs) 
+                const outputs = node?.rows[joint.rowId].incomingElement;
+                if (outputs) 
                 {
+                    outputs.splice(joint.subIndex, 1); // Remove desired entry
+                } else {
                     console.error(`Output not found`);
-                    continue;
                 }
-
-                // Remove desired entry
-                outputs.splice(joint.subIndex, 1);
             }
-
             g.compilationValidity++;
         },
-        // setActiveNode: (s, a: UndoAction<{ geometryId: string, nodeId: string | null }>) =>
+        // disconnectJoints: (s, a: UndoAction<{ geometryId: string, joints: JointLocation[] }>) =>
         // {
         //     const g = getGeometry(s, a);
         //     if (!g) return;
-        //     g.activeNode = a.payload.nodeId;
+
+        //     for (const joint of a.payload.joints)
+        //     {
+        //         const node = getNode(s, { 
+        //             payload: {
+        //                 geometryId: a.payload.geometryId, 
+        //                 nodeId: joint.nodeId,
+        //             }
+        //         }); 
+
+        //         const outputs = node?.rows[joint.rowId].incomingElement;
+        //         if (!outputs) 
+        //         {
+        //             console.error(`Output not found`);
+        //             continue;
+        //         }
+
+        //         // Remove desired entry
+        //         outputs.splice(joint.subIndex, 1);
+        //     }
+
+        //     g.compilationValidity++;
         // },
         setSelectedNodes: (s, a: UndoAction<{ geometryId: string, selection: string[] }>) =>
         {
             const g = getGeometry(s, a);
             if (!g) return;
             g.selectedNodes = a.payload.selection;
+        },
+        resetStateSelected: (s, a: UndoAction<{ geometryId: string }>) =>
+        {
+            const g = getGeometry(s, a);
+            if (!g) return;
+
+            const defaultRowState: { [K in keyof RowS]: true } = {
+                'incomingElement': true,
+            }
+
+            for (const node of g.nodes) {
+                if (!g.selectedNodes.includes(node.id)) continue;
+                // for every row of every selected node
+                for (const row of Object.values(node.rows)) {
+                    // every key of that row
+                    for (const key in row) {
+                        if (!Object.hasOwn(defaultRowState, key)) {
+                            delete row[key]; // remove if not in default state i.e. not connectedOutputs, etc
+                        }
+                    }
+                }
+            }
+            g.rowStateValidity++;
         },
     }
 });
@@ -247,16 +313,19 @@ export const {
     positionNode: geometriesPositionNode,
     moveNodes: geometriesMoveNodes,
     assignRowData: geometriesAssignRowData,
-    connectJoints: geometriesConnectJoints,
-    disconnectJoints: geometriesDisconnectJoints,
-    // setActiveNode: geometriesSetActiveNode,
+    // connectJoints: geometriesConnectJoints,
+    // disconnectJoints: geometriesDisconnectJoints,
+    insertIncomingElement: geometriesInsertIncomingElement,
+    removeIncomingElements: geometriesRemoveIncomingElements,
     setSelectedNodes: geometriesSetSelectedNodes,
+    resetStateSelected: geometriesResetStateSelected,
+
 } = geometriesSlice.actions;
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;
 
 export const selectGeometry = (geometryId: string) => 
-    useCallback((state: RootState) => 
+    useCallback((state: RootState) => // memoize selector bc. redux will
         selectGeometries(state)[geometryId] as GeometryS | undefined,
         [ geometryId ]
     );

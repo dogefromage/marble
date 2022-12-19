@@ -1,6 +1,6 @@
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesDisconnectJoints } from '../slices/geometriesSlice';
-import { GeometryEdge, JointLocation, Point } from '../types';
+import { geometriesRemoveIncomingElements } from '../slices/geometriesSlice';
+import { GeometryEdge, GeometryJointLocation, Point } from '../types';
 import getJointPosition from '../utils/geometries/getJointPosition';
 import GeometryLinkDiv from './GeometryLinkDiv';
 
@@ -12,7 +12,7 @@ interface Props
     fromHeightUnits: number;
     toPosition: Point;
     toHeightUnits: number;
-    joints: JointLocation[];
+    joints: GeometryJointLocation[];
 }
 
 const LinkComponent = ({ 
@@ -38,7 +38,7 @@ const LinkComponent = ({
             onMouseDown={e => e.stopPropagation()}
             onClick={e =>
             {
-                dispatch(geometriesDisconnectJoints({
+                dispatch(geometriesRemoveIncomingElements({
                     geometryId,
                     joints,
                     undo: {},

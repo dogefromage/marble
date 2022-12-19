@@ -12,20 +12,22 @@ export const templatesSlice = createSlice({
     name: 'templates',
     initialState,
     reducers: {
-        addTemplate: (s, a: PayloadAction<{ template: GNodeT }>) =>
-        {
-            s.templates[a.payload.template.id] = a.payload.template;
+        addTemplates: (s, a: PayloadAction<{ templates: GNodeT[] }>) => {
+            for (const temp of a.payload.templates) {
+                s.templates[temp.id] = temp;
+            }
         },
-        addGLSLSnippet: (s, a: PayloadAction<{ glslSnippet: ProgramInclude }>) =>
-        {
-            s.programIncludes[a.payload.glslSnippet.id] = a.payload.glslSnippet;
+        addGLSLSnippets: (s, a: PayloadAction<{ glslSnippets: ProgramInclude[] }>) => {
+            for (const snip of a.payload.glslSnippets) {
+                s.programIncludes[snip.id] = snip;
+            }
         }
     }
 });
 
 export const {
-    addTemplate: templatesAddTemplate,
-    addGLSLSnippet: templatesAddGLSLSnippet,
+    addTemplates: templatesAddTemplates,
+    addGLSLSnippets: templatesAddGLSLSnippets,
 } = templatesSlice.actions;
 
 export const selectTemplates = (state: RootState) => state.templates;

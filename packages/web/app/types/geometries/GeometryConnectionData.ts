@@ -1,4 +1,4 @@
-import { GNodeT, JointLocation } from ".";
+import { GNodeT, GeometryJointLocation } from ".";
 import { DataTypes } from "../sceneProgram";
 import { ObjMap } from "../UtilityTypes";
 
@@ -32,5 +32,6 @@ export interface GeometryConnectionData
     nodeHeights: Map<string, number>;
     backwardEdges: GeometryAdjacencyList;
     connectedRows: GeometryConnectedRows;
-    strayConnectedJoints: JointLocation[];
+    strayConnectedJoints: GeometryJointLocation[];
+    argumentConsumers: GeometryJointLocation[];
 }

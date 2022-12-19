@@ -17,7 +17,7 @@ const coordinateRow: SpecificRowT =
     name: 'Coordinates',
     dataType: DataTypes.Vec3,
     value: [ 0, 0, 0 ],
-    alternativeArg: DefaultFunctionArgNames.RayPosition,
+    defaultArgument: DefaultFunctionArgNames.RayPosition,
 };
 
 const colorRow: SpecificRowT = 

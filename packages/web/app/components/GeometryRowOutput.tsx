@@ -18,8 +18,8 @@ const GeometryRowOutput = ({ geometryId, panelId, nodeId, row }: RowProps<Output
             <GeometryJoint 
                 geometryId={geometryId}
                 panelId={panelId}
-                location={{ nodeId, rowId: row.id, subIndex: 0 }}
-                direction='output'
+                jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
+                jointDirection='output'
                 connected={row.numConnectedJoints > 0}
                 dataType={row.dataType}
             />
