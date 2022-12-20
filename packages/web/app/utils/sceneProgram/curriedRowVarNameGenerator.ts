@@ -132,8 +132,8 @@ export class RowVarNameGenerator
             return this.hashOutput(...incomingEdge.fromIndices);
 
         // case 2: fallback function argument
-        if (row.defaultArgument)
-            return row.defaultArgument;
+        if (row.defaultArgumentToken)
+            return row.defaultArgumentToken;
 
         const rowMetadata = getRowMetadata({ state: row, template: row, numConnectedJoints: 0 });
 
@@ -169,7 +169,7 @@ export class RowVarNameGenerator
         const outputVars: string[] = [];
         const incomingEdges = this.getEdgeInto(rowIndex) || [];
 
-        for (let i = 0; i < row.incomingElement.length; i++)
+        for (let i = 0; i < row.incomingElements.length; i++)
         {
             const edge = incomingEdges[i];
 

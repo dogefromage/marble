@@ -15,7 +15,7 @@ export function getRowMetadataStackedInput(props: RowMetaProps<StackedInputRowT>
 
 const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<StackedInputRowT>) =>
 {
-    const rowMeta = getRowMetadataStackedInput({ state: row, template: row, numConnectedJoints: row.incomingElement.length })
+    const rowMeta = getRowMetadataStackedInput({ state: row, template: row, numConnectedJoints: row.incomingElements.length })
     const heightUnits = rowMeta.heightUnits;
     const indices = arrayRange(heightUnits);
 

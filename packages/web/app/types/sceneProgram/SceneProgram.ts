@@ -39,7 +39,7 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
 
 export enum DefaultFunctionArgNames
 {
-    RayPosition = 'arg_ray_p'
+    RayPosition = 'Position'
 }
 
 export interface FunctionArg 

@@ -132,7 +132,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
             {
                 const rowState = nodeState.rows[rowTemplate.id];
                 const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
-                const numConnectedJoints = Math.max(rowState.incomingElement.length, ingoingConnection);
+                const numConnectedJoints = Math.max(rowState.incomingElements.length, ingoingConnection);
                 
                 // @ts-ignore
                 const rowZ: RowZ = { 

@@ -5,6 +5,8 @@ import { geometriesRemoveIncomingElements, selectGeometry } from '../slices/geom
 import { selectTemplates } from '../slices/templatesSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
 import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
+import getJointPosition from '../utils/geometries/getJointPosition';
+import GeometryArgumentTag from './GeometryArgumentTag';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
@@ -49,7 +51,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 
     if (!connectionData) return null;
 
-    const { forwardEdges, templateMap, connectedRows, nodeHeights } = connectionData;
+    const { forwardEdges, templateMap, connectedRows, argumentConsumers } = connectionData;
 
     // New link
     const newLink = panelState?.newLink;
@@ -106,6 +108,26 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 )
             )
         }{
+            geometry && argumentConsumers && 
+            argumentConsumers.map(consumer =>
+            {
+                const nodeState = geometry.nodes[ consumer.indices[0] ];
+                const nodeTemplate = templateMap.get(nodeState.id)!;
+                const rowHeights = connectionData.rowHeights.get(nodeState.id)!;
+                const heightUnits = rowHeights[ consumer.indices[1] ] + consumer.indices[2]; // add subindex
+
+                const position = getJointPosition(nodeState.position, heightUnits, 'input');
+
+                return (
+                    <GeometryArgumentTag 
+                        key={consumer.id}
+                        geometryId={geometry.id}
+                        position={position}
+                        argument={consumer.argument}
+                    />
+                )
+            })
+        }{
             newLink && newLinkNode && newLinkTemplate &&
             <GeometryLinkNew
                 panelId={panelId}
@@ -113,7 +135,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 node={newLinkNode}
                 template={newLinkTemplate}
                 getCamera={getCamera}
-            /> 
+            />
         }{
             geometry &&
             geometry.nodes.map(node =>

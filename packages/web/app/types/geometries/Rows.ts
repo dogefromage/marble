@@ -29,7 +29,7 @@ interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT
 {
     dataType: D;
     value: RowValueMap[D];
-    defaultArgument?: string;
+    defaultArgumentToken?: string;
 }
 
 /**
@@ -109,7 +109,7 @@ export type GeometryIncomingElement =
 
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
-    incomingElement: GeometryIncomingElement[];
+    incomingElements: GeometryIncomingElement[];
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
@@ -147,7 +147,7 @@ export interface GeometryJointLocation extends GeometryRowLocation
  */
 export interface GeometryArgument
 {
-    id: string;
+    token: string;
     dataType: DataTypes;
 }
 

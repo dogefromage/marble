@@ -1,4 +1,4 @@
-import { GNodeT, GeometryJointLocation } from ".";
+import { GeometryArgument, GeometryJointLocation, GNodeT } from ".";
 import { DataTypes } from "../sceneProgram";
 import { ObjMap } from "../UtilityTypes";
 
@@ -21,6 +21,13 @@ export interface GeometryEdge
 export type DoubleMap<T> = ObjMap<ObjMap<T>>;
 export type GeometryAdjacencyList = DoubleMap<GeometryEdge[]>;
 
+export interface GeometryArgumentConsumer 
+{
+    id: string;
+    indices: GeometryToIndices;
+    argument: GeometryArgument;
+}
+
 export interface GeometryConnectionData
 {
     geometryId: string;
@@ -33,5 +40,5 @@ export interface GeometryConnectionData
     backwardEdges: GeometryAdjacencyList;
     connectedRows: GeometryConnectedRows;
     strayConnectedJoints: GeometryJointLocation[];
-    argumentConsumers: GeometryJointLocation[];
+    argumentConsumers: GeometryArgumentConsumer[];
 }

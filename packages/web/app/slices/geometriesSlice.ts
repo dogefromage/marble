@@ -23,18 +23,18 @@ function createGeometry(id: string)
 
 function createRowState(rowT: RowT) {
     const rowS: RowS = {
-        incomingElement: [],
+        incomingElements: [],
     };
     const inputRowT = rowT as InputOnlyRowT;
-    if (inputRowT.defaultArgument != null) {
+    if (inputRowT.defaultArgumentToken != null) {
         const argEl: GeometryIncomingElement = {
             type: GeometryIncomingElementTypes.Argument,
             argument: {
-                id: inputRowT.defaultArgument,
+                token: inputRowT.defaultArgumentToken,
                 dataType: inputRowT.dataType,
             },
         }
-        rowS.incomingElement = [ argEl ];
+        rowS.incomingElements = [ argEl ];
     }
     return rowS;
 }
@@ -175,13 +175,13 @@ export const geometriesSlice = createSlice({
             if (a.payload.isStackedInput)
             {
                 const newSubIndex = a.payload.jointLocation.subIndex;
-                inputRow.incomingElement = [
-                    ...inputRow.incomingElement.slice(0, newSubIndex),
+                inputRow.incomingElements = [
+                    ...inputRow.incomingElements.slice(0, newSubIndex),
                     a.payload.incomingElement,
-                    ...inputRow.incomingElement.slice(newSubIndex),
+                    ...inputRow.incomingElements.slice(newSubIndex),
                 ];
             } else {
-                inputRow.incomingElement = [ a.payload.incomingElement ];
+                inputRow.incomingElements = [ a.payload.incomingElement ];
             }
 
             g.compilationValidity++;
@@ -236,7 +236,7 @@ export const geometriesSlice = createSlice({
                         nodeId: joint.nodeId,
                     }
                 }); 
-                const outputs = node?.rows[joint.rowId].incomingElement;
+                const outputs = node?.rows[joint.rowId].incomingElements;
                 if (outputs) 
                 {
                     outputs.splice(joint.subIndex, 1); // Remove desired entry
@@ -285,7 +285,7 @@ export const geometriesSlice = createSlice({
             if (!g) return;
 
             const defaultRowState: { [K in keyof RowS]: true } = {
-                'incomingElement': true,
+                'incomingElements': true,
             }
 
             for (const node of g.nodes) {

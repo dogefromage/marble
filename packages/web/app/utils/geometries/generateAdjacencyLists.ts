@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, GeometryJointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows, GeometryIncomingElementTypes } from "../../types";
+import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, GeometryJointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows, GeometryIncomingElementTypes, GeometryArgumentConsumer } from "../../types";
 import { assertRowTHas } from "./assertions";
 import { rowLocationHash } from "./locationHashes";
 
@@ -37,7 +37,7 @@ export function generateAdjacencyLists(
         }
     }
 
-    const argumentConsumers: GeometryJointLocation[] = [];
+    const argumentConsumers: GeometryArgumentConsumer[] = [];
     const strayConnectedJoints: GeometryJointLocation[] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
@@ -51,17 +51,17 @@ export function generateAdjacencyLists(
             const rowId = rowOrder[rowIndex];
             const row = node.rows[rowId];
 
-            for (let subIndex = 0; subIndex < row.incomingElement.length; subIndex++)
+            for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++)
             {
-                const jointLocation = {
-                    nodeId: node.id,
-                    rowId,
-                    subIndex,
-                };
+                const toIndices: GeometryToIndices = [ nodeIndex, rowIndex, subIndex ];
                 
-                const incoming = row.incomingElement[subIndex];
+                const incoming = row.incomingElements[subIndex];
                 if (incoming.type === GeometryIncomingElementTypes.Argument) {
-                    argumentConsumers.push(jointLocation);
+                    argumentConsumers.push({
+                        id: `arg:${toIndices.join('.')}`,
+                        indices: toIndices,
+                        argument: incoming.argument,
+                    });
                     continue;
                 }
 
@@ -70,6 +70,12 @@ export function generateAdjacencyLists(
                 const fromRowKey = rowLocationHash(output);
                 const fromRowCoordinates = outputIndicesMap.get(fromRowKey);
 
+                const jointLocation = {
+                    nodeId: node.id,
+                    rowId,
+                    subIndex,
+                };
+                
                 if (!fromRowCoordinates)
                 {
                     strayConnectedJoints.push(jointLocation);
@@ -82,7 +88,6 @@ export function generateAdjacencyLists(
                     throw new Error(`Property missing 'dataType'`);
                 const { dataType } = templateRow;
 
-                const toIndices: GeometryToIndices = [ nodeIndex, rowIndex, subIndex ];
                 const fromIndices: GeometryFromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
 
                 const edgeId = [ 
