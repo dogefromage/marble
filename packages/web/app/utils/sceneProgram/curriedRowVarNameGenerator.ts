@@ -1,5 +1,5 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryEdge, GNodeS, GNodeT, IncrementalProgramMetadata, InputOnlyRowT, GeometryJointLocation, ObjMap, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, RowT, RowZ, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryEdge, GNodeS, GNodeT, IncrementalProgramMetadata, InputOnlyRowT, GeometryJointLocation, ObjMap, ProgramConstant, ProgramTextureVar, ProgramTextureVarMapping, RowT, RowZ, TEXTURE_VAR_DATATYPE_SIZE, GeometryIncomingElementTypes } from "../../types";
 import { Counter } from "../Counter";
 import { jointLocationHash } from "../geometries/locationHashes";
 
@@ -128,12 +128,15 @@ export class RowVarNameGenerator
 
         // case 1: connection
         const incomingEdge = this.getEdgeInto(rowIndex)?.[0];
-        if (incomingEdge) 
+        if (incomingEdge) {
             return this.hashOutput(...incomingEdge.fromIndices);
+        }
 
-        // case 2: fallback function argument
-        if (row.defaultArgumentToken)
-            return row.defaultArgumentToken;
+        // case 2: argument connected
+        const fallback = row.incomingElements?.[0];
+        if (fallback?.type === GeometryIncomingElementTypes.Argument) {
+            return fallback.argument.token;
+        }
 
         const rowMetadata = getRowMetadata({ state: row, template: row, numConnectedJoints: 0 });
 

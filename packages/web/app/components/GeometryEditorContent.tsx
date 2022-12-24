@@ -112,7 +112,6 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
             argumentConsumers.map(consumer =>
             {
                 const nodeState = geometry.nodes[ consumer.indices[0] ];
-                const nodeTemplate = templateMap.get(nodeState.id)!;
                 const rowHeights = connectionData.rowHeights.get(nodeState.id)!;
                 const heightUnits = rowHeights[ consumer.indices[1] ] + consumer.indices[2]; // add subindex
 
@@ -141,8 +140,9 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
             geometry.nodes.map(node =>
             {
                 let selectionStatus = SelectionStatus.Nothing;
-                if (geometry.selectedNodes.includes(node.id))
+                if (geometry.selectedNodes.includes(node.id)) {
                     selectionStatus = SelectionStatus.Selected;
+                }
 
                 return (
                     <GeometryNode
