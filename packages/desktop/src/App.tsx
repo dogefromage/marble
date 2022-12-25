@@ -1,9 +1,10 @@
-import React from 'react';
+import { AppRoot } from "@marble/app";
+import "@marble/app/src/styles/globals.scss";
 
 const App = () =>
 {
     return (
-        <h1>Hello world</h1>
+        <AppRoot projectId='test' />
     );
 }
 

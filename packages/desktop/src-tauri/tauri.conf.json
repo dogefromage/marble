@@ -58,7 +58,8 @@
         "height": 800,
         "resizable": true,
         "title": "Marble Desktop",
-        "width": 1000
+        "width": 1000,
+        "fileDropEnabled": false
       }
     ]
   }

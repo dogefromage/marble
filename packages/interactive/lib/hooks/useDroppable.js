@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.useDroppable = void 0;
-const react_1 = require("react");
-const dnd_1 = require("../utils/dnd");
-function useDroppable(props) {
-    const [isHovering, setIsHovering] = (0, react_1.useState)(false);
-    const depthCounterRef = (0, react_1.useRef)(0);
+import { useRef, useState } from "react";
+import { getTransferData } from "../utils/dnd";
+export function useDroppable(props) {
+    const [isHovering, setIsHovering] = useState(false);
+    const depthCounterRef = useRef(0);
     const onDragEnter = (e) => {
         var _a;
-        const transfer = (0, dnd_1.getTransferData)(e, props.tag);
+        const transfer = getTransferData(e, props.tag);
         if (!transfer)
             return;
         depthCounterRef.current++;
@@ -16,7 +13,7 @@ function useDroppable(props) {
     };
     const onDragOver = (e) => {
         var _a;
-        const transfer = (0, dnd_1.getTransferData)(e, props.tag);
+        const transfer = getTransferData(e, props.tag);
         if (!transfer)
             return;
         (_a = props.over) === null || _a === void 0 ? void 0 : _a.call(props, e, transfer);
@@ -26,7 +23,7 @@ function useDroppable(props) {
     };
     const onDragLeave = (e) => {
         var _a;
-        const transfer = (0, dnd_1.getTransferData)(e, props.tag);
+        const transfer = getTransferData(e, props.tag);
         if (!transfer)
             return;
         depthCounterRef.current--;
@@ -38,7 +35,7 @@ function useDroppable(props) {
     };
     const onDrop = (e) => {
         var _a;
-        const transfer = (0, dnd_1.getTransferData)(e, props.tag);
+        const transfer = getTransferData(e, props.tag);
         if (!transfer)
             return;
         setIsHovering(false);
@@ -55,5 +52,4 @@ function useDroppable(props) {
         isHovering,
     };
 }
-exports.useDroppable = useDroppable;
 //# sourceMappingURL=useDroppable.js.map

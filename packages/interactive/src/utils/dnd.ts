@@ -27,7 +27,7 @@ export function setTransferData<T>(e: React.DragEvent, tag: string, data: T)
 {
     const json = JSON.stringify({ tag, data });
 
-    e.dataTransfer.setData(encodeUpperCase(json), '');
+    e.dataTransfer.setData(encodeUpperCase(json), "null");
 }
 
 export function getTransferData<T>(e: React.DragEvent, tag: string)
@@ -37,37 +37,10 @@ export function getTransferData<T>(e: React.DragEvent, tag: string)
     try
     {
         const parsed = JSON.parse(json);
-        if (parsed.tag === tag) return parsed.data as T;
+        if (parsed.tag === tag) { 
+            return parsed.data as T;
+        }
+    } catch { 
+        return undefined;
     }
-    catch {}
 }
-
-// export function setTransferData<T>(e: React.DragEvent, key: string, data: T)
-// {
-//     let lastData: { [key: string]: any } = {};
-//     let lastDataJSON = decodeUpperCase(e.dataTransfer.types[0] || '{}')
-//     try
-//     {
-//         lastData = JSON.parse(lastDataJSON);
-//     }
-//     catch {};
-
-//     lastData[key] = data;
-//     e.dataTransfer.setData(encodeUpperCase(JSON.stringify(lastData)), '');
-// }
-
-// export function getTransferData<T>(e: React.DragEvent, key: string)
-// {
-//     let dataJSON = decodeUpperCase(e.dataTransfer.types[0] || '{}')
-
-//     try
-//     {
-//         let data = JSON.parse(dataJSON);
-        
-//         if (data[key])
-//         {
-//             return data[key] as T;
-//         }
-//     }
-//     catch {}
-// }
