@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "frontend-dev": "vite",
+    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "dev": "tauri dev"
+    "tauri-dev": "tauri dev"
   },
   "dependencies": {
     "@marble/app": "*",
