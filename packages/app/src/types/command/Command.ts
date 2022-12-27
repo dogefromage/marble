@@ -11,8 +11,9 @@ export enum CommandScope
 
 export enum CommandCallTypes
 {
-    KeyCombination = 'key-combination',
-    ContextMenu = 'context-menu',
+    Toolbar = 'toolbar',
+    ContextMenu = 'contextmenu',
+    KeyCombination = 'keycombination',
 }
 
 export interface CommandBaseArgs 

@@ -126,7 +126,7 @@ const GeometryEditorView = (viewProps: ViewProps) =>
                 />
             }
             {
-                geometryS &&
+                geometryS && panelState?.templateCatalog &&
                 <GeometryTemplateCatalog 
                     panelId={viewProps.panelId}
                 />

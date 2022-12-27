@@ -1,17 +1,12 @@
-import React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { GNodeT, GNodeTemplateCategories, TEMPLATE_CATEGORY_NAMES, ViewTypes } from '../types';
+import { GNodeT, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, TEMPLATE_CATEGORY_NAMES, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
 import { NODE_WIDTH } from './GeometryNode';
-import Menu from './Menu';
-import MenuExpand from './MenuExpand';
-import MenuItem from './MenuItem';
-import MenuSearch from './MenuSearch';
-import MenuTitle from './MenuTitle';
+import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {
     [C in GNodeTemplateCategories]: GNodeT[];
@@ -29,36 +24,6 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     
     const [ searchValue, setSearchValue ] = useState('');
-    const filteredTemplates = useMemo(() =>
-    {
-        const all = Object.values(templates);
-        if (!searchValue.length) return all;
-        return all.filter(t => t.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
-    }, [ templates, searchValue ]);
-
-    const useFiltered = searchValue.length > 0;
-
-    // group all templates by category
-    const sortedGroups = useMemo(() => {
-        const groupedTemplatesMap = Object.values(templates)
-            .reduce((groupes, current) =>
-        {
-            const key = current.category;
-            if (groupes[key] == null) { groupes[key] = []; }
-            groupes[key].push(current);
-            return groupes;
-        }, {} as GroupedTemplatesMap);
-        return Object.entries(groupedTemplatesMap)
-            .sort((group1, group2) => {
-                const cat1 = group1[0].toLowerCase();
-                const cat2 = group2[0].toLowerCase();
-                if (cat1 === cat2) return 0;
-                return cat1 > cat2 ? 1 : -1;
-            });
-    }, [ templates ]);
-
-
-    const closeMenu = () => dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }));
 
     const addNode = (template: GNodeT) =>
     {
@@ -74,65 +39,104 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
             },
             undo: {}
         }));
-        closeMenu();
     }
+
+    const menuShape = useMemo(() => {
+        const allTemplates = Object.values(templates);
+
+        const title: TitleMenuElement = {
+            type: 'title',
+            name: 'Add Template',
+        }
+        const searchBar: SearchMenuElement = {
+            type: 'search',
+            name: 'search',
+            placeholder: 'Search...',
+            autofocus: true,
+        };
+
+        if (searchValue.length > 0) {
+            // render filtered
+            const filtered = allTemplates
+                .filter(t => t.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
+
+            const listTemplates: MenuElement[] = filtered.map(template => ({
+                type: 'button',
+                name: template.rows[0].name,
+                onClick: () => addNode(template),
+            }));
+            
+            const menuShape: VerticalMenuShape = {
+                type: 'vertical',
+                list: [
+                    title,
+                    searchBar,
+                    ...listTemplates,
+                ],
+            }
+            return menuShape;
+        }
+        else {
+            // render grouped
+            const groupedTemplatesMap = allTemplates
+                .reduce((groupes, current) =>
+                {
+                    const key = current.category;
+                    if (groupes[key] == null) { groupes[key] = []; }
+                    groupes[key].push(current);
+                    return groupes;
+                }, {} as GroupedTemplatesMap);
+            
+            const sortedGroupes = Object.entries(groupedTemplatesMap)
+                .sort((group1, group2) => {
+                    const cat1 = group1[0].toLowerCase();
+                    const cat2 = group2[0].toLowerCase();
+                    if (cat1 === cat2) return 0;
+                    return cat1 > cat2 ? 1 : -1;
+                });
+
+            const groupedList: MenuElement[] = sortedGroupes.map(([ category, tempOfGroup ]) => ({
+                type: 'expand',
+                name: TEMPLATE_CATEGORY_NAMES[category as GNodeTemplateCategories],
+                sublist: {
+                    type: 'vertical',
+                    list: tempOfGroup.map(template => ({
+                        type: 'button',
+                        name: template.rows[0].name,
+                        onClick: () => addNode(template),
+                    }))
+                } 
+            }));
+            
+            const menuShape: VerticalMenuShape = {
+                type: 'vertical',
+                list: [
+                    title,
+                    searchBar,
+                    ...groupedList,
+                ],
+            }
+            return menuShape;
+        }
+    }, [ templates, searchValue ]);
 
     useEffect(() =>
     {
         setSearchValue('');
-    }, [ panelState?.templateCatalog ])
+    }, [ panelState?.templateCatalog ]);
 
     if (!panelState?.templateCatalog) return null;
-
+    
     return (
-        <Menu
-            position={panelState.templateCatalog.offsetPosition}
-            onUnfocus={closeMenu}
-            center={panelState.templateCatalog.center}
-        >
-            <MenuTitle 
-                text='Add Node'
-            />
-            <MenuSearch 
-                value={searchValue}
-                onChange={setSearchValue}
-                onSubmit={() =>
-                {
-                    if (filteredTemplates.length === 1)
-                        addNode(filteredTemplates[0]);
-                }}
-                placeholder='Search...'
-                autoFocus={true}
-            />
-            {
-                useFiltered ? (
-                    filteredTemplates.map(template =>
-                        <MenuItem
-                            onClick={() => addNode(template)}
-                            key={template.id}
-                            text={template.rows[0].name}
-                        />
-                    )
-                ) : (
-                    sortedGroups.map(([ category, templatesOfCategory ]) =>
-                        <MenuExpand
-                            key={category}
-                            name={TEMPLATE_CATEGORY_NAMES[category as GNodeTemplateCategories]}
-                        >
-                        {
-                            templatesOfCategory.map(template =>
-                                <MenuItem
-                                    onClick={() => addNode(template)}
-                                    key={template.id}
-                                    text={template.rows[0].name}
-                                />
-                            )
-                        }
-                        </MenuExpand>
-                    )
-                )
-            }
-        </Menu>
+        <MenuRoot
+            type={MenuTypes.Misc}
+            shape={menuShape}
+            onClose={() => {
+                dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))
+            }}
+            anchor={panelState.templateCatalog.offsetPosition}
+            onSearchUpdated={setSearchValue}
+        />
     );
 }
 

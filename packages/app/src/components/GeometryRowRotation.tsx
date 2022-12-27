@@ -72,8 +72,6 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) =>
 
         const doNotRecord = row.currentDisplay == null;
 
-        console.log(doNotRecord);
-
         dispatch(geometriesAssignRowData({
             geometryId,
             nodeId,

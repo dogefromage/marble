@@ -1,48 +1,20 @@
 import React from 'react';
-import styled from 'styled-components';
-
-const MenuTitleDiv = styled.div<{ backColor?: string }>`
-
-    width: calc(100% + 1rem);
-    margin: 0 -0.5rem; // ugly hack
-
-    height: 35px;
-
-    border-radius: 3px 3px 0 0;
-
-    background-color: ${({ backColor }) => backColor || '#444' };
-    color: white;
-
-    display: flex;
-    align-items: center;
-
-    p
-    {
-        margin: 0;
-        padding: 0 1.5rem;
-        font-weight: bold;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-`;
+import { MenuTitleDiv } from '../styles/MenuTitleDiv';
+import { MenuStore, TitleMenuElement } from '../types';
 
 interface Props
 {
-    text: string;
-    color?: string;
+    depth: number;
+    menuStore: MenuStore;
+    element: TitleMenuElement;
 }
-
-const MenuTitle = ({ text, color }: Props) =>
+const MenuTitle = ({ element }: Props) =>
 {
-
-
     return (
         <MenuTitleDiv
-            backColor={color}
+            backColor={element.color}
         >
-            <p>{ text }</p>
+            <p>{ element.name }</p>
         </MenuTitleDiv>
     );
 }

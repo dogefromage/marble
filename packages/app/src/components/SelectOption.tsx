@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
+import { MenuShape, MenuTypes } from '../types';
 import MaterialSymbol from './MaterialSymbol';
-import Menu from './Menu';
-import MenuItem from './MenuItem';
+import MenuRoot from './MenuRoot';
 
 const SelectOptionDiv = styled.div`
     position: relative;
@@ -44,31 +44,32 @@ const SelectOption = ({ value, onChange, options }: Props) =>
 {
     const [ dropdown, setDropdown ] = useState(false);
 
+    const menuShape: MenuShape = useMemo(() => {
+        return {
+            type: 'vertical',
+            list: options.map(option => ({
+                type: 'button',
+                name: option,
+                onClick: () => {
+                    onChange(option);
+                    setDropdown(() => false);
+                }
+            })),
+        };
+    }, [ options ]);
+
     return (
         <SelectOptionDiv
             onClick={() => setDropdown(true)}
         >
         {
             dropdown ? (
-                <Menu
-                    onUnfocus={() => setDropdown(false)}
-                    position={{ x: 0, y: 0 }}
-                >
-                {
-                    options.map(option =>
-                        <MenuItem
-                            key={option}
-                            text={option}
-                            onClick={e => 
-                            {
-                                onChange(option);
-                                setDropdown(() => false);
-                                e.stopPropagation();
-                            }}
-                        />   
-                    )
-                }
-                </Menu>
+                <MenuRoot
+                    type={MenuTypes.Misc}
+                    shape={menuShape}
+                    anchor={{ x: 0, y: 0 }}
+                    onClose={() => setDropdown(false)}
+                />
             ) : (
                 <>
                     <p>{ value }</p>

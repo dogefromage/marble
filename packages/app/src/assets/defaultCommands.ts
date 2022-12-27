@@ -31,32 +31,19 @@ export const DEFAULT_COMMANDS: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.openTemplateCatalog',
         name: 'Add Node',
-        actionCreator({ callType, activePanel }, params)
+        actionCreator({ activePanel }, params)
         {
             let offsetPos: Point, center = false;
 
-            switch (callType)
-            {
-                case CommandCallTypes.ContextMenu:
-                {
-                    offsetPos = params.offsetPos;
-                    break;
-                }
-                case CommandCallTypes.KeyCombination:
-                {
-                    const bounds = activePanel.panelClientRect;
-                    
-                    offsetPos = {
-                        x: 0.5 * bounds.w,
-                        y: 0.5 * bounds.h,
-                    };
-                    center = true;
-                    break;
-                }
-                default:
-                {
-                    return console.error(`Calltype not found`)
-                }
+            if (params.offsetPos == null) {
+                const bounds = activePanel.panelClientRect;
+                offsetPos = {
+                    x: 0.5 * bounds.w,
+                    y: 0.5 * bounds.h,
+                };
+                center = true;
+            } else {
+                offsetPos = params.offsetPos;
             }
 
             return geometryEditorPanelsOpenTemplateCatalog({

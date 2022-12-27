@@ -1,41 +1,24 @@
 import { DragzonePortalMount } from '@marble/interactive';
 import { AnyAction, EnhancedStore } from '@reduxjs/toolkit';
 import { glMatrix } from 'gl-matrix';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
+import 'react-reflex/styles.css';
 import styled, { ThemeProvider } from 'styled-components';
+import defaultTheme from '../assets/defaultTheme';
 import { initStore, RootState } from '../redux/store';
 import ContextMenu from './ContextMenu';
 import { ContextMenuPortalMount } from './ContextMenuPortalMount';
 import DefaultTemplateLoader from './DefaultTemplateLoader';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
-import GeometryEditorView from './GeometryEditorView';
 import KeyboardCommandListener from './KeyboardCommandListener';
+import LayoutRoot from './LayoutRoot';
 import SceneProgramCompiler from './SceneProgramCompiler';
-import ViewportView from './ViewportView';
-import {
-  ReflexContainer,
-  ReflexSplitter,
-  ReflexElement
-} from 'react-reflex'
-import 'react-reflex/styles.css'
-import ConsoleView from './ConsoleView';
-import StartAnouncer from './StartAnouncer';
 import ServiceErrorBoundary from './ServiceErrorBoundary';
-import React from 'react';
-import defaultTheme from '../assets/defaultTheme';
+import StartAnouncer from './StartAnouncer';
 
 glMatrix.setMatrixArrayType(Array);
-
-const Wrapper = styled.div`
-  
-    width: 100%;
-    height: 100vh;
-    /* display: flex;
-    flex-direction: column;
-    overflow: hidden; */
-`;
 
 interface Props
 {
@@ -61,35 +44,7 @@ const AppRoot = ({ projectId }: Props) =>
             <Provider store={store}>
                 {/* Views */}
                 <ThemeProvider theme={defaultTheme}>
-                    <Wrapper
-                        onContextMenu={e => e.preventDefault()}
-                    >
-                        <ReflexContainer
-                            orientation='horizontal'
-                        >
-                            <ReflexElement>
-                                <ReflexContainer
-                                    orientation='vertical'
-                                >
-                                    <ReflexElement
-                                        flex={2}
-                                    >
-                                        <ViewportView panelId='4321' />
-                                    </ReflexElement>
-                                    <ReflexSplitter />
-                                    <ReflexElement
-                                        flex={1}
-                                    >
-                                        <ConsoleView panelId='1432134' />
-                                    </ReflexElement>
-                                </ReflexContainer>
-                            </ReflexElement>
-                            <ReflexSplitter />
-                            <ReflexElement>
-                                <GeometryEditorView panelId='1234' />
-                            </ReflexElement>
-                        </ReflexContainer>
-                    </Wrapper>
+                    <LayoutRoot />
                 </ThemeProvider>
                 {/* "Modules" / "Services" */}
                 <ServiceErrorBoundary serviceName='SceneProgramCompiler'>

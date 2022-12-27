@@ -1,64 +1,53 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { MenuItemText } from '../styles/MenuItemText';
+import React from 'react';
+import { menuStoreSetElement } from '../hooks/useMenuStore';
+import { MenuExpandDiv } from '../styles/MenuElementDiv';
+import { ExpandMenuElement, MenuStackElement, MenuStore, Point } from '../types';
 import MaterialSymbol from './MaterialSymbol';
-import Menu from './Menu';
-import MenuItem from './MenuItem';
-
-interface DivProps
-{
-    // placeRight: boolean;
-}
-
-const MenuExpandDiv = styled.div<DivProps>`
-    position: relative;
-
-    .expand-name-div {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
-    }
-`;
+import MenuVertical from './MenuVertical';
 
 interface Props
 {
-    name: string;
-    children: React.ReactNode;
+    depth: number;
+    menuStore: MenuStore;
+    element: ExpandMenuElement;
 }
 
-const MenuExpand = ({ name, children }: Props) =>
+const MenuExpand = ({ element, menuStore, depth }: Props) =>
 {
-    const [ show, setShow ] = useState(false);
-
-    const showExpanded = () => setShow(true);
-    const hideExpanded = () => setShow(false);
-
-    const placeRight = true;
+    const { state: menuState, dispatch: menuDispatch } = menuStore;
+    const currentStackEl = menuState.stack[depth] as MenuStackElement | undefined;
 
     return (
         <MenuExpandDiv
-            onMouseEnter={showExpanded}
-            onMouseLeave={hideExpanded}
-            // placeRight={placeRight}
+            key={element.name}
+            onMouseEnter={e => {
+                const div = e.currentTarget as HTMLDivElement;
+                if (!div) return;
+                const rect = div.getBoundingClientRect();
+                const position: Point = {
+                    x: rect.width,
+                    y: 0,
+                }; // relative position
+                menuDispatch(menuStoreSetElement({
+                    depth,
+                    element: {
+                        key: element.name,
+                        position,
+                    }
+                }));
+            }}
         >
-            <MenuItem>
-                <div className='expand-name-div'>
-                    <MenuItemText>
-                        { name }
-                    </MenuItemText>
-                    <MaterialSymbol size={20}>chevron_right</MaterialSymbol>
-                </div>
-            </MenuItem>            
+            <p>{ element.name }</p>
+            <MaterialSymbol size={20}>chevron_right</MaterialSymbol>
             {
-                show &&
-                <Menu
-                    position={{ x: 0, y: 0 }}
-                    onUnfocus={() => {}}
-                    anchorRight={placeRight}
-                >
-                    { children }
-                </Menu>
+                currentStackEl?.key === element.name &&
+                <MenuVertical
+                    depth={depth + 1}
+                    menuStore={menuStore}
+                    shape={element.sublist}
+                    left={`${currentStackEl.position.x}px`}
+                    top={`${currentStackEl.position.y}px`}
+                />
             }
         </MenuExpandDiv>
     );

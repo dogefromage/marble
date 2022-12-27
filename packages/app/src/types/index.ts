@@ -1,5 +1,5 @@
 export * from './command';
-export * from './contextMenu';
+export * from './menu';
 export * from './geometries';
 export * from './panelManager';
 export * from './panelState';

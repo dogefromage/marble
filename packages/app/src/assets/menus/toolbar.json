@@ -1,0 +1,28 @@
+{
+    "$schema": "../schemas/menu.json",
+    "type": "horizontal",
+    "list": [
+        {
+            "type": "expand",
+            "name": "Project",
+            "sublist": {
+                "type": "vertical",
+                "list": [
+                    {  "type": "command", "name": "Save", "command": "project.save" },
+                    {  "type": "command", "name": "Exit", "command": "project.exit" }
+                ]
+            }
+        },
+        {
+            "name": "Edit",
+            "type": "expand",
+            "sublist": {
+                "type": "vertical",
+                "list": [
+                    {  "type": "command", "name": "Undo", "command": "global.undo" },
+                    {  "type": "command", "name": "Redo", "command": "global.redo" }
+                ]
+            }
+        }
+    ]
+}

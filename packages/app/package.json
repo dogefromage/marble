@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "schemagen": "sh src/workflows/schemagen.sh"
   },
   "dependencies": {
     "@marble/interactive": "^1.0.0",
@@ -30,6 +31,7 @@
     "@types/redux-logger": "^3.0.9",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
-    "copyfiles": "^2.4.1"
+    "copyfiles": "^2.4.1",
+    "typescript-json-schema": "^0.55.0"
   }
 }
