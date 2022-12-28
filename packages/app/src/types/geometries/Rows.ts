@@ -4,7 +4,6 @@ import { RotationModels, Tuple } from "../UtilityTypes";
 /**
  * Values
  */
-
 export interface RowValueMap 
 {
     [DataTypes.Float]: number;
@@ -18,7 +17,6 @@ export interface RowValueMap
 /**
  * super interfaces
  */
-
 interface SuperRowT
 {
     id: string;
@@ -99,17 +97,19 @@ type RowTOverDataTypesMap =
 }
 export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 
-export enum GeometryIncomingElementTypes {
-    RowOutput = 'row-output',
-    Argument = 'argument',
-}
-export type GeometryIncomingElement = 
-    | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
-    | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
+// export enum GeometryIncomingElementTypes {
+//     RowOutput = 'row-output',
+//     Argument = 'argument',
+// }
+// export type GeometryIncomingElement = 
+//     | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
+//     | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
 
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
-    incomingElements: GeometryIncomingElement[];
+    // incomingElements: GeometryIncomingElement[];
+    incomingLinks: GeometryRowLocation[];
+    fallbackArgument: GeometryArgument | null;
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
@@ -119,7 +119,6 @@ export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
 /**
  * Metadata
  */
-
 export interface RowMetadata
 {
     heightUnits: number;
@@ -129,16 +128,12 @@ export interface RowMetadata
 /**
  * Locating
  */
-
-export interface GeometryRowLocation
-{
+export type GeometryJointDirection = 'input' | 'output';
+export interface GeometryRowLocation {
     nodeId: string;
     rowId: string;
 }
-
-export type GeometryJointDirection = 'input' | 'output';
-export interface GeometryJointLocation extends GeometryRowLocation
-{
+export interface GeometryJointLocation extends GeometryRowLocation {
     subIndex: number;
 }
 
@@ -151,20 +146,22 @@ export interface GeometryArgument
     dataType: DataTypes;
 }
 
+
 /**
  * Drag and drop
  */
-interface JointDndTransferRowOutput {
-    elementType: GeometryIncomingElementTypes.RowOutput;
+export interface JointDndTransferLink 
+{
     location: GeometryJointLocation;
     direction: GeometryJointDirection;
     dataType: DataTypes;
     mergeStackInput: boolean;
 }
-interface JointDndTransferArgument {
-    elementType: GeometryIncomingElementTypes.Argument;
+
+export interface JointDndTransferArgument 
+{
     argument: GeometryArgument;
 }
-export type JointDndTransfer = JointDndTransferRowOutput | JointDndTransferArgument;
 
-export const JOINT_DND_TAG = 'geometry.joint';
+export const JOINT_DND_LINK_TAG = 'geometry.joint.link';
+export const JOINT_DND_ARGUMENT_TAG = 'geometry.joint.arg';

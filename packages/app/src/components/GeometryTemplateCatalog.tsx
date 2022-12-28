@@ -136,6 +136,7 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
             }}
             anchor={panelState.templateCatalog.offsetPosition}
             onSearchUpdated={setSearchValue}
+            center={panelState.templateCatalog.center}
         />
     );
 }

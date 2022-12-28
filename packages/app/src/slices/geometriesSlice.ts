@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { GeometriesSliceState, GeometryArgument, GeometryIncomingElement, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GNodeS, GNodeT, InputOnlyRowT, Point, RowS, RowT, UndoAction } from "../types";
+import { GeometryS, RowT, RowS, InputOnlyRowT, GNodeT, Point, GNodeS, GeometriesSliceState, UndoAction, GeometryJointLocation } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
@@ -23,7 +23,8 @@ function createGeometry(id: string)
 
 function createRowState(rowT: RowT) {
     const rowS: RowS = {
-        incomingElements: [],
+        incomingLinks: [],
+        fallbackArgument: null,
     };
     const inputRowT = rowT as InputOnlyRowT;
     if (inputRowT.defaultArgumentToken != null) {

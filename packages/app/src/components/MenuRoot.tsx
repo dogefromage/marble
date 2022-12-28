@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import useClickedOutside from '../hooks/useClickedOutside';
 import useMenuStore, { menuStoreClose } from '../hooks/useMenuStore';
+import { VERTICAL_MENU_WIDTH } from '../styles/MenuVerticalDiv';
 import { HorizontalMenuShape, MenuShape, MenuTypes, Point, VerticalMenuShape } from '../types';
 import MenuHorizontal from './MenuHorizontal';
 import MenuVertical from './MenuVertical';
@@ -10,13 +11,14 @@ interface Props
     type: MenuTypes;
     shape: MenuShape
     anchor?: Point;
+    center?: boolean;
     onSearchUpdated?: (newValue: string) => void;
     onClose?: () => void;
 }
 
 const INITIAL_DEPTH = 0;
 
-const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated }: Props) =>
+const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Props) =>
 {
     const menuStore = useMenuStore(type);
     const wrapperDivRef = useRef<HTMLDivElement>(null);
@@ -36,7 +38,10 @@ const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated }: Props) =>
 
     let left: string | undefined, top: string | undefined;
     if (anchor != null) {
-        left = `${anchor.x}px`;
+        let leftPx = anchor.x;
+        if (center) 
+            leftPx -= VERTICAL_MENU_WIDTH / 2;
+        left = `${leftPx}px`;
         top = `${anchor.y}px`;
     }
 

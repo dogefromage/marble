@@ -39,7 +39,7 @@ export const DEFAULT_COMMANDS: Command[] =
                 const bounds = activePanel.panelClientRect;
                 offsetPos = {
                     x: 0.5 * bounds.w,
-                    y: 0.5 * bounds.h,
+                    y: 50,
                 };
                 center = true;
             } else {

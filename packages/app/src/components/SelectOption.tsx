@@ -61,7 +61,7 @@ const SelectOption = ({ value, onChange, options }: Props) =>
     return (
         <SelectOptionDiv
             onClick={() => setDropdown(true)}
-        >
+        > 
         {
             dropdown ? (
                 <MenuRoot

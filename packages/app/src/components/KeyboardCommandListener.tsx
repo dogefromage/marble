@@ -1,14 +1,15 @@
 import { useCallback, useRef } from 'react';
-import useAvaliableCommands from '../hooks/useAvailableCommands';
 import useDispatchCommand from '../hooks/useDispatchCommand';
 import { useEventListener } from '../hooks/useEventListener';
+import { useAppSelector } from '../redux/hooks';
+import { selectCommands } from '../slices/commandsSlice';
 import { CommandCallTypes } from '../types';
 import matchesKeyCombination from '../utils/commands/matchesKeyCombination';
 
 const KeyboardCommandListener = () =>
 {
     const dispatchCommand = useDispatchCommand();
-    const commands = useAvaliableCommands();
+    const { commands } = useAppSelector(selectCommands);
 
     const commandsRef = useRef(commands);
     commandsRef.current = commands;

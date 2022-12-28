@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 
+export const VERTICAL_MENU_WIDTH = 320;
+
 export interface MenuVerticalDivProps
 {
     left?: string;
@@ -24,7 +26,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     display: flex;
     flex-direction: column;
 
-    width: 320px;
+    width: ${VERTICAL_MENU_WIDTH}px;
 
     background-color: white;
     border-radius: 3px;
