@@ -1,9 +1,9 @@
-import { InputOnlyRowT } from '../types';
-import GeometryJoint from './GeometryJoint';
-import { RowProps } from './GeometryRowRoot';
+import React from 'react';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
-import React from 'react';
+import { InputOnlyRowT } from '../types';
+import GeometryInputJoint from './GeometryInputJoint';
+import { RowProps } from './GeometryRowRoot';
 
 const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row: row }: RowProps<InputOnlyRowT>) =>
 {
@@ -16,12 +16,10 @@ const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row: row }: RowProp
             >
                 { row.name }
             </GeometryRowNameP>
-            <GeometryJoint 
+            <GeometryInputJoint 
                 geometryId={geometryId}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
-                jointDirection='input'
-                connected={row.numConnectedJoints > 0}
-                dataType={row.dataType}
+                row={row}
             />
         </GeometryRowDiv>
     );

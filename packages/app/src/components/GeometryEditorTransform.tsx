@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesSetSelectedNodes, selectGeometry } from '../slices/geometriesSlice';
 import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsUpdateCamera, geometryEditorPanelsSetNewLink } from '../slices/panelGeometryEditorSlice';
 import MouseSelectionDiv from '../styles/MouseSelectionDiv';
-import { DEFAULT_PLANAR_CAMERA, GeometryIncomingElementTypes, JointDndTransfer, JOINT_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
+import { DEFAULT_PLANAR_CAMERA, GeometryIncomingElementTypes, JointLinkDndTransfer, JOINT_LINK_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
 import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
 import GeometryEditorContent from './GeometryEditorContent';
@@ -235,16 +235,14 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
     const prevDefault = (e: React.DragEvent) => e.preventDefault();
     const lastCallTime = useRef(0);
 
-    const { handlers: dragJointHandler } = useDroppable<JointDndTransfer>({
-        tag: JOINT_DND_TAG,
+    const { handlers: dragJointHandler } = useDroppable<JointLinkDndTransfer>({
+        tag: JOINT_LINK_DND_TAG,
         enter: prevDefault,
         leave: prevDefault,
         over(e, transfer)
         {
-            if (wrapperRef.current == null || 
-                transfer.elementType !== GeometryIncomingElementTypes.RowOutput) {
-                    return;
-                }
+            if (wrapperRef.current == null) 
+                return;
 
             const time = new Date().getTime();
             if (lastCallTime.current < time - 20)

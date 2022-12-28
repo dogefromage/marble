@@ -23,7 +23,7 @@ interface SuperRowT
     name: string;
 }
 
-interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT 
+export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT 
 {
     dataType: D;
     value: RowValueMap[D];
@@ -60,8 +60,6 @@ export interface StackedInputRowT<D extends DataTypes = DataTypes> extends Super
     type: RowTypes.InputStacked;
 }
 
-export type AnyInputOnlyRowT = { [T in keyof typeof DataTypes]: InputOnlyRowT<typeof DataTypes[T]> }[keyof typeof DataTypes]
-
 export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
 {
     type: RowTypes.Field;
@@ -97,19 +95,17 @@ type RowTOverDataTypesMap =
 }
 export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
 
-// export enum GeometryIncomingElementTypes {
-//     RowOutput = 'row-output',
-//     Argument = 'argument',
-// }
-// export type GeometryIncomingElement = 
-//     | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
-//     | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
+export enum GeometryIncomingElementTypes {
+    RowOutput = 'row-output',
+    Argument = 'argument',
+}
+export type GeometryIncomingElement = 
+    | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
+    | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
 
 export type RowS<T extends RowT = RowT> = Partial<T> &
 {
-    // incomingElements: GeometryIncomingElement[];
-    incomingLinks: GeometryRowLocation[];
-    fallbackArgument: GeometryArgument | null;
+    incomingElements: GeometryIncomingElement[];
 }
 
 export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
@@ -150,7 +146,7 @@ export interface GeometryArgument
 /**
  * Drag and drop
  */
-export interface JointDndTransferLink 
+export interface JointLinkDndTransfer 
 {
     location: GeometryJointLocation;
     direction: GeometryJointDirection;
@@ -158,10 +154,10 @@ export interface JointDndTransferLink
     mergeStackInput: boolean;
 }
 
-export interface JointDndTransferArgument 
+export interface JointArgumentDndTransfer 
 {
     argument: GeometryArgument;
 }
 
-export const JOINT_DND_LINK_TAG = 'geometry.joint.link';
-export const JOINT_DND_ARGUMENT_TAG = 'geometry.joint.arg';
+export const JOINT_LINK_DND_TAG = 'dnd.geometry.joint.link';
+export const JOINT_ARGUMENT_DND_TAG = 'dnd.geometry.joint.arg';

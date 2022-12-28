@@ -1,26 +1,22 @@
 import React from 'react';
-import { GeometryArgumentTagWrapperDiv, GeometryArgumentTagDiv } from '../styles/GeometryArgumentTagDiv';
-import { GeometryArgument, Point } from '../types';
+import { GeometryArgumentTagDiv, GeometryArgumentTagWrapperDiv } from '../styles/GeometryArgumentTagDiv';
+import { GeometryArgument } from '../types';
 
 interface Props
 {
     geometryId: string;
-    position: Point;
+    // position: Point;
     argument: GeometryArgument;
 }
 
-const GeometryArgumentTag = ({ geometryId, position, argument }: Props) =>
+const GeometryArgumentTag = ({ geometryId, argument }: Props) =>
 {
     return (
-        <GeometryArgumentTagWrapperDiv
-            position={position}
-        >
+        <GeometryArgumentTagWrapperDiv>
             <GeometryArgumentTagDiv
                 dataType={argument.dataType}
             >
-                <p>
-                    { argument.token }
-                </p>
+                <p>{ argument.token }</p>
             </GeometryArgumentTagDiv>
         </GeometryArgumentTagWrapperDiv>
     );

@@ -1,25 +1,12 @@
 import styled from 'styled-components';
-import { DataTypes, Point } from '../types';
+import { DataTypes } from '../types';
 import { GNODE_ROW_UNIT_HEIGHT } from './GeometryRowDiv';
+import { BOX_SHADOW } from './utils';
 
-export interface GeometryArgumentTagWrapperDivProps
-{
-    position: Point;
-}
-
-export const GeometryArgumentTagWrapperDiv = styled.div.attrs<GeometryArgumentTagWrapperDivProps>(({ position, theme }) =>
-{
-    const { x, y } = position;
-    return ({
-        style:
-        {
-            transform: `translate(${x}px, ${y}px)`,
-        },
-    })
-})<GeometryArgumentTagWrapperDivProps>`
+export const GeometryArgumentTagWrapperDiv = styled.div`
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: -14px;
 `;
 
 export interface GeometryArgumentTagDivProps
@@ -31,22 +18,23 @@ export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
     
     position: absolute;
     top: 0;
-    right: -5px;
+    right: 0;
 
-    height: ${GNODE_ROW_UNIT_HEIGHT}px;
+    height: ${GNODE_ROW_UNIT_HEIGHT - 4}px;
     transform: translateY(-50%);
 
     background-color: white;
-    /* border: solid 1px; */
-    /* border-color: ${({ dataType, theme }) => theme.colors.dataTypes[dataType] }; */
+    border-right: solid 7px;
+    border-color: ${({ dataType, theme }) => theme.colors.dataTypes[dataType] };
 
-    box-shadow: 5px 5px #00000066;
+    ${BOX_SHADOW}
 
     display: flex;
     align-items: center;
 
-    padding: 0 0.5rem 0 0.25rem;
-    border-radius: 5px 15px 15px 5px;
+    padding: 0 0.25rem 0;
+    border-radius: 3px;
+    /* border-radius: 5px 15px 15px 5px; */
 
     p {
         font-weight: bold;

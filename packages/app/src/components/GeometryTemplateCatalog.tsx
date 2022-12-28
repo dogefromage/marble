@@ -4,8 +4,8 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
+import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
 import { GNodeT, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, TEMPLATE_CATEGORY_NAMES, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
-import { NODE_WIDTH } from './GeometryNode';
 import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {

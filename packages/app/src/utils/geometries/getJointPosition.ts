@@ -1,4 +1,4 @@
-import { NODE_WIDTH } from "../../components/GeometryNode";
+import { NODE_WIDTH } from "../../styles/GeometryNodeDiv";
 import { GNODE_ROW_UNIT_HEIGHT } from "../../styles/GeometryRowDiv";
 import { GeometryJointDirection } from "../../types";
 import { Point } from "../../types/UtilityTypes";

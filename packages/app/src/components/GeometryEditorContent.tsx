@@ -108,24 +108,24 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 )
             )
         }{
-            geometry && argumentConsumers && 
-            argumentConsumers.map(consumer =>
-            {
-                const nodeState = geometry.nodes[ consumer.indices[0] ];
-                const rowHeights = connectionData.rowHeights.get(nodeState.id)!;
-                const heightUnits = rowHeights[ consumer.indices[1] ] + consumer.indices[2]; // add subindex
+            // geometry && argumentConsumers && 
+            // argumentConsumers.map(consumer =>
+            // {
+            //     const nodeState = geometry.nodes[ consumer.indices[0] ];
+            //     const rowHeights = connectionData.rowHeights.get(nodeState.id)!;
+            //     const heightUnits = rowHeights[ consumer.indices[1] ] + consumer.indices[2]; // add subindex
 
-                const position = getJointPosition(nodeState.position, heightUnits, 'input');
+            //     const position = getJointPosition(nodeState.position, heightUnits, 'input');
 
-                return (
-                    <GeometryArgumentTag 
-                        key={consumer.id}
-                        geometryId={geometry.id}
-                        position={position}
-                        argument={consumer.argument}
-                    />
-                )
-            })
+            //     return (
+            //         <GeometryArgumentTag 
+            //             key={consumer.id}
+            //             geometryId={geometry.id}
+            //             position={position}
+            //             argument={consumer.argument}
+            //         />
+            //     )
+            // })
         }{
             newLink && newLinkNode && newLinkTemplate &&
             <GeometryLinkNew

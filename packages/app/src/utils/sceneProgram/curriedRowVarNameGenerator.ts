@@ -132,17 +132,21 @@ export class RowVarNameGenerator
             return this.hashOutput(...incomingEdge.fromIndices);
         }
 
-        // case 2: argument connected
-        const fallback = row.incomingElements?.[0];
-        if (fallback?.type === GeometryIncomingElementTypes.Argument) {
-            return fallback.argument.token;
+        // case 2.1: argument connected
+        const incomingArg = row.incomingElements?.[0];
+        if (incomingArg?.type === GeometryIncomingElementTypes.Argument) {
+            return incomingArg.argument.token;
+        }
+        
+        // case 2.2 argument fallback
+        if (row.defaultArgumentToken != null) {
+            return row.defaultArgumentToken;
         }
 
         const rowMetadata = getRowMetadata({ state: row, template: row, numConnectedJoints: 0 });
 
         // case 3: parameter texture lookup
-        if (rowMetadata.dynamicValue)
-        {
+        if (rowMetadata.dynamicValue) {
             return this.createTextureVar(rowIndex, row);
         }
 

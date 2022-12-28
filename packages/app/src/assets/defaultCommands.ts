@@ -2,7 +2,7 @@ import { redo, undo } from "../enhancers/undoableEnhancer";
 import { consoleClearMessages } from "../slices/consoleSlice";
 import { geometriesRemoveNode, geometriesResetStateSelected } from "../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../slices/panelGeometryEditorSlice";
-import { Command, CommandCallTypes, CommandScope, Point, ViewTypes } from "../types";
+import { Command, CommandScope, Point, ViewTypes } from "../types";
 
 export const DEFAULT_COMMANDS: Command[] =
 [

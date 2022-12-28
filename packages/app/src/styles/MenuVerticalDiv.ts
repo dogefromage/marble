@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { BOX_SHADOW } from './utils';
 
 export const VERTICAL_MENU_WIDTH = 320;
 
@@ -30,7 +31,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
 
     background-color: white;
     border-radius: 3px;
-    box-shadow: 5px 5px #00000066;
+    ${BOX_SHADOW}
     outline: solid 1px black;
 
     z-index: 1;

@@ -5,13 +5,13 @@ import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { DataTypes, FieldRowT } from '../types';
-import GeometryJoint from './GeometryJoint';
+import GeometryInputJoint from './GeometryInputJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
 
 type Props = RowProps<FieldRowT<DataTypes.Float>>;
 
-const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
+const GeometryRowFieldFloat = ({ geometryId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
     const isConnected = row.numConnectedJoints > 0;
@@ -44,12 +44,10 @@ const GeometryRowFieldFloat = ({ geometryId, panelId, nodeId, row }: Props) =>
                     />
                 )
             }
-            <GeometryJoint 
-                geometryId={ geometryId }
+            <GeometryInputJoint 
+                geometryId={geometryId}
+                row={row}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
-                jointDirection='input'
-                connected={isConnected}
-                dataType={row.dataType}
             />
         </GeometryRowDiv>
     );
