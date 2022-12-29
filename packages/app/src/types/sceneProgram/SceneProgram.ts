@@ -105,6 +105,7 @@ export interface GeometryProgramMethod
 
 export interface SceneProgram
 {
+    hash: number;
     includes: ProgramInclude[];
     rootMethod: GeometryProgramMethod;
 }

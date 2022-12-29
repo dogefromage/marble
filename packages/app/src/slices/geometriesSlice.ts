@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { GeometryS, RowT, RowS, InputOnlyRowT, GNodeT, Point, GNodeS, GeometriesSliceState, UndoAction, GeometryJointLocation, GeometryIncomingElement } from "../types";
+import { GeometriesSliceState, GeometryIncomingElement, GeometryJointLocation, GeometryS, GNodeS, GNodeT, Point, RowS, RowT, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 function createGeometry(id: string)
