@@ -21,7 +21,7 @@ const DefaultTemplateLoader = ({ }: Props) =>
             glslSnippets: defaultProgramIncludes,
         }));
     }, [ dispatch ]);
-
+    
     return null;
 }
 

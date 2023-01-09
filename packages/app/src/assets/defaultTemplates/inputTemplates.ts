@@ -5,7 +5,7 @@ import { TemplateColors } from "./templateConstants";
 const input_vector_3x1: GNodeT =
 {
     id: 'vector_3x1',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Input,
     rows: [
         {
@@ -50,7 +50,7 @@ const input_vector_3x1: GNodeT =
 const input_vector_2x1: GNodeT =
 {
     id: 'vector_2x1',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Input,
     rows: [
         {
@@ -88,7 +88,7 @@ const input_vector_2x1: GNodeT =
 const input_number: GNodeT =
 {
     id: 'number',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Input,
     rows: [
         {

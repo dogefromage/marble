@@ -1,24 +1,19 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
-import { sceneProgramSetLookupSubarray, sceneProgramSetProgram, selectSceneProgram } from '../slices/sceneProgramSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DataTypes, GeometryS, ProgramInclude, SceneProgram, TEXTURE_VAR_DATATYPE_SIZE } from '../types';
-import SceneCompiler from '../utils/compilation/SceneCompiler';
-import { Counter } from '../utils/Counter';
-import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
-import { GeometriesCompilationError } from '../utils/sceneProgram/compilationError';
-import { compileGeometry } from '../utils/sceneProgram/compileGeometry';
-import { LOOKUP_TEXTURE_SIZE } from '../utils/viewport/ViewportQuadProgram';
+import assertErrorType from '../utils/assertErrorType';
+import SceneCompiler, { SceneCompilationError } from '../utils/compilation/SceneCompiler';
 
 const SceneProgramCompiler = () =>
 {
     const dispatch = useAppDispatch();
     const compilerRef = useRef(new SceneCompiler());
-    const { program } = useAppSelector(selectSceneProgram);
+    // const { program } = useAppSelector(selectSceneProgram);
 
-    const { templates, programIncludes }= useAppSelector(selectTemplates);
+    const { templates, programIncludes } = useAppSelector(selectTemplates);
+
     useEffect(() => {
         compilerRef.current.setTemplates(templates);
         compilerRef.current.setIncludes(programIncludes);
@@ -27,12 +22,20 @@ const SceneProgramCompiler = () =>
     const geometries = useAppSelector(selectGeometries);    
     useEffect(() => {
         const compiler = compilerRef.current;
-        const compiledProgram = compiler.compileGeometries(geometries);
-        // if (compiledProgram.hash !== program?.hash) {
-        //     dispatch(sceneProgramSetProgram({ 
-        //         program:  
-        //     }));
-        // }
+
+        try 
+        {
+            const compiledProgram = compiler.compileGeometries(geometries);
+        } 
+        catch (e: any) 
+        { 
+            const errorInfos = compiler.getErrorInfos();
+
+            dispatch(consoleAppendMessage({
+                text: e.message,
+                type: 'error',
+            }));
+        }
     }, [ geometries ]);
 
 
@@ -142,7 +145,7 @@ const SceneProgramCompiler = () =>
     //     connectionData,
     // ]);
 
-    // return null;
+    return null;
 }
 
 export default SceneProgramCompiler;

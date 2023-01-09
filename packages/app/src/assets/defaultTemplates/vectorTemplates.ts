@@ -6,7 +6,7 @@ import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
 const vectors_mirror_plane: GNodeT =
 {
     id: 'mirror_plane',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {
@@ -54,7 +54,7 @@ const vectors_mirror_plane: GNodeT =
 const vectors_repeat_cell: GNodeT =
 {
     id: 'repeat_cell',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {
@@ -94,7 +94,7 @@ const vectors_repeat_cell: GNodeT =
 const vectors_transform: GNodeT =
 {
     id: 'transform',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {
@@ -155,7 +155,7 @@ const vectors_transform: GNodeT =
 const vectors_separate_3x1: GNodeT =
 {
     id: 'separate_3x1',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {
@@ -200,7 +200,7 @@ const vectors_separate_3x1: GNodeT =
 const vectors_separate_2x1: GNodeT =
 {
     id: 'separate_2x1',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
         {

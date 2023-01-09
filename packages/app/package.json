@@ -13,6 +13,7 @@
     "@marble/interactive": "^1.0.0",
     "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^1.8.5",
+    "@shaderfrog/glsl-parser": "^1.0.9",
     "gl-matrix": "^3.4.3",
     "immer": "^9.0.15",
     "lodash": "^4.17.21",
@@ -24,6 +25,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@types/gl-matrix": "^3.2.0",
     "@types/lodash": "^4.14.186",
     "@types/node": "18.7.17",
@@ -32,6 +34,7 @@
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
     "copyfiles": "^2.4.1",
-    "typescript-json-schema": "^0.55.0"
+    "typescript-json-schema": "^0.55.0",
+    "vite-plugin-commonjs": "^0.6.1"
   }
 }

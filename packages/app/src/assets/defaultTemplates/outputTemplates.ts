@@ -5,7 +5,7 @@ import { TemplateColors, TEMPLATE_FAR_AWAY } from "./templateConstants";
 const output_output: GNodeT =
 {
     id: 'output',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Output,
     tags: [ GNodeTemplateTags.Output ],
     rows: [
@@ -24,7 +24,7 @@ const output_output: GNodeT =
         },
     ],
     instructionTemplates: glsl`
-        return $input;
+        return input;
     `,
 }
 

@@ -18,7 +18,7 @@ export function generateGeometryMethodCode(programMethod: GeometryProgramMethod)
     methodTemplate.replace('%METHOD_NAME%', programMethod.methodName);
 
     const argumentList = programMethod.functionArgs
-        .map(arg => arg.dataType + ' ' + arg.name).join(', ');
+        .map(arg => arg.dataType + ' ' + arg.token).join(', ');
     methodTemplate.replace('%ARGUMENT_LIST%', argumentList);
 
     const methodCodeList = programMethod.programInstructions;

@@ -1,21 +1,21 @@
+import { GeometryArgument, GNodeS, GNodeT } from "../geometries";
 import { MapEvery, ObjMap } from "../UtilityTypes";
-import { ProgramOperation } from "./ProgramOperation";
 
-export enum ProgramOperationTypes
-{
-    BinaryArithmetic = 'binary-arithmetic',
-    InvocationTree = 'invocation-tree',
-    Invocation = 'invocation',
-    Return = 'return',
-}
+// export enum ProgramOperationTypes
+// {
+//     BinaryArithmetic = 'binary-arithmetic',
+//     InvocationTree = 'invocation-tree',
+//     Invocation = 'invocation',
+//     Return = 'return',
+// }
 
-export enum ArithmeticOperations
-{
-    Add = '+',
-    Subtract = '-',
-    Multiply = '*',
-    Divide = '/',
-}
+// export enum ArithmeticOperations
+// {
+//     Add = '+',
+//     Subtract = '-',
+//     Multiply = '*',
+//     Divide = '/',
+// }
 
 export enum DataTypes
 {
@@ -42,40 +42,51 @@ export enum DefaultFunctionArgNames
     RayPosition = 'Position'
 }
 
-export interface FunctionArg 
-{
-    name: DefaultFunctionArgNames;
-    dataType: DataTypes;
-}
-
-export const DefaultFunctionArgs: FunctionArg[] = 
+export const DefaultFunctionArgs: GeometryArgument[] = 
 [
     {
-        name: DefaultFunctionArgNames.RayPosition, 
+        token: DefaultFunctionArgNames.RayPosition, 
         dataType: DataTypes.Vec3,
     },
 ];
 
-export interface ProgramTextureVar
-{
-    dataType: DataTypes;
-    name: string;
-    textureCoordinate: number;
-}
+// export interface ProgramTextureVar
+// {
+//     dataType: DataTypes;
+//     name: string;
+//     textureCoordinate: number;
+// }
 
-export interface ProgramTextureVarMapping
-{
-    dataTypes: DataTypes;
-    textureCoordinate: number;
-    nodeIndex: number;
-    rowIndex: number;
-}
+// export interface ProgramTextureVarMapping
+// {
+//     dataTypes: DataTypes;
+//     textureCoordinate: number;
+//     nodeIndex: number;
+//     rowIndex: number;
+// }
 
-export interface ProgramConstant
+// export interface ProgramConstant
+// {
+//     name: string;
+//     dataType: DataTypes;
+//     value: any;
+// }
+
+// export interface IncrementalProgramMetadata
+// {
+//     constants: ProgramConstant[];
+//     textureVars: ProgramTextureVar[];
+//     textureVarMappings: ObjMap<ProgramTextureVarMapping>;
+// }
+
+export interface GeometryProgramMethod
 {
-    name: string;
-    dataType: DataTypes;
-    value: any;
+    geometryId: string;
+    compilationValidity: number;
+    methodName: string;
+    functionArgs: GeometryArgument[];
+    programInstructions: string[];
+    methodReturnType: DataTypes;
 }
 
 export interface ProgramInclude
@@ -84,28 +95,9 @@ export interface ProgramInclude
     glslCode: string;
 }
 
-export interface IncrementalProgramMetadata
-{
-    constants: ProgramConstant[];
-    textureVars: ProgramTextureVar[];
-    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-}
-
-export interface GeometryProgramMethod
-{
-    geometryId: string;
-    compilationValidity: number;
-    methodName: string;
-    functionArgs: FunctionArg[];
-    includedTokens: string[];
-    textureVarMappings: ObjMap<ProgramTextureVarMapping>;
-    programInstructions: string[];
-    methodReturnType: DataTypes;
-}
-
 export interface SceneProgram
 {
     hash: number;
     includes: ProgramInclude[];
-    rootMethod: GeometryProgramMethod;
+    geometryMethods: GeometryProgramMethod[];
 }

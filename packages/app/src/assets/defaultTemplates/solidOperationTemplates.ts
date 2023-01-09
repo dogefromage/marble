@@ -5,7 +5,7 @@ import { EMPTY_SOLID, EMPTY_SOLID_FORMAT, TemplateColors, TEMPLATE_FAR_AWAY, TEM
 const solid_operation_union: GNodeT =
 {
     id: 'union',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
         {
@@ -37,7 +37,7 @@ const solid_operation_union: GNodeT =
 const solid_operation_difference: GNodeT =
 {
     id: 'difference',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
         {
@@ -77,7 +77,7 @@ const solid_operation_difference: GNodeT =
 const solid_operation_intersection: GNodeT =
 {
     id: 'intersection',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
         {
@@ -109,7 +109,7 @@ const solid_operation_intersection: GNodeT =
 const solid_operation_set_color: GNodeT =
 {
     id: 'set_color',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
         {
@@ -147,7 +147,7 @@ const solid_operation_set_color: GNodeT =
 const solid_operation_correct_distance: GNodeT =
 {
     id: 'reduce_step_size',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
         {

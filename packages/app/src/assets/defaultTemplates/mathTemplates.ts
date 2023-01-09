@@ -5,7 +5,7 @@ import { TemplateColors } from "./templateConstants";
 const math_product: GNodeT =
 {
     id: 'product',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Math,
     rows: [
         {
@@ -37,7 +37,7 @@ const math_product: GNodeT =
 const math_map: GNodeT =
 {
     id: 'map',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Math,
     rows: [
         {

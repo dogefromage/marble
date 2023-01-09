@@ -4,7 +4,7 @@ import { glsl } from "../../utils/codeGeneration/glslTag";
 const generative_perlin_noise: GNodeT =
 {
     id: 'perlin_noise',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Generative,
     rows: [
         {

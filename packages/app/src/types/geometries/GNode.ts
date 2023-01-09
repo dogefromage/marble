@@ -3,8 +3,8 @@ import { RowS, SpecificRowT } from "./Rows";
 
 export enum GNodeTemplateTypes
 {
-    Recursive,
-    Default,
+    Base = 'base',
+    Composite = 'composite',
 }
 
 export enum GNodeTemplateTags
@@ -22,6 +22,7 @@ export enum GNodeTemplateCategories
     Output = 'output',
     Generative = 'generative',
     Math = 'math',
+    Composite = 'composite',
 }
 
 export const TEMPLATE_CATEGORY_NAMES: { [C in GNodeTemplateCategories]: string } =
@@ -34,6 +35,7 @@ export const TEMPLATE_CATEGORY_NAMES: { [C in GNodeTemplateCategories]: string }
     [GNodeTemplateCategories.Output]: 'Output',
     [GNodeTemplateCategories.Generative]: 'Generative',
     [GNodeTemplateCategories.Math]: 'Math',
+    [GNodeTemplateCategories.Composite]: 'Composite',
 }
 
 export interface GNodeT
@@ -43,7 +45,9 @@ export interface GNodeT
     rows: Array<SpecificRowT>;
     tags?: GNodeTemplateTags[];
     category: GNodeTemplateCategories;
-    instructionTemplates: string;
+    // one of both
+    sourceGeometry?: string;
+    instructionTemplates?: string;
 }
 
 export interface GNodeS

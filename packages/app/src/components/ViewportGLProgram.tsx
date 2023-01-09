@@ -58,17 +58,17 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         setQuadProgram(_program);
     }, [ gl ]);
 
-    /**
-     * Generate and set program
-     */
-    useEffect(() =>
-    {
-        if (!sceneProgramState.program ||
-            !quadProgram) return;
-        const shaders = generateGLSL(sceneProgramState.program);
-        quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
-        quadProgram.requestRender();
-    }, [ sceneProgramState.program, quadProgram ]);
+    // /**
+    //  * Generate and set program
+    //  */
+    // useEffect(() =>
+    // {
+    //     if (!sceneProgramState.program ||
+    //         !quadProgram) return;
+    //     const shaders = generateGLSL(sceneProgramState.program);
+    //     quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
+    //     quadProgram.requestRender();
+    // }, [ sceneProgramState.program, quadProgram ]);
 
     /**
      * Update texture data for variables

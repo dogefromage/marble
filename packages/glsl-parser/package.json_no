@@ -1,0 +1,39 @@
+{
+  "name": "@shaderfrog/glsl-parser",
+  "engines": {
+    "node": ">=16"
+  },
+  "version": "1.0.9",
+  "main": "./dist/index.js",
+  "description": "A GLSL ES 1.0 and 3.0 parser and preprocessor that can preserve whitespace and comments",
+  "scripts": {
+    "build": "./build.sh"
+  },
+  "files": [
+    "ast",
+    "index.d.ts",
+    "index.js",
+    "parser",
+    "preprocessor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShaderFrog/glsl-parser.git"
+  },
+  "keywords": [
+    "glsl",
+    "parser",
+    "shaderfrog"
+  ],
+  "author": "Andrew Ray",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShaderFrog/glsl-parser/issues"
+  },
+  "homepage": "https://github.com/ShaderFrog/glsl-parser#readme",
+  "devDependencies": {
+    "@types/node": "^16.10.2",
+    "peggy": "^1.2.0",
+    "typescript": "^4.9.3"
+  }
+}

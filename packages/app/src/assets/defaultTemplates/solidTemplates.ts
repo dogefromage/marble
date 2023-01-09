@@ -32,7 +32,7 @@ const colorRow: SpecificRowT =
 const solid_sphere: GNodeT =
 {
     id: 'sphere',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
         {
@@ -60,7 +60,7 @@ const solid_sphere: GNodeT =
 const solid_torus: GNodeT =
 {
     id: 'torus',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
         {
@@ -96,7 +96,7 @@ const solid_torus: GNodeT =
 const solid_box: GNodeT =
 {
     id: 'box',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
         {
@@ -117,15 +117,15 @@ const solid_box: GNodeT =
         colorRow,
     ],
     instructionTemplates: glsl`
-        vec3 $q = abs($coordinates) - $size;
-        Solid $output = Solid(length(max($q, 0.0)) + min(max($q.x, max($q.y, $q.z)), 0.0), $color);
+        vec3 q = abs(coordinates) - size;
+        Solid output = Solid(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
     `,
 }
 
 const solid_plane: GNodeT =
 {
     id: 'plane',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
         {
@@ -153,7 +153,7 @@ const solid_plane: GNodeT =
 const solid_cylinder: GNodeT =
 {
     id: 'cylinder',
-    type: GNodeTemplateTypes.Default,
+    type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
         {

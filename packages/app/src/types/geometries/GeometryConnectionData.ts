@@ -33,6 +33,7 @@ export interface GeometryConnectionData
     geometryId: string;
     compilationValidity: number;
     templateMap: GeometryTemplateMap;
+    nodeTemplates: GNodeT[];
     rowOrders: GeometryNodeRowOrder;
     forwardEdges: GeometryAdjacencyList;
     rowHeights: GeometryRowHeights;
@@ -41,4 +42,5 @@ export interface GeometryConnectionData
     connectedRows: GeometryConnectedRows;
     strayConnectedJoints: GeometryJointLocation[];
     argumentConsumers: GeometryArgumentConsumer[];
+    dependencies: string[];
 }
