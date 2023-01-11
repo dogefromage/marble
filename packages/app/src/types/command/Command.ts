@@ -42,7 +42,7 @@ export type CommandParameterMap =
 };
 
 type CommandActionCreator<A extends {}> = 
-    (scopedArgs: A, parameters: CommandParameterMap) => AnyAction | void;
+    (scopedArgs: A, parameters: CommandParameterMap) => AnyAction[] | AnyAction | void;
 
 interface GlobalCommand extends BaseCommand
 {

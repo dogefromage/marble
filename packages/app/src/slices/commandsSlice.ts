@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { DEFAULT_COMMANDS } from "../assets/defaultCommands";
+import { DEFAULT_COMMANDS } from "../assets/commands/defaultCommands";
 import { RootState } from "../redux/store";
 import { CommandsSliceState } from "../types";
 

@@ -16,7 +16,7 @@ const GeometryArgumentTag = ({ geometryId, argument }: Props) =>
             <GeometryArgumentTagDiv
                 dataType={argument.dataType}
             >
-                <p>{ argument.token }</p>
+                <p>{ argument.identifier }</p>
             </GeometryArgumentTagDiv>
         </GeometryArgumentTagWrapperDiv>
     );

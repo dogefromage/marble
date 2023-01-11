@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { selectPanelState } from "../enhancers/panelStateEnhancer";
 import useContextMenu from "../hooks/useContextMenu";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { geometriesNew, selectGeometry } from "../slices/geometriesSlice";
+import { geometriesCreateRoot, selectGeometry } from "../slices/geometriesSlice";
 import { createGeometryEditorPanelState, geometryEditorPanelsOpenTemplateCatalog, geometryEditorPanelsSetGeometryId } from "../slices/panelGeometryEditorSlice";
 import { panelManagerSetActive } from "../slices/panelManagerSlice";
 import { ViewTypes } from "../types";
@@ -33,7 +33,6 @@ const TEST_GEOMETRY_ID = '1234';
 const GeometryEditorView = (viewProps: ViewProps) =>
 {
     const dispatch = useAppDispatch();
-
     const viewBoundingRect = useRef<HTMLDivElement>(null);
 
     /**
@@ -105,6 +104,7 @@ const GeometryEditorView = (viewProps: ViewProps) =>
             'geometryEditor.openTemplateCatalog',
             'geometryEditor.deleteSelected', 
             'geometryEditor.resetSelected',
+            'geometryEditor.createSubgeometry'
         ],
         e => ({ offsetPos: getOffsetPos(e) }),
     )
@@ -137,7 +137,7 @@ const GeometryEditorView = (viewProps: ViewProps) =>
                 <TestButton
                     onClick={() =>
                     {
-                        dispatch(geometriesNew({
+                        dispatch(geometriesCreateRoot({
                             geometryId,
                             undo: {},
                         }));

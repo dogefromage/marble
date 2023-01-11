@@ -4,7 +4,7 @@ import { glMatrix } from 'gl-matrix';
 import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import 'react-reflex/styles.css';
-import styled, { ThemeProvider } from 'styled-components';
+import { ThemeProvider } from 'styled-components';
 import defaultTheme from '../assets/defaultTheme';
 import { initStore, RootState } from '../redux/store';
 import ContextMenu from './ContextMenu';
@@ -14,8 +14,6 @@ import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
 import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
-import SceneProgramCompiler from './SceneProgramCompiler';
-import ServiceErrorBoundary from './ServiceErrorBoundary';
 import StartAnouncer from './StartAnouncer';
 
 glMatrix.setMatrixArrayType(Array);
@@ -47,9 +45,9 @@ const AppRoot = ({ projectId }: Props) =>
                     <LayoutRoot />
                 </ThemeProvider>
                 {/* "Modules" / "Services" */}
-                <ServiceErrorBoundary serviceName='SceneProgramCompiler'>
-                    <SceneProgramCompiler />
-                </ServiceErrorBoundary>
+                {/* <ServiceErrorBoundary serviceName='SceneProgramCompiler'>
+                    <CompilerRoot />
+                </ServiceErrorBoundary> */}
                 <DefaultTemplateLoader />
                 <KeyboardCommandListener />
                 <ContextMenu />

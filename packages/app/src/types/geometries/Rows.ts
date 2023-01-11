@@ -1,4 +1,4 @@
-import { DataTypes } from "../sceneProgram";
+import { DataTypes } from "../program";
 import { RotationModels, Tuple } from "../UtilityTypes";
 
 /**
@@ -108,7 +108,7 @@ export type RowS<T extends RowT = RowT> = Partial<T> &
     incomingElements: GeometryIncomingElement[];
 }
 
-export type RowZ<T extends RowT = RowT> = RowS<T> & T & {
+export type RowZ<T extends RowT = RowT> = Partial<RowS<T>> & T & {
     numConnectedJoints: number;
 };
 
@@ -138,7 +138,7 @@ export interface GeometryJointLocation extends GeometryRowLocation {
  */
 export interface GeometryArgument
 {
-    token: string;
+    identifier: string;
     dataType: DataTypes;
 }
 

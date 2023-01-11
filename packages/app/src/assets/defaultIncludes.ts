@@ -1,5 +1,5 @@
 import { ProgramInclude } from "../types";
-import { glsl } from "../utils/codeGeneration/glslTag";
+import { glsl } from "../utils/glslTag";
 
 const create = (id: string, glslCode: string): ProgramInclude => ({ id, glslCode });
 

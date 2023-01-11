@@ -1,6 +1,5 @@
 import { GeometryAdjacencyList, GeometryConnectedRows, GeometryNodeRowOrder, GeometryS } from "../../types";
 
-
 export default function findConnectedRows(geometry: GeometryS, rowOrders: GeometryNodeRowOrder, forwardEdges: GeometryAdjacencyList)
 {
     const N = geometry.nodes.length;

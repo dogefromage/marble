@@ -12,7 +12,7 @@ interface Props
 
 const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) =>
 {
-    let incomingElement = row.incomingElements[jointLocation.subIndex];
+    let incomingElement = row.incomingElements?.[jointLocation.subIndex];
 
     if (incomingElement == null && 
         jointLocation.subIndex === 0 && 
@@ -21,7 +21,7 @@ const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) =>
         incomingElement = {
             type: GeometryIncomingElementTypes.Argument,
             argument: {
-                token: row.defaultArgumentToken,
+                identifier: row.defaultArgumentToken,
                 dataType: row.dataType,
             }
         }

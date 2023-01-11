@@ -1,4 +1,3 @@
-import { GNodeS, GNodeT } from "../geometries";
 
 // errors
 export enum GeometryCompilerErrorTypes {
@@ -40,8 +39,3 @@ export type SceneCompilerErrorInfo =
     | ErrorInfoIncNotFound
     | ErrorInfoGeoOutputMissing
     | ErrorInfoCyclicNodes
-
-export interface GeometryNodeScope {
-    node: GNodeS;
-    template: GNodeT;
-}

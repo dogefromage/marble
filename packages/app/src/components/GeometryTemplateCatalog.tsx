@@ -32,7 +32,7 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
 
         dispatch(geometriesAddNode({
             geometryId: panelState.geometryId,
-            template,
+            templateId: template.id,
             position: {
                 x: panelState.templateCatalog.worldPosition.x - 0.5 * NODE_WIDTH,
                 y: panelState.templateCatalog.worldPosition.y, 

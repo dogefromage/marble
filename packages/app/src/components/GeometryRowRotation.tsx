@@ -21,7 +21,7 @@ export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMe
 
     let totalUnits = 2; // name + model selector
 
-    if (props.state.currentDisplay)
+    if (props.state?.currentDisplay)
     {
         if (props.state.currentDisplay.rotationModel === RotationModels.Quaternion)
             totalUnits += 4; // xyzw

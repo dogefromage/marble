@@ -9,6 +9,7 @@ import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { v2p } from '../utils/linalg';
+import GeometryMissingTemplateRows from './GeometryMissingTemplateRows';
 import GeometryRowRoot from './GeometryRowRoot';
 
 interface Props
@@ -16,7 +17,7 @@ interface Props
     panelId: string;
     geometryId: string;
     nodeState: GNodeS;
-    nodeTemplate?: GNodeT;
+    nodeTemplate: GNodeT | null;
     connectedRows: Set<string>;
     getCamera: () => PlanarCamera | undefined;
     selectionStatus: SelectionStatus;
@@ -92,30 +93,34 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
         >
         {
-            nodeTemplate &&
-            nodeTemplate.rows.map(rowTemplate =>
-            {
-                const rowState = nodeState.rows[rowTemplate.id];
-                const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
-                const numConnectedJoints = Math.max(rowState.incomingElements.length, ingoingConnection);
-                
-                // @ts-ignore
-                const rowZ: RowZ = { 
-                    ...rowTemplate, 
-                    ...rowState,
-                    numConnectedJoints,
-                } // merge rows
-
-                return (
-                    <GeometryRowRoot
-                        geometryId={geometryId}
-                        panelId={panelId}
-                        nodeId={nodeState.id}
-                        key={rowZ.id}
-                        row={rowZ}
-                    />
-                );
-            })
+            nodeTemplate ? (
+                nodeTemplate.rows.map(rowTemplate =>
+                {
+                    const rowState = nodeState.rows[rowTemplate.id];
+                    const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
+                    const incomingElements = rowState?.incomingElements.length || 0;
+                    const numConnectedJoints = Math.max(incomingElements, ingoingConnection);
+                    
+                    // @ts-ignore
+                    const rowZ: RowZ = { 
+                        ...rowTemplate, 
+                        ...rowState,
+                        numConnectedJoints,
+                    } // merge rows
+    
+                    return (
+                        <GeometryRowRoot
+                            geometryId={geometryId}
+                            panelId={panelId}
+                            nodeId={nodeState.id}
+                            key={rowZ.id}
+                            row={rowZ}
+                        />
+                    );
+                })
+            ) : (
+                <GeometryMissingTemplateRows />
+            )
         }
         { catcher }
         </GeometryNodeDiv>

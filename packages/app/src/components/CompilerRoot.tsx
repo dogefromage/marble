@@ -3,13 +3,12 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import assertErrorType from '../utils/assertErrorType';
-import SceneCompiler, { SceneCompilationError } from '../utils/compilation/SceneCompiler';
+import ProgramCompiler from '../utils/program/ProgramCompiler';
 
-const SceneProgramCompiler = () =>
+const CompilerRoot = () =>
 {
     const dispatch = useAppDispatch();
-    const compilerRef = useRef(new SceneCompiler());
+    const compilerRef = useRef(new ProgramCompiler());
     // const { program } = useAppSelector(selectSceneProgram);
 
     const { templates, programIncludes } = useAppSelector(selectTemplates);
@@ -23,9 +22,12 @@ const SceneProgramCompiler = () =>
     useEffect(() => {
         const compiler = compilerRef.current;
 
-        try 
+        // compiler.updateGeometries(geometries);
+        // const newLayerPrograms = compiler.generateNewLayerPrograms();
+
+        try
         {
-            const compiledProgram = compiler.compileGeometries(geometries);
+            const compiledProgram = compiler.compileRenderLayer(geometries);
         } 
         catch (e: any) 
         { 
@@ -148,4 +150,4 @@ const SceneProgramCompiler = () =>
     return null;
 }
 
-export default SceneProgramCompiler;
+export default CompilerRoot;

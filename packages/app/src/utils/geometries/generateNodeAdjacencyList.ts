@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, GeometryJointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows, GeometryIncomingElementTypes, GeometryArgumentConsumer } from "../../types";
+import { GeometryFromIndices, GeometryAdjacencyList, GeometryEdge, GeometryNodeRowOrder, GeometryS, GeometryTemplateMap, GeometryJointLocation, OutputRowT, GeometryToIndices, GeometryConnectedRows, GeometryIncomingElementTypes, GeometryArgumentConsumer, GNodeT } from "../../types";
 import { assertRowTHas } from "./assertions";
 import { rowLocationHash } from "./locationHashes";
 
@@ -11,10 +11,10 @@ function customizer(objValue: any, srcValue: any)
     }
 }
 
-export function generateAdjacencyLists(
+export function generateNodeAdjacencyList(
     geometry: GeometryS, 
     rowOrders: GeometryNodeRowOrder, 
-    templateMap: GeometryTemplateMap
+    nodeTemplates: (GNodeT | null)[]
 ) {
     const N = geometry.nodes.length;
 
@@ -25,7 +25,10 @@ export function generateAdjacencyLists(
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
         const node = geometry.nodes[ nodeIndex ];
-        const rowOrder = rowOrders.get(node.id)!;
+        const rowOrder = rowOrders.get(node.id);
+        if (!rowOrder) {
+            continue; // template of node was missing
+        }
         
         for (let rowIndex = 0; rowIndex < rowOrder.length; rowIndex++)
         {
@@ -43,13 +46,16 @@ export function generateAdjacencyLists(
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
         const node = geometry.nodes[ nodeIndex ];
-        const template = templateMap.get(node.id)!;
+        const template = nodeTemplates[ nodeIndex ];
+        if (!template) continue;
+
         const rowOrder = rowOrders.get(node.id)!;
 
         for (let rowIndex = 0; rowIndex < rowOrder.length; rowIndex++)
         {
             const rowId = rowOrder[rowIndex];
             const row = node.rows[rowId];
+            if (!row) continue;
 
             for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++)
             {

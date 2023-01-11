@@ -1,10 +1,13 @@
 import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTags, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/codeGeneration/glslTag";
+import { glsl } from "../../utils/glslTag";
 import { TemplateColors, TEMPLATE_FAR_AWAY } from "./templateConstants";
+
+export const OUTPUT_TEMPLATE_ID = 'output';
 
 const output_output: GNodeT =
 {
-    id: 'output',
+    id: OUTPUT_TEMPLATE_ID,
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Output,
     tags: [ GNodeTemplateTags.Output ],

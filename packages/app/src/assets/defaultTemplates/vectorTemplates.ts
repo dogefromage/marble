@@ -1,11 +1,12 @@
 import { DataTypes, DefaultFunctionArgNames, RotationModels } from "../../types"
 import { GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types/geometries"
-import { glsl } from "../../utils/codeGeneration/glslTag"
+import { glsl } from "../../utils/glslTag"
 import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
 
 const vectors_mirror_plane: GNodeT =
 {
     id: 'mirror_plane',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
@@ -54,6 +55,7 @@ const vectors_mirror_plane: GNodeT =
 const vectors_repeat_cell: GNodeT =
 {
     id: 'repeat_cell',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
@@ -94,6 +96,7 @@ const vectors_repeat_cell: GNodeT =
 const vectors_transform: GNodeT =
 {
     id: 'transform',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
@@ -155,6 +158,7 @@ const vectors_transform: GNodeT =
 const vectors_separate_3x1: GNodeT =
 {
     id: 'separate_3x1',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [
@@ -200,6 +204,7 @@ const vectors_separate_3x1: GNodeT =
 const vectors_separate_2x1: GNodeT =
 {
     id: 'separate_2x1',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Vectors,
     rows: [

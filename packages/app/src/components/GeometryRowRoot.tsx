@@ -10,7 +10,7 @@ import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotati
 export type RowMetaProps<T extends RowT = RowT> = 
 {
     template: T | RowZ<T>;
-    state: RowS<T> | RowZ<T>;
+    state?: RowS<T> | RowZ<T>;
     numConnectedJoints: number;
 };
 // export type RowMetaProps<T extends RowT = RowT> = RowZ<T>;

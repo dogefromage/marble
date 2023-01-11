@@ -1,5 +1,5 @@
-import { LOOKUP_TEXTURE_SIZE } from "../viewport/ViewportQuadProgram";
-import { glsl } from "./glslTag";
+import { LOOKUP_TEXTURE_SIZE } from "../utils/viewport/ViewportQuadProgram";
+import { glsl } from "../utils/glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
@@ -85,19 +85,17 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
 {
     int y = textureCoordinate / ${LOOKUP_TEXTURE_SIZE};
     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_SIZE};
-    
     vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_SIZE});
-
     return texture2D(varSampler, uv).r;
 }
 
-%INCLUDED_METHODS%
+%INCLUDES%
 
-%COMPILED_GEOMETRIES%
+%MAIN_PROGRAM%
 
 Solid sdf(vec3 p)
 {
-    %ROOT_GEOMETRY%
+    return %ROOT_FUNCTION_NAME%(p);
 }
 
 vec3 calcNormal(vec3 p)

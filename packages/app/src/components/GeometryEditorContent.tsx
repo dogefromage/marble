@@ -51,12 +51,13 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 
     if (!connectionData) return null;
 
-    const { forwardEdges, templateMap, connectedRows, argumentConsumers } = connectionData;
+    const { forwardEdges, connectedRows, nodeTemplates } = connectionData;
 
     // New link
     const newLink = panelState?.newLink;
-    const newLinkNode = geometry?.nodes.find(node => node.id === newLink?.location.nodeId);
-    const newLinkTemplate = connectionData.templateMap.get(newLinkNode?.id!);
+    const newLinkNodeIndex = geometry?.nodes.findIndex(node => node.id === newLink?.location.nodeId);
+    const newLinkNode = geometry?.nodes[newLinkNodeIndex!];
+    const newLinkTemplate = connectionData.nodeTemplates[newLinkNodeIndex!];
 
     return (
         <>
@@ -68,9 +69,12 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                     {
                         const fromNodeState = geometry.nodes[ edge.fromIndices[0] ];
                         const toNodeState =   geometry.nodes[ edge.toIndices[0] ];
+                        const fromNodeTemplate = nodeTemplates[ edge.fromIndices[0] ];
+                        const toNodeTemplate =   nodeTemplates[ edge.toIndices[0] ];
 
-                        const fromNodeTemplate = templateMap.get(fromNodeState.id)!;
-                        const toNodeTemplate =   templateMap.get(toNodeState.id)!;
+                        if (!fromNodeTemplate || !toNodeTemplate) {
+                            return null; // cannot display edge
+                        }
 
                         const fromRowHeights = connectionData.rowHeights.get(fromNodeState.id)!;
                         const toRowHeights =   connectionData.rowHeights.get(toNodeState.id)!;
@@ -108,25 +112,6 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 )
             )
         }{
-            // geometry && argumentConsumers && 
-            // argumentConsumers.map(consumer =>
-            // {
-            //     const nodeState = geometry.nodes[ consumer.indices[0] ];
-            //     const rowHeights = connectionData.rowHeights.get(nodeState.id)!;
-            //     const heightUnits = rowHeights[ consumer.indices[1] ] + consumer.indices[2]; // add subindex
-
-            //     const position = getJointPosition(nodeState.position, heightUnits, 'input');
-
-            //     return (
-            //         <GeometryArgumentTag 
-            //             key={consumer.id}
-            //             geometryId={geometry.id}
-            //             position={position}
-            //             argument={consumer.argument}
-            //         />
-            //     )
-            // })
-        }{
             newLink && newLinkNode && newLinkTemplate &&
             <GeometryLinkNew
                 panelId={panelId}
@@ -137,7 +122,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
             />
         }{
             geometry &&
-            geometry.nodes.map(node =>
+            geometry.nodes.map((node, nodeIndex) =>
             {
                 let selectionStatus = SelectionStatus.Nothing;
                 if (geometry.selectedNodes.includes(node.id)) {
@@ -150,7 +135,7 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                         panelId={panelId}
                         key={node.id}
                         nodeState={node}
-                        nodeTemplate={templateMap.get(node.id)!}
+                        nodeTemplate={nodeTemplates[nodeIndex]}
                         connectedRows={connectedRows.get(node.id)!}
                         getCamera={getCamera}
                         selectionStatus={selectionStatus}

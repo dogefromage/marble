@@ -1,9 +1,10 @@
 import { DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/codeGeneration/glslTag";
+import { glsl } from "../../utils/glslTag";
 
 const generative_perlin_noise: GNodeT =
 {
     id: 'perlin_noise',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Generative,
     rows: [

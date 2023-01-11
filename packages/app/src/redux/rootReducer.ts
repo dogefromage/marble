@@ -9,7 +9,7 @@ import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
 import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import preferencesReducer from "../slices/preferencesSlice";
-import sceneProgramReducer from "../slices/sceneProgramSlice";
+import programsReducer from "../slices/programsSlice";
 import templatesReducer from "../slices/templatesSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
@@ -32,7 +32,7 @@ const rootReducer = combineReducers({
         panelManager: panelManagerReducer,
         preferences: preferencesReducer,
     }),
-    sceneProgram: sceneProgramReducer,
+    programs: programsReducer,
     templates: templatesReducer,
     commands: commandsReducer,
     contextMenu: contextMenuReducer,

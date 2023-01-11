@@ -41,12 +41,12 @@ export const TEMPLATE_CATEGORY_NAMES: { [C in GNodeTemplateCategories]: string }
 export interface GNodeT
 {
     id: string;
+    version: number;
     type: GNodeTemplateTypes;
     rows: Array<SpecificRowT>;
     tags?: GNodeTemplateTags[];
     category: GNodeTemplateCategories;
     // one of both
-    sourceGeometry?: string;
     instructionTemplates?: string;
 }
 
@@ -54,9 +54,9 @@ export interface GNodeS
 {
     id: string;
     templateId: string;
+    templateVersion: number;
     position: Point;
-    tags?: GNodeTemplateTags[];
     rows: {
-        [ rowId: string ]: RowS;
+        [ rowId: string ]: RowS | undefined;
     }
 }

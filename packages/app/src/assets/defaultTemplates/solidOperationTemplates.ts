@@ -1,10 +1,11 @@
 import { GNodeT, GNodeTemplateTypes, RowTypes, DataTypes, GNodeTemplateCategories } from "../../types"
-import { glsl } from "../../utils/codeGeneration/glslTag"
+import { glsl } from "../../utils/glslTag"
 import { EMPTY_SOLID, EMPTY_SOLID_FORMAT, TemplateColors, TEMPLATE_FAR_AWAY, TEMPLATE_FAR_AWAY_FORMAT } from "./templateConstants"
 
 const solid_operation_union: GNodeT =
 {
     id: 'union',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
@@ -37,6 +38,7 @@ const solid_operation_union: GNodeT =
 const solid_operation_difference: GNodeT =
 {
     id: 'difference',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
@@ -77,6 +79,7 @@ const solid_operation_difference: GNodeT =
 const solid_operation_intersection: GNodeT =
 {
     id: 'intersection',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
@@ -109,6 +112,7 @@ const solid_operation_intersection: GNodeT =
 const solid_operation_set_color: GNodeT =
 {
     id: 'set_color',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [
@@ -147,6 +151,7 @@ const solid_operation_set_color: GNodeT =
 const solid_operation_correct_distance: GNodeT =
 {
     id: 'reduce_step_size',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.SolidOperators,
     rows: [

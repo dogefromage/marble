@@ -42,7 +42,7 @@ export function generateNodeRowHeights(state: GNodeS, template: GNodeT, connecte
         const rowTemplate = template.rows[i];
         const rowState = state.rows[rowTemplate.id];
         const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
-        const numConnectedJoints = Math.max(rowState.incomingElements.length, ingoingConnection);
+        const numConnectedJoints = Math.max(rowState?.incomingElements.length || 0, ingoingConnection);
 
         const meta = getRowMetadata({ 
             template: rowTemplate, 

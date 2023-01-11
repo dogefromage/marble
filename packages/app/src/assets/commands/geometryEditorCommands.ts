@@ -1,31 +1,10 @@
-import { redo, undo } from "../enhancers/undoableEnhancer";
-import { consoleClearMessages } from "../slices/consoleSlice";
-import { geometriesRemoveNode, geometriesResetStateSelected } from "../slices/geometriesSlice";
-import { geometryEditorPanelsOpenTemplateCatalog } from "../slices/panelGeometryEditorSlice";
-import { Command, CommandScope, Point, ViewTypes } from "../types";
+import { v4 as uuidv4 } from "uuid";
+import { geometriesAddNode, geometriesCreateSub, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
+import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
+import { Command, CommandScope, Point, ViewTypes } from "../../types";
 
-export const DEFAULT_COMMANDS: Command[] =
+export const geometryEditorCommands: Command[] =
 [
-    /**
-     * GLOBAL
-     */
-    {
-        id: 'global.undo',
-        name: 'Undo',
-        scope: CommandScope.Global,
-        actionCreator: undo,
-        keyCombinations: [ { key: 'z', ctrlKey: true } ],
-    },
-    {
-        id: 'global.redo',
-        name: 'Redo',
-        scope: CommandScope.Global,
-        actionCreator: redo,
-        keyCombinations: [ { key: 'y', ctrlKey: true } ],
-    },
-    /**
-     * GEOMETRY EDITOR
-     */
     {
         scope: CommandScope.View,
         viewType: ViewTypes.GeometryEditor,
@@ -34,7 +13,6 @@ export const DEFAULT_COMMANDS: Command[] =
         actionCreator({ activePanel }, params)
         {
             let offsetPos: Point, center = false;
-
             if (params.offsetPos == null) {
                 const bounds = activePanel.panelClientRect;
                 offsetPos = {
@@ -84,19 +62,29 @@ export const DEFAULT_COMMANDS: Command[] =
         },
         // keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
     },
-    /**
-     * Console view
-     */
     {
         scope: CommandScope.View,
-        viewType: ViewTypes.Console,
-        id: 'console.clearMessages',
-        name: 'Clear Messages',
-        actionCreator()
-        {
-            return consoleClearMessages({
-                undo: {}
-            });
+        viewType: ViewTypes.GeometryEditor,
+        id: 'geometryEditor.createSubgeometry',
+        name: 'Create Group',
+        actionCreator({ panelState: { geometryId, camera }}, params) {
+            if (!geometryId) return;
+
+            const actionToken = 'create-sub-' + uuidv4();
+            const subId = uuidv4();
+
+            return [
+                geometriesCreateSub({
+                    geometryId: subId,
+                    undo: { actionToken }
+                }),
+                geometriesAddNode({
+                    geometryId: geometryId,
+                    templateId: subId,
+                    position: { x: 0, y: 0 },
+                    undo: { actionToken },
+                })
+            ];
         },
-    },
+    }
 ]

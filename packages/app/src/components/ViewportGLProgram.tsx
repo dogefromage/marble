@@ -2,9 +2,9 @@ import { mat4 } from 'gl-matrix';
 import { useEffect, useState } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppSelector } from '../redux/hooks';
-import { selectSceneProgram } from '../slices/sceneProgramSlice';
+import { selectPrograms } from '../slices/programsSlice';
 import { ViewTypes } from '../types';
-import { generateGLSL } from '../utils/codeGeneration/generateGLSL';
+import { generateShaders } from '../utils/codeGeneration/generateShaders';
 import { degToRad } from '../utils/math';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
@@ -20,8 +20,10 @@ interface Props
 const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
 {
     const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
-    const sceneProgramState = useAppSelector(selectSceneProgram);
+    const programLayers = useAppSelector(selectPrograms);
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
+
+    const layerZero = programLayers[0];
 
     /**
      * Create class instance
@@ -58,27 +60,27 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
         setQuadProgram(_program);
     }, [ gl ]);
 
-    // /**
-    //  * Generate and set program
-    //  */
-    // useEffect(() =>
-    // {
-    //     if (!sceneProgramState.program ||
-    //         !quadProgram) return;
-    //     const shaders = generateGLSL(sceneProgramState.program);
-    //     quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
-    //     quadProgram.requestRender();
-    // }, [ sceneProgramState.program, quadProgram ]);
+    /**
+     * Generate and set program
+     */
+    useEffect(() =>
+    {
+        if (!layerZero ||
+            !quadProgram) return;
+        const shaders = generateShaders(layerZero);
+        quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
+        quadProgram.requestRender();
+    }, [ layerZero, quadProgram ]);
 
     /**
      * Update texture data for variables
      */
     useEffect(() =>
     {
-        if (!quadProgram) return;
-        quadProgram.setVarTextureData(sceneProgramState.textureVarLookupData);
+        if (!quadProgram || !layerZero) return;
+        quadProgram.setVarTextureData(layerZero.textureVarLookupData);
         quadProgram.requestRender();
-    }, [ sceneProgramState.textureVarLookupData, quadProgram ])
+    }, [ layerZero?.textureVarLookupData, quadProgram ])
 
     /**
      * Update uniforms

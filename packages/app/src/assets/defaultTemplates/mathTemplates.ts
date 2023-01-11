@@ -1,10 +1,11 @@
 import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/codeGeneration/glslTag";
+import { glsl } from "../../utils/glslTag";
 import { TemplateColors } from "./templateConstants";
 
 const math_product: GNodeT =
 {
     id: 'product',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Math,
     rows: [
@@ -37,6 +38,7 @@ const math_product: GNodeT =
 const math_map: GNodeT =
 {
     id: 'map',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Math,
     rows: [

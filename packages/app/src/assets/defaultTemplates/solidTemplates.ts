@@ -1,5 +1,5 @@
 import { DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
-import { glsl } from "../../utils/codeGeneration/glslTag"
+import { glsl } from "../../utils/glslTag"
 import { TemplateColors } from "./templateConstants"
 
 const outputRow: SpecificRowT = 
@@ -32,6 +32,7 @@ const colorRow: SpecificRowT =
 const solid_sphere: GNodeT =
 {
     id: 'sphere',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
@@ -60,6 +61,7 @@ const solid_sphere: GNodeT =
 const solid_torus: GNodeT =
 {
     id: 'torus',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
@@ -96,6 +98,7 @@ const solid_torus: GNodeT =
 const solid_box: GNodeT =
 {
     id: 'box',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
@@ -125,6 +128,7 @@ const solid_box: GNodeT =
 const solid_plane: GNodeT =
 {
     id: 'plane',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [
@@ -153,6 +157,7 @@ const solid_plane: GNodeT =
 const solid_cylinder: GNodeT =
 {
     id: 'cylinder',
+    version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Solids,
     rows: [

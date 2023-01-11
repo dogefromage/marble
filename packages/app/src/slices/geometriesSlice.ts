@@ -2,55 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { GeometriesSliceState, GeometryIncomingElement, GeometryJointLocation, GeometryS, GNodeS, GNodeT, Point, RowS, RowT, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryType, GNodeS, GNodeT, Point, RootFunctionArguments, RowS, RowT, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
-function createGeometry(id: string)
-{
-    const geometry: GeometryS =
-    {
-        id,
-        name: 'New Geometry',
-        nodes: [],
-        compilationValidity: 0,
-        rowStateValidity: 0,
-        nextIdIndex: 0,
-        selectedNodes: [],
-    }
-
-    return geometry;
-}
-
-function createRowState(rowT: RowT) {
-    const rowS: RowS = {
-        incomingElements: [],
-    };
-    return rowS;
-}
-
-function createNode(template: GNodeT, nextIdIndex: number, position: Point)
-{
-    const rows = Object.fromEntries(
-        template.rows.map(row => [
-            row.id,
-            createRowState(row),
-        ])
-    );
-    
-    const node: GNodeS = 
-    {
-        id: generateAlphabeticalId(nextIdIndex),
-        templateId: template.id,
-        position: { ...position },
-        tags: template.tags,
-        rows,
-    }
-
-    return {
-        node,
-        nextIdIndex: nextIdIndex + 1,
-    };
-}
+const defaultGeometryContent = {
+    name: 'New Geometry',
+    nodes: [],
+    compilationValidity: 0,
+    rowStateValidity: 0,
+    nextIdIndex: 0,
+    selectedNodes: [],
+} satisfies Partial<GeometryS>;
 
 function getGeometry(s: GeometriesSliceState, a: { payload: { geometryId: string } })
 {
@@ -72,23 +34,53 @@ export const geometriesSlice = createSlice({
     name: 'geometries',
     initialState,
     reducers: {
-        new: (s, a: UndoAction<{ geometryId?: string }>) =>
+        createRoot: (s, a: UndoAction<{ geometryId?: string }>) =>
         {
             const id = a.payload.geometryId || uuidv4();
-            s[id] = createGeometry(id); 
+            if (s[id] != null) {
+                throw new Error(`Geometry with id ${id} already exists!`);
+            }
+
+            s[id] = {
+                ...defaultGeometryContent,
+                id,
+                type: GeometryType.Root,
+                arguments: RootFunctionArguments,
+                returnType: DataTypes.Solid,
+            }
+        },
+        createSub: (s, a: UndoAction<{ geometryId?: string }>) =>
+        {
+            const id = a.payload.geometryId || uuidv4();
+            if (s[id] != null) {
+                throw new Error(`Geometry with id ${id} already exists!`);
+            }
+
+            s[id] = {
+                ...defaultGeometryContent,
+                id,
+                type: GeometryType.Sub,
+                arguments: [],
+                returnType: DataTypes.Float,
+            }
         },
         remove: (s, a: UndoAction<{ geometryId: string }>) =>
         {
             delete s[a.payload.geometryId];
         },
-        addNode: (s, a: UndoAction<{ geometryId: string, template: GNodeT, position: Point }>) =>
+        addNode: (s, a: UndoAction<{ geometryId: string, templateId: string, position: Point }>) =>
         {
             const g = getGeometry(s, a);
             if (!g) return;
 
-            const { node, nextIdIndex } = createNode(a.payload.template, g.nextIdIndex, a.payload.position);
+            const node: GNodeS = {
+                id: generateAlphabeticalId(g.nextIdIndex++),
+                templateId: a.payload.templateId,
+                templateVersion: -1, // equivalent to saying "uninizialized"
+                position: a.payload.position,
+                rows: {},
+            }
             g.nodes.push(node);
-            g.nextIdIndex = nextIdIndex;
             g.compilationValidity++;
         },
         removeNode: (s, a: UndoAction<{ geometryId: string, nodeId?: string }>) =>
@@ -159,7 +151,9 @@ export const geometriesSlice = createSlice({
             }); 
             if (!inputNode) return;
 
-            const inputRow = inputNode.rows[a.payload.jointLocation.rowId];
+            const defaultInputRow: RowS =  { incomingElements: [] };
+            const inputRow = inputNode.rows[a.payload.jointLocation.rowId] || defaultInputRow;
+            inputNode.rows[a.payload.jointLocation.rowId] = inputRow;
 
             if (a.payload.isStackedInput)
             {
@@ -175,44 +169,6 @@ export const geometriesSlice = createSlice({
 
             g.compilationValidity++;
         },
-        // connectJoints: (s, a: UndoAction<{ 
-        //     geometryId: string, 
-        //     inputJoint: GeometryJointLocation, 
-        //     inputDataType: DataTypes,
-        //     outputJoint: GeometryJointLocation,
-        //     outputDataType: DataTypes,
-        //     mergeStackInput: boolean,
-        // }>) =>
-        // {
-        //     const g = getGeometry(s, a);
-        //     if (!g) return;
-
-        //     const inputNode = getNode(s, { 
-        //         payload: {
-        //             nodeId: a.payload.inputJoint.nodeId,
-        //             geometryId: a.payload.geometryId, 
-        //         }
-        //     }); 
-        //     if (!inputNode) return;
-
-        //     const inputRow = inputNode.rows[a.payload.inputJoint.rowId];
-
-        //     if (a.payload.inputDataType !== a.payload.outputDataType) return;
-
-        //     if (a.payload.mergeStackInput)
-        //     {
-        //         const newSubIndex = a.payload.inputJoint.subIndex;
-        //         inputRow.incomingElement = [
-        //             ...inputRow.incomingElement.slice(0, newSubIndex),
-        //             a.payload.outputJoint,
-        //             ...inputRow.incomingElement.slice(newSubIndex),
-        //         ];
-        //     } else {
-        //         inputRow.incomingElement = [ a.payload.outputJoint ];
-        //     }
-
-        //     g.compilationValidity++;
-        // },
         removeIncomingElements: (s, a: UndoAction<{ geometryId: string, joints: GeometryJointLocation[] }>) => {
             const g = getGeometry(s, a);
             if (!g) return;
@@ -225,9 +181,8 @@ export const geometriesSlice = createSlice({
                         nodeId: joint.nodeId,
                     }
                 }); 
-                const outputs = node?.rows[joint.rowId].incomingElements;
-                if (outputs) 
-                {
+                const outputs = node?.rows?.[joint.rowId]?.incomingElements;
+                if (outputs) {
                     outputs.splice(joint.subIndex, 1); // Remove desired entry
                 } else {
                     console.error(`Output not found`);
@@ -235,33 +190,6 @@ export const geometriesSlice = createSlice({
             }
             g.compilationValidity++;
         },
-        // disconnectJoints: (s, a: UndoAction<{ geometryId: string, joints: JointLocation[] }>) =>
-        // {
-        //     const g = getGeometry(s, a);
-        //     if (!g) return;
-
-        //     for (const joint of a.payload.joints)
-        //     {
-        //         const node = getNode(s, { 
-        //             payload: {
-        //                 geometryId: a.payload.geometryId, 
-        //                 nodeId: joint.nodeId,
-        //             }
-        //         }); 
-
-        //         const outputs = node?.rows[joint.rowId].incomingElement;
-        //         if (!outputs) 
-        //         {
-        //             console.error(`Output not found`);
-        //             continue;
-        //         }
-
-        //         // Remove desired entry
-        //         outputs.splice(joint.subIndex, 1);
-        //     }
-
-        //     g.compilationValidity++;
-        // },
         setSelectedNodes: (s, a: UndoAction<{ geometryId: string, selection: string[] }>) =>
         {
             const g = getGeometry(s, a);
@@ -295,15 +223,14 @@ export const geometriesSlice = createSlice({
 });
 
 export const {
-    new: geometriesNew,
+    createRoot: geometriesCreateRoot,
+    createSub: geometriesCreateSub,
     remove: geometriesRemove,
     addNode: geometriesAddNode,
     removeNode: geometriesRemoveNode,
     positionNode: geometriesPositionNode,
     moveNodes: geometriesMoveNodes,
     assignRowData: geometriesAssignRowData,
-    // connectJoints: geometriesConnectJoints,
-    // disconnectJoints: geometriesDisconnectJoints,
     insertIncomingElement: geometriesInsertIncomingElement,
     removeIncomingElements: geometriesRemoveIncomingElements,
     setSelectedNodes: geometriesSetSelectedNodes,

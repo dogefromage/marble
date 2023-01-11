@@ -1,4 +1,4 @@
-import { AnyAction } from "@reduxjs/toolkit";
+import { $CombinedState, AnyAction } from "@reduxjs/toolkit";
 import { useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { RootState } from "../redux/store";
@@ -16,20 +16,18 @@ export default function useDispatchCommand()
         command: Command,
         paramMap: CommandParameterMap,
         callType: CommandCallTypes, 
-        // targetPanelId?: string,
-    ) =>
-    {
+    ) => {
         const baseArgs: CommandBaseArgs = 
         {
             callType,
         };
 
-        let action: AnyAction | void;
+        let actionOrActions: AnyAction[] | AnyAction | void;
 
         if (command.scope === CommandScope.Global)
         {
             const globalArgs: GlobalCommandArgs = { ...baseArgs };
-            action = command.actionCreator(globalArgs, paramMap);
+            actionOrActions = command.actionCreator(globalArgs, paramMap);
         }
         else
         {
@@ -47,11 +45,18 @@ export default function useDispatchCommand()
             };
             
             // @ts-ignore because ts-stupid
-            action = command.actionCreator(viewArgs, paramMap);
+            actionOrActions = command.actionCreator(viewArgs, paramMap);
         }
 
-        if (action != null)
-        {
+        let actions: AnyAction[] = [];
+    
+        if (Array.isArray(actionOrActions)) {
+            actions = actionOrActions;
+        } else if (actionOrActions != null) {
+            actions.push(actionOrActions)
+        }
+        
+        for (const action of actions) {
             dispatch(action);
         }
 

@@ -1,5 +1,5 @@
-import { GeometryArgument, GeometryJointLocation, GNodeT } from ".";
-import { DataTypes } from "../sceneProgram";
+import { GeometryArgument, GeometryJointLocation, GNodeS, GNodeT } from ".";
+import { DataTypes } from "../program";
 import { ObjMap } from "../UtilityTypes";
 
 export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
@@ -28,12 +28,18 @@ export interface GeometryArgumentConsumer
     argument: GeometryArgument;
 }
 
+// export interface GNodeData
+// {
+//     state: GNodeS;
+//     template: GNodeT;
+    
+// }
+
 export interface GeometryConnectionData
 {
     geometryId: string;
     compilationValidity: number;
-    templateMap: GeometryTemplateMap;
-    nodeTemplates: GNodeT[];
+    nodeTemplates: (GNodeT | null)[];
     rowOrders: GeometryNodeRowOrder;
     forwardEdges: GeometryAdjacencyList;
     rowHeights: GeometryRowHeights;
