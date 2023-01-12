@@ -19,6 +19,10 @@ export const consoleSlice = createSlice({
                 text: a.payload.text,
                 type: a.payload.type,
             });
+
+            if (s.feed.length > 500) {
+                s.feed.shift();
+            }
         },
         clearMessages: (s, a: UndoAction<{}>) => {
             s.feed = [];

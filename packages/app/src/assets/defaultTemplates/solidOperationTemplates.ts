@@ -29,7 +29,7 @@ const solid_operation_union: GNodeT =
             value: EMPTY_SOLID,
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         #INCLUDE inc_union;
         Solid $output = #STACK(inc_union, $inputs, ${EMPTY_SOLID_FORMAT});
     `,
@@ -69,7 +69,7 @@ const solid_operation_difference: GNodeT =
             value: EMPTY_SOLID,
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         #INCLUDE inc_union, inc_difference;
         Solid $neg = #STACK(inc_union, $negatives, ${EMPTY_SOLID_FORMAT});
         Solid $output = inc_difference($positive, $neg);
@@ -103,7 +103,7 @@ const solid_operation_intersection: GNodeT =
             value: EMPTY_SOLID,
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         #INCLUDE inc_intersection;
         Solid $output = #STACK(inc_intersection, $inputs, ${EMPTY_SOLID_FORMAT});
     `,
@@ -143,7 +143,7 @@ const solid_operation_set_color: GNodeT =
             value: [ 1, 1, 1 ],
         }
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         Solid $output = Solid($input.sd, $color);
     `,
 }
@@ -182,7 +182,7 @@ const solid_operation_correct_distance: GNodeT =
             value: 1,
         }
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         Solid $output = Solid($factor * $input.sd, $input.color);
     `,
 }

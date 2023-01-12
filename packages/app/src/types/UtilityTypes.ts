@@ -1,8 +1,8 @@
 
-export type ObjMap<T> =
-{
-    [ key: string ]: T;
-}
+export type ObjMap<T> = { [ key: string ]: T };
+export type ObjMapUndef<T> = { [ key: string ]: T | undefined };
+
+export type NullArr<T> = (T | null)[];
 
 export type Override<T, K extends keyof T, N> = Omit<T, K> & { [ K1 in K ]: N };
 

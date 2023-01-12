@@ -29,7 +29,7 @@ const math_product: GNodeT =
             value: 1,
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         #INCLUDE inc_multiply;
         float $output = #STACK(inc_multiply, $input, 1.0);
     `,
@@ -90,7 +90,7 @@ const math_map: GNodeT =
             value: 1,
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         float $t = ($input - $from_min) / ($from_max - $from_min);
         float $output = $to_min + $t * ($to_max - $to_min);
     `,

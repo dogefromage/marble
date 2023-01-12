@@ -47,7 +47,7 @@ export interface GNodeT
     tags?: GNodeTemplateTags[];
     category: GNodeTemplateCategories;
     // one of both
-    instructionTemplates?: string;
+    instructions?: string;
 }
 
 export interface GNodeS

@@ -3,7 +3,7 @@ import useDispatchCommand from '../hooks/useDispatchCommand';
 import { useEventListener } from '../hooks/useEventListener';
 import { useAppSelector } from '../redux/hooks';
 import { selectCommands } from '../slices/commandsSlice';
-import { CommandCallTypes } from '../types';
+import { Command, CommandCallTypes, ObjMap } from '../types';
 import matchesKeyCombination from '../utils/commands/matchesKeyCombination';
 
 const KeyboardCommandListener = () =>
@@ -19,8 +19,10 @@ const KeyboardCommandListener = () =>
         if (document.activeElement instanceof HTMLInputElement)
             return;
 
-        for (const command of Object.values(commands))
+        for (const _command of Object.values(commands))
         {
+            const command = _command!; // is def.
+            
             if (!command.keyCombinations) continue;
 
             for (const combination of command.keyCombinations)

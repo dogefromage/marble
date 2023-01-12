@@ -4,9 +4,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesRemoveIncomingElements, selectGeometry } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
-import generateGeometryConnectionData from '../utils/geometries/generateGeometryConnectionData';
-import getJointPosition from '../utils/geometries/getJointPosition';
-import GeometryArgumentTag from './GeometryArgumentTag';
+import generateGeometryData from '../utils/geometries/generateGeometryData';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
@@ -28,36 +26,29 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
     const connectionData = useMemo(() =>
     {
         if (!geometry || !Object.values(templates).length) return;
-        try {
-            return generateGeometryConnectionData(geometry, templates);
-        } catch (e) {
-            console.error(e);
-            return;
-        }
-    }, [ geometry?.id, geometry?.compilationValidity ]);
+        const connectionData = generateGeometryData(geometry, templates);
 
-    useEffect(() =>
-    {
-        if (!connectionData) return;
-        if (connectionData.strayConnectedJoints.length)
-        {
+        if (connectionData.strayConnectedJoints.length) {
             dispatch(geometriesRemoveIncomingElements({
                 geometryId,
                 joints: connectionData.strayConnectedJoints,
                 undo: { doNotRecord: true },
             }));
         }
-    }, [ connectionData ]);
+
+        return connectionData;
+
+    }, [ dispatch, geometry?.id, geometry?.compilationValidity ]);
 
     if (!connectionData) return null;
 
-    const { forwardEdges, connectedRows, nodeTemplates } = connectionData;
+    const { forwardEdges, nodeDatas } = connectionData;
 
     // New link
     const newLink = panelState?.newLink;
     const newLinkNodeIndex = geometry?.nodes.findIndex(node => node.id === newLink?.location.nodeId);
     const newLinkNode = geometry?.nodes[newLinkNodeIndex!];
-    const newLinkTemplate = connectionData.nodeTemplates[newLinkNodeIndex!];
+    const newLinkData = connectionData.nodeDatas[newLinkNodeIndex!];
 
     return (
         <>
@@ -69,27 +60,25 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                     {
                         const fromNodeState = geometry.nodes[ edge.fromIndices[0] ];
                         const toNodeState =   geometry.nodes[ edge.toIndices[0] ];
-                        const fromNodeTemplate = nodeTemplates[ edge.fromIndices[0] ];
-                        const toNodeTemplate =   nodeTemplates[ edge.toIndices[0] ];
+                        // should be defined, since edge also is
+                        const fromData = nodeDatas[edge.fromIndices[0]]!;
+                        const toData = nodeDatas[edge.toIndices[0]]!;
+                        const fromNodeTemplate = fromData.template;
+                        const toNodeTemplate = toData.template;
 
                         if (!fromNodeTemplate || !toNodeTemplate) {
-                            return null; // cannot display edge
+                            console.warn('these templates should exist');
                         }
 
-                        const fromRowHeights = connectionData.rowHeights.get(fromNodeState.id)!;
-                        const toRowHeights =   connectionData.rowHeights.get(toNodeState.id)!;
-                        
-                        const fromHeightUnits = fromRowHeights[ edge.fromIndices[1] ];
-                        const toHeightUnits = toRowHeights[ edge.toIndices[1] ] + edge.toIndices[2]; // add subindex
+                        const fromHeightUnits = fromData.rowHeights[ edge.fromIndices[1] ];
+                        const toHeightUnits = toData.rowHeights[ edge.toIndices[1] ] + edge.toIndices[2]; // add subindex
                                                 
-                        const joints: GeometryJointLocation[] = 
-                        [
+                        const joints: GeometryJointLocation[] = [ 
                             {
                                 nodeId: fromNodeState.id,
                                 rowId: fromNodeTemplate.rows[edge.fromIndices[1]].id,
                                 subIndex: 0,
-                            },
-                            {
+                            }, {
                                 nodeId: toNodeState.id,
                                 rowId: toNodeTemplate.rows[edge.toIndices[1]].id,
                                 subIndex: edge.toIndices[2],
@@ -112,12 +101,12 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 )
             )
         }{
-            newLink && newLinkNode && newLinkTemplate &&
+            newLink && newLinkNode && newLinkData &&
             <GeometryLinkNew
                 panelId={panelId}
                 newLink={newLink}
                 node={newLinkNode}
-                template={newLinkTemplate}
+                nodeData={newLinkData}
                 getCamera={getCamera}
             />
         }{
@@ -128,15 +117,15 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 if (geometry.selectedNodes.includes(node.id)) {
                     selectionStatus = SelectionStatus.Selected;
                 }
+                const nodeData = nodeDatas[nodeIndex];
 
                 return (
                     <GeometryNode
+                        key={node.id}
                         geometryId={geometry.id}
                         panelId={panelId}
-                        key={node.id}
                         nodeState={node}
-                        nodeTemplate={nodeTemplates[nodeIndex]}
-                        connectedRows={connectedRows.get(node.id)!}
+                        nodeData={nodeData}
                         getCamera={getCamera}
                         selectionStatus={selectionStatus}
                     />

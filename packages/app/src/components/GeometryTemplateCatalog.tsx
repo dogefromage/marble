@@ -58,12 +58,12 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
         if (searchValue.length > 0) {
             // render filtered
             const filtered = allTemplates
-                .filter(t => t.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
+                .filter(t => t!.rows[0].name.toLowerCase().includes(searchValue.toLowerCase()));
 
             const listTemplates: MenuElement[] = filtered.map(template => ({
                 type: 'button',
-                name: template.rows[0].name,
-                onClick: () => addNode(template),
+                name: template!.rows[0].name,
+                onClick: () => addNode(template!),
             }));
             
             const menuShape: VerticalMenuShape = {
@@ -81,9 +81,9 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
             const groupedTemplatesMap = allTemplates
                 .reduce((groupes, current) =>
                 {
-                    const key = current.category;
+                    const key = current!.category;
                     if (groupes[key] == null) { groupes[key] = []; }
-                    groupes[key].push(current);
+                    groupes[key].push(current!);
                     return groupes;
                 }, {} as GroupedTemplatesMap);
             

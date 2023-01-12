@@ -103,10 +103,10 @@ export type GeometryIncomingElement =
     | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
     | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
 
-export type RowS<T extends RowT = RowT> = Partial<T> &
-{
+export interface SuperRowS {
     incomingElements: GeometryIncomingElement[];
 }
+export type RowS<T extends RowT = RowT> = Partial<T> & SuperRowS;
 
 export type RowZ<T extends RowT = RowT> = Partial<RowS<T>> & T & {
     numConnectedJoints: number;

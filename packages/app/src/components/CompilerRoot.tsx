@@ -25,14 +25,11 @@ const CompilerRoot = () =>
         // compiler.updateGeometries(geometries);
         // const newLayerPrograms = compiler.generateNewLayerPrograms();
 
-        try
-        {
+        try {
             const compiledProgram = compiler.compileRenderLayer(geometries);
         } 
-        catch (e: any) 
-        { 
+        catch (e: any) { 
             const errorInfos = compiler.getErrorInfos();
-
             dispatch(consoleAppendMessage({
                 text: e.message,
                 type: 'error',

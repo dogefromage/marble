@@ -26,7 +26,7 @@ const output_output: GNodeT =
             value: [ TEMPLATE_FAR_AWAY, 0, 0, 0 ],
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         return input;
     `,
 }

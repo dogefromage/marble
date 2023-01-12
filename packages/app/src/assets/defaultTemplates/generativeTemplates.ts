@@ -29,7 +29,7 @@ const generative_perlin_noise: GNodeT =
             defaultArgumentToken: DefaultFunctionArgNames.RayPosition,
         }
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         #INCLUDE inc_perlin_noise;
         float $output = inc_perlin_noise($coordinates);
     `,

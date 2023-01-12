@@ -1,31 +1,31 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { OUTPUT_TEMPLATE_ID } from '../../assets/defaultTemplates/outputTemplates';
-import { GeometryCompilerErrorTypes, GeometryConnectionData, GeometryS, GNodeT, GNodeTemplateTags, GNodeTemplateTypes, ObjMap, ProgramInclude, RenderLayerProgram, SceneCompilerErrorInfo } from "../../types";
-import generateGeometryConnectionData from "../geometries/generateGeometryConnectionData";
+import { GeometryCompilerErrorTypes, GeometryConnectionData, GeometryS, GNodeT, GNodeTemplateTypes, ObjMap, ObjMapUndef, ProgramInclude, RenderLayerProgram, SceneCompilerErrorInfo } from "../../types";
+import generateGeometryData from "../geometries/generateGeometryData";
+import analyzeGraph from '../graph/analyzeGraph';
 import geometryNodesToGraphAdjacency from "../graph/geometryNodesToGraphAdjacency";
-import orderGraph from "../graph/orderGraph";
 import { LOOKUP_TEXTURE_SIZE } from '../viewport/ViewportQuadProgram';
-import { GeometryCompilationError, TemplateNotFoundException } from './GeometryCompilationError';
+import { GeometryCompilationError } from './GeometryCompilationError';
 import hashIntArray from "./hashIntArray";
 import IdentifierRenamer from "./IdentifierRenamer";
 
 export default class ProgramCompiler 
 {
-    private templates: ObjMap<GNodeT> = {};
-    private includes: ObjMap<ProgramInclude> = {};
+    private templates: ObjMapUndef<GNodeT> = {};
+    private includes: ObjMapUndef<ProgramInclude> = {};
     private compiledProgram: RenderLayerProgram | null = null;
     private errorInfos: SceneCompilerErrorInfo[] = [];
 
     public getErrorInfos() { return this.errorInfos; }
-    public setTemplates(templates: ObjMap<GNodeT>) { this.templates = templates; }
-    public setIncludes(includes: ObjMap<ProgramInclude>) { this.includes = includes; }
+    public setTemplates(templates: ObjMapUndef<GNodeT>) { this.templates = templates; }
+    public setIncludes(includes: ObjMapUndef<ProgramInclude>) { this.includes = includes; }
 
-    public compileRenderLayer(geoMap: ObjMap<GeometryS>)
+    public compileRenderLayer(geoMap: ObjMapUndef<GeometryS>)
     {
         this.errorInfos = []; // reset old
 
-        const geoList = Object.values(geoMap);
+        const geoList = Object.values(geoMap) as GeometryS[];
 
         // detect changes
         const validityList = geoList.map(g => g.compilationValidity);
@@ -33,7 +33,7 @@ export default class ProgramCompiler
         if (hash === this.compiledProgram?.hash)
             return; // no changes
 
-        const dataList = geoList.map(geo => generateGeometryConnectionData(geo, this.templates));
+        const dataList = geoList.map(geo => generateGeometryData(geo!, this.templates));
 
         // find topological sorting
         const numGeometries = geoList.length;
@@ -59,7 +59,7 @@ export default class ProgramCompiler
             }
         }
 
-        const programGraphData = orderGraph(numGeometries, geometriesAdjacency);
+        const programGraphData = analyzeGraph(numGeometries, geometriesAdjacency);
 
         // cycle error
         if (programGraphData.cycles.length > 0) {
@@ -172,26 +172,9 @@ export default class ProgramCompiler
         geometry: GeometryS, 
         connectionData: GeometryConnectionData,
     ) {
-        // find lowest index where a node is output
-        let outputIndex = -1;
-        for (let i = geometry.nodes.length - 1; i >= 0; i--) {
-            if (geometry.nodes[i].templateId === OUTPUT_TEMPLATE_ID) {
-                outputIndex = i;
-                break;
-            }
-        }
-
-        if (outputIndex < 0) {
-            this.errorInfos.push({
-                type: GeometryCompilerErrorTypes.GeoOutputMissing,
-                geometryId: geometry.id,
-            });
-            throw new Error(`Geometry "${geometry.name}" does not have an output.`)
-        }
-
         const n = geometry.nodes.length;
         const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
-        const { topOrder, cycles } = orderGraph(n, nodeAdjacency);
+        const { topOrder, cycles, components } = analyzeGraph(n, nodeAdjacency);
 
         if (cycles.length) { // invalid because cycles
             for (const cycle of cycles) {
@@ -203,17 +186,34 @@ export default class ProgramCompiler
             }
             throw new Error(`Geometry "${geometry.name}" has cyclic connected nodes.`);
         }
-
-        // tokenize all nodes into array long pseudo string scoped at the current node
+        
+        // find lowest index where a node is output
+        let outputIndex = -1;
+        for (let i = geometry.nodes.length - 1; i >= 0; i--) {
+            if (geometry.nodes[i].templateId === OUTPUT_TEMPLATE_ID) {
+                outputIndex = i;
+                break;
+            }
+        }
+        if (outputIndex < 0) {
+            this.errorInfos.push({
+                type: GeometryCompilerErrorTypes.GeoOutputMissing,
+                geometryId: geometry.id,
+            });
+            throw new Error(`Geometry "${geometry.name}" does not have an output.`)
+        }
+        const outputComponent = components[outputIndex];
 
         const instructions: string[] = [];
 
         for (const nodeIndex of topOrder) {
-            const template = connectionData.nodeTemplates[nodeIndex];
-            if (template != null) {
-                if (template.type === GNodeTemplateTypes.Base) {
+            // check if node is in same component as output
+            const isUsed = components[nodeIndex] == outputComponent;
+            const nodeData = connectionData.nodeDatas[nodeIndex];
+            if (isUsed && nodeData != null) {
+                if (nodeData.template.type === GNodeTemplateTypes.Base) {
                     const marker = `# node ${nodeIndex};`;
-                    instructions.push(marker, template.instructionTemplates!);
+                    instructions.push(marker, nodeData.template.instructions!);
                 }
             }
         }

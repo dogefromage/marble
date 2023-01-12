@@ -45,7 +45,7 @@ const vectors_mirror_plane: GNodeT =
             name: 'Plane Normal',
         }
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         vec3 $norm = normalize($n);
         float $xn = dot($norm, $x - $o);
         vec3 $output = $x - $norm * (abs($xn) + $xn); // mirror if dot negative, nothing if positive
@@ -87,7 +87,7 @@ const vectors_repeat_cell: GNodeT =
             name: 'Cell Size',
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         // vec3 c = floor((p + size*0.5)/size);
         vec3 $output = mod($x + $size*0.5, $size) - $size*0.5;
     `,
@@ -149,7 +149,7 @@ const vectors_transform: GNodeT =
             value: 1,
         }
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         vec3 $output = $rotation * ($input - $translation) / $scale;
         float $sd_correction = $scale;
     `,
@@ -194,7 +194,7 @@ const vectors_separate_3x1: GNodeT =
             value: [ 0, 0, 0 ],
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         float $x = $input.x;
         float $y = $input.y;
         float $z = $input.z;
@@ -234,7 +234,7 @@ const vectors_separate_2x1: GNodeT =
             value: [ 0, 0 ],
         },
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         float $x = $input.x;
         float $y = $input.y;
     `,

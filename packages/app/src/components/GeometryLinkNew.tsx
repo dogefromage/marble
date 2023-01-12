@@ -1,12 +1,10 @@
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useAppDispatch } from "../redux/hooks";
 import { geometryEditorPanelsSetNewLink } from "../slices/panelGeometryEditorSlice";
-import { GeometryNewLink, GNodeS, GNodeT, PlanarCamera } from "../types";
+import { GeometryNewLink, GNodeData, GNodeS, PlanarCamera } from "../types";
 import getJointPosition from "../utils/geometries/getJointPosition";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
-import { countHeightUnits } from "../utils/geometries/rowHeights";
 import { p2v, v2p } from "../utils/linalg";
 import GeometryLinkDiv from "./GeometryLinkDiv";
 
@@ -15,11 +13,11 @@ interface Props
     panelId: string;
     newLink: GeometryNewLink;
     node: GNodeS;
-    template: GNodeT;
+    nodeData: GNodeData;
     getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryLinkNew = ({ panelId, newLink, node, template, getCamera }: Props) =>
+const GeometryLinkNew = ({ panelId, newLink, node, nodeData, getCamera }: Props) =>
 {
     const dispatch = useAppDispatch();
     
@@ -38,9 +36,8 @@ const GeometryLinkNew = ({ panelId, newLink, node, template, getCamera }: Props)
     if (!cam) return null;
 
     const endLocation = newLink.location;
-    const rowIndex = template.rows.findIndex(r => r.id == endLocation.rowId);
-
-    const endJointHeight = countHeightUnits(template.rows, node, rowIndex, endLocation.subIndex);
+    const rowIndex = nodeData.template.rows.findIndex(r => r.id == endLocation.rowId);
+    const endJointHeight = nodeData.rowHeights[rowIndex] + endLocation.subIndex;
     const endJointPos = getJointPosition(node.position, endJointHeight, newLink.direction);
 
     const offsetPosVec = p2v(newLink.offsetPos);

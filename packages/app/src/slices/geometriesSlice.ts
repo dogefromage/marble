@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryType, GNodeS, GNodeT, Point, RootFunctionArguments, RowS, RowT, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryType, GNodeS, GNodeT, Point, RootFunctionArguments, RowS, RowT, SuperRowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 const defaultGeometryContent = {
@@ -120,8 +120,12 @@ export const geometriesSlice = createSlice({
 
             if (a.payload.rowData)
             {
+                const superDefault: SuperRowS = {
+                    incomingElements: [],
+                }
                 // @ts-ignore
                 n.rows[a.payload.rowId] = {
+                    ...superDefault,
                     ...n.rows[a.payload.rowId],
                     ...a.payload.rowData,
                 }

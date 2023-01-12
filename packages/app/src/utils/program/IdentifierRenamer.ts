@@ -51,11 +51,11 @@ export default class IdentifierRenamer
     public getNode() {
         const { geometry, connectionData } = this.getGeometry();
         const node = geometry.nodes[this.nodeIndex];
-        const template = connectionData.nodeTemplates[this.nodeIndex];
-        if (!node || !template) {
+        const nodeData = connectionData.nodeDatas[this.nodeIndex];
+        if (!node || !nodeData) {
             throw new GeometryCompilationError(`Node not set in Renamer`);
         }
-        return { node, template };
+        return { node, nodeData };
     }
 
     public addAdditionalStatements(astRoot: Program) {
@@ -175,9 +175,9 @@ export default class IdentifierRenamer
 
     public replaceReference(path: Path<IdentifierNode>): void
     {
-        const { node, template } = this.getNode();
+        const { node, nodeData } = this.getNode();
         const token = path.node.identifier;
-        const rowIndex = template.rows.findIndex(row => row.id === token);
+        const rowIndex = nodeData.template.rows.findIndex(row => row.id === token);
 
         // case 0: no row, read local 
         if (rowIndex < 0) {
@@ -189,13 +189,12 @@ export default class IdentifierRenamer
             return;
         } 
 
-        const rowTemp = template.rows[rowIndex];
+        const rowTemp = nodeData.template.rows[rowIndex];
         const rowTempAsInput = rowTemp as SuperInputRowT;
         const rowState = node.rows[rowTemp.id];
 
         // case 1: connection
         const incomingEdge = this.getIncomingEdge(this.nodeIndex, rowIndex)?.[0];
-
         if (incomingEdge) {
             path.node.identifier = this.getIdentifierName(Prefixes.Edge, ...incomingEdge.fromIndices);
             return;
@@ -236,9 +235,9 @@ export default class IdentifierRenamer
 
     public replaceDeclaration(path: Path<DeclarationNode>)
     {
-        const { node, template } = this.getNode();
+        const { node, nodeData } = this.getNode();
         const token = path.node.identifier.identifier;
-        const rowIndex = template.rows.findIndex(row => row.id === token);
+        const rowIndex = nodeData.template.rows.findIndex(row => row.id === token);
         const idntNode = path.node.identifier;
         
         if (rowIndex < 0) // no row, declare local 

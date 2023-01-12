@@ -1,10 +1,10 @@
 import { GeometryArgument, GeometryJointLocation, GNodeS, GNodeT } from ".";
 import { DataTypes } from "../program";
-import { ObjMap } from "../UtilityTypes";
+import { NullArr, ObjMap } from "../UtilityTypes";
 
-export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
-export type GeometryTemplateMap = Map<string, GNodeT>; // nodeId -> template
-export type GeometryConnectedRows = Map<string, Set<string>>; // nodeId -> { rowId | row connected }
+// export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
+// export type GeometryTemplateMap = Map<string, GNodeT>; // nodeId -> template
+// export type GeometryConnectedRows = Map<string, Set<string>>; // nodeId -> { rowId | row connected }
 export type GeometryRowHeights = Map<string, number[]>;
 
 export type GeometryFromIndices = [ number, number ];
@@ -28,25 +28,27 @@ export interface GeometryArgumentConsumer
     argument: GeometryArgument;
 }
 
-// export interface GNodeData
-// {
-//     state: GNodeS;
-//     template: GNodeT;
-    
-// }
+export interface GNodeData
+{
+    template: GNodeT;
+    /**
+     * Def: 
+     *  * **Row Heights** := rowHeight[i] = number of height units to go down until the row is reached
+     */
+    rowHeights: number[];
+    /**
+     * * **Row Connections** := rowId -> number of connected joints in row
+     */
+    rowConnections: ObjMap<number>;
+}
 
 export interface GeometryConnectionData
 {
     geometryId: string;
     compilationValidity: number;
-    nodeTemplates: (GNodeT | null)[];
-    rowOrders: GeometryNodeRowOrder;
+    nodeDatas: NullArr<GNodeData>;
     forwardEdges: GeometryAdjacencyList;
-    rowHeights: GeometryRowHeights;
-    nodeHeights: Map<string, number>;
     backwardEdges: GeometryAdjacencyList;
-    connectedRows: GeometryConnectedRows;
     strayConnectedJoints: GeometryJointLocation[];
-    argumentConsumers: GeometryArgumentConsumer[];
     dependencies: string[];
 }

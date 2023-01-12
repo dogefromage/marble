@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectCommands } from '../slices/commandsSlice';
 import { contextMenuClose, selectContextMenu } from '../slices/contextMenuSlice';
-import { MenuTypes } from '../types';
+import { Command, MenuTypes } from '../types';
 import generateContextMenuShape from '../utils/generateContextMenuShape';
 import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
 import MenuRoot from './MenuRoot';
@@ -25,7 +25,7 @@ const ContextMenu = () =>
         if (active == null) return;
         const commandList = active.commandIds
             .map(commandId => commands[commandId])
-            .filter(command => command != null);
+            .filter(command => command != null) as Command[];
         return generateContextMenuShape(commandList);
     }, [ active, commands ]);
 

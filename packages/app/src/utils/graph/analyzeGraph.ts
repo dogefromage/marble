@@ -1,13 +1,27 @@
 
+
+function markComponent(n: number, v: number, Adj: number[][], components: number[], visited: boolean[], currentComponent: number): number {
+    visited[v] = true;
+    for (const u of Adj[v]) {
+        if (visited[u]) {
+            currentComponent = components[u];
+        } else {
+            currentComponent = markComponent(n, u, Adj, components, visited, currentComponent);
+        }
+    }
+    components[v] = currentComponent;
+    return currentComponent;
+}
+
 export default function orderGraph(n: number, Adj: number[][]) {
     
     const pre = new Array(n).fill(0);
     const post = new Array(n).fill(0);
-    const visited = new Array(n).fill(false);
+    const visited = new Array<boolean>(n).fill(false);
     const cycles: number[][] = [];
 
     const dfsStack: number[] = [];
-    let counter = 1;
+    let intervalCounter = 1;
     for (let u0 = 0; u0 < n; u0++) {
         if (!visited[u0]) {
             dfsStack.push(u0);
@@ -15,11 +29,10 @@ export default function orderGraph(n: number, Adj: number[][]) {
 
         while (dfsStack.length > 0) {
             const u = dfsStack.pop()!; // u hasn't been visited
-
             if (u >= 0) {
                 dfsStack.push(-u-1); // closes scope
                 visited[u] = true;
-                pre[u] = counter; counter++;
+                pre[u] = intervalCounter; intervalCounter++;
     
                 for (const v of Adj[u]) {
                     if (visited[v]) {
@@ -34,7 +47,7 @@ export default function orderGraph(n: number, Adj: number[][]) {
                 }
             } else {
                 let u_end = -u-1;
-                post[u_end] = counter; counter++;
+                post[u_end] = intervalCounter; intervalCounter++;
             }
         }
     }
@@ -42,9 +55,17 @@ export default function orderGraph(n: number, Adj: number[][]) {
     const sorted = post.slice().sort((a, b) => b - a);
     const topOrder = sorted.map(x => post.indexOf(x));
 
+    const components = new Array(n).fill(-1);
+    visited.fill(false); // reset
+    let currendComponent = 0;
+    for (let v0 = 0; v0 < n; v0++) {
+        currendComponent = 1 + markComponent(n, v0, Adj, components, visited, currendComponent);
+    }
+
     return {
         cycles,
         topOrder,
+        components,
     }
 }
 

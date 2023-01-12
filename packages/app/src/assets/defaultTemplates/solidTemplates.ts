@@ -53,7 +53,7 @@ const solid_sphere: GNodeT =
         },
         colorRow,
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         Solid $output = Solid(length($coordinates) - $radius, $color);
     `,
 }
@@ -89,7 +89,7 @@ const solid_torus: GNodeT =
         },
         colorRow,
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         vec2 $q = vec2(length($coordinates.xz) - $large_r, $coordinates.y);
         Solid $output = Solid(length($q) - $small_r, $color);
     `,
@@ -119,7 +119,7 @@ const solid_box: GNodeT =
         },
         colorRow,
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         vec3 q = abs(coordinates) - size;
         Solid output = Solid(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
     `,
@@ -149,7 +149,7 @@ const solid_plane: GNodeT =
         },
         colorRow,
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         Solid $output = Solid($coordinates.z - $height, $color);
     `,
 }
@@ -185,7 +185,7 @@ const solid_cylinder: GNodeT =
         },
         colorRow,
     ],
-    instructionTemplates: glsl`
+    instructions: glsl`
         vec2 $d = abs(vec2(length($coordinates.xz), $coordinates.y)) - vec2($radius, $height);
         Solid $output = Solid(min(max($d.x,$d.y),0.0) + length(max($d,0.0)), $color);
     `,

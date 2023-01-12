@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
 import GeometryNodeDiv from '../styles/GeometryNodeDiv';
-import { GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
+import { GNodeData, GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { v2p } from '../utils/linalg';
@@ -17,13 +17,12 @@ interface Props
     panelId: string;
     geometryId: string;
     nodeState: GNodeS;
-    nodeTemplate: GNodeT | null;
-    connectedRows: Set<string>;
+    nodeData: GNodeData | null;
     getCamera: () => PlanarCamera | undefined;
     selectionStatus: SelectionStatus;
 }
 
-const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedRows, getCamera, selectionStatus }: Props) =>
+const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, selectionStatus }: Props) =>
 {
     const dispatch = useAppDispatch();
  
@@ -93,13 +92,11 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeTemplate, connectedR
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
         >
         {
-            nodeTemplate ? (
-                nodeTemplate.rows.map(rowTemplate =>
+            nodeData ? (
+                nodeData.template.rows.map(rowTemplate =>
                 {
                     const rowState = nodeState.rows[rowTemplate.id];
-                    const ingoingConnection = connectedRows.has(rowTemplate.id) ? 1 : 0;
-                    const incomingElements = rowState?.incomingElements.length || 0;
-                    const numConnectedJoints = Math.max(incomingElements, ingoingConnection);
+                    const numConnectedJoints = nodeData.rowConnections[rowTemplate.id];
                     
                     // @ts-ignore
                     const rowZ: RowZ = { 
