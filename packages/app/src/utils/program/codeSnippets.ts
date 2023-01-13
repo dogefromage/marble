@@ -1,5 +1,5 @@
 import { DataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE, Tuple } from "../../types";
-import { TEXTURE_LOOKUP_METHOD_NAME } from "../../assets/shaderTemplates";
+import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
 
 
 export function formatLiteral(value: RowValueMap[DataTypes], dataType: DataTypes): string

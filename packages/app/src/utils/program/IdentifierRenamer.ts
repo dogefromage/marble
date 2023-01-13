@@ -203,7 +203,7 @@ export default class IdentifierRenamer
         // case 2.1: argument connected
         const incomingArg = rowState?.incomingElements?.[0];
         if (incomingArg?.type === GeometryIncomingElementTypes.Argument) {
-            path.node.identifier = incomingArg.argument.identifier;
+            path.node.identifier = incomingArg.argument.id;
             return;
         }
         

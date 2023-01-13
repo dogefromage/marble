@@ -50,6 +50,7 @@ const SelectOption = ({ value, onChange, options }: Props) =>
             list: options.map(option => ({
                 type: 'button',
                 name: option,
+                key: option,
                 onClick: () => {
                     onChange(option);
                     setDropdown(() => false);

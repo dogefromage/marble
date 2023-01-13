@@ -5,6 +5,7 @@ export default function generateContextMenuShape(commandList: Command[]) {
         type: 'vertical',
         list: commandList.map(command => ({
             type: 'command',
+            key: command.id,
             name: command.name,
             command: command.id,
         })),

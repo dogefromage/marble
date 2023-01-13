@@ -44,10 +44,8 @@ export interface GNodeT
     version: number;
     type: GNodeTemplateTypes;
     rows: Array<SpecificRowT>;
-    tags?: GNodeTemplateTags[];
     category: GNodeTemplateCategories;
-    // one of both
-    instructions?: string;
+    instructions: string;
 }
 
 export interface GNodeS

@@ -5,12 +5,12 @@ import React, { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import 'react-reflex/styles.css';
 import { ThemeProvider } from 'styled-components';
-import defaultTheme from '../assets/defaultTheme';
+import defaultTheme from '../content/defaultTheme';
 import { initStore, RootState } from '../redux/store';
 import CompilerRoot from './CompilerRoot';
 import ContextMenu from './ContextMenu';
 import { ContextMenuPortalMount } from './ContextMenuPortalMount';
-import DefaultTemplateLoader from './DefaultTemplateLoader';
+import TemplateManagerRoot from './TemplateManagerRoot';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
 import KeyboardCommandListener from './KeyboardCommandListener';
@@ -50,7 +50,7 @@ const AppRoot = ({ projectId }: Props) =>
                 <ServiceErrorBoundary serviceName='SceneProgramCompiler'>
                     <CompilerRoot />
                 </ServiceErrorBoundary>
-                <DefaultTemplateLoader />
+                <TemplateManagerRoot />
                 <KeyboardCommandListener />
                 <ContextMenu />
                 <StartAnouncer projectId={projectId} />

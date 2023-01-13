@@ -54,7 +54,7 @@ const MenuVertical = ({
         {
             shape.list.map(element => 
                 <MenuElementSwitch 
-                    key={element.name}
+                    key={element.key}
                     depth={depth} 
                     menuStore={menuStore} 
                     element={element} 

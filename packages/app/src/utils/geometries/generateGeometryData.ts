@@ -50,7 +50,7 @@ function genAdjList(
         }
     }
 
-    const strayConnectedJoints: GeometryJointLocation[] = [];
+    const strayJoints: GeometryJointLocation[] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
     {
@@ -87,7 +87,7 @@ function genAdjList(
                      * We know that this node had a up to date 
                      * template but the specified row doesn't exist.
                      */
-                    strayConnectedJoints.push({
+                    strayJoints.push({
                         nodeId: node.id,
                         rowId,
                         subIndex,
@@ -134,7 +134,7 @@ function genAdjList(
     return {
         forwardEdges,
         backwardEdges,
-        strayConnectedJoints,
+        strayJoints,
         rowConnectedJoints,
     }
 }
@@ -142,13 +142,8 @@ function genAdjList(
 export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>)
 {
     const N = geometry.nodes.length;
-
-    const expiredTemplates: Array<{
-        nodeIndex: number;
-        template: GNodeT;
-    }> = [];
-
     const nodeTemplates: NullArr<GNodeT> = new Array(N).fill(null);
+    const expiredNodeStates: GeometryConnectionData['expiredProps']['expiredNodeStates'] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
         const node = geometry.nodes[nodeIndex];
@@ -156,7 +151,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         if (!template) continue; // data stays null
 
         if (node.templateVersion < template.version) {
-            expiredTemplates.push({
+            expiredNodeStates.push({
                 nodeIndex, template,
             });
         }
@@ -166,7 +161,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
     const { 
         forwardEdges, 
         backwardEdges, 
-        strayConnectedJoints,
+        strayJoints,
         rowConnectedJoints,
     } = genAdjList(geometry, nodeTemplates);
 
@@ -196,43 +191,23 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         nodeDatas[nodeIndex] = nodeData;
     }
 
+    const expirationNeedsUpdate = 
+        strayJoints.length > 0 ||
+        expiredNodeStates.length > 0;
 
     const connectionData: GeometryConnectionData = {
         geometryId: geometry.id,
-        compilationValidity: geometry.compilationValidity,
+        compilationValidity: geometry.version,
         nodeDatas,
         forwardEdges,
         backwardEdges,
-        strayConnectedJoints,
+        expiredProps: {
+            needsUpdate: expirationNeedsUpdate,
+            strayJoints,
+            expiredNodeStates,
+        },
         dependencies: Array.from(dependencies),
     }
 
     return connectionData;
-}
-
-export function lifecycleConnectionDatas(connectionDatas: GeometryConnectionData[]) {
-
-    const strayJoints: Array<{
-        geometryId: string;
-        strayJoints: GeometryJointLocation[];
-    }> = [];
-
-    const updateTemplates: Array<{
-        geometryId: string;
-        nodeIndex: number;
-        newTemplate: number;
-    }> = [];
-
-    for (const connectionData of connectionDatas) {
-        const geometryId = connectionData.geometryId;
-        strayJoints.push({
-            geometryId,
-            strayJoints: connectionData.strayConnectedJoints,
-        });
-    }
-
-    return {
-        strayJoints,
-        
-    }
 }

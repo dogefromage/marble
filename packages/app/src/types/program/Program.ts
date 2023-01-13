@@ -21,16 +21,16 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     Solid: 4,
 }
 
-export enum DefaultFunctionArgNames
-{
-    RayPosition = 'position'
+export enum DefaultFunctionArgIds {
+    RayPosition = 'position',
 }
 
-export const RootFunctionArguments: GeometryArgument[] = 
-[
+export const RootFunctionArguments: GeometryArgument[] = [
     {
-        identifier: DefaultFunctionArgNames.RayPosition, 
+        id: DefaultFunctionArgIds.RayPosition,
+        name: 'Position',
         dataType: DataTypes.Vec3,
+        defaultValue: [ 0, 0, 0 ],
     },
 ];
 
@@ -45,7 +45,7 @@ export const RootFunctionArguments: GeometryArgument[] =
 export interface ProgramInclude
 {
     id: string;
-    glslCode: string;
+    source: string;
 }
 
 export interface RenderLayerProgram

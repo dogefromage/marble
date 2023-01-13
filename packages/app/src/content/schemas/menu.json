@@ -9,9 +9,9 @@
         }
     ],
     "definitions": {
-        "CommandMenuElement": {
+        "ButtonMenuElement": {
             "properties": {
-                "command": {
+                "key": {
                     "type": "string"
                 },
                 "name": {
@@ -22,6 +22,32 @@
                 },
                 "type": {
                     "enum": [
+                        "button"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "key",
+                "name",
+                "onClick",
+                "type"
+            ],
+            "type": "object"
+        },
+        "CommandMenuElement": {
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
                         "command"
                     ],
                     "type": "string"
@@ -29,6 +55,7 @@
             },
             "required": [
                 "command",
+                "key",
                 "name",
                 "type"
             ],
@@ -36,6 +63,9 @@
         },
         "ExpandMenuElement": {
             "properties": {
+                "key": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -50,6 +80,7 @@
                 }
             },
             "required": [
+                "key",
                 "name",
                 "sublist",
                 "type"
@@ -84,8 +115,72 @@
                 },
                 {
                     "$ref": "#/definitions/CommandMenuElement"
+                },
+                {
+                    "$ref": "#/definitions/ButtonMenuElement"
+                },
+                {
+                    "$ref": "#/definitions/SearchMenuElement"
+                },
+                {
+                    "$ref": "#/definitions/TitleMenuElement"
                 }
             ]
+        },
+        "SearchMenuElement": {
+            "properties": {
+                "autofocus": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "search"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "autofocus",
+                "key",
+                "name",
+                "placeholder",
+                "type"
+            ],
+            "type": "object"
+        },
+        "TitleMenuElement": {
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "title"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "key",
+                "name",
+                "type"
+            ],
+            "type": "object"
         },
         "VerticalMenuShape": {
             "properties": {

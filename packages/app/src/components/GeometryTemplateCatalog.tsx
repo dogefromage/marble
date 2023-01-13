@@ -46,10 +46,12 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
 
         const title: TitleMenuElement = {
             type: 'title',
+            key: 'title',
             name: 'Add Template',
         }
         const searchBar: SearchMenuElement = {
             type: 'search',
+            key: 'search',
             name: 'search',
             placeholder: 'Search...',
             autofocus: true,
@@ -62,6 +64,7 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
 
             const listTemplates: MenuElement[] = filtered.map(template => ({
                 type: 'button',
+                key: template!.id,
                 name: template!.rows[0].name,
                 onClick: () => addNode(template!),
             }));
@@ -97,11 +100,13 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
 
             const groupedList: MenuElement[] = sortedGroupes.map(([ category, tempOfGroup ]) => ({
                 type: 'expand',
+                key: category,
                 name: TEMPLATE_CATEGORY_NAMES[category as GNodeTemplateCategories],
                 sublist: {
                     type: 'vertical',
                     list: tempOfGroup.map(template => ({
                         type: 'button',
+                        key: template.id,
                         name: template.rows[0].name,
                         onClick: () => addNode(template),
                     }))

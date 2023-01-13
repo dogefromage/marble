@@ -1,4 +1,4 @@
-import { DataTypes, DefaultFunctionArgNames, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
+import { DataTypes, DefaultFunctionArgIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
 import { glsl } from "../../utils/glslTag";
 
 const generative_perlin_noise: GNodeT =
@@ -26,7 +26,7 @@ const generative_perlin_noise: GNodeT =
             name: 'Coordinates',
             dataType: DataTypes.Vec3,
             value: [ 0, 0, 0 ],
-            defaultArgumentToken: DefaultFunctionArgNames.RayPosition,
+            defaultArgumentToken: DefaultFunctionArgIds.RayPosition,
         }
     ],
     instructions: glsl`

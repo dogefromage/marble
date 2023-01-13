@@ -1,34 +1,27 @@
-import { ProgramInclude } from "../types";
-import { glsl } from "../utils/glslTag";
 
-const create = (id: string, glslCode: string): ProgramInclude => ({ id, glslCode });
-
-export const inc_union = create('inc_union', glsl`
+#DEFINCLUDE inc_union;
 Solid inc_union(Solid a, Solid b)
 {
     if (a.sd < b.sd) return a;
     else             return b;
 }
-`);
 
-export const inc_intersection = create('inc_intersection', glsl`
+#DEFINCLUDE inc_intersection;
 Solid inc_intersection(Solid a, Solid b)
 {
     if (a.sd > b.sd) return a;
     else             return b;
 }
-`);
 
-export const inc_difference = create('inc_difference', glsl`
+#DEFINCLUDE inc_difference;
 Solid inc_difference(Solid a, Solid b)
 {
     b.sd = -b.sd;
     if (a.sd > b.sd) return a;
-    else              return b;
+    else             return b;
 }
-`);
 
-export const inc_perlin_noise = create('inc_perlin_noise', glsl`
+#DEFINCLUDE inc_perlin_noise;
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 //	Classic Perlin 3D Noise 
 //	by Stefan Gustavson
@@ -104,25 +97,3 @@ float inc_perlin_noise(vec3 P){
     float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
     return 2.2 * n_xyz;
 }
-`);
-
-const inc_multiply = create('inc_multiply', glsl`
-float inc_multiply(float a, float b)
-{
-    return a * b;
-}
-`);
-
-// const asdf = create('asdf', glsl`
-// `);
-
-const defaultProgramIncludes: ProgramInclude[] =
-[
-    inc_difference,
-    inc_union,
-    inc_intersection,
-    inc_perlin_noise,
-    inc_multiply,
-];
-
-export default defaultProgramIncludes;

@@ -4,12 +4,11 @@ import { ObjMapUndef } from "./UtilityTypes";
 import { World } from "./world";
 
 export type GeometriesSliceState = ObjMapUndef<GeometryS>;
-
 export type ProgramsSliceState = ObjMapUndef<RenderLayerProgram>;
 
 export type TemplatesSliceState = {
     templates: ObjMapUndef<GNodeT>;
-    programIncludes: ObjMapUndef<ProgramInclude>;
+    includes: ObjMapUndef<ProgramInclude>;
 }
 
 export interface CommandsSliceState {

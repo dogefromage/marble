@@ -1,39 +1,39 @@
 import { AnyAction } from "@reduxjs/toolkit";
 import { Point } from "../UtilityTypes";
 
-export interface ExpandMenuElement
+export interface SuperMenuElement {
+    key: string;
+    name: string;
+}
+
+export interface ExpandMenuElement extends SuperMenuElement
 {
     type: 'expand';
-    name: string;
     sublist: VerticalMenuShape;
 }
 
-export interface CommandMenuElement
+export interface CommandMenuElement extends SuperMenuElement
 {
     type: 'command';
-    name: string;
     command: string;
 }
 
-export interface ButtonMenuElement
+export interface ButtonMenuElement extends SuperMenuElement
 {
     type: 'button';
-    name: string;
     onClick: () => void;
 }
 
-export interface SearchMenuElement
+export interface SearchMenuElement extends SuperMenuElement
 {
     type: 'search',
-    name: string;
     placeholder: string;
     autofocus: boolean;
 }
 
-export interface TitleMenuElement
+export interface TitleMenuElement extends SuperMenuElement
 {
     type: 'title',
-    name: string;
     color?: string;
 }
 

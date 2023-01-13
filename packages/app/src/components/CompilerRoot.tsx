@@ -11,7 +11,7 @@ const CompilerRoot = () =>
     const compilerRef = useRef(new ProgramCompiler());
     // const { program } = useAppSelector(selectSceneProgram);
 
-    const { templates, programIncludes } = useAppSelector(selectTemplates);
+    const { templates, includes: programIncludes } = useAppSelector(selectTemplates);
 
     useEffect(() => {
         compilerRef.current.setTemplates(templates);

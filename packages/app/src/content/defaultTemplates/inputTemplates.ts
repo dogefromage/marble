@@ -1,4 +1,4 @@
-import { GNodeT, GNodeTemplateTypes, GNodeTemplateCategories, RowTypes, DataTypes, DefaultFunctionArgNames } from "../../types";
+import { GNodeT, GNodeTemplateTypes, GNodeTemplateCategories, RowTypes, DataTypes, DefaultFunctionArgIds } from "../../types";
 import { glsl } from "../../utils/glslTag";
 import { TemplateColors } from "./templateConstants";
 

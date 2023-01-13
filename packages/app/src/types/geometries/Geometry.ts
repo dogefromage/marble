@@ -21,8 +21,8 @@ export interface GeometryS
     
     // content
     nodes: Array<GNodeS>;
-    compilationValidity: number;
-    rowStateValidity: number;
+    version: number;
+    rowStateInvalidator: number;
     nextIdIndex: number;
     selectedNodes: string[];
 }

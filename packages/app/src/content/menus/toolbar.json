@@ -5,22 +5,24 @@
         {
             "type": "expand",
             "name": "Project",
+            "key": "project",
             "sublist": {
                 "type": "vertical",
                 "list": [
-                    {  "type": "command", "name": "Save", "command": "project.save" },
-                    {  "type": "command", "name": "Exit", "command": "project.exit" }
+                    {  "type": "command", "key": "save", "name": "Save", "command": "project.save" },
+                    {  "type": "command", "key": "exit", "name": "Exit", "command": "project.exit" }
                 ]
             }
         },
         {
             "name": "Edit",
+            "key": "edit",
             "type": "expand",
             "sublist": {
                 "type": "vertical",
                 "list": [
-                    {  "type": "command", "name": "Undo", "command": "global.undo" },
-                    {  "type": "command", "name": "Redo", "command": "global.redo" }
+                    {  "type": "command", "key": "undo", "name": "Undo", "command": "global.undo" },
+                    {  "type": "command", "key": "redo", "name": "Redo", "command": "global.redo" }
                 ]
             }
         }

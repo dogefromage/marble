@@ -21,8 +21,10 @@ const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) =>
         incomingElement = {
             type: GeometryIncomingElementTypes.Argument,
             argument: {
-                identifier: row.defaultArgumentToken,
+                id: row.defaultArgumentToken,
                 dataType: row.dataType,
+                name: row.defaultArgumentToken, // change this
+                defaultValue: 0,
             }
         }
     }

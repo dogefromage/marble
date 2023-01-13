@@ -2,10 +2,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { ProgramInclude, GNodeT, TemplatesSliceState } from "../types";
 
-const initialState: TemplatesSliceState = 
-{
+const initialState: TemplatesSliceState = {
     templates: {},
-    programIncludes: {}
+    includes: {}
 };
 
 export const templatesSlice = createSlice({
@@ -17,9 +16,14 @@ export const templatesSlice = createSlice({
                 s.templates[temp.id] = temp;
             }
         },
-        addGLSLSnippets: (s, a: PayloadAction<{ glslSnippets: ProgramInclude[] }>) => {
-            for (const snip of a.payload.glslSnippets) {
-                s.programIncludes[snip.id] = snip;
+        removeTemplates: (s, a: PayloadAction<{ templateIds: string[] }>) => {
+            for (const id of a.payload.templateIds) {
+                delete s.templates[id];
+            }
+        },
+        addIncludes: (s, a: PayloadAction<{ includes: ProgramInclude[] }>) => {
+            for (const snip of a.payload.includes) {
+                s.includes[snip.id] = snip;
             }
         }
     }
@@ -27,7 +31,8 @@ export const templatesSlice = createSlice({
 
 export const {
     addTemplates: templatesAddTemplates,
-    addGLSLSnippets: templatesAddGLSLSnippets,
+    removeTemplates: templatesRemoveTemplates,
+    addIncludes: templatesAddGLSLSnippets,
 } = templatesSlice.actions;
 
 export const selectTemplates = (state: RootState) => state.templates;

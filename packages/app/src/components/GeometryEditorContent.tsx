@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesRemoveIncomingElements, selectGeometry } from '../slices/geometriesSlice';
+import { geometriesRemoveIncomingElements, geometriesUpdateExpiredProps, selectGeometry } from '../slices/geometriesSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
 import generateGeometryData from '../utils/geometries/generateGeometryData';
@@ -26,19 +26,21 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
     const connectionData = useMemo(() =>
     {
         if (!geometry || !Object.values(templates).length) return;
-        const connectionData = generateGeometryData(geometry, templates);
+        return generateGeometryData(geometry, templates);
+    }, [ dispatch, templates, geometry?.id, geometry?.version ]);
 
-        if (connectionData.strayConnectedJoints.length) {
-            dispatch(geometriesRemoveIncomingElements({
-                geometryId,
-                joints: connectionData.strayConnectedJoints,
+    useEffect(() => {
+        if (connectionData?.expiredProps.needsUpdate) {
+            dispatch(geometriesUpdateExpiredProps({
+                geometries: [ { 
+                    geometryId, 
+                    geometryVersion: connectionData.compilationValidity,
+                    expiredProps: connectionData.expiredProps 
+                } ],
                 undo: { doNotRecord: true },
             }));
         }
-
-        return connectionData;
-
-    }, [ dispatch, geometry?.id, geometry?.compilationValidity ]);
+    }, [ connectionData ])
 
     if (!connectionData) return null;
 

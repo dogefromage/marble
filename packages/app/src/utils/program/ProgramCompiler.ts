@@ -1,6 +1,6 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
-import { OUTPUT_TEMPLATE_ID } from '../../assets/defaultTemplates/outputTemplates';
+import { OUTPUT_TEMPLATE_ID } from '../../content/defaultTemplates/outputTemplates';
 import { GeometryCompilerErrorTypes, GeometryConnectionData, GeometryS, GNodeT, GNodeTemplateTypes, ObjMap, ObjMapUndef, ProgramInclude, RenderLayerProgram, SceneCompilerErrorInfo } from "../../types";
 import generateGeometryData from "../geometries/generateGeometryData";
 import analyzeGraph from '../graph/analyzeGraph';
@@ -28,7 +28,7 @@ export default class ProgramCompiler
         const geoList = Object.values(geoMap) as GeometryS[];
 
         // detect changes
-        const validityList = geoList.map(g => g.compilationValidity);
+        const validityList = geoList.map(g => g.version);
         const hash = hashIntArray(validityList);
         if (hash === this.compiledProgram?.hash)
             return; // no changes
@@ -220,7 +220,7 @@ export default class ProgramCompiler
 
         const functionName = `g_${geometry.id}`;
         const functionArgString = geometry.arguments
-            .map(arg => `${arg.dataType} ${arg.identifier}`)
+            .map(arg => `${arg.dataType} ${arg.id}`)
             .join(', ');
 
         const functionHeader = `${geometry.returnType} ${functionName}(${functionArgString})`

@@ -10,7 +10,6 @@ const output_output: GNodeT =
     version: 0,
     type: GNodeTemplateTypes.Base,
     category: GNodeTemplateCategories.Output,
-    tags: [ GNodeTemplateTags.Output ],
     rows: [
         {
             id: 'name',

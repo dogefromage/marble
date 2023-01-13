@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import defaultUnitSystem from "../assets/defaultUnitSystem";
+import defaultUnitSystem from "../content/defaultUnitSystem";
 import { selectProject } from "../redux/hooks";
 import { RootState } from "../redux/store";
 import { WorldSliceState } from "../types";

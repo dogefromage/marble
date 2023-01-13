@@ -136,10 +136,12 @@ export interface GeometryJointLocation extends GeometryRowLocation {
 /**
  * Arguments
  */
-export interface GeometryArgument
+export interface GeometryArgument<D extends DataTypes = DataTypes>
 {
-    identifier: string;
-    dataType: DataTypes;
+    id: string;
+    name: string;
+    dataType: D;
+    defaultValue: RowValueMap[D]
 }
 
 

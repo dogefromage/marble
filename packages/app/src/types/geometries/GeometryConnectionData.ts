@@ -49,6 +49,10 @@ export interface GeometryConnectionData
     nodeDatas: NullArr<GNodeData>;
     forwardEdges: GeometryAdjacencyList;
     backwardEdges: GeometryAdjacencyList;
-    strayConnectedJoints: GeometryJointLocation[];
     dependencies: string[];
+    expiredProps: {
+        needsUpdate: boolean;
+        strayJoints: GeometryJointLocation[];
+        expiredNodeStates: Array<{ nodeIndex: number, template: GNodeT }>;
+    }
 }
