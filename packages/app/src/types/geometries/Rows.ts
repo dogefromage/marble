@@ -1,5 +1,6 @@
 import { DataTypes } from "../program";
 import { RotationModels, Tuple } from "../UtilityTypes";
+import { GeometryArgument } from "./Geometry";
 
 /**
  * Values
@@ -131,17 +132,6 @@ export interface GeometryRowLocation {
 }
 export interface GeometryJointLocation extends GeometryRowLocation {
     subIndex: number;
-}
-
-/**
- * Arguments
- */
-export interface GeometryArgument<D extends DataTypes = DataTypes>
-{
-    id: string;
-    name: string;
-    dataType: D;
-    defaultValue: RowValueMap[D]
 }
 
 

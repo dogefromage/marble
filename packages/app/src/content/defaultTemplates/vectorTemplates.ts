@@ -1,4 +1,4 @@
-import { DataTypes, DefaultFunctionArgIds, RotationModels } from "../../types"
+import { DataTypes, DefaultArgumentIds, RotationModels } from "../../types"
 import { GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types/geometries"
 import { glsl } from "../../utils/glslTag"
 import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
@@ -26,7 +26,7 @@ const vectors_mirror_plane: GNodeT =
             id: 'x',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
-            defaultArgumentToken: DefaultFunctionArgIds.RayPosition,
+            defaultArgumentToken: DefaultArgumentIds.RayPosition,
             value: [ 0, 0, 0 ],
             name: 'Coordinate',
         },
@@ -75,7 +75,7 @@ const vectors_repeat_cell: GNodeT =
             id: 'x',
             type: RowTypes.InputOnly,
             dataType: DataTypes.Vec3,
-            defaultArgumentToken: DefaultFunctionArgIds.RayPosition,
+            defaultArgumentToken: DefaultArgumentIds.RayPosition,
             value: [ 0, 0, 0 ],
             name: 'Coordinate',
         },
@@ -124,7 +124,7 @@ const vectors_transform: GNodeT =
             dataType: DataTypes.Vec3,
             name: 'Input Pos',
             value: [ 0, 0, 0 ],
-            defaultArgumentToken: DefaultFunctionArgIds.RayPosition,
+            defaultArgumentToken: DefaultArgumentIds.RayPosition,
         },
         {
             id: 'translation',

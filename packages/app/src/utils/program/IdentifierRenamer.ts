@@ -1,10 +1,9 @@
 import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program } from "@shaderfrog/glsl-parser/ast";
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, RowS, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
 import { LOOKUP_TEXTURE_SIZE } from "../viewport/ViewportQuadProgram";
-import { formatTextureLookupStatement } from "./codeSnippets";
-import { GeometryCompilationError } from "./GeometryCompilationError";
+import { formatLiteral, formatTextureLookupStatement } from "./codeSnippets";
 
 enum Prefixes {
     Local = 'l',
@@ -43,7 +42,7 @@ export default class IdentifierRenamer
 
     public getGeometry() {
         if (!this.geometry || !this.connectionData) {
-            throw new GeometryCompilationError(`Geometry not set in Renamer`);
+            throw new Error(`Geometry not set in Renamer`);
         }
         return { geometry: this.geometry, connectionData: this.connectionData };
     }
@@ -53,7 +52,7 @@ export default class IdentifierRenamer
         const node = geometry.nodes[this.nodeIndex];
         const nodeData = connectionData.nodeDatas[this.nodeIndex];
         if (!node || !nodeData) {
-            throw new GeometryCompilationError(`Node not set in Renamer`);
+            throw new Error(`Node not set in Renamer`);
         }
         return { node, nodeData };
     }
@@ -148,7 +147,7 @@ export default class IdentifierRenamer
         let currPath: Path<AstNode> = path;
         while (currPath.node.type !== 'declaration_statement') {
             if (!currPath.parentPath) {
-                throw new GeometryCompilationError("No declaration_statement found");
+                throw new Error("No declaration_statement found");
             }
             currPath = currPath.parentPath;
         }
@@ -156,7 +155,7 @@ export default class IdentifierRenamer
 
         while (currPath.node.type !== 'function') {
             if (!currPath.parentPath) {
-                throw new GeometryCompilationError("No function found");
+                throw new Error("No function found");
             }
             currPath = currPath.parentPath;
         }
@@ -183,7 +182,7 @@ export default class IdentifierRenamer
         if (rowIndex < 0) {
             const newId = this.getIdentifierName(Prefixes.Local, this.nodeIndex, token);
             if (!this.definedLocals.has(newId)) {
-                throw new GeometryCompilationError(`Variable "${newId}" (originaly "${token}") is not defined.`);
+                throw new Error(`Variable "${newId}" (originaly "${token}") is not defined.`);
             }
             path.node.identifier = newId;
             return;
@@ -230,7 +229,10 @@ export default class IdentifierRenamer
         }
 
         // case 4: fixed constant
-        // return this.createConstant(rowIndex, row);
+        const value = (rowState as RowS<InputOnlyRowT>).value ?? rowTempAsInput.value;
+        const valueLitteral = formatLiteral(value, rowTempAsInput.dataType);
+        path.node.identifier = valueLitteral;
+        return;
     }
 
     public replaceDeclaration(path: Path<DeclarationNode>)
@@ -244,7 +246,7 @@ export default class IdentifierRenamer
         {
             const newId = this.getIdentifierName(Prefixes.Local, this.nodeIndex, token);
             if (this.definedLocals.has(newId)) {
-                throw new GeometryCompilationError(`Variable "${newId}" (originaly "${token}") has already been defined.`);
+                throw new Error(`Variable "${newId}" (originaly "${token}") has already been defined.`);
             }
             this.definedLocals.add(newId);
             idntNode.identifier = newId;

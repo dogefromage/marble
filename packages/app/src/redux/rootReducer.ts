@@ -4,7 +4,10 @@ import undoableEnhancer from "../enhancers/undoableEnhancer";
 import commandsReducer from "../slices/commandsSlice";
 import consoleReducer from "../slices/consoleSlice";
 import contextMenuReducer from "../slices/contextMenuSlice";
+import dependencyGraphReducer from "../slices/dependencyGraphSlice";
 import geometriesReducer from "../slices/geometriesSlice";
+import geometryDatasReducer from "../slices/geometryDatasSlice";
+import layersReducer from "../slices/layersSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
 import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
@@ -20,6 +23,7 @@ const rootReducer = combineReducers({
             combineReducers({
                 world: worldReducer,
                 geometries: geometriesReducer,
+                layers: layersReducer,
             }),
             'project'
         )
@@ -32,11 +36,15 @@ const rootReducer = combineReducers({
         panelManager: panelManagerReducer,
         preferences: preferencesReducer,
     }),
+    runtime: combineReducers({
+        geometryDatas: geometryDatasReducer,
+        dependencyGraph: dependencyGraphReducer,
+    }),
     programs: programsReducer,
     templates: templatesReducer,
     commands: commandsReducer,
-    contextMenu: contextMenuReducer,
     console: consoleReducer,
+    contextMenu: contextMenuReducer,
 });
 
 export default rootReducer;

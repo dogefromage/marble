@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { ProgramsSliceState, RenderLayerProgram } from "../types";
+import { ProgramsSliceState, LayerProgram } from "../types";
 
 const initialState: ProgramsSliceState = {};
 
@@ -8,8 +8,11 @@ export const programsSlice = createSlice({
     name: 'programs',
     initialState,
     reducers: {
-        setPrograms: (s, a: PayloadAction<{ programs: RenderLayerProgram[] }>) => {
-            for (const p of a.payload.programs) {
+        setMany: (s, a: PayloadAction<{ setPrograms: LayerProgram[], removePrograms: string[] }>) => {
+            for (const id of a.payload.removePrograms) {
+                delete s[id];
+            }
+            for (const p of a.payload.setPrograms) {
                 s[p.id] = p;
             }
         }
@@ -17,7 +20,7 @@ export const programsSlice = createSlice({
 });
 
 export const {
-    setPrograms: programsSliceSetPrograms,
+    setMany: programsSetMany,
 } = programsSlice.actions;
 
 export const selectPrograms = (state: RootState) => state.programs;

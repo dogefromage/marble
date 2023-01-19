@@ -1,4 +1,4 @@
-import { GeometryS, GeometryType, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, NameRowT, ObjMap, ObjMapUndef, OutputRowT, RowT, RowTypes, SpecificRowT, SuperInputRowT } from "../../types";
+import { GeometryS, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, NameRowT, ObjMap, ObjMapUndef, OutputRowT, RowT, RowTypes, SpecificRowT, SuperInputRowT } from "../../types";
 
 function generateTemplate(geometry: GeometryS): GNodeT {
 
@@ -43,14 +43,15 @@ export default function generateCompositeTemplates(
     const addTemplates: GNodeT[] = [];
 
     const templateVersions = new Map<string, number>();
-    for (const template of Object.values(templates)) {
-        if (template?.type === GNodeTemplateTypes.Composite) {
-            templateVersions.set(template.id, template.version);
+    for (const template of Object.values(templates) as GNodeT[]) {
+        if (template.type !== GNodeTemplateTypes.Composite) {
+            continue;
         }
+        templateVersions.set(template.id, template.version);
     }
 
     for (const geometry of Object.values(geometries)) {
-        if (geometry?.type != GeometryType.Sub) {
+        if (!geometry || geometry?.isRoot) {
             continue;
         }
         const templateVersion = templateVersions.get(geometry.id);

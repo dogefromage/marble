@@ -10,3 +10,5 @@ export * from './UtilityTypes';
 export * from './view';
 export * from './view/ViewProps';
 export * from './viewport';
+export * from './layer';
+export * from './dependencyGraph';

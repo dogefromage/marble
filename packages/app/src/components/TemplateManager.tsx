@@ -7,7 +7,7 @@ import splitIncludesFromSource from '../utils/program/splitIncludesFromSource';
 import { selectGeometries } from '../slices/geometriesSlice';
 import generateCompositeTemplates from '../utils/program/generateCompositeTemplates';
 
-const TemplateManagerRoot = () =>
+const TemplateManager = () =>
 {
     const dispatch = useAppDispatch();
     const geometries = useAppSelector(selectGeometries);
@@ -42,4 +42,4 @@ const TemplateManagerRoot = () =>
     return null;
 }
 
-export default TemplateManagerRoot;
+export default TemplateManager;

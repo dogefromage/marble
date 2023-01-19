@@ -1,18 +1,24 @@
 import { AnyAction, configureStore, Dispatch, Middleware, ThunkDispatch } from "@reduxjs/toolkit";
 import { CurriedGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
+import { enableMapSet } from "immer";
 import { createLogger } from "redux-logger";
 import rootReducer from "./rootReducer";
+enableMapSet();
 
 function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
 {
-    const middleware: Middleware[] = getDefaultMiddleWare({
-        serializableCheck: {
-            ignoredPaths: [ 
-                'sceneProgram.textureVarLookupData',
-                'commands',
-            ],
-        }
-    });
+    const middleware: Middleware[] = 
+    [
+        ...getDefaultMiddleWare({
+            serializableCheck: {
+                ignoredPaths: [ 
+                    'sceneProgram.textureVarLookupData',
+                    'commands',
+                    'runtime',
+                ],
+            },
+        }),
+    ];
     
     // middleware.push(createLogger({ collapsed: true }));
 

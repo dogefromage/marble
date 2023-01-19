@@ -23,7 +23,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
     const programLayers = useAppSelector(selectPrograms);
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
-    const layerZero = programLayers[0];
+    const layerZero = Object.values(programLayers)?.[0];
 
     /**
      * Create class instance

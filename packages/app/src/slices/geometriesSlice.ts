@@ -1,8 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { DataTypes, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryType, GNodeS, Point, RootFunctionArguments, RowS, SuperRowS, UndoAction } from "../types";
+import { DataTypes, GeometriesSliceState, GeometryArgument, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeS, GNodeTemplateTypes, Point, ROOT_GEOMETRY_ARGUMENTS, RowS, SuperRowS, UndoAction } from "../types";
 import generateAlphabeticalId from "../utils/generateAlphabeticalId";
 
 const defaultGeometryContent = {
@@ -49,7 +49,10 @@ export const geometriesSlice = createSlice({
     name: 'geometries',
     initialState,
     reducers: {
-        createRoot: (s, a: UndoAction<{ geometryId?: string }>) =>
+        create: (s, a: UndoAction<{ 
+            geometryId?: string, 
+            geometryTemplate: GeometryTemplate,
+        }>) =>
         {
             const id = a.payload.geometryId || uuidv4();
             if (s[id] != null) {
@@ -58,25 +61,8 @@ export const geometriesSlice = createSlice({
 
             s[id] = {
                 ...defaultGeometryContent,
+                ...a.payload.geometryTemplate,
                 id,
-                type: GeometryType.Root,
-                arguments: RootFunctionArguments,
-                returnType: DataTypes.Solid,
-            }
-        },
-        createSub: (s, a: UndoAction<{ geometryId?: string }>) =>
-        {
-            const id = a.payload.geometryId || uuidv4();
-            if (s[id] != null) {
-                throw new Error(`Geometry with id ${id} already exists!`);
-            }
-
-            s[id] = {
-                ...defaultGeometryContent,
-                id,
-                type: GeometryType.Sub,
-                arguments: [],
-                returnType: DataTypes.Float,
             }
         },
         remove: (s, a: UndoAction<{ geometryId: string }>) =>
@@ -91,7 +77,7 @@ export const geometriesSlice = createSlice({
             const node: GNodeS = {
                 id: generateAlphabeticalId(g.nextIdIndex++),
                 templateId: a.payload.templateId,
-                templateVersion: -1, // equivalent to saying "uninizialized"
+                templateData: null,
                 position: a.payload.position,
                 rows: {},
             }
@@ -223,7 +209,7 @@ export const geometriesSlice = createSlice({
             }
             g.rowStateInvalidator++;
         },
-        updateExpiredProps: (s, a: UndoAction<{ 
+        updateExpiredProps: (s, a: PayloadAction<{ 
             geometries: { geometryId: string, geometryVersion: number, expiredProps: GeometryConnectionData['expiredProps'] }[];
         }>) => {
             
@@ -259,8 +245,11 @@ export const geometriesSlice = createSlice({
                             node.rows[rowId] = superDefaultRow;
                         }
                     }
-                    // pump version
-                    node.templateVersion = template.version;
+
+                    node.templateData = {
+                        version: template.version,
+                        type: template.type,
+                    };
                 }
                 g.version++;
             }
@@ -269,8 +258,7 @@ export const geometriesSlice = createSlice({
 });
 
 export const {
-    createRoot: geometriesCreateRoot,
-    createSub: geometriesCreateSub,
+    create: geometriesCreate,
     remove: geometriesRemove,
     addNode: geometriesAddNode,
     removeNode: geometriesRemoveNode,
@@ -286,7 +274,7 @@ export const {
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;
 
-export const selectGeometry = (geometryId: string) => 
+export const selectSingleGeometry = (geometryId: string) => 
     useCallback((state: RootState) => // memoize selector bc. redux will
         selectGeometries(state)[geometryId] as GeometryS | undefined,
         [ geometryId ]

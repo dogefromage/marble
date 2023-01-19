@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import { geometriesAddNode, geometriesCreateSub, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
+import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { Command, CommandScope, Point, ViewTypes } from "../../types";
+import { Command, CommandScope, DataTypes, Point, ViewTypes } from "../../types";
 
 export const geometryEditorCommands: Command[] =
 [
@@ -74,8 +74,13 @@ export const geometryEditorCommands: Command[] =
             const subId = uuidv4();
 
             return [
-                geometriesCreateSub({
+                geometriesCreate({
                     geometryId: subId,
+                    geometryTemplate: {
+                        isRoot: false,
+                        arguments: [],
+                        returnType: DataTypes.Float,
+                    },
                     undo: { actionToken }
                 }),
                 geometriesAddNode({

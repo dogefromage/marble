@@ -1,8 +1,9 @@
-import { RenderLayerProgram } from "../../types";
+import { LayerProgram } from "../../types";
 import { CodeTemplate } from "./CodeTemplate";
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaderTemplates";
+import logCode from "./logCode";
 
-export function generateShaders(sceneProgram: RenderLayerProgram)
+export function generateShaders(sceneProgram: LayerProgram)
 {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
 
@@ -11,7 +12,7 @@ export function generateShaders(sceneProgram: RenderLayerProgram)
         .join('\n');
     fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
     fragCodeTemplate.replace('%MAIN_PROGRAM%', sceneProgram.mainProgramCode);
-    fragCodeTemplate.replace('%ROOT_GEOMETRY%', sceneProgram.rootFunctionName);
+    fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', sceneProgram.rootFunctionName);
     
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
 

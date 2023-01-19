@@ -1,14 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
+import { v4 as uuidv4 } from "uuid";
 import { selectPanelState } from "../enhancers/panelStateEnhancer";
 import useContextMenu from "../hooks/useContextMenu";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { geometriesCreateRoot, selectGeometry } from "../slices/geometriesSlice";
+import { geometriesCreate, selectSingleGeometry } from "../slices/geometriesSlice";
+import { layersCreate } from "../slices/layersSlice";
 import { createGeometryEditorPanelState, geometryEditorPanelsOpenTemplateCatalog, geometryEditorPanelsSetGeometryId } from "../slices/panelGeometryEditorSlice";
-import { panelManagerSetActive } from "../slices/panelManagerSlice";
-import { ViewTypes } from "../types";
+import { ROOT_GEOMETRY_TEMPLATE, ViewTypes } from "../types";
 import { ViewProps } from "../types/view/ViewProps";
 import { useBindPanelState } from "../utils/panelState/useBindPanelState";
+import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from "../utils/testSetup";
 import GeometryEditorTransform from "./GeometryEditorTransform";
 import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 import PanelBody from "./PanelBody";
@@ -28,33 +30,9 @@ const TestButton = styled.button`
     font-size: 25px;
 `
 
-const TEST_GEOMETRY_ID = '1234';
-
 const GeometryEditorView = (viewProps: ViewProps) =>
 {
     const dispatch = useAppDispatch();
-    const viewBoundingRect = useRef<HTMLDivElement>(null);
-
-    /**
-     * !!!!!!!!!! ONLY FOR TESTING
-     */
-    useEffect(() =>
-    {
-        if (!viewBoundingRect.current) return;
-        const boundingRect = viewBoundingRect.current.getBoundingClientRect();
-
-        dispatch(panelManagerSetActive({
-            activePanel: {
-                panelId: viewProps.panelId,
-                panelClientRect: {
-                    x: boundingRect.left,
-                    y: boundingRect.top,
-                    w: boundingRect.width,
-                    h: boundingRect.height,
-                },
-            }
-        }))
-    }, []);
 
     // ensures state exists for this panel component
     useBindPanelState(
@@ -71,14 +49,14 @@ const GeometryEditorView = (viewProps: ViewProps) =>
         {
             dispatch(geometryEditorPanelsSetGeometryId({
                 panelId: viewProps.panelId,
-                geometryId: TEST_GEOMETRY_ID,
-            }))
+                geometryId: TEST_ROOT_GEOMETRY_ID,
+            }));
         }
     }, [ panelState?.geometryId ]);
 
     // get bound geometry state using bound geometryId
     const geometryId = panelState?.geometryId;
-    const geometryS = useAppSelector(selectGeometry(geometryId!));
+    const geometryS = useAppSelector(selectSingleGeometry(geometryId!));
 
     const getOffsetPos = (e: React.MouseEvent) =>
     {
@@ -91,13 +69,6 @@ const GeometryEditorView = (viewProps: ViewProps) =>
         return offsetPos;
     }
 
-    const openSearcher = (e: React.MouseEvent) =>  
-        dispatch(geometryEditorPanelsOpenTemplateCatalog({
-            panelId: viewProps.panelId,
-            center: false,
-            offsetPos: getOffsetPos(e),
-        }));
-
     const contextMenu = useContextMenu(
         viewProps.panelId,
         'Geometry Nodes', [ 
@@ -107,16 +78,21 @@ const GeometryEditorView = (viewProps: ViewProps) =>
             'geometryEditor.createSubgeometry'
         ],
         e => ({ offsetPos: getOffsetPos(e) }),
-    )
+    );
 
     return (
         <PanelBody
             viewProps={viewProps}
         >
             <EditorWrapper
-                onDoubleClick={openSearcher}
+                onDoubleClick={e => {
+                    dispatch(geometryEditorPanelsOpenTemplateCatalog({
+                        panelId: viewProps.panelId,
+                        center: false,
+                        offsetPos: getOffsetPos(e),
+                    }));
+                }}
                 onContextMenu={contextMenu}
-                ref={viewBoundingRect}
             >
             {
                 geometryId && 
@@ -137,9 +113,16 @@ const GeometryEditorView = (viewProps: ViewProps) =>
                 <TestButton
                     onClick={() =>
                     {
-                        dispatch(geometriesCreateRoot({
+                        const actionToken = uuidv4();
+                        dispatch(layersCreate({
+                            id: TEST_LAYER_ID,
+                            rootGeometryId: TEST_ROOT_GEOMETRY_ID,
+                            undo: { actionToken },
+                        }))
+                        dispatch(geometriesCreate({
                             geometryId,
-                            undo: {},
+                            geometryTemplate: ROOT_GEOMETRY_TEMPLATE,
+                            undo: { actionToken },
                         }));
                     }}
                 >

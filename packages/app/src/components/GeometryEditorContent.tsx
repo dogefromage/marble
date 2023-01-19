@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesRemoveIncomingElements, geometriesUpdateExpiredProps, selectGeometry } from '../slices/geometriesSlice';
-import { selectTemplates } from '../slices/templatesSlice';
+import { useAppSelector } from '../redux/hooks';
+import { selectSingleGeometry } from '../slices/geometriesSlice';
+import { selectSingleGeometryData } from '../slices/geometryDatasSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus, ViewTypes } from '../types';
-import generateGeometryData from '../utils/geometries/generateGeometryData';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
@@ -18,31 +17,16 @@ interface Props
 
 const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
 {
-    const dispatch = useAppDispatch();
-    const geometry = useAppSelector(selectGeometry(geometryId));
-    const { templates } = useAppSelector(selectTemplates);
+    const geometry = useAppSelector(selectSingleGeometry(geometryId));
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const connectionData = useAppSelector(selectSingleGeometryData(geometryId));
 
-    const connectionData = useMemo(() =>
-    {
-        if (!geometry || !Object.values(templates).length) return;
-        return generateGeometryData(geometry, templates);
-    }, [ dispatch, templates, geometry?.id, geometry?.version ]);
-
-    useEffect(() => {
-        if (connectionData?.expiredProps.needsUpdate) {
-            dispatch(geometriesUpdateExpiredProps({
-                geometries: [ { 
-                    geometryId, 
-                    geometryVersion: connectionData.compilationValidity,
-                    expiredProps: connectionData.expiredProps 
-                } ],
-                undo: { doNotRecord: true },
-            }));
-        }
-    }, [ connectionData ])
-
-    if (!connectionData) return null;
+    if (!geometry) return null;
+    
+    if (!geometry ||
+        connectionData == null || 
+        connectionData.geometryVersion < geometry?.version
+        ) return null;
 
     const { forwardEdges, nodeDatas } = connectionData;
 
@@ -55,7 +39,6 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
     return (
         <>
         {
-            geometry &&
             Object.values(forwardEdges).map(edgesOfNode =>
                 Object.values(edgesOfNode).map(edgesOfRow =>
                     edgesOfRow.map(edge =>
@@ -112,7 +95,6 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 getCamera={getCamera}
             />
         }{
-            geometry &&
             geometry.nodes.map((node, nodeIndex) =>
             {
                 let selectionStatus = SelectionStatus.Nothing;

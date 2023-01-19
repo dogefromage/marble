@@ -45,7 +45,8 @@ export interface GNodeData
 export interface GeometryConnectionData
 {
     geometryId: string;
-    compilationValidity: number;
+    geometryVersion: number;
+    hash: number;
     nodeDatas: NullArr<GNodeData>;
     forwardEdges: GeometryAdjacencyList;
     backwardEdges: GeometryAdjacencyList;

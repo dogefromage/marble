@@ -10,13 +10,15 @@ import { initStore, RootState } from '../redux/store';
 import CompilerRoot from './CompilerRoot';
 import ContextMenu from './ContextMenu';
 import { ContextMenuPortalMount } from './ContextMenuPortalMount';
-import TemplateManagerRoot from './TemplateManagerRoot';
+import TemplateManager from './TemplateManager';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
 import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
 import ServiceErrorBoundary from './ServiceErrorBoundary';
 import StartAnouncer from './StartAnouncer';
+import DependencyManager from './DependencyManager';
+import GeometryDataManager from './GeometryDataManager';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -34,7 +36,6 @@ const AppRoot = ({ projectId }: Props) =>
         if (!projectId || store != null) return;
         setStore(initStore());
     }, [ projectId ])
-
     if (!store) return null;
 
     return (
@@ -42,19 +43,23 @@ const AppRoot = ({ projectId }: Props) =>
             fallbackComponent={ErrorDisplay}
         >
             <Provider store={store}>
+                {/* APP STATE */}
+                <DependencyManager />
+                <TemplateManager />
+                <GeometryDataManager />
+                {/* COMPILATION */}
+                <ServiceErrorBoundary serviceName='SceneProgramCompiler'>
+                    <CompilerRoot />
+                </ServiceErrorBoundary>
                 {/* Views */}
                 <ThemeProvider theme={defaultTheme}>
                     <LayoutRoot />
                 </ThemeProvider>
-                {/* "Modules" / "Services" */}
-                <ServiceErrorBoundary serviceName='SceneProgramCompiler'>
-                    <CompilerRoot />
-                </ServiceErrorBoundary>
-                <TemplateManagerRoot />
+                {/* USER INTERACTION */}
                 <KeyboardCommandListener />
                 <ContextMenu />
                 <StartAnouncer projectId={projectId} />
-                {/* Portals */}
+                {/* PORTAL MOUNTS */}
                 <ContextMenuPortalMount />
                 <DragzonePortalMount />
             </Provider>

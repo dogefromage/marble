@@ -139,7 +139,7 @@ function genAdjList(
     }
 }
 
-export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>)
+export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>, hash: number)
 {
     const N = geometry.nodes.length;
     const nodeTemplates: NullArr<GNodeT> = new Array(N).fill(null);
@@ -150,7 +150,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         const template = templates[node.templateId];
         if (!template) continue; // data stays null
 
-        if (node.templateVersion < template.version) {
+        if (node.templateData == null || node.templateData.version < template.version) {
             expiredNodeStates.push({
                 nodeIndex, template,
             });
@@ -192,12 +192,12 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
     }
 
     const expirationNeedsUpdate = 
-        strayJoints.length > 0 ||
-        expiredNodeStates.length > 0;
+        strayJoints.length + expiredNodeStates.length > 0;
 
     const connectionData: GeometryConnectionData = {
         geometryId: geometry.id,
-        compilationValidity: geometry.version,
+        geometryVersion: geometry.version,
+        hash,
         nodeDatas,
         forwardEdges,
         backwardEdges,

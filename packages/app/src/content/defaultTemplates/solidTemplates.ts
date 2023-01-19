@@ -1,4 +1,4 @@
-import { DataTypes, DefaultFunctionArgIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
+import { DataTypes, DefaultArgumentIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
 import { glsl } from "../../utils/glslTag"
 import { TemplateColors } from "./templateConstants"
 
@@ -17,7 +17,7 @@ const coordinateRow: SpecificRowT =
     name: 'Coordinates',
     dataType: DataTypes.Vec3,
     value: [ 0, 0, 0 ],
-    defaultArgumentToken: DefaultFunctionArgIds.RayPosition,
+    defaultArgumentToken: DefaultArgumentIds.RayPosition,
 };
 
 const colorRow: SpecificRowT = 

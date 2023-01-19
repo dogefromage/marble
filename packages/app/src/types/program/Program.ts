@@ -21,19 +21,6 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     Solid: 4,
 }
 
-export enum DefaultFunctionArgIds {
-    RayPosition = 'position',
-}
-
-export const RootFunctionArguments: GeometryArgument[] = [
-    {
-        id: DefaultFunctionArgIds.RayPosition,
-        name: 'Position',
-        dataType: DataTypes.Vec3,
-        defaultValue: [ 0, 0, 0 ],
-    },
-];
-
 // export interface ProgramTextureVarMapping
 // {
 //     dataTypes: DataTypes;
@@ -48,11 +35,11 @@ export interface ProgramInclude
     source: string;
 }
 
-export interface RenderLayerProgram
+export interface LayerProgram
 {
     id: string;
-    name: string;
     hash: number;
+    name: string;
     includes: ProgramInclude[];
     mainProgramCode: string;
     rootFunctionName: string;

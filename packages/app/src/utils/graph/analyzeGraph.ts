@@ -1,5 +1,4 @@
 
-
 function markComponent(n: number, v: number, Adj: number[][], components: number[], visited: boolean[], currentComponent: number): number {
     visited[v] = true;
     for (const u of Adj[v]) {

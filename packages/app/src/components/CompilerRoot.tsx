@@ -1,41 +1,70 @@
 import { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { consoleAppendMessage } from '../slices/consoleSlice';
+import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
+import { selectGeometryDatas } from '../slices/geometryDatasSlice';
+import { selectLayers } from '../slices/layersSlice';
+import { programsSetMany, selectPrograms } from '../slices/programsSlice';
 import { selectTemplates } from '../slices/templatesSlice';
+import { DependencyNodeType, Layer, LayerProgram } from '../types';
+import assertErrorType from '../utils/assertErrorType';
+import getDependencyKey from '../utils/graph/getDependencyKey';
+import { GeometryCompilationException } from '../utils/program/GeometryCompilationException';
 import ProgramCompiler from '../utils/program/ProgramCompiler';
 
 const CompilerRoot = () =>
 {
-    const dispatch = useAppDispatch();
     const compilerRef = useRef(new ProgramCompiler());
-    // const { program } = useAppSelector(selectSceneProgram);
-
-    const { templates, includes: programIncludes } = useAppSelector(selectTemplates);
-
-    useEffect(() => {
-        compilerRef.current.setTemplates(templates);
-        compilerRef.current.setIncludes(programIncludes);
-    }, [ templates, programIncludes ]);
-
+    
+    const dispatch = useAppDispatch();
+    const { includes } = useAppSelector(selectTemplates);
     const geometries = useAppSelector(selectGeometries);    
+    const geometryDatas = useAppSelector(selectGeometryDatas);
+    const layers = useAppSelector(selectLayers);
+    const dependencyGraph = useAppSelector(selectDependencyGraph);
+    const programs = useAppSelector(selectPrograms);
+
     useEffect(() => {
         const compiler = compilerRef.current;
 
-        // compiler.updateGeometries(geometries);
-        // const newLayerPrograms = compiler.generateNewLayerPrograms();
+        const setPrograms: LayerProgram[] = [];
+        const lastKeys = new Set(Object.keys(programs));
 
-        try {
-            const compiledProgram = compiler.compileRenderLayer(geometries);
-        } 
-        catch (e: any) { 
-            const errorInfos = compiler.getErrorInfos();
-            dispatch(consoleAppendMessage({
-                text: e.message,
-                type: 'error',
+        for (const layer of Object.values(layers) as Layer[]) {
+            lastKeys.delete(layer.id);
+            // get hash from dependency graph
+            const layerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
+            const layerOrder = dependencyGraph.order.get(layerKey);
+            if (layerOrder?.state === 'met') {
+                // compare to last entry using hash
+                const last = programs[layer.id];
+                if (last == null || last.hash != layerOrder.hash) {
+                    // compile new program if expired
+                    try {
+                        const newProgram = compiler.compileProgram({ 
+                            layer, geometries, geometryDatas, dependencyGraph, includes 
+                        });
+                        setPrograms.push(newProgram);
+                    }
+                    catch (e: any) {
+                        if (assertErrorType(e, GeometryCompilationException)) {
+                            // console.warn(e.message);
+                            return;
+                        }
+                        throw e;
+                    }
+                }
+            }
+        }
+
+        // if key from last time wasn't in programs, remove
+        const removePrograms = new Array(...lastKeys);
+        if (setPrograms.length + setPrograms.length > 0) {
+            dispatch(programsSetMany({
+                removePrograms, setPrograms,
             }));
         }
-    }, [ geometries ]);
+    }, [ dispatch, dependencyGraph, geometryDatas ]);
 
 
     // const geometry: GeometryS | undefined = Object.values(geometries)?.[0];

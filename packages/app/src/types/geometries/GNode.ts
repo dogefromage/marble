@@ -1,10 +1,11 @@
+import { IDependency } from "../dependencyGraph";
 import { Point } from "../UtilityTypes";
 import { RowS, SpecificRowT } from "./Rows";
 
 export enum GNodeTemplateTypes
 {
-    Base = 'base',
-    Composite = 'composite',
+    Base = 'def',
+    Composite = 'comp',
 }
 
 export enum GNodeTemplateTags
@@ -38,10 +39,8 @@ export const TEMPLATE_CATEGORY_NAMES: { [C in GNodeTemplateCategories]: string }
     [GNodeTemplateCategories.Composite]: 'Composite',
 }
 
-export interface GNodeT
+export interface GNodeT extends IDependency
 {
-    id: string;
-    version: number;
     type: GNodeTemplateTypes;
     rows: Array<SpecificRowT>;
     category: GNodeTemplateCategories;
@@ -52,7 +51,7 @@ export interface GNodeS
 {
     id: string;
     templateId: string;
-    templateVersion: number;
+    templateData: null | { version: number, type: GNodeTemplateTypes }
     position: Point;
     rows: {
         [ rowId: string ]: RowS | undefined;

@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesSetSelectedNodes, selectGeometry } from '../slices/geometriesSlice';
+import { geometriesSetSelectedNodes, selectSingleGeometry } from '../slices/geometriesSlice';
 import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsUpdateCamera, geometryEditorPanelsSetNewLink } from '../slices/panelGeometryEditorSlice';
 import MouseSelectionDiv from '../styles/MouseSelectionDiv';
 import { DEFAULT_PLANAR_CAMERA, GeometryIncomingElementTypes, JointLinkDndTransfer, JOINT_LINK_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
@@ -73,7 +73,7 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
 {
     const dispatch = useAppDispatch();
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
-    const geometry = useAppSelector(selectGeometry(geometryId));
+    const geometry = useAppSelector(selectSingleGeometry(geometryId));
 
     const cameraRef = useRef(panelState?.camera);
     cameraRef.current = panelState?.camera;
