@@ -2,13 +2,17 @@ import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { OUTPUT_TEMPLATE_ID } from '../../content/defaultTemplates/outputTemplates';
 import { DependencyGraph, DependencyNodeType, GeometryCompilerErrorTypes, GeometryConnectionData, GeometryS, GNodeTemplateTypes, Layer, LayerProgram, ObjMapUndef, ProgramInclude, SceneCompilerErrorInfo } from "../../types";
+import { findClosingBracket, splitBracketSafe } from '../bracketedExpressions';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import analyzeGraph from '../graph/analyzeGraph';
 import geometryNodesToGraphAdjacency from "../graph/geometryNodesToGraphAdjacency";
 import getDependencyKey, { splitDependencyKey } from '../graph/getDependencyKey';
-import { LOOKUP_TEXTURE_SIZE } from '../viewport/ViewportQuadProgram';
+import { LOOKUP_TEXTURE_WIDTH } from '../viewport/GLProgram';
+import { generateStackedExpression } from './generateCodeStatements';
 import { GeometryCompilationException } from './GeometryCompilationException';
 import IdentifierRenamer from "./IdentifierRenamer";
+import preprocessSource from './preprocessSource';
+import setBlockIndent from './setBlockIndent';
 
 export default class ProgramCompiler 
 {
@@ -216,10 +220,31 @@ export default class ProgramCompiler
         const source = geometryFunctionBlocks.join(`\n`);
         // console.log(source);
 
+        // PREPROCESSING
+        const preprocessedSource = preprocessSource(
+            source, /#REDUCE\(/i, 
+            ({ source, index, length }) => {
+                const closingBracketIndex = findClosingBracket(source, index + length - 1);
+                if (closingBracketIndex <= 0) {
+                    throw new Error("No closing bracket found for makro REDUCE");
+                }
+                const fullExpression = source.substring(index, closingBracketIndex + 1);
+                const argsSubString = source.substring(index + length, closingBracketIndex);
+                const args = splitBracketSafe(argsSubString, ',').map(s => s.trim());
+                if (args.length != 3) {
+                    throw new Error("REDUCE makro takes in 3 arguments");
+                }
+                const [ func, stackedVar, defaultLiteral ] = args;
+                const stackedExpression = generateStackedExpression(func, stackedVar, defaultLiteral);
+                return source.replace(fullExpression, stackedExpression)
+            }
+        );
+        // console.log(preprocessedSource);
+
         // parse source
         let programAst: Program;
         try {
-            programAst = parser.parse(source, { quiet: true });
+            programAst = parser.parse(preprocessedSource, { quiet: true });
         } catch (e: any) {
             throw new Error(e.message);
         }
@@ -233,7 +258,7 @@ export default class ProgramCompiler
                 {
                     const pre = path.node.line;
                     // # geometry ...
-                    const matchGeo = pre.match(/#\s*geometry\s+(\w+);/);
+                    const matchGeo = pre.match(/#\s*geometry\s+(\w+);/i);
                     if (matchGeo != null) {
                         const geometryIndex = Number(matchGeo[1]);
                         const geo = geoList[geometryIndex];
@@ -242,17 +267,21 @@ export default class ProgramCompiler
                         path.remove();
                     }
                     // # node ....
-                    const matchNode = pre.match(/#\s*node\s+(\w+);/);
+                    const matchNode = pre.match(/#\s*node\s+(\w+);/i);
                     if (matchNode != null) {
                         const nodeIndex = Number(matchNode[1]);
                         renamer.setNode(nodeIndex);
                         path.remove();
                     }
                     // # include ....
-                    const matchInclude = pre.match(/#\s*include\s+(\w+);/);
-                    if (matchInclude != null) {
-                        const include = matchInclude[1]!;
-                        usedIncludes.add(include);
+                    const matchIncludes = pre.match(/#\s*include\s+(\w+(?:\s*,\s*\w+)*)\s*;/i);
+                    if (matchIncludes != null) {
+                        const includesRaw = matchIncludes[1]!;
+                        const includes = includesRaw.split(',').map(s => s.trim());
+                        for (const include of includes) {
+                            usedIncludes.add(include);
+                        }
+                        path.remove();
                     }
                 }
             },
@@ -297,7 +326,7 @@ export default class ProgramCompiler
             mainProgramCode: generatedCode,
             includes: usedIncludesArr,
             rootFunctionName,
-            textureVarLookupData: new Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE),
+            textureVarLookupData: new Array(LOOKUP_TEXTURE_WIDTH * LOOKUP_TEXTURE_WIDTH),
         }
     }
 
@@ -345,8 +374,9 @@ export default class ProgramCompiler
             const nodeData = connectionData.nodeDatas[nodeIndex];
             if (isUsed && nodeData != null) {
                 if (nodeData.template.type === GNodeTemplateTypes.Base) {
-                    const marker = `# node ${nodeIndex};`;
-                    instructions.push(marker, nodeData.template.instructions!);
+                    const marker = `    # node ${nodeIndex};`;
+                    const instructionBlock = setBlockIndent(nodeData.template.instructions!, 4);
+                    instructions.push(marker, instructionBlock);
                 }
             }
         }
@@ -357,11 +387,11 @@ export default class ProgramCompiler
             .join(', ');
 
         const functionHeader = `${geometry.returnType} ${functionName}(${functionArgString})`
-        const functionBody = instructions.join('');
+        const functionBody = instructions.join('\n');
 
         return {
             functionName,
-            functionBlock: `${functionHeader} {\n${ functionBody } \n} \n`,
+            functionBlock: `${functionHeader} {\n${ functionBody }\n}\n`,
         }
     }
 }

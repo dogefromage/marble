@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { ViewportCamera, ViewTypes } from '../types';
 import { getViewportDirection } from '../utils/viewport/cameraMath';
-import ViewportGLProgram from './ViewportGLProgram';
+import ViewportProgramRenderer from './ViewportProgramRenderer';
 
 const CanvasWrapperDiv = styled.div`
     
@@ -40,43 +40,33 @@ const ViewportCanvas = ({ panelId }: Props) =>
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     
-    const [ gl, setGl  ] = useState<WebGL2RenderingContext>();
+    const [ ctx, setCtx  ] = useState<WebGL2RenderingContext>();
     const [ size, setSize ] = useState<DOMRectReadOnly>();
-    const [ error, setError ] = useState<string>();
 
     /**
      * CANVAS 
      */
-
-    useEffect(() =>
-    {
+    useEffect(() => {
         if (!wrapperRef.current || !canvasRef.current) return;
-
         let _size = size || wrapperRef.current.getBoundingClientRect();
         if (!size) setSize(_size);
-
         canvasRef.current.width = _size.width;
         canvasRef.current.height = _size.height;
-
         const _gl = canvasRef.current.getContext('webgl2');
-        if (!_gl)
-            return setError('WebGL2 is not supported by your browser :(');
-        // if (!_gl.getExtension('OES_texture_float'))
-        //     return setError('OES_texture_float is not supported by your browser :(');
-        setGl(_gl);
+        if (!_gl) {
+            throw new Error('WebGL2 is not supported by your browser :(');
+        }
+        setCtx(_gl);
     }, []);
     
     useResizeObserver(wrapperRef, div => setSize(div.contentRect))
 
-    useLayoutEffect(() =>
-    {
+    useLayoutEffect(() => {
         if (!size || !canvasRef.current) return;
-
         canvasRef.current.width = size.width;
         canvasRef.current.height = size.height;
-
-        if (!gl) return;
-        gl.viewport(0, 0, size.width, size.height);
+        if (!ctx) return;
+        ctx.viewport(0, 0, size.width, size.height);
     }, [ size ]);
 
     /**
@@ -189,15 +179,12 @@ const ViewportCanvas = ({ panelId }: Props) =>
                 ref={canvasRef}
             />
             {
-                gl && size && 
-                <ViewportGLProgram 
-                    gl={gl} 
+                ctx && size && 
+                <ViewportProgramRenderer 
+                    gl={ctx} 
                     size={size}
                     panelId={panelId}
                 />
-            }
-            {
-                error && <h1>{ error }</h1>
             }
             { divCatcher }
         </CanvasWrapperDiv>

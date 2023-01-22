@@ -1,4 +1,4 @@
-import { LOOKUP_TEXTURE_SIZE } from "../utils/viewport/ViewportQuadProgram";
+import { LOOKUP_TEXTURE_WIDTH } from "../utils/viewport/GLProgram";
 import { glsl } from "../utils/glslTag";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
@@ -52,7 +52,7 @@ varying vec3 ray_dir_pan_y;
 
 uniform vec3 marchParameters;  // vec3(maxDistance, maxIterations, epsilon)
 uniform vec3 ambientColor;
-uniform vec2 ambientOcclusion; // vec2(logisticHalfwayPoint, logisticZero)
+// uniform vec2 ambientOcclusion; // vec2(logisticHalfwayPoint, logisticZero)
 uniform vec4 sunGeometry; // vec4(lightDirection.xyz, lightAngle)
 uniform vec3 sunColor;
 
@@ -83,9 +83,9 @@ struct Solid
 
 float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
 {
-    int y = textureCoordinate / ${LOOKUP_TEXTURE_SIZE};
-    int x = textureCoordinate - y * ${LOOKUP_TEXTURE_SIZE};
-    vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_SIZE});
+    int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
+    int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
+    vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
     return texture2D(varSampler, uv).r;
 }
 

@@ -1,6 +1,6 @@
 import { GNodeT, GNodeTemplateTypes, RowTypes, DataTypes, GNodeTemplateCategories } from "../../types"
 import { glsl } from "../../utils/glslTag"
-import { EMPTY_SOLID, EMPTY_SOLID_FORMAT, TemplateColors, TEMPLATE_FAR_AWAY, TEMPLATE_FAR_AWAY_FORMAT } from "./templateConstants"
+import { EMPTY_SOLID, EMPTY_SOLID_LITERAL, TemplateColors, TEMPLATE_FAR_AWAY, TEMPLATE_FAR_AWAY_LITERAL } from "./templateConstants"
 
 const solid_operation_union: GNodeT =
 {
@@ -31,7 +31,7 @@ const solid_operation_union: GNodeT =
     ],
     instructions: glsl`
         #INCLUDE inc_union;
-        Solid $output = #STACK(inc_union, $inputs, ${EMPTY_SOLID_FORMAT});
+        Solid output = #REDUCE(inc_union, inputs, ${EMPTY_SOLID_LITERAL});
     `,
 }
 
@@ -71,8 +71,8 @@ const solid_operation_difference: GNodeT =
     ],
     instructions: glsl`
         #INCLUDE inc_union, inc_difference;
-        Solid $neg = #STACK(inc_union, $negatives, ${EMPTY_SOLID_FORMAT});
-        Solid $output = inc_difference($positive, $neg);
+        Solid neg = #REDUCE(inc_union, negatives, ${EMPTY_SOLID_LITERAL});
+        Solid output = inc_difference(positive, neg);
     `,
 }
 
@@ -105,7 +105,7 @@ const solid_operation_intersection: GNodeT =
     ],
     instructions: glsl`
         #INCLUDE inc_intersection;
-        Solid $output = #STACK(inc_intersection, $inputs, ${EMPTY_SOLID_FORMAT});
+        Solid output = #REDUCE(inc_intersection, inputs, ${EMPTY_SOLID_LITERAL});
     `,
 }
 
@@ -144,7 +144,7 @@ const solid_operation_set_color: GNodeT =
         }
     ],
     instructions: glsl`
-        Solid $output = Solid($input.sd, $color);
+        Solid output = Solid(input.sd, color);
     `,
 }
 
@@ -183,7 +183,7 @@ const solid_operation_correct_distance: GNodeT =
         }
     ],
     instructions: glsl`
-        Solid $output = Solid($factor * $input.sd, $input.color);
+        Solid output = Solid(factor * input.sd, input.color);
     `,
 }
 

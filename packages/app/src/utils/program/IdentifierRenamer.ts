@@ -1,9 +1,9 @@
-import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program } from "@shaderfrog/glsl-parser/ast";
+import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, RowS, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, RowS, RowTypes, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
-import { LOOKUP_TEXTURE_SIZE } from "../viewport/ViewportQuadProgram";
-import { formatLiteral, formatTextureLookupStatement } from "./codeSnippets";
+import { LOOKUP_TEXTURE_WIDTH } from "../viewport/GLProgram";
+import { formatLiteral, formatTextureLookupStatement } from "./generateCodeStatements";
 
 enum Prefixes {
     Local = 'l',
@@ -27,7 +27,7 @@ export default class IdentifierRenamer
         location: StatementLocation;
         node: LiteralNode;
     }> = [];
-    private textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE);
+    private textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH * LOOKUP_TEXTURE_WIDTH);
 
     constructor() {}
 
@@ -139,7 +139,7 @@ export default class IdentifierRenamer
     private getIncomingEdge(nodeIndex: number, rowIndex: number)
     {
         const { connectionData } = this.getGeometry();
-        return connectionData.backwardEdges[nodeIndex]?.[rowIndex];
+        return connectionData.backwardEdges[nodeIndex]?.[rowIndex] || [];
     }
 
     private getStatementLocation(path: Path<AstNode>): StatementLocation {
@@ -168,7 +168,7 @@ export default class IdentifierRenamer
         const location = this.getStatementLocation(path);
         this.additionalStatements.push({
             location,
-            node: { type: 'literal', literal: code, whitespace: '\n' }
+            node: { type: 'literal', literal: code, whitespace: '\n    ' }
         });
     }
 
@@ -193,9 +193,56 @@ export default class IdentifierRenamer
         const rowState = node.rows[rowTemp.id];
 
         // case 1: connection
-        const incomingEdge = this.getIncomingEdge(this.nodeIndex, rowIndex)?.[0];
-        if (incomingEdge) {
-            path.node.identifier = this.getIdentifierName(Prefixes.Edge, ...incomingEdge.fromIndices);
+        const incomingEdges = this.getIncomingEdge(this.nodeIndex, rowIndex);
+
+        // 1.1 stacked input
+        if (rowTemp.type === RowTypes.InputStacked) {
+            const parentType = path.parent?.type;
+            if (parentType !== 'function_call') {
+                throw new Error(`Stacked row identifier must be argument of function call`);
+            }
+            const [ defaultLiteralTree ] = path.parent.args;
+            const functionName = (path.parent.identifier as any)?.specifier?.identifier;
+            if (functionName == null) {
+                throw new Error(`Function name null`);
+            }
+            const size = Object.keys(incomingEdges).length;
+            if (size === 0) {
+                const anyParent = path.parent as any;
+                for (const key in path.parent){
+                    delete anyParent[key];
+                }
+                Object.assign(anyParent, defaultLiteralTree);
+                return;
+            }
+            // create stacked input
+            let expr = '';
+            for (let i = 0; i < size; i++) {
+                const jointEdge = incomingEdges[i];
+                const identifier = this.getIdentifierName(Prefixes.Edge, ...jointEdge.fromIndices);
+                if (i == 0) {
+                    expr = identifier;
+                } else {
+                    expr = `${functionName}(${expr},${identifier})`;
+                }
+            }
+            const identifierNode: IdentifierNode = {
+                type: 'identifier',
+                identifier: expr,
+                whitespace: '',
+            };
+            const anyParent = path.parent as any;
+            for (const key in path.parent){
+                delete anyParent[key];
+            }
+            Object.assign(anyParent, identifierNode);
+            return;
+        }
+
+        // 1.2 single incoming edge
+        if (incomingEdges[0] != null) {
+            const jointEdge = incomingEdges[0];
+            path.node.identifier = this.getIdentifierName(Prefixes.Edge, ...jointEdge.fromIndices);
             return;
         }
 

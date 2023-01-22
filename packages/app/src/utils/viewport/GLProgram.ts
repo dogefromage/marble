@@ -3,48 +3,46 @@ import { ProgramUniform } from "../../types/viewport";
 import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "./createFullscreenQuad";
 import { setUniform } from "./setUniform";
 
-export const LOOKUP_TEXTURE_SIZE = 64;
+export const LOOKUP_TEXTURE_WIDTH = 64;
 
-export class ViewportQuadProgram
+export class GLProgram
 {
-    private currentProgram: WebGLProgram | null = null;
-    private vertexBuffer: WebGLBuffer;
-    private indexBuffer: WebGLBuffer;
-    private varTexture: WebGLTexture;
+    // private currentProgram: WebGLProgram | null = null;
+    // private vertexBuffer: WebGLBuffer;
+    // private indexBuffer: WebGLBuffer;
+    // private varTexture: WebGLTexture;
+    
     private vertexShader: WebGLShader;
     private fragmentShader: WebGLShader;
 
-    private isRendering = false;
+    // private isRendering = false;
     private isCompiling = false;
-
-    public attributeLocations: {
-        buffer?: number;
-    } = {};
+    private attribLocations = {
+        quad: -1,
+    };
 
     constructor(
         private gl: WebGL2RenderingContext,
         private uniforms: ObjMap<ProgramUniform>,
     )
     {
-        const buffers = createFullScreenQuad(gl);
-        this.vertexBuffer = buffers.vertexBuffer;
-        this.indexBuffer = buffers.indexBuffer;
+        // const buffers = createFullScreenQuad(gl);
+        // this.vertexBuffer = buffers.vertexBuffer;
+        // this.indexBuffer = buffers.indexBuffer;
 
         // const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0.5);
-
         this.varTexture = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,            // level
             gl.R16F, // internal format
-            LOOKUP_TEXTURE_SIZE,
-            LOOKUP_TEXTURE_SIZE,
+            LOOKUP_TEXTURE_WIDTH,
+            LOOKUP_TEXTURE_WIDTH,
             0,            // border
             gl.RED, // format
             gl.FLOAT,  // type
             null
-            // testData,
         );
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -132,24 +130,28 @@ export class ViewportQuadProgram
         this.requestRender();
     }
     
-    setUniformData(name: string, data: number[])
+    /**
+     * Returns true if uniform exists
+     */
+    public setUniformData(name: string, data: number[])
     {
-        if (this.uniforms?.[ name ])
+        if (this.uniforms?.[ name ]) {
             this.uniforms[ name ].data = data;
+            return true;
+        }
+        return false;
     }
 
     setVarTextureData(data: number[])
     {
         const gl = this.gl;
-
         const typedArr = new Float32Array(data);
-
         gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
         gl.texSubImage2D(
             gl.TEXTURE_2D,
             0, 0, 0,
-            LOOKUP_TEXTURE_SIZE,
-            LOOKUP_TEXTURE_SIZE,
+            LOOKUP_TEXTURE_WIDTH,
+            LOOKUP_TEXTURE_WIDTH,
             gl.RED,
             gl.FLOAT,
             typedArr,
@@ -181,8 +183,7 @@ export class ViewportQuadProgram
         gl.vertexAttribPointer(this.attributeLocations.buffer!, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.attributeLocations.buffer!);
 
-        for (const uniform of Object.values(this.uniforms))
-        {
+        for (const uniform of Object.values(this.uniforms)) {
             if (!uniform.location) continue;
             setUniform(gl, uniform.location, uniform.type, uniform.data);
         }

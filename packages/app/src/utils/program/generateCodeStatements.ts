@@ -1,7 +1,6 @@
 import { DataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE, Tuple } from "../../types";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
 
-
 export function formatLiteral(value: RowValueMap[DataTypes], dataType: DataTypes): string
 {
     if (dataType === DataTypes.Float)
@@ -70,4 +69,8 @@ function formatTextureLookup(textureCoordinate: number, dataType: DataTypes): st
 export function formatTextureLookupStatement(identifier: string, textureCoordinate: number, dataType: DataTypes) 
 {
     return `${dataType} ${identifier} = ${formatTextureLookup(textureCoordinate, dataType)};`;
+}
+
+export function generateStackedExpression(func: string, identifier: string, defaultLiteral: string) {
+    return `${func}(${defaultLiteral}, ${identifier})`;
 }

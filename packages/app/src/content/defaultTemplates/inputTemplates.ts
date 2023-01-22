@@ -44,7 +44,7 @@ const input_vector_3x1: GNodeT =
         },
     ],
     instructions: glsl`
-        vec3 $output = vec3($x, $y, $z);
+        vec3 output = vec3(x, y, z);
     `,
 }
 
@@ -83,7 +83,7 @@ const input_vector_2x1: GNodeT =
         },
     ],
     instructions: glsl`
-        vec2 $output = vec2($x, $y);
+        vec2 output = vec2(x, y);
     `,
 }
 
@@ -115,7 +115,7 @@ const input_number: GNodeT =
         },
     ],
     instructions: glsl`
-        float $output = $input;
+        float output = input;
     `,
 }
 

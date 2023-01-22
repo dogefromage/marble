@@ -46,9 +46,10 @@ const vectors_mirror_plane: GNodeT =
         }
     ],
     instructions: glsl`
-        vec3 $norm = normalize($n);
-        float $xn = dot($norm, $x - $o);
-        vec3 $output = $x - $norm * (abs($xn) + $xn); // mirror if dot negative, nothing if positive
+        // TODO replace with householder matrix
+        vec3 norm = normalize(n);
+        float xn = dot(norm, x - o);
+        vec3 output = x - norm * (abs(xn) + xn); // mirror if dot negative, nothing if positive
     `,
 }
 
@@ -88,8 +89,7 @@ const vectors_repeat_cell: GNodeT =
         },
     ],
     instructions: glsl`
-        // vec3 c = floor((p + size*0.5)/size);
-        vec3 $output = mod($x + $size*0.5, $size) - $size*0.5;
+        vec3 output = mod(x + size*0.5, size) - size*0.5;
     `,
 }
 
@@ -150,8 +150,8 @@ const vectors_transform: GNodeT =
         }
     ],
     instructions: glsl`
-        vec3 $output = $rotation * ($input - $translation) / $scale;
-        float $sd_correction = $scale;
+        vec3 output = rotation * (input - translation) / scale;
+        float sd_correction = scale;
     `,
 }
 
@@ -195,9 +195,9 @@ const vectors_separate_3x1: GNodeT =
         },
     ],
     instructions: glsl`
-        float $x = $input.x;
-        float $y = $input.y;
-        float $z = $input.z;
+        float x = input.x;
+        float y = input.y;
+        float z = input.z;
     `,
 }
 
@@ -235,8 +235,8 @@ const vectors_separate_2x1: GNodeT =
         },
     ],
     instructions: glsl`
-        float $x = $input.x;
-        float $y = $input.y;
+        float x = input.x;
+        float y = input.y;
     `,
 }
 

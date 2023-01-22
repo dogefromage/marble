@@ -8,7 +8,7 @@ import { generateShaders } from '../utils/codeGeneration/generateShaders';
 import { degToRad } from '../utils/math';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewport/cameraMath';
 import { UniformTypes } from '../utils/viewport/setUniform';
-import { ViewportQuadProgram } from '../utils/viewport/ViewportQuadProgram';
+import { GLProgram } from '../utils/viewport/GLProgram';
 
 interface Props
 {
@@ -17,9 +17,9 @@ interface Props
     panelId: string;
 }
 
-const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
+const ViewportProgramRenderer = ({ gl, size, panelId }: Props) =>
 {
-    const [ quadProgram, setQuadProgram ] = useState<ViewportQuadProgram>();
+    const [ quadProgram, setQuadProgram ] = useState<GLProgram>();
     const programLayers = useAppSelector(selectPrograms);
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
@@ -30,7 +30,7 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
      */
     useEffect(() =>
     {
-        const _program = new ViewportQuadProgram(gl,
+        const _program = new GLProgram(gl,
         {
             'inverseCamera': {
                 type: UniformTypes.UniformMatrix4fv,
@@ -114,4 +114,4 @@ const ViewportGLProgram = ({ gl, size, panelId }: Props) =>
     return null;
 }
 
-export default ViewportGLProgram;
+export default ViewportProgramRenderer;

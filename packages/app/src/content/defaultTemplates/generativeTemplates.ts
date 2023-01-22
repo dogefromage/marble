@@ -31,7 +31,7 @@ const generative_perlin_noise: GNodeT =
     ],
     instructions: glsl`
         #INCLUDE inc_perlin_noise;
-        float $output = inc_perlin_noise($coordinates);
+        float output = inc_perlin_noise(coordinates);
     `,
 }
 

@@ -1,17 +1,4 @@
 
-function markComponent(n: number, v: number, Adj: number[][], components: number[], visited: boolean[], currentComponent: number): number {
-    visited[v] = true;
-    for (const u of Adj[v]) {
-        if (visited[u]) {
-            currentComponent = components[u];
-        } else {
-            currentComponent = markComponent(n, u, Adj, components, visited, currentComponent);
-        }
-    }
-    components[v] = currentComponent;
-    return currentComponent;
-}
-
 export default function orderGraph(n: number, Adj: number[][]) {
     
     const pre = new Array(n).fill(0);
@@ -56,9 +43,12 @@ export default function orderGraph(n: number, Adj: number[][]) {
 
     const components = new Array(n).fill(-1);
     visited.fill(false); // reset
+
     let currendComponent = 0;
     for (let v0 = 0; v0 < n; v0++) {
-        currendComponent = 1 + markComponent(n, v0, Adj, components, visited, currendComponent);
+        if (!visited[v0]) {
+            currendComponent = 1 + markComponent(n, v0, Adj, components, visited, currendComponent);
+        }
     }
 
     return {
@@ -81,4 +71,17 @@ function traceCycle(stack: number[], v: number) {
         }
     }
     return cycle;
+}
+
+function markComponent(n: number, v: number, Adj: number[][], components: number[], visited: boolean[], currentComponent: number): number {
+    visited[v] = true;
+    for (const u of Adj[v]) {
+        if (visited[u]) {
+            currentComponent = components[u];
+        } else {
+            currentComponent = markComponent(n, u, Adj, components, visited, currentComponent);
+        }
+    }
+    components[v] = currentComponent;
+    return currentComponent;
 }
