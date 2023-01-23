@@ -7,7 +7,7 @@ import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import analyzeGraph from '../graph/analyzeGraph';
 import geometryNodesToGraphAdjacency from "../graph/geometryNodesToGraphAdjacency";
 import getDependencyKey, { splitDependencyKey } from '../graph/getDependencyKey';
-import { LOOKUP_TEXTURE_WIDTH } from '../viewport/GLProgram';
+import { LOOKUP_TEXTURE_WIDTH } from '../viewport/GLProgramRenderer';
 import { generateStackedExpression } from './generateCodeStatements';
 import { GeometryCompilationException } from './GeometryCompilationException';
 import IdentifierRenamer from "./IdentifierRenamer";

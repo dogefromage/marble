@@ -2,7 +2,7 @@ import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, Litera
 import { getRowMetadata } from "../../components/GeometryRowRoot";
 import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, RowS, RowTypes, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
-import { LOOKUP_TEXTURE_WIDTH } from "../viewport/GLProgram";
+import { LOOKUP_TEXTURE_WIDTH } from "../viewport/GLProgramRenderer";
 import { formatLiteral, formatTextureLookupStatement } from "./generateCodeStatements";
 
 enum Prefixes {

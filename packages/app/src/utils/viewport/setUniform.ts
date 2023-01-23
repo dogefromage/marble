@@ -1,32 +1,4 @@
-
-export enum UniformTypes
-{
-    Uniform1ui,
-    Uniform2ui,
-    Uniform3ui,
-    Uniform4ui,
-    Uniform1fv,
-    Uniform2fv,
-    Uniform3fv,
-    Uniform4fv,
-    Uniform1iv,
-    Uniform2iv,
-    Uniform3iv,
-    Uniform4iv,
-    Uniform1uiv,
-    Uniform2uiv,
-    Uniform3uiv,
-    Uniform4uiv,
-    UniformMatrix2fv,
-    UniformMatrix3x2fv,
-    UniformMatrix4x2fv,
-    UniformMatrix2x3fv,
-    UniformMatrix3fv,
-    UniformMatrix4x3fv,
-    UniformMatrix2x4fv,
-    UniformMatrix3x4fv,
-    UniformMatrix4fv,
-}
+import { UniformTypes } from "../../types";
 
 export function setUniform(gl: WebGL2RenderingContext, location: WebGLUniformLocation, type: UniformTypes, data: number[])
 {

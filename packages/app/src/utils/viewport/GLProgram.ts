@@ -1,196 +1,92 @@
-import { ObjMap } from "../../types/UtilityTypes";
-import { ProgramUniform } from "../../types/viewport";
-import createFullScreenQuad, { QUAD_INDICES_LENGTH } from "./createFullscreenQuad";
-import { setUniform } from "./setUniform";
-
-export const LOOKUP_TEXTURE_WIDTH = 64;
 
 export class GLProgram
 {
-    // private currentProgram: WebGLProgram | null = null;
-    // private vertexBuffer: WebGLBuffer;
-    // private indexBuffer: WebGLBuffer;
-    // private varTexture: WebGLTexture;
-    
+    public state: 'compiling' | 'ready' | 'destroyed' | 'failed' = 'compiling';
+    private program: WebGLProgram;
     private vertexShader: WebGLShader;
     private fragmentShader: WebGLShader;
-
-    // private isRendering = false;
-    private isCompiling = false;
     private attribLocations = {
-        quad: -1,
+        position: -1,
     };
+    private uniformLocations = new Map<string, WebGLUniformLocation>();
 
     constructor(
         private gl: WebGL2RenderingContext,
-        private uniforms: ObjMap<ProgramUniform>,
-    )
-    {
-        // const buffers = createFullScreenQuad(gl);
-        // this.vertexBuffer = buffers.vertexBuffer;
-        // this.indexBuffer = buffers.indexBuffer;
-
-        // const testData = new Float32Array(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE).fill(0.5);
-        this.varTexture = gl.createTexture()!;
-        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,            // level
-            gl.R16F, // internal format
-            LOOKUP_TEXTURE_WIDTH,
-            LOOKUP_TEXTURE_WIDTH,
-            0,            // border
-            gl.RED, // format
-            gl.FLOAT,  // type
-            null
-        );
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
+        private id: string,
+        private uniformNames: string[],
+        vertCode: string, 
+        fragCode: string,
+    ) {
         this.vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
         this.fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-    }
-
-    loadProgram(vertCode: string, fragCode: string)
-    {
-        this.isCompiling = true;
-
-        const gl = this.gl;
-
-        gl.flush();
-
-        gl.deleteProgram(this.currentProgram);
-        gl.deleteShader(this.vertexShader);
-        gl.deleteShader(this.fragmentShader);
-
-        const program = gl.createProgram()!;
-        this.currentProgram = program;
-
-        this.vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-        this.fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-
         gl.shaderSource(this.fragmentShader, fragCode);
         gl.shaderSource(this.vertexShader, vertCode);
-
         gl.compileShader(this.vertexShader);
         gl.compileShader(this.fragmentShader);
 
+        const program = gl.createProgram()!;
+        this.program = program;
         gl.attachShader(program, this.vertexShader);
         gl.attachShader(program, this.fragmentShader);
         gl.linkProgram(program);
         
-        const finalizeGen = this.finalizeLoading();
-
-        const interval = setInterval(() =>
-        {
-            if (finalizeGen.next().done) 
+        const finalizeGenerator = this.finalizeCompilation();
+        const interval = setInterval(() => {
+            if (finalizeGenerator.next().done) {
                 clearInterval(interval);
+            }
         }, 50);
     }
 
-    private *finalizeLoading()
-    {
-        const gl = this.gl;
-        const program = this.currentProgram!;
+    private *finalizeCompilation() {
+        const { gl, program } = this;
 
         const ext = gl.getExtension('KHR_parallel_shader_compile');
-
-        if (ext)
-        {
-            while (!gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR))
-            {
-                /**
-                 * suspend function while shader is compiling
-                 */
+        if (ext != null) {
+            while (!gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR)) {
+                // suspend function while shader is compiling
                 yield;
             }
         }
-        
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-        {
+        // ERRORS
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             console.error(`Link failed: ${gl.getProgramInfoLog(program)}`);
-
             console.error(gl.getShaderInfoLog(this.fragmentShader));
             console.error(gl.getShaderInfoLog(this.vertexShader));
+            this.state = 'failed';
+            return;
         }
-
-        this.attributeLocations.buffer = gl.getAttribLocation(program, "position");
-
-        Object.entries(this.uniforms).forEach(([ key, uniform ]) =>
-        {
-            const location = gl.getUniformLocation(program, key);
-            if (location == null) console.warn(`Uniform not found in program: ${key}`);
-
-            uniform.location = location;
-        });
-
-        this.isCompiling = false;
-
-        this.requestRender();
+        // ATTRIBUTE LOCATIONS
+        for (const attrib of Object.keys(this.attribLocations)) {
+            const loc = gl.getAttribLocation(program, attrib);
+            this.attribLocations[attrib as keyof typeof this.attribLocations] = loc;
+        }
+        // UNIFORM LOCATIONS
+        for (const uniform of this.uniformNames) {
+            const location = gl.getUniformLocation(program, uniform);
+            if (location == null) {
+                console.warn(`Uniform not found in program ${this.id}: ${uniform}`);
+                return;
+            }
+            this.uniformLocations.set(uniform, location);
+        }
+        this.state = 'ready';
     }
     
-    /**
-     * Returns true if uniform exists
-     */
-    public setUniformData(name: string, data: number[])
-    {
-        if (this.uniforms?.[ name ]) {
-            this.uniforms[ name ].data = data;
-            return true;
-        }
-        return false;
-    }
-
-    setVarTextureData(data: number[])
-    {
+    public destroy() {
         const gl = this.gl;
-        const typedArr = new Float32Array(data);
-        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
-        gl.texSubImage2D(
-            gl.TEXTURE_2D,
-            0, 0, 0,
-            LOOKUP_TEXTURE_WIDTH,
-            LOOKUP_TEXTURE_WIDTH,
-            gl.RED,
-            gl.FLOAT,
-            typedArr,
-        );
+        this.state = 'destroyed';
+        // gl.flush(); // maybe necessary
+        gl.deleteProgram(this.program);
+        gl.deleteShader(this.vertexShader);
+        gl.deleteShader(this.fragmentShader);
     }
 
-    requestRender()
-    {
-        if (this.isRendering) return;
-        requestAnimationFrame(() => this.render());
-        this.isRendering = true;
+    public getAttribLocations() {
+        return this.attribLocations;
     }
 
-    private render()
-    {
-        this.isRendering = false;
-
-        const gl = this.gl;
-        const program = this.currentProgram;
-
-        if (!program || this.isCompiling) return;
-
-        gl.useProgram(program);
-
-        gl.bindTexture(gl.TEXTURE_2D, this.varTexture);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        gl.vertexAttribPointer(this.attributeLocations.buffer!, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(this.attributeLocations.buffer!);
-
-        for (const uniform of Object.values(this.uniforms)) {
-            if (!uniform.location) continue;
-            setUniform(gl, uniform.location, uniform.type, uniform.data);
-        }
-
-        gl.drawElements(gl.TRIANGLES, QUAD_INDICES_LENGTH, gl.UNSIGNED_SHORT, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+    public getUniformLocation(name: string) {
+        return this.uniformLocations.get(name);
     }
 }
