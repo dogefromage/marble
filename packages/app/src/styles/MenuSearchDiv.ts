@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { MenuElementDiv, MENU_ROW_HEIGHT } from "./MenuElementDiv";
-import { FONT_FAMILY } from "./utils";
+import { BORDER_RADIUS, FONT_FAMILY } from "./utils";
 
 export const MenuSearchDiv = styled(MenuElementDiv)`
     &:hover
@@ -19,7 +19,7 @@ export const MenuSearchDiv = styled(MenuElementDiv)`
             border: none;
             padding: 0 1rem;
             
-            border-radius: 3px;
+            ${BORDER_RADIUS}
 
             background-color: #e5e4eb;
             box-shadow: inset 2px 2px #00000033;

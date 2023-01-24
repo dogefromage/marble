@@ -3,8 +3,7 @@ import { useAppDispatch } from '../redux/hooks';
 import { consoleAppendMessage } from '../slices/consoleSlice';
 import { ErrorBoundary } from './ErrorBoundary';
 
-const ServiceErrorFallback = (serviceName: string) => ({ error }: { error: Error }) =>
-{
+const ServiceErrorFallback = (serviceName: string) => ({ error }: { error: Error }) => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -17,19 +16,17 @@ const ServiceErrorFallback = (serviceName: string) => ({ error }: { error: Error
     return null;
 }
 
-interface Props
-{
+interface Props {
     serviceName: string;
     children: React.ReactNode;
 }
 
-const ServiceErrorBoundary = ({ serviceName, children }: Props) =>
-{
+const ServiceErrorBoundary = ({ serviceName, children }: Props) => {
     return (
         <ErrorBoundary
             fallbackComponent={ServiceErrorFallback(serviceName)}
         >
-            { children }
+            {children}
         </ErrorBoundary>
     );
 }

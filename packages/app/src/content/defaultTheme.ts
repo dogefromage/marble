@@ -5,6 +5,10 @@ const defaultTheme: DefaultTheme =
 {
     colors: 
     {
+        geometryEditor: {
+            background: '#ddd',
+            backgroundDots: '#bbb',
+        },
         dataTypes: {
             unknown: '#636363',
             float: '#5f91c9',
@@ -15,7 +19,6 @@ const defaultTheme: DefaultTheme =
         },
         selectionStatus: {
             [SelectionStatus.Selected]: '#e7b84a',
-            [SelectionStatus.Active]: '#e74a54',
         }
     },
 };

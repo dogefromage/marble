@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import GeometryRowDiv from "./GeometryRowDiv";
 import GeometryRowNameP from "./GeometryRowNameP";
+import { BORDER_RADIUS_TOP } from "./utils";
 
 interface WrapperProps
 {
@@ -11,7 +12,7 @@ export const GeometryNodeNameWrapper = styled(GeometryRowDiv)<WrapperProps>`
     background-color: ${({ backColor }) => backColor };
     color: white;
 
-    border-radius: 3px 3px 0 0;
+    ${BORDER_RADIUS_TOP}
 
     margin: 0;
     padding: 0 8px;

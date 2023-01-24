@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { DataTypes } from '../types';
 import { GNODE_ROW_UNIT_HEIGHT } from './GeometryRowDiv';
-import { BOX_SHADOW } from './utils';
+import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const GeometryArgumentTagWrapperDiv = styled.div`
     position: absolute;
@@ -33,8 +33,7 @@ export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
     align-items: center;
 
     padding: 0 0.25rem 0;
-    border-radius: 3px;
-    /* border-radius: 5px 15px 15px 5px; */
+    ${BORDER_RADIUS}
 
     p {
         font-weight: bold;

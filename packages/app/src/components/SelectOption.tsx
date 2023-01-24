@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
+import { BORDER_RADIUS } from '../styles/utils';
 import { MenuShape, MenuTypes } from '../types';
 import MaterialSymbol from './MaterialSymbol';
 import MenuRoot from './MenuRoot';
@@ -20,7 +21,7 @@ const SelectOptionDiv = styled.div`
     
     padding: 0 0.5em;
     /* border: dashed 1px #00000079; */
-    border-radius: 3px;
+    ${BORDER_RADIUS}
     background-color: #e5e4eb;
     /* box-shadow: 2px 2px #00000033; */
 

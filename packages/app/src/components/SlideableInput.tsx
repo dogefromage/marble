@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppSelector } from '../redux/hooks';
 import { selectWorld } from '../slices/worldSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
-import { FONT_FAMILY } from '../styles/utils';
+import { BORDER_RADIUS, FONT_FAMILY } from '../styles/utils';
 import { Metrics, UnitNames } from '../types/world';
 import { Units } from '../utils/units';
 
@@ -36,7 +36,7 @@ const SlidableInputDiv = styled.div`
         input
         {
             padding: 0 0.5em;
-            border-radius: 3px;
+            ${BORDER_RADIUS}
             background-color: #e5e4eb;
             box-shadow: inset 2px 2px #00000033;
             border: none;

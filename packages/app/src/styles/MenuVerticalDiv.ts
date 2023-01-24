@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { BOX_SHADOW } from './utils';
+import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const VERTICAL_MENU_WIDTH = 320;
 
@@ -30,7 +30,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     width: ${VERTICAL_MENU_WIDTH}px;
 
     background-color: white;
-    border-radius: 3px;
+    ${BORDER_RADIUS}
     ${BOX_SHADOW}
     outline: solid 1px black;
 

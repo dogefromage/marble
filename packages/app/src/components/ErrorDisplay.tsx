@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { BORDER_RADIUS } from '../styles/utils';
 
 const ErrorDisplayDiv = styled.div`
     width: 100%;
@@ -14,7 +15,7 @@ const ErrorDisplayDiv = styled.div`
     div
     {
         background-color: white;
-        border-radius: 3px;
+        ${BORDER_RADIUS}
         box-shadow: 5px 5px #00000066;
 
         padding: 2rem;

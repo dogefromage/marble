@@ -7,10 +7,9 @@ import { selectLayers } from '../slices/layersSlice';
 import { programsSetMany, selectPrograms } from '../slices/programsSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { DependencyNodeType, Layer, LayerProgram } from '../types';
-import assertErrorType from '../utils/assertErrorType';
 import getDependencyKey from '../utils/graph/getDependencyKey';
-import { GeometryCompilationException } from '../utils/program/GeometryCompilationException';
 import ProgramCompiler from '../utils/program/ProgramCompiler';
+import { detectMapDifference } from '../utils/useReactiveMap';
 
 const CompilerRoot = () =>
 {
@@ -27,45 +26,34 @@ const CompilerRoot = () =>
     useEffect(() => {
         const compiler = compilerRef.current;
 
-        const setPrograms: LayerProgram[] = [];
-        const lastKeys = new Set(Object.keys(programs));
-
-        for (const layer of Object.values(layers) as Layer[]) {
-            lastKeys.delete(layer.id);
-            // get hash from dependency graph
-            const layerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
-            const layerOrder = dependencyGraph.order.get(layerKey);
-            if (layerOrder?.state === 'met') {
-                // compare to last entry using hash
-                const last = programs[layer.id];
-                if (last == null || last.hash != layerOrder.hash) {
-                    // compile new program if expired
-                    try {
-                        const newProgram = compiler.compileProgram({ 
-                            layer, geometries, geometryDatas, dependencyGraph, includes 
-                        });
-                        setPrograms.push(newProgram);
-                    }
-                    catch (e: any) {
-                        if (assertErrorType(e, GeometryCompilationException)) {
-                            // console.warn(e.message);
-                            return;
-                        }
-                        throw e;
-                    }
+        const { setItems, removeItems } = detectMapDifference<Layer, LayerProgram>({
+            reference: layers,
+            lastImage: programs,
+            map: (layer) => {
+                try {
+                    return compiler.compileProgram({ 
+                        layer, geometries, geometryDatas, dependencyGraph, includes 
+                    });
+                } catch (e: any) {
+                    console.warn(e.message);
                 }
+                return null;
+            },
+            hasChanged: (layer, program) => {
+                const layerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
+                const layerOrder = dependencyGraph.order.get(layerKey);
+                if (!layerOrder) return false;
+                return layerOrder.hash !== program.hash;
             }
-        }
+        });
 
-        // if key from last time wasn't in programs, remove
-        const removePrograms = new Array(...lastKeys);
-        if (setPrograms.length + setPrograms.length > 0) {
+        if (setItems.length + removeItems.length > 0) {
             dispatch(programsSetMany({
-                removePrograms, setPrograms,
+                removePrograms: removeItems.map(item => item.id), 
+                setPrograms: setItems,
             }));
         }
     }, [ dispatch, dependencyGraph, geometryDatas ]);
-
 
     // const geometry: GeometryS | undefined = Object.values(geometries)?.[0];
     // const connectionData = useMemo(() => 

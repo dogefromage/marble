@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import { dependencyGraphUpdateGraph } from "../../slices/dependencyGraphSlice";
-import { IDependency, ObjMapUndef, DependencyNodeType, DependencyNode } from "../../types";
+import { IDependency, ObjMapUndef, DependencyNodeType, DependencyGraphNode } from "../../types";
 import getDependencyKey from "../graph/getDependencyKey";
 
 export function useRegisterDependency<T extends IDependency>(
@@ -13,7 +13,7 @@ export function useRegisterDependency<T extends IDependency>(
     const lastElements = useRef(new Map<string, T>());
 
     useEffect(() => {
-        const addNodes: DependencyNode[] = [];
+        const addNodes: DependencyGraphNode[] = [];
         const removeNodes: string[] = [];
 
         const newElements = new Map<string, T>();

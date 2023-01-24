@@ -20,7 +20,7 @@ interface DivProps
 const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) =>
 {
     const translate = vec2.fromValues(-camera.position.x, -camera.position.y);
-    const gridSize = 20 * camera.zoom;
+    const gridSize = 40 * camera.zoom;
     const pos = vec2.scale(vec2.create(), translate, camera.zoom);
 
     return {
@@ -38,17 +38,15 @@ const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) =>
     width: 100%;
     height: 100%;
     overflow: hidden;
-
-    background-color: #e0e0e0;
-    --grid-thick: 1px;
-    --grid-color: #c6c8cc;
-
+    
+    background-color: ${({ theme }) => theme.colors.geometryEditor.background };
+    
+    /* background-color: #e0e0e0; */
     background-position: var(--bg-pos-x) var(--bg-pos-y);
     background-size: var(--grid-size) var(--grid-size);
-    background-image: 
-        linear-gradient(var(--grid-color) var(--grid-thick), transparent var(--grid-thick)), 
-        linear-gradient(90deg, var(--grid-color) var(--grid-thick), transparent var(--grid-thick))
-    ;
+    
+    --grid-color: ${({ theme }) => theme.colors.geometryEditor.backgroundDots };
+    background-image: radial-gradient(var(--grid-color) calc(0.04 * var(--grid-size)), transparent 0);
 `;
 
 const TransformingDiv = styled.div`

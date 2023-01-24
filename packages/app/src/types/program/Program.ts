@@ -1,9 +1,7 @@
-import { GeometryArgument } from "../geometries";
 import { MapEvery } from "../UtilityTypes";
 
-export enum DataTypes
-{
-    Unknown = 'unknown', 
+export enum DataTypes {
+    Unknown = 'unknown',
     Float = 'float',
     Vec2 = 'vec2',
     Vec3 = 'vec3',
@@ -11,8 +9,7 @@ export enum DataTypes
     Solid = 'Solid',
 }
 
-export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
-{
+export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> = {
     unknown: 0,
     float: 1,
     vec2: 2,
@@ -21,27 +18,30 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> =
     Solid: 4,
 }
 
-// export interface ProgramTextureVarMapping
-// {
-//     dataTypes: DataTypes;
-//     textureCoordinate: number;
-//     nodeIndex: number;
-//     rowIndex: number;
-// }
-
-export interface ProgramInclude
+export interface ProgramTextureVarMapping
 {
+    dataType: DataTypes;
+    textureCoordinate: number;
+    geometryId: string;
+    geometryVersion: number;
+    nodeIndex: number;
+    rowIndex: number;
+}
+
+export interface ProgramInclude {
     id: string;
     source: string;
 }
 
-export interface LayerProgram
-{
+export interface LayerProgram {
     id: string;
+    index: number;
     hash: number;
     name: string;
     includes: ProgramInclude[];
     mainProgramCode: string;
     rootFunctionName: string;
-    textureVarLookupData: number[];
+    textureVarMappings: ProgramTextureVarMapping[];
+    textureVarRowIndex: number;
+    textureVarRow: number[];
 }

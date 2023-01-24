@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { DependencyGraphSliceState, DependencyNode } from "../types";
+import { DependencyGraphSliceState, DependencyGraphNode } from "../types";
 import createDependencyOrdering from "../utils/graph/createDependencyOrdering";
 
 const initialState: DependencyGraphSliceState = {
@@ -12,7 +12,7 @@ export const dependencyGraphSlice = createSlice({
     name: 'dependencyGraph',
     initialState,
     reducers: {
-        updateGraph: (s, a: PayloadAction<{ removeNodes: string[], addNodes: DependencyNode[] }>) => {
+        updateGraph: (s, a: PayloadAction<{ removeNodes: string[], addNodes: DependencyGraphNode[] }>) => {
             // remove old
             for (const nodeId of a.payload.removeNodes) {
                 s.nodes.delete(nodeId);

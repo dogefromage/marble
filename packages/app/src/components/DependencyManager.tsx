@@ -49,7 +49,7 @@ const DependencyManager = () =>
     // // PRINT
     // const dependencyGraph = useAppSelector(selectDependencyGraph);
     // useEffect(() => {
-    //     console.log(dependencyGraph);
+    //     console.info(dependencyGraph);
     // }, [ dependencyGraph ]);
 
     return null;

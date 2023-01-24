@@ -6,25 +6,27 @@ export enum DependencyNodeType {
     ProgramInclude = 'program-include',
 }
 
-export interface DependencyNode {
+export interface DependencyGraphNode {
     key: string;
     type: DependencyNodeType;
     version: number;
     dependencies: string[];
 }
 
-export interface OrderedDependency {
+export interface OrderedDependencyNode {
     key: string;
     state: 'met' | 'unmet' | 'cyclic' | 'missing';
     version: number;
     hash: number;
+    dependencies: string[];
+    dependants: string[];
 }
 
-export type DependencyAdjacency = Map<string, DependencyNode>;
+export type DependencyAdjacency = Map<string, DependencyGraphNode>;
 
 export interface DependencyGraph {
     nodes: DependencyAdjacency;
-    order: Map<string, OrderedDependency>;
+    order: Map<string, OrderedDependencyNode>;
 }
 
 export interface IDependency {

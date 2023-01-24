@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { BORDER_RADIUS_TOP } from "./utils";
 
 export const MenuTitleDiv = styled.div<{ backColor?: string }>`
 
@@ -7,7 +8,7 @@ export const MenuTitleDiv = styled.div<{ backColor?: string }>`
 
     height: 35px;
 
-    border-radius: 3px 3px 0 0;
+    ${BORDER_RADIUS_TOP}
 
     background-color: ${({ backColor }) => backColor || '#444' };
     color: white;

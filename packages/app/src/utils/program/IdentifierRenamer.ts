@@ -1,6 +1,6 @@
 import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, RowS, RowTypes, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, ProgramTextureVarMapping, RowS, RowTypes, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import { Counter } from "../Counter";
 import { LOOKUP_TEXTURE_WIDTH } from "../viewport/GLProgramRenderer";
 import { formatLiteral, formatTextureLookupStatement } from "./generateCodeStatements";
@@ -28,6 +28,7 @@ export default class IdentifierRenamer
         node: LiteralNode;
     }> = [];
     private textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH * LOOKUP_TEXTURE_WIDTH);
+    private textureVarMappings: ProgramTextureVarMapping[] = [];
 
     constructor() {}
 
@@ -77,6 +78,10 @@ export default class IdentifierRenamer
                 ...compound.statements.slice(location.statementIndex),
             ]
         }
+    }
+
+    public getTextureVarMappings() {
+        return this.textureVarMappings;
     }
 
     // private createConstant(rowIndex: number, row: InputOnlyRowT)
@@ -174,6 +179,7 @@ export default class IdentifierRenamer
 
     public replaceReference(path: Path<IdentifierNode>): void
     {
+        const { geometry } = this.getGeometry();
         const { node, nodeData } = this.getNode();
         const token = path.node.identifier;
         const rowIndex = nodeData.template.rows.findIndex(row => row.id === token);
@@ -267,12 +273,22 @@ export default class IdentifierRenamer
             path.node.identifier = dynamicId;
             if (!this.definedLocals.has(dynamicId)) {
                 this.definedLocals.add(dynamicId);
-                
+                // DECLARATION
                 const size = TEXTURE_VAR_DATATYPE_SIZE[rowTempAsInput.dataType];
                 const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
                 const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTempAsInput.dataType);
                 this.addDeclarationInfront(path, textureLookupCode);
+                // VAR MAPPING
+                this.textureVarMappings.push({
+                    dataType: rowTempAsInput.dataType,
+                    textureCoordinate,
+                    geometryId: geometry.id,
+                    geometryVersion: geometry.version,
+                    nodeIndex: this.nodeIndex,
+                    rowIndex,
+                });
             }
+            return;
         }
 
         // case 4: fixed constant

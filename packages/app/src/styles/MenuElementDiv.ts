@@ -1,4 +1,5 @@
 import styled, { css } from "styled-components";
+import { BORDER_RADIUS } from "./utils";
 
 export const MENU_ROW_HEIGHT = 30;
 
@@ -15,7 +16,7 @@ export const MenuElementDiv = styled.div.attrs({
     display: grid;
     align-items: center;
     
-    border-radius: 3px;
+    ${BORDER_RADIUS}
     cursor: pointer;
 
     &:hover {

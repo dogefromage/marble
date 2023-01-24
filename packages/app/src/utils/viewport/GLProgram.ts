@@ -1,7 +1,12 @@
+import { defaultViewportUniforms, ObjMap, ProgramUniform } from "../../types";
+import { setUniform } from "./setUniform";
+
+type ProgramState = 'compiling' | 'ready' | 'destroyed' | 'failed';
 
 export class GLProgram
 {
-    public state: 'compiling' | 'ready' | 'destroyed' | 'failed' = 'compiling';
+    public state: ProgramState = 'compiling';
+
     private program: WebGLProgram;
     private vertexShader: WebGLShader;
     private fragmentShader: WebGLShader;
@@ -9,11 +14,11 @@ export class GLProgram
         position: -1,
     };
     private uniformLocations = new Map<string, WebGLUniformLocation>();
+    public onReady?: () => void;
 
     constructor(
         private gl: WebGL2RenderingContext,
         private id: string,
-        private uniformNames: string[],
         vertCode: string, 
         fragCode: string,
     ) {
@@ -50,6 +55,7 @@ export class GLProgram
         }
         // ERRORS
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            // console.info(`An error occured during compilation of GLProgram ${this.id}`);
             console.error(`Link failed: ${gl.getProgramInfoLog(program)}`);
             console.error(gl.getShaderInfoLog(this.fragmentShader));
             console.error(gl.getShaderInfoLog(this.vertexShader));
@@ -62,7 +68,7 @@ export class GLProgram
             this.attribLocations[attrib as keyof typeof this.attribLocations] = loc;
         }
         // UNIFORM LOCATIONS
-        for (const uniform of this.uniformNames) {
+        for (const uniform of Object.keys(defaultViewportUniforms)) {
             const location = gl.getUniformLocation(program, uniform);
             if (location == null) {
                 console.warn(`Uniform not found in program ${this.id}: ${uniform}`);
@@ -71,6 +77,9 @@ export class GLProgram
             this.uniformLocations.set(uniform, location);
         }
         this.state = 'ready';
+        this.onReady?.();
+
+        // console.info(`Successfully compiled GLProgram ${this.id}`);
     }
     
     public destroy() {
@@ -80,13 +89,25 @@ export class GLProgram
         gl.deleteProgram(this.program);
         gl.deleteShader(this.vertexShader);
         gl.deleteShader(this.fragmentShader);
+        // console.info(`Destroyed GLProgram ${this.id}`);
     }
 
-    public getAttribLocations() {
-        return this.attribLocations;
-    }
+    public useProgram(uniforms: ObjMap<ProgramUniform>) {
+        const { gl } = this;
 
-    public getUniformLocation(name: string) {
-        return this.uniformLocations.get(name);
+        gl.useProgram(this.program);
+
+        gl.vertexAttribPointer(this.attribLocations.position, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(this.attribLocations.position);
+        
+        for (const [ name, { type, data } ] of Object.entries(uniforms)) {
+            const uniformLocation = this.uniformLocations.get(name);
+            if (!uniformLocation || !data) {
+                console.error(`Uniform ${name} could not be set`);
+                continue;
+            }
+            setUniform(gl, uniformLocation, type, data);
+        }
+
     }
 }

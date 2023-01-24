@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 import { Point, SelectionStatus } from '../types';
-import { BOX_SHADOW } from './utils';
+import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const NODE_WIDTH = 180;
 
@@ -24,7 +24,7 @@ const GeometryNodeDiv = styled.div.attrs<GeometryNodeDivProps>(({ position }) =>
     width: ${NODE_WIDTH}px;
     
     background-color: white;
-    border-radius: 3px;
+    ${BORDER_RADIUS}
     ${BOX_SHADOW}
 
     ${({ selectionStatus, theme }) => 

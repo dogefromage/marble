@@ -3,8 +3,7 @@ import { CodeTemplate } from "./CodeTemplate";
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaderTemplates";
 import logCode from "./logCode";
 
-export function generateShaders(sceneProgram: LayerProgram)
-{
+export function generateShaders(sceneProgram: LayerProgram) {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
 
     const includedCodeTotal = sceneProgram.includes

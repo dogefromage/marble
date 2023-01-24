@@ -2,18 +2,18 @@
 import 'styled-components';
 import { DataTypes, SelectionStatus } from '.';
 
-declare module 'styled-components' 
-{
-    export interface DefaultTheme
-    {
-        colors: 
-        {
-            dataTypes:
-            {
-                [D in DataTypes]: string;
+declare module 'styled-components' {
+    export interface DefaultTheme {
+        colors: {
+            geometryEditor: {
+                background: string;
+                backgroundDots: string;
+            }
+            dataTypes: {
+                [ D in DataTypes ]: string;
             }
             selectionStatus: {
-                [S in SelectionStatus]?: string;
+                [ S in SelectionStatus ]?: string;
             }
         }
     }
