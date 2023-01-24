@@ -1,23 +1,44 @@
-import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
-import { geometriesUpdateExpiredProps, selectGeometries } from '../slices/geometriesSlice';
-import { geometryDatasSetMany, selectGeometryDatas } from '../slices/geometryDatasSlice';
-import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, GeometryConnectionData, GeometryS } from '../types';
-import generateGeometryData from '../utils/geometries/generateGeometryData';
-import getDependencyKey from '../utils/graph/getDependencyKey';
+import { useCallback, useEffect, useState } from "react";
+import { ObjMapUndef } from "../types";
 
-const GeometryDataManager = () =>
-{
-    const dispatch = useAppDispatch();
-    const geometryDatas = useAppSelector(selectGeometryDatas);
-    const geometries = useAppSelector(selectGeometries);
-    const { templates } = useAppSelector(selectTemplates);
-    const dependencyManager = useAppSelector(selectDependencyGraph);
+type IDObj = { id: string };
 
+export default function <T extends IDObj, E extends IDObj>(
+    reference: ObjMapUndef<T>,
+    options: {
+        map: (input: T) => E,
+        isEqual?: (a: E, b: E) => boolean,
+    }
+) {
+    const [ image, setImage ] = useState<ObjMapUndef<E>>({});
+
+    const addItems = useCallback((images: E[]) => {
+        const newObj = Object.fromEntries(images.map(image => [ image.id, image ]));
+        setImage(last => ({ ...last, ...newObj }));
+    }, [ setImage ]);
+
+    const removeItems = useCallback((images: E[]) => {
+
+    }, []);
+    
+    useDetectDifference(reference, image, {
+        ...options,
+        addItems,
+        removeItems,
+    })
+}
+
+export function useDetectDifference<T extends IDObj, E extends IDObj>(
+    reference: ObjMapUndef<T>,
+    target: ObjMapUndef<E>,
+    options: {
+        map: (input: T) => E,
+        isEqual?: (a: E, b: E) => boolean,
+        addItems?: (images: E[]) => void,
+        removeItems?: (images: E[]) => void,
+    }
+) {
     useEffect(() => {
-        
         const setDatas: GeometryConnectionData[] = [];
         const expiredProps: { geometryId: string, geometryVersion: number, expiredProps: GeometryConnectionData['expiredProps'] }[] = [];
 
@@ -62,8 +83,4 @@ const GeometryDataManager = () =>
             }));
         }
     }, [ dispatch, dependencyManager ]);
-
-    return null;
 }
-
-export default GeometryDataManager;

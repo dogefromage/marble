@@ -9,80 +9,67 @@ import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../util
 import { GLProgram } from '../utils/viewport/GLProgram';
 import GLProgramRenderer from '../utils/viewport/GLProgramRenderer';
 
-interface Props
-{
+interface Props {
     gl: WebGL2RenderingContext;
     size: DOMRectReadOnly;
     panelId: string;
 }
 
-const ViewportProgramRenderer = ({ gl, size, panelId }: Props) =>
-{
-    const [ quadProgram, setQuadProgram ] = useState<GLProgramRenderer>();
+const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
+    const [ renderer, setRenderer ] = useState<GLProgramRenderer>();
     const programLayers = useAppSelector(selectPrograms);
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
     const layerZero = Object.values(programLayers)?.[0];
 
-    /**
-     * Create class instance
-     */
-    useEffect(() =>
-    {
-        const _program = new GLProgramRenderer(gl);
-        setQuadProgram(_program);
+    useEffect(() => {
+        setRenderer(new GLProgramRenderer(gl));
     }, [ gl ]);
 
-    /**
-     * Generate and set program
-     */
-    useEffect(() =>
-    { 
+    useEffect(() => {
         if (!layerZero ||
-            !quadProgram) return;
+            !renderer) return;
         const shaders = generateShaders(layerZero);
-        quadProgram.loadProgram(shaders.vertCode, shaders.fragCode);
-        quadProgram.requestRender();
-    }, [ layerZero, quadProgram ]);
+        renderer.loadProgram(shaders.vertCode, shaders.fragCode);
+        renderer.requestRender();
+    }, [ layerZero, renderer ]);
 
     /**
      * Update texture data for variables
      */
-    useEffect(() =>
-    {
-        if (!quadProgram || !layerZero) return;
-        quadProgram.setVarTextureData(layerZero.textureVarLookupData);
-        quadProgram.requestRender();
-    }, [ layerZero?.textureVarLookupData, quadProgram ])
+    useEffect(() => {
+        if (!renderer || !layerZero) return;
+        renderer.setVarTextureData(layerZero.textureVarLookupData);
+        renderer.requestRender();
+    }, [ layerZero?.textureVarLookupData, renderer ])
 
     /**
      * Update uniforms
      */
-    useEffect(() =>
-    {
-        if (!quadProgram || !viewportPanelState) return;
+    useEffect(() => {
+        if (!renderer || !viewportPanelState) return;
 
         const targetDistance = viewportPanelState.uniformSources.viewportCamera.distance;
 
         // invSize
         const invScreenSize = [ 1.0 / size.width, 1.0 / size.height ];
-        quadProgram.setUniformData('invScreenSize', invScreenSize);
+        renderer.setUniformData('invScreenSize', invScreenSize);
 
         // camera
         const aspect = size.width / size.height;
         const camera = viewportCameraToNormalCamera(viewportPanelState.uniformSources.viewportCamera);
         const worldToScreen = createCameraWorldToScreen(camera, aspect, targetDistance);
         const screenToWorld = mat4.invert(mat4.create(), worldToScreen);
-        quadProgram.setUniformData('inverseCamera', Array.from(screenToWorld));
+        renderer.setUniformData('inverseCamera', Array.from(screenToWorld));
 
         // marchParams
         const maxMarchDist = 1e4 * targetDistance;
         const maxMarchIter = viewportPanelState.uniformSources.maxIterations;
         const marchEpsilon = 1e-6 * targetDistance;
-        quadProgram.setUniformData('marchParameters', [ maxMarchDist, maxMarchIter, marchEpsilon ]);
+        renderer.setUniformData('marchParameters', [ maxMarchDist, maxMarchIter, marchEpsilon ]);
 
-        quadProgram.requestRender();
-    }, [ quadProgram, viewportPanelState?.uniformSources, size ]);
+        renderer.requestRender();
+    }, [ renderer, viewportPanelState?.uniformSources, size ]);
 
     return null;
 }

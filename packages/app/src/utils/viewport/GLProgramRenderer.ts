@@ -12,7 +12,7 @@ export default class GLProgramRenderer {
     private varTexture: WebGLTexture;
     private uniforms: ObjMap<ProgramUniform> = defaultViewportUniforms;
     private isRendering = false;
-    
+
     constructor(
         private gl: WebGL2RenderingContext,
     ) {
@@ -38,9 +38,9 @@ export default class GLProgramRenderer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     }
-    
+
     public setUniformData(name: string, data: number[]) {
-        const uniform = this.uniforms[name];
+        const uniform = this.uniforms[ name ];
         if (!uniform) {
             console.error(`uniform not found: ${name}`);
         }
@@ -62,15 +62,15 @@ export default class GLProgramRenderer {
         );
     }
 
-    public requestRender(programs: GLProgram[])
-    {
-        if (this.isRendering) return;
+    public requestRender(programs: GLProgram[]) {
+        if (this.isRendering) {
+            return;
+        }
         requestAnimationFrame(() => this.render(programs));
         this.isRendering = true;
     }
 
-    private render(programs: GLProgram[])
-    {
+    private render(programs: GLProgram[]) {
         this.isRendering = false;
         const gl = this.gl;
 

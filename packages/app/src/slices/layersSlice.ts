@@ -12,10 +12,12 @@ export const layersSlice = createSlice({
             if (s[a.payload.id] != null) {
                 throw new Error(`Layer already exists`);
             }
+            const count = Object.keys(s).length;
             s[a.payload.id] = {
                 id: a.payload.id,
                 name: 'New Layer',
                 version: 0,
+                index: count,
                 rootGeometryId: a.payload.rootGeometryId,
             };
         }

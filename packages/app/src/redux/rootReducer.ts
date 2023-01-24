@@ -39,12 +39,12 @@ const rootReducer = combineReducers({
     runtime: combineReducers({
         geometryDatas: geometryDatasReducer,
         dependencyGraph: dependencyGraphReducer,
+        contextMenu: contextMenuReducer,
+        programs: programsReducer,
+        console: consoleReducer,
     }),
-    programs: programsReducer,
     templates: templatesReducer,
     commands: commandsReducer,
-    console: consoleReducer,
-    contextMenu: contextMenuReducer,
 });
 
 export default rootReducer;

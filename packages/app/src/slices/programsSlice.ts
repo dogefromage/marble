@@ -23,7 +23,7 @@ export const {
     setMany: programsSetMany,
 } = programsSlice.actions;
 
-export const selectPrograms = (state: RootState) => state.programs;
+export const selectPrograms = (state: RootState) => state.runtime.programs;
 
 const programsReducer = programsSlice.reducer;
 
