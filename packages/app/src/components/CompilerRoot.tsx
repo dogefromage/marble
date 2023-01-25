@@ -4,12 +4,12 @@ import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectLayers } from '../slices/layersSlice';
-import { programsSetMany, selectPrograms } from '../slices/programsSlice';
+import { layerProgramsSetMany, selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { DependencyNodeType, Layer, LayerProgram } from '../types';
-import getDependencyKey from '../utils/graph/getDependencyKey';
-import ProgramCompiler from '../utils/program/ProgramCompiler';
-import { detectMapDifference } from '../utils/useReactiveMap';
+import { getDependencyKey } from '../utils/dependencyGraph';
+import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
+import { detectMapDifference } from '../hooks/useReactiveMap';
 
 const CompilerRoot = () =>
 {
@@ -21,7 +21,7 @@ const CompilerRoot = () =>
     const geometryDatas = useAppSelector(selectGeometryDatas);
     const layers = useAppSelector(selectLayers);
     const dependencyGraph = useAppSelector(selectDependencyGraph);
-    const programs = useAppSelector(selectPrograms);
+    const programs = useAppSelector(selectLayerPrograms);
 
     useEffect(() => {
         const compiler = compilerRef.current;
@@ -48,7 +48,7 @@ const CompilerRoot = () =>
         });
 
         if (setItems.length + removeItems.length > 0) {
-            dispatch(programsSetMany({
+            dispatch(layerProgramsSetMany({
                 removePrograms: removeItems.map(item => item.id), 
                 setPrograms: setItems,
             }));

@@ -1,33 +1,30 @@
-import { DataTypes } from "../program";
+import { DataTypes } from "../programs";
 import { RotationModels, Tuple } from "../UtilityTypes";
 import { GeometryArgument } from "./Geometry";
 
 /**
  * Values
  */
-export interface RowValueMap 
-{
-    [DataTypes.Float]: number;
-    [DataTypes.Unknown]: number;
-    [DataTypes.Vec2]: Tuple<number, 2>;
-    [DataTypes.Vec3]: Tuple<number, 3>;
-    [DataTypes.Mat3]: Tuple<number, 9>;
-    [DataTypes.Solid]: Tuple<number, 4>;
+export interface RowValueMap {
+    [ DataTypes.Float ]: number;
+    [ DataTypes.Unknown ]: number;
+    [ DataTypes.Vec2 ]: Tuple<number, 2>;
+    [ DataTypes.Vec3 ]: Tuple<number, 3>;
+    [ DataTypes.Mat3 ]: Tuple<number, 9>;
+    [ DataTypes.Solid ]: Tuple<number, 4>;
 }
 
 /**
  * super interfaces
  */
-interface SuperRowT
-{
+interface SuperRowT {
     id: string;
     name: string;
 }
 
-export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT 
-{
+export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT {
     dataType: D;
-    value: RowValueMap[D];
+    value: RowValueMap[ D ];
     defaultArgumentToken?: string;
 }
 
@@ -35,8 +32,7 @@ export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRo
  * Diverse rows
  */
 
-export enum RowTypes
-{
+export enum RowTypes {
     Name = 'name',
     InputOnly = 'input-only',
     InputStacked = 'input-stacked',
@@ -45,29 +41,24 @@ export enum RowTypes
     Rotation = 'rotation',
 }
 
-export interface NameRowT extends SuperRowT
-{
+export interface NameRowT extends SuperRowT {
     type: RowTypes.Name;
     color: string;
 }
 
-export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
-{
+export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
     type: RowTypes.InputOnly;
 }
 
-export interface StackedInputRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
-{
+export interface StackedInputRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
     type: RowTypes.InputStacked;
 }
 
-export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D>
-{
+export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
     type: RowTypes.Field;
 }
 
-export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3>
-{
+export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3> {
     type: RowTypes.Rotation;
     rotationModel: RotationModels;
     currentDisplay?: {
@@ -76,8 +67,7 @@ export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3>
     }
 }
 
-export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT
-{
+export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT {
     type: RowTypes.Output;
     dataType: D;
 }
@@ -90,17 +80,17 @@ export type RowT<D extends DataTypes = DataTypes> =
     | FieldRowT<D>
     | RotationRowT
 
-type RowTOverDataTypesMap = 
-{
-    [D in keyof typeof DataTypes]: RowT<typeof DataTypes[D]>;
-}
-export type SpecificRowT = RowTOverDataTypesMap[keyof typeof DataTypes];
+type RowTOverDataTypesMap =
+    {
+        [ D in keyof typeof DataTypes ]: RowT<typeof DataTypes[ D ]>;
+    }
+export type SpecificRowT = RowTOverDataTypesMap[ keyof typeof DataTypes ];
 
 export enum GeometryIncomingElementTypes {
     RowOutput = 'row-output',
     Argument = 'argument',
 }
-export type GeometryIncomingElement = 
+export type GeometryIncomingElement =
     | { type: GeometryIncomingElementTypes.RowOutput, location: GeometryRowLocation }
     | { type: GeometryIncomingElementTypes.Argument, argument: GeometryArgument }
 
@@ -116,8 +106,7 @@ export type RowZ<T extends RowT = RowT> = Partial<RowS<T>> & T & {
 /**
  * Metadata
  */
-export interface RowMetadata
-{
+export interface RowMetadata {
     heightUnits: number;
     dynamicValue?: boolean;
 }
@@ -138,16 +127,14 @@ export interface GeometryJointLocation extends GeometryRowLocation {
 /**
  * Drag and drop
  */
-export interface JointLinkDndTransfer 
-{
+export interface JointLinkDndTransfer {
     location: GeometryJointLocation;
     direction: GeometryJointDirection;
     dataType: DataTypes;
     mergeStackInput: boolean;
 }
 
-export interface JointArgumentDndTransfer 
-{
+export interface JointArgumentDndTransfer {
     argument: GeometryArgument;
 }
 

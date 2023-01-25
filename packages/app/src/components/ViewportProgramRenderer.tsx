@@ -1,16 +1,35 @@
 import { mat4 } from 'gl-matrix';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { VERT_CODE_TEMPLATE } from '../content/shaderTemplates';
+import { useEffect, useMemo, useState } from 'react';
+import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from '../content/shaderTemplates';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import useTrigger from '../hooks/useTrigger';
 import { useAppSelector } from '../redux/hooks';
-import { selectPrograms } from '../slices/programsSlice';
-import { LayerProgram, ObjMapUndef, ViewTypes } from '../types';
-import { generateShaders } from '../utils/codeGeneration/generateShaders';
-import useReactiveMap, { detectMapDifference } from '../utils/useReactiveMap';
-import { viewportCameraToNormalCamera, createCameraWorldToScreen } from '../utils/viewport/cameraMath';
-import { GLProgram } from '../utils/viewport/GLProgram';
-import GLProgramRenderer from '../utils/viewport/GLProgramRenderer';
+import { selectLayerPrograms } from '../slices/layerProgramsSlice';
+import { LayerProgram, ViewTypes } from '../types';
+import { CodeTemplate } from '../utils/codeStrings';
+import useReactiveMap from '../hooks/useReactiveMap';
+import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewportView/cameraMath';
+import { GLProgram } from '../utils/viewportView/GLProgram';
+import GLProgramRenderer from '../utils/viewportView/GLProgramRenderer';
+
+function generateShaders(sceneProgram: LayerProgram) {
+    const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
+
+    const includedCodeTotal = sceneProgram.includes
+        .map(i => i.source)
+        .join('\n');
+    fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
+    fragCodeTemplate.replace('%MAIN_PROGRAM%', sceneProgram.mainProgramCode);
+    fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', sceneProgram.rootFunctionName);
+
+    const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
+    // console.info(logCodeWithLines(fragCode));
+
+    return {
+        vertCode: VERT_CODE_TEMPLATE,
+        fragCode,
+    };
+}
 
 type GLProgramWrapper = {
     id: string;
@@ -21,7 +40,7 @@ type GLProgramWrapper = {
     textureVarRow: number[];
 }
 
-const programToGlProgramCurry = (gl: WebGL2RenderingContext) => 
+const programToGlProgramCurry = (gl: WebGL2RenderingContext) =>
     (layerProgram: LayerProgram): GLProgramWrapper => {
         const shaders = generateShaders(layerProgram);
         const glProgram = new GLProgram(gl, layerProgram.id, shaders.vertCode, shaders.fragCode);
@@ -44,7 +63,7 @@ interface Props {
 
 const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
     const [ renderer, setRenderer ] = useState<GLProgramRenderer>();
-    const layerPrograms = useAppSelector(selectPrograms);
+    const layerPrograms = useAppSelector(selectLayerPrograms);
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
     const [ renderTrigger, triggerRender ] = useTrigger();
 
@@ -52,7 +71,7 @@ const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
         setRenderer(new GLProgramRenderer(gl));
     }, [ gl ]);
 
-    const programToGLProgram = useMemo(() => 
+    const programToGLProgram = useMemo(() =>
         programToGlProgramCurry(gl), [ gl ]);
 
     const glPrograms = useReactiveMap({

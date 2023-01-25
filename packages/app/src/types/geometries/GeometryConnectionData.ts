@@ -1,17 +1,11 @@
-import { GeometryArgument, GeometryJointLocation, GNodeS, GNodeT } from ".";
-import { DataTypes } from "../program";
+import { GeometryJointLocation, GNodeT } from ".";
+import { DataTypes } from "../programs";
 import { NullArr, ObjMap } from "../UtilityTypes";
-
-// export type GeometryNodeRowOrder = Map<string, string[]>; // nodeId -> [ rowId0, rowId1, ... ]
-// export type GeometryTemplateMap = Map<string, GNodeT>; // nodeId -> template
-// export type GeometryConnectedRows = Map<string, Set<string>>; // nodeId -> { rowId | row connected }
-export type GeometryRowHeights = Map<string, number[]>;
 
 export type GeometryFromIndices = [ number, number ];
 export type GeometryToIndices = [ number, number, number ];
 
-export interface GeometryEdge
-{
+export interface GeometryEdge {
     id: string;
     fromIndices: GeometryFromIndices;
     toIndices: GeometryToIndices;
@@ -21,15 +15,7 @@ export interface GeometryEdge
 export type DoubleMap<T> = ObjMap<ObjMap<T>>;
 export type GeometryAdjacencyList = DoubleMap<GeometryEdge[]>;
 
-export interface GeometryArgumentConsumer 
-{
-    id: string;
-    indices: GeometryToIndices;
-    argument: GeometryArgument;
-}
-
-export interface GNodeData
-{
+export interface GNodeData {
     template: GNodeT;
     /**
      * Def: 
@@ -42,8 +28,7 @@ export interface GNodeData
     rowConnections: ObjMap<number>;
 }
 
-export interface GeometryConnectionData
-{
+export interface GeometryConnectionData {
     geometryId: string;
     geometryVersion: number;
     hash: number;

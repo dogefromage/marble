@@ -4,24 +4,21 @@ import { Point, RotationModels } from "../types";
 /**
  * Converts Point interface to gl-matrix vec2
  */
-export function p2v(point: Point)
-{
+export function p2v(point: Point) {
     return vec2.fromValues(point.x, point.y);
 }
 
 /**
  * Converts gl-matrix vec2 to Point interface
  */
-export function v2p(v: vec2): Point
-{
+export function v2p(v: vec2): Point {
     return {
-        x: v[0],
-        y: v[1],
+        x: v[ 0 ],
+        y: v[ 1 ],
     };
 }
 
-export function eulerToMat3(euler: number[], model: Exclude<RotationModels, RotationModels.Quaternion>)
-{
+export function eulerToMat3(euler: number[], model: Exclude<RotationModels, RotationModels.Quaternion>) {
     const [ sx, sy, sz ] = euler.map(euler => Math.sin(euler));
     const [ cx, cy, cz ] = euler.map(euler => Math.cos(euler));
 
@@ -29,21 +26,21 @@ export function eulerToMat3(euler: number[], model: Exclude<RotationModels, Rota
     // "column major format"
 
     const Rx = mat3.transpose(mat3.create(), [
-         1,   0,   0,
-         0,   cx, -sx,
-         0,   sx,  cx,
+        1, 0, 0,
+        0, cx, -sx,
+        0, sx, cx,
     ]);
 
     const Ry = mat3.transpose(mat3.create(), [
-        cy,   0,   sy,
-         0,   1,    0,
-       -sy,   0,   cy,
+        cy, 0, sy,
+        0, 1, 0,
+        -sy, 0, cy,
     ]);
 
     const Rz = mat3.transpose(mat3.create(), [
-        cz, -sz,   0,
-        sz,  cz,   0,
-         0,   0,   1,
+        cz, -sz, 0,
+        sz, cz, 0,
+        0, 0, 1,
     ]);
 
     // compose linear map
@@ -55,8 +52,7 @@ export function eulerToMat3(euler: number[], model: Exclude<RotationModels, Rota
     return composition;
 }
 
-export function quaternionToEuler(q: quat)
-{
+export function quaternionToEuler(q: quat) {
     // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 
     const [ x, y, z, w ] = q;
@@ -73,7 +69,7 @@ export function quaternionToEuler(q: quat)
     if (Math.abs(sinp) >= 1)
         pitch = Math.PI / 2 * Math.sign(sinp); // use 90 degrees if out of range
     else
-    pitch = Math.asin(sinp);
+        pitch = Math.asin(sinp);
 
     // yaw (z-axis rotation)
     const siny_cosp = 2 * (w * z + x * y);

@@ -1,5 +1,4 @@
 import React from 'react';
-import useSlidableInputError from '../hooks/useSlidableInputError';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
@@ -18,7 +17,6 @@ type Props = RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>;
 const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
 {
     const dispatch = useAppDispatch();
-    const onError = useSlidableInputError();
 
     const updateValue = (index: number) => 
         (value: number, actionToken: string | undefined) =>
@@ -62,7 +60,6 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
                             value={value}
                             onChange={updateValue(index)}
                             name={FIELD_ROW_LIST_NAMES[ index ]} 
-                            onError={onError}
                         />
                     </IndentRowDiv>
                 )

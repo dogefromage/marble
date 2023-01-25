@@ -5,8 +5,8 @@ import { selectGeometries } from '../slices/geometriesSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { DependencyNodeType, GeometryS, GNodeT, GNodeTemplateTypes, Layer } from '../types';
+import { getDependencyKey } from '../utils/dependencyGraph';
 import { useRegisterDependency } from '../utils/dependencyGraph/useRegisterDependency';
-import getDependencyKey from '../utils/graph/getDependencyKey';
 
 function getLayerDeps(layer: Layer) {
     return [ getDependencyKey(layer.rootGeometryId, DependencyNodeType.Geometry) ];

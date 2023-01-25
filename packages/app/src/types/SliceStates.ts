@@ -7,7 +7,7 @@ import { World } from "./world";
 export type GeometriesSliceState = ObjMapUndef<GeometryS>;
 export type GeometryDatasSliceState = ObjMapUndef<GeometryConnectionData>;
 
-export type ProgramsSliceState = ObjMapUndef<LayerProgram>;
+export type LayerProgramsSliceState = ObjMapUndef<LayerProgram>;
 
 export type TemplatesSliceState = {
     templates: ObjMapUndef<GNodeT>;

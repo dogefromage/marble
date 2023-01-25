@@ -1,6 +1,6 @@
 import { DataTypes, DefaultArgumentIds, RotationModels } from "../../types"
 import { GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types/geometries"
-import { glsl } from "../../utils/glslTag"
+import { glsl } from "../../utils/codeStrings"
 import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
 
 const vectors_mirror_plane: GNodeT =

@@ -1,5 +1,5 @@
 import { DataTypes, DefaultArgumentIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/glslTag";
+import { glsl } from "../../utils/codeStrings";
 
 const generative_perlin_noise: GNodeT =
 {

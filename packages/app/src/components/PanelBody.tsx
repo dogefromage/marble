@@ -2,7 +2,7 @@ import React from 'react';
 import { useCallback, useRef } from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { panelManagerSetActive } from '../slices/panelManagerSlice';
-import PanelDiv from '../styles/panel';
+import PanelDiv from '../styles/panelManager';
 import { ViewProps } from '../types';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';

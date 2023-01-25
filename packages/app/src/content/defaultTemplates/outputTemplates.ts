@@ -1,5 +1,5 @@
 import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTags, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/glslTag";
+import { glsl } from "../../utils/codeStrings";
 import { TemplateColors, TEMPLATE_FAR_AWAY } from "./templateConstants";
 
 export const OUTPUT_TEMPLATE_ID = 'output';

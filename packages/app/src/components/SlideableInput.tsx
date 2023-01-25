@@ -2,12 +2,13 @@ import { useMouseDrag } from '@marble/interactive';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
-import { useAppSelector } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectWorld } from '../slices/worldSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
 import { BORDER_RADIUS, FONT_FAMILY } from '../styles/utils';
 import { Metrics, UnitNames } from '../types/world';
-import { Units } from '../utils/units';
+import { Units } from '../utils/formatUnitValues';
 
 const SlidableInputDiv = styled.div`
 
@@ -74,11 +75,9 @@ const SlidableInputDiv = styled.div`
     }
 `;
 
-type Props = 
-{
+type Props = {
     value: number;
-    onChange: (newValue: number, actionToken?: string) => void; 
-    onError: (e: Error) => void;
+    onChange: (newValue: number, actionToken?: string) => void;
     name?: string;
     metric?: Metrics;
 }
@@ -88,47 +87,41 @@ const SlidableInput = ({
     onChange,
     name,
     metric,
-    onError,
-}: Props) => 
-{
+}: Props) => {
+    const dispatch = useAppDispatch();
+
     const inputRef = useRef<HTMLInputElement>(null);
     const [ isWriting, setIsWriting ] = useState(false);
     const [ textValue, setTextValue ] = useState<string>();
 
     const { unitSystem } = useAppSelector(selectWorld);
 
-    const unitName = unitSystem[metric!] as UnitNames | undefined;
+    const unitName = unitSystem[ metric! ] as UnitNames | undefined;
 
-    const formatValue = (value: number) =>
-        Units.formatNumber(value, unitName);
+    const formatValue = (value: number) => Units.formatNumber(value, unitName);
 
-    const submitText = (e: React.FormEvent) =>
-    {
+    const submitText = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (document.activeElement instanceof HTMLElement)
             document.activeElement.blur();
 
         setIsWriting(false);
 
-        try
-        {
+        try {
             const input = inputRef.current?.value || '';
             const parsed = Units.parseInput(input, metric, unitName);
             onChange(parsed);
         }
-        catch (e)
-        {
-            if (onError != null) {
-                onError(e as Error)
-            } else {
-                throw e;
-            }
+        catch (e: any) {
+            dispatch(consoleAppendMessage({
+                text: `Error at evaluating user input: ${e.message}`,
+                type: 'error',
+            }));
         }
     };
 
-    const startWriting = (e: React.MouseEvent | React.FocusEvent) =>
-    {
+    const startWriting = (e: React.MouseEvent | React.FocusEvent) => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -149,8 +142,7 @@ const SlidableInput = ({
 
     const { handlers, catcher } = useMouseDrag({
         mouseButton: 0,
-        start: e =>
-        {
+        start: e => {
             dragRef.current = {
                 startX: e.clientX,
                 startVal: value,
@@ -162,11 +154,10 @@ const SlidableInput = ({
             e.stopPropagation();
             e.preventDefault();
         },
-        move: e =>
-        {
+        move: e => {
             const rate = dragRef.current.shift ? 0.01 : 0.1;
 
-            let value = 
+            let value =
                 dragRef.current.startVal +
                 rate * (e.clientX - dragRef.current.startX);
 
@@ -181,20 +172,18 @@ const SlidableInput = ({
 
     return (
         <SlidableInputDiv>
-            <form 
+            <form
                 onSubmit={submitText}
             >
                 <input
                     ref={inputRef}
                     type='text'
                     value={isWriting ? textValue : formatValue(value)}
-                    onChange={e => 
-                    { 
-                        setTextValue((e.currentTarget as HTMLInputElement).value); 
+                    onChange={e => {
+                        setTextValue((e.currentTarget as HTMLInputElement).value);
                     }}
                     {...handlers}
-                    onMouseUp={e =>
-                    {
+                    onMouseUp={e => {
                         startWriting(e);
                         handlers.onMouseUp(e);
                     }}
@@ -205,10 +194,10 @@ const SlidableInput = ({
                     autoSave='off'
                 />
             </form>
-            { catcher }
+            {catcher}
             {
                 !isWriting && name &&
-                <p className='name'>{ name }</p>
+                <p className='name'>{name}</p>
             }
         </SlidableInputDiv>
     )

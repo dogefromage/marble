@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesRemoveIncomingElements } from '../slices/geometriesSlice';
 import { GeometryEdge, GeometryJointLocation, Point } from '../types';
-import getJointPosition from '../utils/geometries/getJointPosition';
+import getJointPositionWorld from '../utils/geometries/geometryUtils';
 import GeometryLinkDiv from './GeometryLinkDiv';
 
 interface Props
@@ -28,8 +28,8 @@ const LinkComponent = ({
 {
     const dispatch = useAppDispatch();
 
-    const A = getJointPosition(fromPosition, fromHeightUnits, 'output');
-    const B = getJointPosition(toPosition,   toHeightUnits,   'input');
+    const A = getJointPositionWorld(fromPosition, fromHeightUnits, 'output');
+    const B = getJointPositionWorld(toPosition,   toHeightUnits,   'input');
 
     return (
         <GeometryLinkDiv

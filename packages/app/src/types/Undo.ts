@@ -1,7 +1,6 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 
-export interface UndoHistory<T>
-{
+export interface UndoHistory<T> {
     past: T[];
     present: T;
     future: T[];

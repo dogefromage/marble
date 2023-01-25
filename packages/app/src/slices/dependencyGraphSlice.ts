@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { DependencyGraphSliceState, DependencyGraphNode } from "../types";
-import createDependencyOrdering from "../utils/graph/createDependencyOrdering";
+import createDependencyOrdering from "../utils/dependencyGraph/createDependencyOrdering";
 
 const initialState: DependencyGraphSliceState = {
     nodes: new Map(),

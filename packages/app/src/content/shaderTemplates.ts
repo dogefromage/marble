@@ -1,5 +1,5 @@
-import { glsl } from "../utils/glslTag";
-import { LOOKUP_TEXTURE_WIDTH } from "../utils/viewport/GLProgramRenderer";
+import { glsl } from "../utils/codeStrings";
+import { LOOKUP_TEXTURE_WIDTH } from "../utils/viewportView/GLProgramRenderer";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 

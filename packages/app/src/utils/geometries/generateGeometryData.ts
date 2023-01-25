@@ -1,12 +1,9 @@
 import _ from "lodash";
-import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeT, GNodeTemplateTypes, NullArr, ObjMap, ObjMapUndef, OutputRowT } from "../../types";
-import { assertRowTHas } from "./assertions";
-import { generateNodeRowHeights } from "./rowHeights";
+import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeT, GNodeTemplateTypes, InputOnlyRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
+import { generateNodeRowHeights } from "./geometryUtils";
 
-function customizer(objValue: any, srcValue: any)
-{
-    if (_.isArray(objValue))
-    {
+function customizer(objValue: any, srcValue: any) {
+    if (_.isArray(objValue)) {
         return objValue.concat(srcValue);
     }
 }
@@ -16,7 +13,7 @@ function outputKey(nodeId: string, rowId: string) {
 }
 
 function genAdjList(
-    geometry: GeometryS, 
+    geometry: GeometryS,
     nodeTemplates: NullArr<GNodeT>,
 ) {
     const N = geometry.nodes.length;
@@ -29,21 +26,20 @@ function genAdjList(
     // if a template is missing, we add it to this set for making sure to ignore it later
     const noUptodateTemplate = new Set<string>();
 
-    const rowConnectedJoints: NullArr<GNodeData['rowConnections']> = 
+    const rowConnectedJoints: NullArr<GNodeData[ 'rowConnections' ]> =
         new Array(N).fill(null);
 
-    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
-    {
+    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
         const node = geometry.nodes[ nodeIndex ];
-        const template = nodeTemplates[nodeIndex];
+        const template = nodeTemplates[ nodeIndex ];
         if (template) {
             // initialize connection count
             const nodesConnections: ObjMap<number> = {};
-            rowConnectedJoints[nodeIndex] = nodesConnections;
+            rowConnectedJoints[ nodeIndex ] = nodesConnections;
             for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
-                const rowId = template.rows[rowIndex].id;
+                const rowId = template.rows[ rowIndex ].id;
                 outputIndicesMap.set(outputKey(node.id, rowId), { nodeIndex, rowIndex });
-                nodesConnections[rowId] = 0;
+                nodesConnections[ rowId ] = 0;
             }
         } else {
             noUptodateTemplate.add(node.id);
@@ -52,21 +48,18 @@ function genAdjList(
 
     const strayJoints: GeometryJointLocation[] = [];
 
-    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++)
-    {
+    for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
         const node = geometry.nodes[ nodeIndex ];
-        const template = nodeTemplates[nodeIndex];
+        const template = nodeTemplates[ nodeIndex ];
         if (!template) continue;
 
-        for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++)
-        {
-            const rowId = template.rows[rowIndex].id;
-            const row = node.rows[rowId];
+        for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
+            const rowId = template.rows[ rowIndex ].id;
+            const row = node.rows[ rowId ];
             if (!row) continue; // unconnected
 
-            for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++)
-            {
-                const incoming = row.incomingElements[subIndex];
+            for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++) {
+                const incoming = row.incomingElements[ subIndex ];
                 if (incoming.type === GeometryIncomingElementTypes.Argument) {
                     // is not a connection
                     continue;
@@ -100,30 +93,25 @@ function genAdjList(
                  */
                 const toIndices: GeometryToIndices = [ nodeIndex, rowIndex, subIndex ];
                 const fromIndices: GeometryFromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
-                
-                // increment num connections for both nodes
-                rowConnectedJoints[nodeIndex                   ]![row.id!             ] += 1;
-                rowConnectedJoints[fromRowCoordinates.nodeIndex]![outputLocation.rowId] += 1;
 
-                const edgeId = [ 'edge', ...fromIndices, ...toIndices ].join('-');
-                // get dataType
-                const templateRow = template.rows[rowIndex];
-                if (!assertRowTHas<OutputRowT>(templateRow, 'dataType')) 
-                    throw new Error(`Property missing 'dataType'`);
-                const { dataType } = templateRow;
+                // increment num connections for both nodes
+                rowConnectedJoints[ nodeIndex ]![ row.id! ] += 1;
+                rowConnectedJoints[ fromRowCoordinates.nodeIndex ]![ outputLocation.rowId ] += 1;
+
+                const templateRow = template.rows[ rowIndex ] as InputOnlyRowT;
 
                 const edge: GeometryEdge = {
-                    id: edgeId,
+                    id: [ 'edge', ...fromIndices, ...toIndices ].join('-'),
                     fromIndices, toIndices,
-                    dataType,
+                    dataType: templateRow.dataType,
                 };
 
                 // add edge into adj.
-                const forwardAddition = { 
-                    [fromIndices[0]]: { [fromIndices[1]]: [ edge ] }
+                const forwardAddition = {
+                    [ fromIndices[ 0 ] ]: { [ fromIndices[ 1 ] ]: [ edge ] }
                 };
-                const backwardAddition = { 
-                    [toIndices[0]]: { [toIndices[1]]: { [toIndices[2]]: edge } }
+                const backwardAddition = {
+                    [ toIndices[ 0 ] ]: { [ toIndices[ 1 ] ]: { [ toIndices[ 2 ] ]: edge } }
                 };
                 _.mergeWith(forwardEdges, forwardAddition, customizer);
                 _.mergeWith(backwardEdges, backwardAddition, customizer);
@@ -139,15 +127,14 @@ function genAdjList(
     }
 }
 
-export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>, hash: number)
-{
+export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>, hash: number) {
     const N = geometry.nodes.length;
     const nodeTemplates: NullArr<GNodeT> = new Array(N).fill(null);
-    const expiredNodeStates: GeometryConnectionData['expiredProps']['expiredNodeStates'] = [];
+    const expiredNodeStates: GeometryConnectionData[ 'expiredProps' ][ 'expiredNodeStates' ] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
-        const node = geometry.nodes[nodeIndex];
-        const template = templates[node.templateId];
+        const node = geometry.nodes[ nodeIndex ];
+        const template = templates[ node.templateId ];
         if (!template) continue; // data stays null
 
         if (node.templateData == null || node.templateData.version < template.version) {
@@ -155,23 +142,23 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
                 nodeIndex, template,
             });
         }
-        nodeTemplates[nodeIndex] = template;   
+        nodeTemplates[ nodeIndex ] = template;
     };
 
-    const { 
-        forwardEdges, 
-        backwardEdges, 
+    const {
+        forwardEdges,
+        backwardEdges,
         strayJoints,
         rowConnectedJoints,
     } = genAdjList(geometry, nodeTemplates);
 
     const nodeDatas: NullArr<GNodeData> = new Array(N).fill(null);
     const dependencies = new Set<string>();
-    
+
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
-        const node = geometry.nodes[nodeIndex];
-        
-        const template = nodeTemplates[nodeIndex];
+        const node = geometry.nodes[ nodeIndex ];
+
+        const template = nodeTemplates[ nodeIndex ];
         if (!template) {
             // default is null
             continue;
@@ -180,7 +167,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
             dependencies.add(template.id);
         }
 
-        const rowConnections = rowConnectedJoints[nodeIndex]!;
+        const rowConnections = rowConnectedJoints[ nodeIndex ]!;
         const rowHeights = generateNodeRowHeights(node, template, rowConnections);
 
         const nodeData: GNodeData = {
@@ -188,10 +175,10 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
             rowHeights,
             rowConnections,
         };
-        nodeDatas[nodeIndex] = nodeData;
+        nodeDatas[ nodeIndex ] = nodeData;
     }
 
-    const expirationNeedsUpdate = 
+    const expirationNeedsUpdate =
         strayJoints.length + expiredNodeStates.length > 0;
 
     const connectionData: GeometryConnectionData = {

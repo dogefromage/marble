@@ -8,8 +8,7 @@ export const PanelManagerSlice = createSlice({
     name: 'panelManager',
     initialState,
     reducers: {
-        setActive: (s, a: PayloadAction<{ activePanel: ActivePanel }>) =>
-        {
+        setActive: (s, a: PayloadAction<{ activePanel: ActivePanel }>) => {
             s.activePanel = a.payload.activePanel;
         }
     }

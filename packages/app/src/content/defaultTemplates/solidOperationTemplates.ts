@@ -1,5 +1,5 @@
 import { GNodeT, GNodeTemplateTypes, RowTypes, DataTypes, GNodeTemplateCategories } from "../../types"
-import { glsl } from "../../utils/glslTag"
+import { glsl } from "../../utils/codeStrings"
 import { EMPTY_SOLID, EMPTY_SOLID_LITERAL, TemplateColors, TEMPLATE_FAR_AWAY, TEMPLATE_FAR_AWAY_LITERAL } from "./templateConstants"
 
 const solid_operation_union: GNodeT =

@@ -3,10 +3,9 @@ import { vec2, vec3 } from "gl-matrix";
 import panelStateEnhancer from "../enhancers/panelStateEnhancer";
 import { CreatePanelStateCallback, ObjMap, ViewportCamera, ViewportPanelState, ViewTypes } from "../types";
 import { clamp, degToRad } from "../utils/math";
-import getPanelState from "../utils/panelState/getPanelState";
+import { getPanelState } from "../utils/panelManager";
 
-export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => 
-{
+export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => {
     return {
         viewType: ViewTypes.Viewport,
         uniformSources: {
@@ -25,8 +24,7 @@ export const viewportPanelsSlice = createSlice({
     name: 'viewportPanels',
     initialState: {} as ObjMap<ViewportPanelState>,
     reducers: {
-        editCamera: (s, a: PayloadAction<{ panelId: string, partialCamera: Partial<ViewportCamera> }>) =>
-        {
+        editCamera: (s, a: PayloadAction<{ panelId: string, partialCamera: Partial<ViewportCamera> }>) => {
             const ps = getPanelState(s, a);
             if (!ps) return;
 
@@ -34,7 +32,7 @@ export const viewportPanelsSlice = createSlice({
 
             Object.assign(camera, a.payload.partialCamera);
 
-            camera.rotation[0] = clamp(camera.rotation[0], -90, 90);
+            camera.rotation[ 0 ] = clamp(camera.rotation[ 0 ], -90, 90);
             camera.distance = clamp(camera.distance, 1e-4, 1e6);
         },
     }

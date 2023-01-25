@@ -6,20 +6,17 @@ export type NullArr<T> = (T | null)[];
 
 export type Override<T, K extends keyof T, N> = Omit<T, K> & { [ K1 in K ]: N };
 
-export interface Point
-{
+export interface Point {
     x: number;
     y: number;
 }
 
-export interface Size
-{
+export interface Size {
     w: number;
     h: number;
 }
 
-export interface Rect
-{ 
+export interface Rect {
     x: number;
     y: number;
     w: number;
@@ -28,8 +25,7 @@ export interface Rect
 
 export type MapEvery<M extends string, T> = { [ K in M ]: T };
 
-export enum RotationModels
-{
+export enum RotationModels {
     Quaternion = 'Quaternion',
     Euler_XYZ = 'XYZ Euler',
     // Euler_XZY = 'XZY Euler',
@@ -40,10 +36,9 @@ export enum RotationModels
 }
 
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
-type _TupleOf<T, N extends number, R extends unknown[]> = R['length'] extends N ? R : _TupleOf<T, N, [T, ...R]>;
+type _TupleOf<T, N extends number, R extends unknown[]> = R[ 'length' ] extends N ? R : _TupleOf<T, N, [ T, ...R ]>;
 
-export enum SelectionStatus
-{
+export enum SelectionStatus {
     Nothing = 0,
     Selected = 1,
     Active = 2,

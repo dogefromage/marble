@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import includeSource from '../../assets/includes.glsl?raw';
 import defaultTemplates from '../content/defaultTemplates';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templatesRemoveTemplates } from '../slices/templatesSlice';
-import includeSource from '../../assets/includes.glsl?raw';
-import splitIncludesFromSource from '../utils/program/splitIncludesFromSource';
 import { selectGeometries } from '../slices/geometriesSlice';
-import generateCompositeTemplates from '../utils/program/generateCompositeTemplates';
+import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templatesRemoveTemplates } from '../slices/templatesSlice';
+import { splitIncludesFromSource } from '../utils/layerPrograms';
+import generateCompositeTemplates from '../utils/templateManager/generateCompositeTemplates';
 
 const TemplateManager = () =>
 {

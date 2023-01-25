@@ -4,7 +4,7 @@ import { CreatePanelStateCallback, GeometryEditorPanelState, ObjMap, PlanarCamer
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../utils/linalg";
 import { clamp } from "../utils/math";
-import getPanelState from "../utils/panelState/getPanelState";
+import { getPanelState } from "../utils/panelManager";
 
 export const CAMERA_MIN_ZOOM = 1e-2;
 export const CAMERA_MAX_ZOOM = 1e+2;

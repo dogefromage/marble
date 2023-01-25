@@ -5,12 +5,17 @@ import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesSetSelectedNodes, selectSingleGeometry } from '../slices/geometriesSlice';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsUpdateCamera, geometryEditorPanelsSetNewLink } from '../slices/panelGeometryEditorSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsSetNewLink, geometryEditorPanelsUpdateCamera } from '../slices/panelGeometryEditorSlice';
 import MouseSelectionDiv from '../styles/MouseSelectionDiv';
-import { DEFAULT_PLANAR_CAMERA, GeometryIncomingElementTypes, JointLinkDndTransfer, JOINT_LINK_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
+import { JointLinkDndTransfer, JOINT_LINK_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
 import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
 import GeometryEditorContent from './GeometryEditorContent';
+
+const defaultPlanarCamera: PlanarCamera = {
+    position: { x: 0, y: 0 },
+    zoom: 1,
+}
 
 interface DivProps
 {
@@ -292,7 +297,7 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) =>
         <BackgroundDiv
             ref={wrapperRef}
             onWheel={onWheel}
-            camera={panelState?.camera || DEFAULT_PLANAR_CAMERA}
+            camera={panelState?.camera || defaultPlanarCamera}
             onClick={clearSelectionAndActive}
             {...panHandlers}
             {...dragJointHandler}

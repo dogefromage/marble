@@ -2,7 +2,8 @@ import { AnyAction, PayloadAction, Reducer } from "@reduxjs/toolkit";
 import produce, { Draft } from "immer";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { ObjMap, PanelState, PanelStateMap, ViewTypes } from "../types";
+import { PanelState, ObjMap } from "../types";
+import { ViewTypes, PanelStateMap } from "../types";
 
 enum PanelStateActionTypes
 {

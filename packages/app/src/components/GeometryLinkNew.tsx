@@ -3,7 +3,7 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useAppDispatch } from "../redux/hooks";
 import { geometryEditorPanelsSetNewLink } from "../slices/panelGeometryEditorSlice";
 import { GeometryNewLink, GNodeData, GNodeS, PlanarCamera } from "../types";
-import getJointPosition from "../utils/geometries/getJointPosition";
+import getJointPositionWorld from "../utils/geometries/geometryUtils";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../utils/linalg";
 import GeometryLinkDiv from "./GeometryLinkDiv";
@@ -38,7 +38,7 @@ const GeometryLinkNew = ({ panelId, newLink, node, nodeData, getCamera }: Props)
     const endLocation = newLink.location;
     const rowIndex = nodeData.template.rows.findIndex(r => r.id == endLocation.rowId);
     const endJointHeight = nodeData.rowHeights[rowIndex] + endLocation.subIndex;
-    const endJointPos = getJointPosition(node.position, endJointHeight, newLink.direction);
+    const endJointPos = getJointPositionWorld(node.position, endJointHeight, newLink.direction);
 
     const offsetPosVec = p2v(newLink.offsetPos);
     const worldCursor = pointScreenToWorld(cam, offsetPosVec);

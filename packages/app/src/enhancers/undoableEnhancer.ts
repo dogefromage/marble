@@ -1,5 +1,5 @@
 import { Reducer } from "@reduxjs/toolkit";
-import { MAX_LENGTH, UndoAction, UndoHistory } from "../types/Undo";
+import { MAX_LENGTH, UndoAction, UndoHistory } from "../types/undo";
 
 enum UndoableActionTypes
 {

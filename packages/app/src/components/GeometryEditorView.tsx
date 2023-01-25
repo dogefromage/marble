@@ -2,18 +2,18 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
 import { selectPanelState } from "../enhancers/panelStateEnhancer";
-import useContextMenu from "../hooks/useContextMenu";
+import useContextMenu from "../utils/contextMenu/useContextMenu";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { geometriesCreate, selectSingleGeometry } from "../slices/geometriesSlice";
 import { layersCreate } from "../slices/layersSlice";
 import { createGeometryEditorPanelState, geometryEditorPanelsOpenTemplateCatalog, geometryEditorPanelsSetGeometryId } from "../slices/panelGeometryEditorSlice";
-import { ROOT_GEOMETRY_TEMPLATE, ViewTypes } from "../types";
-import { ViewProps } from "../types/view/ViewProps";
-import { useBindPanelState } from "../utils/panelState/useBindPanelState";
+import { useBindPanelState } from "../utils/panelManager";
 import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from "../utils/testSetup";
 import GeometryEditorTransform from "./GeometryEditorTransform";
 import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 import PanelBody from "./PanelBody";
+import { ROOT_GEOMETRY_TEMPLATE } from "../types";
+import { ViewProps, ViewTypes } from "../types/panelManager/views";
 
 const EditorWrapper = styled.div`
     position: relative;

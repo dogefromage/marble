@@ -1,5 +1,5 @@
 import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
-import { glsl } from "../../utils/glslTag";
+import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants";
 
 // const math_product: GNodeT =

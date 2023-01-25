@@ -1,14 +1,13 @@
 import { IDependency } from "../dependencyGraph";
-import { DataTypes } from "../program";
+import { DataTypes } from "../programs";
 import { GNodeS } from "./GNode";
 import { RowValueMap } from "./Rows";
 
-export interface GeometryArgument<D extends DataTypes = DataTypes>
-{
+export interface GeometryArgument<D extends DataTypes = DataTypes> {
     id: string;
     name: string;
     dataType: D;
-    defaultValue: RowValueMap[D]
+    defaultValue: RowValueMap[ D ]
 }
 
 export enum DefaultArgumentIds {
@@ -36,8 +35,7 @@ export const ROOT_GEOMETRY_TEMPLATE: GeometryTemplate = {
     returnType: DataTypes.Solid,
 }
 
-export interface GeometryS extends IDependency
-{
+export interface GeometryS extends IDependency {
     // basic
     name: string;
     isRoot: boolean;

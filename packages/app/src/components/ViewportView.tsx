@@ -1,8 +1,7 @@
 import React from 'react';
 import { createViewportPanelState } from '../slices/panelViewportSlice';
-import { ViewTypes } from '../types';
-import { ViewProps } from '../types/view/ViewProps';
-import { useBindPanelState } from '../utils/panelState/useBindPanelState';
+import { ViewProps, ViewTypes } from '../types';
+import { useBindPanelState } from '../utils/panelManager';
 import PanelBody from './PanelBody';
 import ViewportCanvas from './ViewportCanvas';
 

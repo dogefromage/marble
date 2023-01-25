@@ -1,5 +1,5 @@
 import { GNodeT, GNodeTemplateTypes, GNodeTemplateCategories, RowTypes, DataTypes, DefaultArgumentIds } from "../../types";
-import { glsl } from "../../utils/glslTag";
+import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants";
 
 const input_vector_3x1: GNodeT =

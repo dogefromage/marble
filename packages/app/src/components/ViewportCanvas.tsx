@@ -8,7 +8,7 @@ import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { ViewportCamera, ViewTypes } from '../types';
-import { getViewportDirection } from '../utils/viewport/cameraMath';
+import { getViewportDirection } from '../utils/viewportView/cameraMath';
 import ViewportProgramRenderer from './ViewportProgramRenderer';
 
 const CanvasWrapperDiv = styled.div`

@@ -1,5 +1,5 @@
 import { DataTypes, DefaultArgumentIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
-import { glsl } from "../../utils/glslTag"
+import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants"
 
 const outputRow: SpecificRowT = 

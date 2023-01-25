@@ -1,12 +1,10 @@
 
-export enum Metrics
-{
+export enum Metrics {
     Length = 'length',
     Angle = 'angle',
 }
 
-export enum UnitNames
-{
+export enum UnitNames {
     // Length
     Meters = 'meters',
     // Angle
@@ -14,31 +12,29 @@ export enum UnitNames
     Degrees = 'degrees',
 }
 
-export interface Unit
-{
+export interface Unit {
     metric: Metrics;
     name: string;
     abbreviation?: string;
     conversionFactor: number;
 }
 
-export type UnitMap = { [U in UnitNames]: Unit }
-export const UNITS: UnitMap =
+export type UnitMap = { [ U in UnitNames ]: Unit }
 
-{
-    [UnitNames.Meters]: {
+export const allUnits: UnitMap = {
+    [ UnitNames.Meters ]: {
         metric: Metrics.Length,
         name: 'Meters',
         abbreviation: 'm',
         conversionFactor: 1,
     },
-    [UnitNames.Radians]: {
+    [ UnitNames.Radians ]: {
         metric: Metrics.Angle,
         name: 'Radians',
         abbreviation: 'rad',
         conversionFactor: 1,
     },
-    [UnitNames.Degrees]: {
+    [ UnitNames.Degrees ]: {
         metric: Metrics.Angle,
         name: 'Degrees',
         abbreviation: '°',
@@ -46,7 +42,6 @@ export const UNITS: UnitMap =
     }
 }
 
-export type UnitSystem =
-{
-    [M in Metrics]: UnitNames;
+export type UnitSystem = {
+    [ M in Metrics ]: UnitNames;
 }

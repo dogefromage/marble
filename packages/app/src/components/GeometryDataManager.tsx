@@ -6,7 +6,7 @@ import { geometryDatasSetMany, selectGeometryDatas } from '../slices/geometryDat
 import { selectTemplates } from '../slices/templatesSlice';
 import { DependencyNodeType, GeometryConnectionData, GeometryS } from '../types';
 import generateGeometryData from '../utils/geometries/generateGeometryData';
-import getDependencyKey from '../utils/graph/getDependencyKey';
+import { getDependencyKey } from '../utils/dependencyGraph';
 
 const GeometryDataManager = () =>
 {

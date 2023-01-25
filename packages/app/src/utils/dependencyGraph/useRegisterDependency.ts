@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import { dependencyGraphUpdateGraph } from "../../slices/dependencyGraphSlice";
 import { IDependency, ObjMapUndef, DependencyNodeType, DependencyGraphNode } from "../../types";
-import getDependencyKey from "../graph/getDependencyKey";
+import { getDependencyKey } from ".";
 
 export function useRegisterDependency<T extends IDependency>(
     elements: ObjMapUndef<T>,

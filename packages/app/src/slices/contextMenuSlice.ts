@@ -2,8 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { ContextMenuState, ContextMenuSliceState } from "../types";
 
-const initialState: ContextMenuSliceState = 
-{
+const initialState: ContextMenuSliceState = {
     active: null,
 };
 
@@ -11,12 +10,10 @@ export const contextMenuSlice = createSlice({
     name: 'contextMenu',
     initialState,
     reducers: {
-        open: (s, a: PayloadAction<{ active: ContextMenuState }>) =>
-        {
+        open: (s, a: PayloadAction<{ active: ContextMenuState }>) => {
             s.active = a.payload.active;
         },
-        close: s =>
-        {
+        close: s => {
             s.active = null;
         }
     }
