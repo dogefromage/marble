@@ -27,10 +27,13 @@ export default class IdentifierRenamer
         location: StatementLocation;
         node: LiteralNode;
     }> = [];
-    private textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH * LOOKUP_TEXTURE_WIDTH);
+    private textureCoordinateCounter;
     private textureVarMappings: ProgramTextureVarMapping[] = [];
 
-    constructor() {}
+    constructor(props: { textureVarRowIndex: number }) {
+        const counterOffset = props.textureVarRowIndex * LOOKUP_TEXTURE_WIDTH;
+        this.textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH, counterOffset);
+    }
 
     public setGeometry(geometry: GeometryS, connectionData: GeometryConnectionData) {
         this.geometry = geometry;

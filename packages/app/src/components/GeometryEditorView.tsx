@@ -14,9 +14,10 @@ import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 import PanelBody from "./PanelBody";
 import { ROOT_GEOMETRY_TEMPLATE } from "../types";
 import { ViewProps, ViewTypes } from "../types/panelManager/views";
+import GeometryEditorBreadCrumbs from "./GeometryEditorBreadCrumbs";
 
 const EditorWrapper = styled.div`
-    position: relative;
+    /* position: relative; */
     width: 100%;
     height: 100%;
     user-select: none;
@@ -30,39 +31,31 @@ const TestButton = styled.button`
     font-size: 25px;
 `
 
-const GeometryEditorView = (viewProps: ViewProps) =>
-{
+const GeometryEditorView = (viewProps: ViewProps) => {
     const dispatch = useAppDispatch();
+    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, viewProps.panelId));
 
-    // ensures state exists for this panel component
     useBindPanelState(
         viewProps.panelId,
         createGeometryEditorPanelState,
         ViewTypes.GeometryEditor,
     );
+    
+    ////////////////// TESTING
+    useEffect(() => {
+        dispatch(geometryEditorPanelsSetGeometryId({
+            panelId: viewProps.panelId,
+            geometryId: TEST_ROOT_GEOMETRY_ID,
+        }));
+    }, []);
 
-    // binds geometryId to this panelState
-    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, viewProps.panelId));
-    useEffect(() =>
-    {
-        if (!panelState?.geometryId)
-        {
-            dispatch(geometryEditorPanelsSetGeometryId({
-                panelId: viewProps.panelId,
-                geometryId: TEST_ROOT_GEOMETRY_ID,
-            }));
-        }
-    }, [ panelState?.geometryId ]);
+    const geometryId = panelState?.geometryStack[0];
+    const geometryS = useAppSelector(selectSingleGeometry(geometryId));
 
-    // get bound geometry state using bound geometryId
-    const geometryId = panelState?.geometryId;
-    const geometryS = useAppSelector(selectSingleGeometry(geometryId!));
-
-    const getOffsetPos = (e: React.MouseEvent) =>
-    {
+    const getOffsetPos = (e: React.MouseEvent) => {
         const boundingRect = e.currentTarget.getBoundingClientRect();
         const offsetPos = {
-            x: e.clientX - boundingRect.left, 
+            x: e.clientX - boundingRect.left,
             y: e.clientY - boundingRect.top,
         };
 
@@ -71,12 +64,12 @@ const GeometryEditorView = (viewProps: ViewProps) =>
 
     const contextMenu = useContextMenu(
         viewProps.panelId,
-        'Geometry Nodes', [ 
-            'geometryEditor.openTemplateCatalog',
-            'geometryEditor.deleteSelected', 
-            'geometryEditor.resetSelected',
-            'geometryEditor.createSubgeometry'
-        ],
+        'Geometry Nodes', [
+        'geometryEditor.openTemplateCatalog',
+        'geometryEditor.deleteSelected',
+        'geometryEditor.resetSelected',
+        'geometryEditor.createSubgeometry'
+    ],
         e => ({ offsetPos: getOffsetPos(e) }),
     );
 
@@ -94,41 +87,46 @@ const GeometryEditorView = (viewProps: ViewProps) =>
                 }}
                 onContextMenu={contextMenu}
             >
-            {
-                geometryId && 
-                <GeometryEditorTransform
-                    geometryId={geometryId}
+                {
+                    geometryId &&
+                    <GeometryEditorTransform
+                        panelId={viewProps.panelId}
+                        geometryId={geometryId}
+                    />
+                }
+                <GeometryEditorBreadCrumbs 
                     panelId={viewProps.panelId}
+                    geometryStack={panelState?.geometryStack || []}
                 />
-            }
-            {
-                geometryS && panelState?.templateCatalog &&
-                <GeometryTemplateCatalog 
-                    panelId={viewProps.panelId}
-                />
-            }
-            {
-                // only for testing
-                geometryId && !geometryS &&
-                <TestButton
-                    onClick={() =>
-                    {
-                        const actionToken = uuidv4();
-                        dispatch(layersCreate({
-                            id: TEST_LAYER_ID,
-                            rootGeometryId: TEST_ROOT_GEOMETRY_ID,
-                            undo: { actionToken },
-                        }))
-                        dispatch(geometriesCreate({
-                            geometryId,
-                            geometryTemplate: ROOT_GEOMETRY_TEMPLATE,
-                            undo: { actionToken },
-                        }));
-                    }}
-                >
-                    Create geometry
-                </TestButton>
-            }
+                {
+                    geometryId && panelState?.templateCatalog &&
+                    <GeometryTemplateCatalog
+                        panelId={viewProps.panelId}
+                        geometryId={geometryId}
+                        templateCatalog={panelState.templateCatalog}
+                    />
+                }
+                {
+                    // only for testing
+                    geometryId && !geometryS &&
+                    <TestButton
+                        onClick={() => {
+                            const actionToken = uuidv4();
+                            dispatch(layersCreate({
+                                id: TEST_LAYER_ID,
+                                rootGeometryId: TEST_ROOT_GEOMETRY_ID,
+                                undo: { actionToken },
+                            }))
+                            dispatch(geometriesCreate({
+                                geometryId,
+                                geometryTemplate: ROOT_GEOMETRY_TEMPLATE,
+                                undo: { actionToken },
+                            }));
+                        }}
+                    >
+                        Create geometry
+                    </TestButton>
+                }
             </EditorWrapper>
         </PanelBody>
     )

@@ -30,8 +30,7 @@ export const DEFAULT_COMMANDS: Command[] =
         viewType: ViewTypes.Console,
         id: 'console.clearMessages',
         name: 'Clear Messages',
-        actionCreator()
-        {
+        actionCreator() {
             return consoleClearMessages({
                 undo: {}
             });

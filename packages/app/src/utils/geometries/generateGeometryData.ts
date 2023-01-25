@@ -54,7 +54,8 @@ function genAdjList(
         if (!template) continue;
 
         for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
-            const rowId = template.rows[ rowIndex ].id;
+            const templateRow = template.rows[ rowIndex ] as InputOnlyRowT;
+            const rowId = templateRow.id;
             const row = node.rows[ rowId ];
             if (!row) continue; // unconnected
 
@@ -95,10 +96,8 @@ function genAdjList(
                 const fromIndices: GeometryFromIndices = [ fromRowCoordinates.nodeIndex, fromRowCoordinates.rowIndex ];
 
                 // increment num connections for both nodes
-                rowConnectedJoints[ nodeIndex ]![ row.id! ] += 1;
+                rowConnectedJoints[ nodeIndex ]![ templateRow.id! ] += 1;
                 rowConnectedJoints[ fromRowCoordinates.nodeIndex ]![ outputLocation.rowId ] += 1;
-
-                const templateRow = template.rows[ rowIndex ] as InputOnlyRowT;
 
                 const edge: GeometryEdge = {
                     id: [ 'edge', ...fromIndices, ...toIndices ].join('-'),

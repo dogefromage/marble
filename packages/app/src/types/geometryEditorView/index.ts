@@ -22,7 +22,7 @@ export interface GeometryNewLink {
 }
 
 export interface GeometryEditorPanelState extends PanelState {
-    geometryId?: string;
+    geometryStack: string[];
     camera: PlanarCamera;
     templateCatalog: TemplateCatalogState | null;
     newLink: GeometryNewLink | null;

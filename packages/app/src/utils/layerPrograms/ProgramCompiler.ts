@@ -1,6 +1,6 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
-import { preprocessSource, setBlockIndent } from '.';
+import { mapDynamicValues, preprocessSource, setBlockIndent } from '.';
 import { OUTPUT_TEMPLATE_ID } from '../../content/defaultTemplates/outputTemplates';
 import { DependencyGraph, DependencyNodeType, GeometryConnectionData, GeometryS, GNodeTemplateTypes, InputOnlyRowT, Layer, LayerProgram, ObjMapUndef, ProgramInclude, RowS, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
@@ -21,8 +21,9 @@ export default class ProgramCompiler {
         geometryDatas: ObjMapUndef<GeometryConnectionData>,
         dependencyGraph: DependencyGraph,
         includes: ObjMapUndef<ProgramInclude>,
+        textureVarRowIndex: number,
     }): LayerProgram | null {
-        const { layer, geometries, geometryDatas, dependencyGraph, includes } = args;
+        const { layer, geometries, geometryDatas, dependencyGraph, includes, textureVarRowIndex } = args;
 
         const rootLayerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
 
@@ -76,7 +77,6 @@ export default class ProgramCompiler {
         }
 
         const source = geometryFunctionBlocks.join(`\n`);
-        // console.info(source);
 
         // PREPROCESSING
         const preprocessedSource = preprocessSource(
@@ -107,7 +107,7 @@ export default class ProgramCompiler {
             throw new Error(e.message);
         }
 
-        const renamer = new IdentifierRenamer();
+        const renamer = new IdentifierRenamer({ textureVarRowIndex });
         const usedIncludes = new Set<string>();
 
         const visitors: NodeVisitors = {
@@ -148,10 +148,9 @@ export default class ProgramCompiler {
             identifier: {
                 enter: (path) => {
                     const parentType = path.parent!.type;
-
-                    const parentWhitelist: Array<typeof parentType> =
-                        [ 'binary', 'function_call', 'postfix', 'return_statement' ];
-                    if (parentWhitelist.includes(parentType)) {
+                    const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
+                    const isOtherReference = [ 'binary', 'function_call', 'postfix', 'return_statement' ].includes(parentType);
+                    if (isDirectInitializer || isOtherReference) {
                         renamer.replaceReference(path);
                     }
                 }
@@ -162,48 +161,11 @@ export default class ProgramCompiler {
         renamer.addAdditionalStatements(programAst);
 
         const textureVarMappings = renamer.getTextureVarMappings();
-        const textureVarRow = new Array(LOOKUP_TEXTURE_WIDTH);
-
-        let hasChanged = false;
-
-        for (const mapping of textureVarMappings) {
-            const startCoord = mapping.textureCoordinate;
-            const size = TEXTURE_VAR_DATATYPE_SIZE[ mapping.dataType ];
-
-            const geometry = geometries[ mapping.geometryId ];
-            const geometryData = geometryDatas[ mapping.geometryId ];
-            if (!geometry || !geometryData || geometry.version !== mapping.geometryVersion) {
-                continue;
-            }
-            const node = geometry.nodes[ mapping.nodeIndex ];
-            const nodeTemplate = geometryData?.nodeDatas[ mapping.nodeIndex ]?.template;
-            if (!node || !nodeTemplate) {
-                continue;
-            }
-            const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as InputOnlyRowT;
-            const row = node.rows[ rowTemplate.id ] as RowS<InputOnlyRowT>;
-            if (rowTemplate.dataType !== mapping.dataType) {
-                throw new Error(`Datatype mismatch`);
-            }
-            const value = row.value ?? rowTemplate.value;
-            if (Array.isArray(value)) {
-                for (let i = 0; i < size; i++) {
-                    const coord = startCoord + i;
-                    if (textureVarRow[ coord ] !== value[ i ]) {
-                        hasChanged = true;
-                        textureVarRow[ coord ] = value[ i ];
-                    }
-                }
-            } else if (typeof (value) === 'number') {
-                if (textureVarRow[ startCoord ] !== value) {
-                    hasChanged = true;
-                    textureVarRow[ startCoord ] = value;
-                }
-            }
-        }
+        const emptyRow = new Array(LOOKUP_TEXTURE_WIDTH).fill(0);
+        const textureVarRow = mapDynamicValues(textureVarMappings, emptyRow, geometries, geometryDatas, true)!;
 
         const generatedCode = generate(programAst);
-        // console.info(generatedCode);
+        console.info(generatedCode);
         const usedIncludesArr = [ ...usedIncludes ].map(incId => {
             const inc = includes[ incId ];
             if (!inc) {
@@ -223,7 +185,7 @@ export default class ProgramCompiler {
             includes: usedIncludesArr,
             rootFunctionName,
             textureVarMappings,
-            textureVarRowIndex: 0, // implement
+            textureVarRowIndex,
             textureVarRow,
         }
     }

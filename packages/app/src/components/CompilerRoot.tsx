@@ -4,12 +4,13 @@ import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectLayers } from '../slices/layersSlice';
-import { layerProgramsSetMany, selectLayerPrograms } from '../slices/layerProgramsSlice';
+import { layerProgramsSetMany, layerProgramsSetRows, selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, Layer, LayerProgram } from '../types';
+import { DependencyNodeType, Layer, LayerProgram, ObjMap } from '../types';
 import { getDependencyKey } from '../utils/dependencyGraph';
 import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
 import { detectMapDifference } from '../hooks/useReactiveMap';
+import { mapDynamicValues } from '../utils/layerPrograms';
 
 const CompilerRoot = () =>
 {
@@ -21,18 +22,18 @@ const CompilerRoot = () =>
     const geometryDatas = useAppSelector(selectGeometryDatas);
     const layers = useAppSelector(selectLayers);
     const dependencyGraph = useAppSelector(selectDependencyGraph);
-    const programs = useAppSelector(selectLayerPrograms);
+    const layerPrograms = useAppSelector(selectLayerPrograms);
 
     useEffect(() => {
         const compiler = compilerRef.current;
 
         const { setItems, removeItems } = detectMapDifference<Layer, LayerProgram>({
             reference: layers,
-            lastImage: programs,
+            lastImage: layerPrograms,
             map: (layer) => {
                 try {
                     return compiler.compileProgram({ 
-                        layer, geometries, geometryDatas, dependencyGraph, includes 
+                        layer, geometries, geometryDatas, dependencyGraph, includes, textureVarRowIndex: layer.index,
                     });
                 } catch (e: any) {
                     console.warn(e.message);
@@ -53,113 +54,22 @@ const CompilerRoot = () =>
                 setPrograms: setItems,
             }));
         }
-    }, [ dispatch, dependencyGraph, geometryDatas ]);
+    }, [ dispatch, dependencyGraph, geometryDatas, ]); // geometryDatas are generated after depGraph changed
 
-    // const geometry: GeometryS | undefined = Object.values(geometries)?.[0];
-    // const connectionData = useMemo(() => 
-    // {
-    //     if (!geometry || !templates || !Object.values(templates).length) return;
-    //     return generateGeometryConnectionData(geometry, templates);
-    // }, [ geometry?.id, geometry?.compilationValidity, templates ]);
-    
-    // useEffect(() =>
-    // {
-    //     if (!connectionData || !geometry) return;
-
-    //     try
-    //     {
-    //         const textureCoordCounter = new Counter(LOOKUP_TEXTURE_SIZE * LOOKUP_TEXTURE_SIZE);
-    //         const geometryMethodCode = compileGeometry(geometry, connectionData, textureCoordCounter);
-
-    //         const usedIncludes: ProgramInclude[] = [];
-    //         geometryMethodCode.includedTokens.forEach(includeToken => 
-    //         {
-    //             const include = programIncludes[includeToken];
-    //             if (!include) return console.error(`Include missing "${includeToken}"`);
-    //             usedIncludes.push(include);
-    //         })
-
-    //         const program: SceneProgram = 
-    //         {
-    //             rootMethod: geometryMethodCode,
-    //             includes: usedIncludes,
-    //         }
-            
-    //         dispatch(sceneProgramSetProgram({
-    //             program,
-    //         }));
-    //     }
-    //     catch (e: any)
-    //     {
-    //         if (e instanceof GeometriesCompilationError)
-    //         {
-    //             dispatch(consoleAppendMessage({
-    //                 text: `Geometry ${geometry.id} could not be compiled: ${e.message}`,
-    //                 type: `warning`,
-    //             }));
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-
-    // }, [ 
-    //     geometry?.id,
-    //     connectionData,
-    // ]);
-
-    // useEffect(() =>
-    // {
-    //     if (!program || !geometry || !connectionData)
-    //         return;
-
-    //     if (program.rootMethod.geometryId !== geometry.id ||
-    //         connectionData.geometryId !== geometry.id)
-    //         return;
-        
-    //     if (program.rootMethod.compilationValidity !== geometry.compilationValidity ||
-    //         connectionData.compilationValidity !== geometry.compilationValidity)
-    //         return;
-
-    //     for (const mapping of Object.values(program.rootMethod.textureVarMappings))
-    //     {
-    //         const nodeState = geometry.nodes[mapping.nodeIndex];
-    //         const template = connectionData.templateMap.get(nodeState.id)!;
-    //         const rowT = template.rows[mapping.rowIndex];
-    //         const rowS = nodeState.rows[rowT.id];
-
-    //         const rowValue: number | number[] = (rowS as any).value ?? (rowT as any).value;
-
-    //         let subArray: number[];
-            
-    //         if (mapping.dataTypes === DataTypes.Vec2 ||
-    //             mapping.dataTypes === DataTypes.Vec3 ||
-    //             mapping.dataTypes === DataTypes.Mat3)
-    //         {
-    //             subArray = rowValue as number[];
-    //             const size = TEXTURE_VAR_DATATYPE_SIZE[mapping.dataTypes];
-    //             if (!Array.isArray(subArray) || !(subArray.length === size)) continue;
-    //         }
-    //         else if (mapping.dataTypes === DataTypes.Float)
-    //         {
-    //             subArray = [ rowValue as number ];
-    //         }
-    //         else
-    //         {
-    //             console.error(`Unknown datatype`);
-    //             continue;
-    //         }
-
-    //         dispatch(sceneProgramSetLookupSubarray({
-    //             startCoordinate: mapping.textureCoordinate,
-    //             subArray,
-    //         }));
-    //     }
-    // }, [ 
-    //     geometry?.id,
-    //     geometry?.rowStateValidity,
-    //     program,
-    //     connectionData,
-    // ]);
+    useEffect(() => {
+        const setRows: ObjMap<number[]> = {};
+        for (const program of Object.values(layerPrograms) as LayerProgram[]) {
+            const newRow = mapDynamicValues(program.textureVarMappings, program.textureVarRow, geometries, geometryDatas, false);
+            if (newRow != null) {
+                setRows[program.id] = newRow;
+            }
+        }
+        if (Object.keys(setRows).length > 0) {
+            dispatch(layerProgramsSetRows({
+                rowMap: setRows,
+            }));
+        }
+    }, [ geometries, geometryDatas ]);
 
     return null;
 }

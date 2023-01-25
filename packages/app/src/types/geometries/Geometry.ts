@@ -27,6 +27,7 @@ export interface GeometryTemplate {
     isRoot: boolean;
     arguments: GeometryArgument[];
     returnType: DataTypes;
+    name?: string;
 }
 
 export const ROOT_GEOMETRY_TEMPLATE: GeometryTemplate = {

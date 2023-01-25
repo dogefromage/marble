@@ -4,16 +4,16 @@ import React, { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
+import { geometryEditorPanelsPushGeometryId } from '../slices/panelGeometryEditorSlice';
 import GeometryNodeDiv from '../styles/GeometryNodeDiv';
-import { GNodeData, GNodeS, GNodeT, PlanarCamera, RowZ } from '../types';
+import { GNodeData, GNodeS, GNodeTemplateTypes, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { v2p } from '../utils/linalg';
 import GeometryMissingTemplateRows from './GeometryMissingTemplateRows';
 import GeometryRowRoot from './GeometryRowRoot';
 
-interface Props
-{
+interface Props {
     panelId: string;
     geometryId: string;
     nodeState: GNodeS;
@@ -22,10 +22,9 @@ interface Props
     selectionStatus: SelectionStatus;
 }
 
-const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, selectionStatus }: Props) =>
-{
+const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, selectionStatus }: Props) => {
     const dispatch = useAppDispatch();
- 
+
     const dragRef = useRef<{
         startCursor: Point;
         lastCursor: Point;
@@ -45,9 +44,8 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
 
     const { handlers, catcher } = useMouseDrag({
         mouseButton: 0,
-        start: e =>
-        {
-            dragRef.current = 
+        start: e => {
+            dragRef.current =
             {
                 startCursor: { x: e.clientX, y: e.clientY },
                 lastCursor: { x: e.clientX, y: e.clientY },
@@ -57,8 +55,7 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
             e.stopPropagation();
             ensureSelection();
         },
-        move: e => 
-        {
+        move: e => {
             const camera = getCamera();
 
             if (!dragRef.current || !camera) return;
@@ -89,22 +86,31 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
             onClick={e => {
                 e.stopPropagation();
             }}
+            onDoubleClick={e => {
+                // enter nested geometry
+                if (nodeData?.template.type === GNodeTemplateTypes.Composite) {
+                    dispatch(geometryEditorPanelsPushGeometryId({
+                        panelId,
+                        geometryId: nodeData.template.id,
+                    }));
+                    e.stopPropagation();
+                }
+            }}
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
         >
         {
             nodeData ? (
-                nodeData.template.rows.map(rowTemplate =>
-                {
-                    const rowState = nodeState.rows[rowTemplate.id];
-                    const numConnectedJoints = nodeData.rowConnections[rowTemplate.id];
-                    
+                nodeData.template.rows.map(rowTemplate => {
+                    const rowState = nodeState.rows[ rowTemplate.id ];
+                    const numConnectedJoints = nodeData.rowConnections[ rowTemplate.id ];
+
                     // @ts-ignore
-                    const rowZ: RowZ = { 
-                        ...rowTemplate, 
+                    const rowZ: RowZ = {
+                        ...rowTemplate,
                         ...rowState,
                         numConnectedJoints,
                     } // merge rows
-    
+
                     return (
                         <GeometryRowRoot
                             geometryId={geometryId}

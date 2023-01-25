@@ -12,6 +12,7 @@ export const CAMERA_MAX_ZOOM = 1e+2;
 export const createGeometryEditorPanelState: CreatePanelStateCallback<GeometryEditorPanelState> = () => 
 {
     const panelState: GeometryEditorPanelState = {
+        geometryStack: [],
         viewType: ViewTypes.GeometryEditor,
         camera: { position: { x: 0, y: 0 }, zoom: 1, },
         templateCatalog: null,
@@ -24,11 +25,23 @@ export const geometryEditorPanelsSlice = createSlice({
     name: 'geometryEditorPanels',
     initialState: {} as ObjMap<GeometryEditorPanelState>,
     reducers: {
-        setGeometryId: (s, a: PayloadAction<{ panelId: string, geometryId: string }>) =>
-        {
+        setGeometryId: (s, a: PayloadAction<{ panelId: string, geometryId: string }>) => {
             const ps = getPanelState(s, a);
             if (!ps) return;
-            ps.geometryId = a.payload.geometryId;
+            
+            const geoId = a.payload.geometryId;
+            if (ps.geometryStack.includes(geoId)) {
+                while (ps.geometryStack[0] != geoId && ps.geometryStack.length > 0) {
+                    ps.geometryStack.shift();
+                }
+            } else {
+                ps.geometryStack = [ geoId ];
+            }
+        },
+        pushGeometryId: (s, a: PayloadAction<{ panelId: string, geometryId: string }>) => {
+            const ps = getPanelState(s, a);
+            if (!ps) return;
+            ps.geometryStack.unshift(a.payload.geometryId);
         },
         updateCamera: (s, a: PayloadAction<{ panelId: string, newCamera: Partial<PlanarCamera> }>) =>
         {
@@ -69,6 +82,7 @@ export const geometryEditorPanelsSlice = createSlice({
 
 export const {
     setGeometryId: geometryEditorPanelsSetGeometryId,
+    pushGeometryId: geometryEditorPanelsPushGeometryId,
     updateCamera: geometryEditorPanelsUpdateCamera,
     openTemplateCatalog: geometryEditorPanelsOpenTemplateCatalog,
     closeTemplateCatalog: geometryEditorPanelsCloseTemplateCatalog,

@@ -20,7 +20,7 @@ export const layersSlice = createSlice({
                 index: count,
                 rootGeometryId: a.payload.rootGeometryId,
             };
-        }
+        },
     },
 });
 

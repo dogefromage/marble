@@ -1,7 +1,24 @@
 import { v4 as uuidv4 } from "uuid";
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { Command, CommandScope, DataTypes, Point, ViewTypes } from "../../types";
+import { ActivePanel, Command, CommandParameterMap, CommandScope, DataTypes, Point, ViewTypes } from "../../types";
+import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
+import { p2v, v2p } from "../../utils/linalg";
+
+function getOffsetPos(activePanel: ActivePanel, params: CommandParameterMap) {
+    let offsetPos: Point, center = false;
+    if (params.offsetPos == null) {
+        const bounds = activePanel.panelClientRect;
+        offsetPos = {
+            x: 0.5 * bounds.w,
+            y: 50,
+        };
+        center = true;
+    } else {
+        offsetPos = params.offsetPos;
+    }
+    return { offsetPos, center };
+}
 
 export const geometryEditorCommands: Command[] =
 [
@@ -10,19 +27,8 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.openTemplateCatalog',
         name: 'Add Node',
-        actionCreator({ activePanel }, params)
-        {
-            let offsetPos: Point, center = false;
-            if (params.offsetPos == null) {
-                const bounds = activePanel.panelClientRect;
-                offsetPos = {
-                    x: 0.5 * bounds.w,
-                    y: 50,
-                };
-                center = true;
-            } else {
-                offsetPos = params.offsetPos;
-            }
+        actionCreator({ activePanel }, params) {
+            const { offsetPos, center } = getOffsetPos(activePanel, params);
 
             return geometryEditorPanelsOpenTemplateCatalog({
                 panelId: activePanel.panelId,
@@ -37,11 +43,10 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.deleteSelected',
         name: 'Delete Selected',
-        actionCreator({ panelState: { geometryId }}, params)
-        {
-            if (!geometryId) return;
+        actionCreator({ panelState: { geometryStack }}, params) {
+            if (!geometryStack.length) return;
             return geometriesRemoveNode({
-                geometryId,
+                geometryId: geometryStack[0],
                 undo: {},
             });
         },
@@ -52,11 +57,11 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.resetSelected',
         name: 'Reset Selected',
-        actionCreator({ panelState: { geometryId }}, params)
+        actionCreator({ panelState: { geometryStack }}, params)
         {
-            if (!geometryId) return;
+            if (!geometryStack.length) return;
             return geometriesResetStateSelected({
-                geometryId,
+                geometryId: geometryStack[0],
                 undo: {},
             });
         },
@@ -67,26 +72,30 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.createSubgeometry',
         name: 'Create Group',
-        actionCreator({ panelState: { geometryId, camera }}, params) {
-            if (!geometryId) return;
+        actionCreator({ activePanel, panelState: { geometryStack, camera }}, params) {
+            if (!geometryStack.length) return;
 
             const actionToken = 'create-sub-' + uuidv4();
             const subId = uuidv4();
+
+            const { offsetPos } = getOffsetPos(activePanel, params);
+            const worldPos = v2p(pointScreenToWorld(camera, p2v(offsetPos)));
 
             return [
                 geometriesCreate({
                     geometryId: subId,
                     geometryTemplate: {
                         isRoot: false,
+                        name: 'Sub geometry',
                         arguments: [],
                         returnType: DataTypes.Float,
                     },
                     undo: { actionToken }
                 }),
                 geometriesAddNode({
-                    geometryId: geometryId,
+                    geometryId: geometryStack[0],
                     templateId: subId,
-                    position: { x: 0, y: 0 },
+                    position: worldPos,
                     undo: { actionToken },
                 })
             ];

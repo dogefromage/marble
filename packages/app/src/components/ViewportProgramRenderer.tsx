@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from '../content/shaderTemplates';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import useTrigger from '../hooks/useTrigger';
@@ -11,6 +11,8 @@ import useReactiveMap from '../hooks/useReactiveMap';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewportView/cameraMath';
 import { GLProgram } from '../utils/viewportView/GLProgram';
 import GLProgramRenderer from '../utils/viewportView/GLProgramRenderer';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { logCodeWithLines } from '../utils/debugging';
 
 function generateShaders(sceneProgram: LayerProgram) {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
@@ -23,7 +25,6 @@ function generateShaders(sceneProgram: LayerProgram) {
     fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', sceneProgram.rootFunctionName);
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
-    // console.info(logCodeWithLines(fragCode));
 
     return {
         vertCode: VERT_CODE_TEMPLATE,
@@ -81,6 +82,14 @@ const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
         onDestroy: (glProgram) => glProgram.program.destroy(),
     });
 
+    useLayoutEffect(() => {
+        if (!renderer) return;
+        for (const layer of Object.values(layerPrograms) as LayerProgram[]) {
+            renderer.setVarTextureRow(layer.textureVarRowIndex, layer.textureVarRow);
+        }
+        triggerRender();
+    }, [ renderer, layerPrograms ]);
+ 
     useEffect(() => {
         for (const program of Object.values(glPrograms) as GLProgramWrapper[]) {
             program.program.onReady = triggerRender;

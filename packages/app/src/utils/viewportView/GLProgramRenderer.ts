@@ -23,7 +23,7 @@ function createFullScreenQuad(gl: WebGL2RenderingContext) {
     return { vertexBuffer, indexBuffer };
 }
 
-export const LOOKUP_TEXTURE_WIDTH = 16;
+export const LOOKUP_TEXTURE_WIDTH = 256;
 
 export default class GLProgramRenderer {
 

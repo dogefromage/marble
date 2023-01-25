@@ -5,37 +5,34 @@ import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { GNodeT, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, TEMPLATE_CATEGORY_NAMES, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
+import { GeometryEditorPanelState, GNodeT, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, TEMPLATE_CATEGORY_NAMES, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
 import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {
     [C in GNodeTemplateCategories]: GNodeT[];
 }
 
-interface Props
-{
+interface Props {
     panelId: string;
+    geometryId: string;
+    templateCatalog: NonNullable<GeometryEditorPanelState['templateCatalog']>;
 }
 
-const GeometryTemplateCatalog = ({ panelId }: Props) =>
+const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props) =>
 {
     const dispatch = useAppDispatch();
     const { templates } = useAppSelector(selectTemplates);
-    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    // const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     
     const [ searchValue, setSearchValue ] = useState('');
 
-    const addNode = (template: GNodeT) =>
-    {
-        if (!panelState?.geometryId || 
-            !panelState?.templateCatalog) return;
-
+    const addNode = (template: GNodeT) => {
         dispatch(geometriesAddNode({
-            geometryId: panelState.geometryId,
+            geometryId,
             templateId: template.id,
             position: {
-                x: panelState.templateCatalog.worldPosition.x - 0.5 * NODE_WIDTH,
-                y: panelState.templateCatalog.worldPosition.y, 
+                x: templateCatalog.worldPosition.x - 0.5 * NODE_WIDTH,
+                y: templateCatalog.worldPosition.y, 
             },
             undo: {}
         }));
@@ -125,12 +122,9 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
         }
     }, [ templates, searchValue ]);
 
-    useEffect(() =>
-    {
+    useEffect(() => {
         setSearchValue('');
-    }, [ panelState?.templateCatalog ]);
-
-    if (!panelState?.templateCatalog) return null;
+    }, [ templateCatalog ]);
     
     return (
         <MenuRoot
@@ -139,9 +133,9 @@ const GeometryTemplateCatalog = ({ panelId }: Props) =>
             onClose={() => {
                 dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))
             }}
-            anchor={panelState.templateCatalog.offsetPosition}
+            anchor={templateCatalog.offsetPosition}
             onSearchUpdated={setSearchValue}
-            center={panelState.templateCatalog.center}
+            center={templateCatalog.center}
         />
     );
 }

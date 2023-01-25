@@ -29,7 +29,7 @@ const GeometryNodeDiv = styled.div.attrs<GeometryNodeDivProps>(({ position }) =>
 
     ${({ selectionStatus, theme }) => 
         selectionStatus !== SelectionStatus.Nothing && css`
-            outline: solid calc(3px / var(--zoom)) ${theme.colors.selectionStatus[selectionStatus]};
+            outline: solid calc(3px / min(var(--zoom), 1)) ${theme.colors.selectionStatus[selectionStatus]};
         `
     }
 

@@ -1,4 +1,4 @@
-import { ProgramInclude } from "../../types";
+import { GeometryConnectionData, GeometryS, InputOnlyRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 
 function removeIndent(s: string, indent: number) {
     for (let i = 0; i < indent; i++) {
@@ -67,4 +67,58 @@ export function splitIncludesFromSource(source: string) {
     }
 
     return includes;
+}
+
+export function mapDynamicValues(
+    textureVarMappings: ProgramTextureVarMapping[],
+    textureVarRow: number[],
+    geometries: ObjMapUndef<GeometryS>,
+    geometryDatas: ObjMapUndef<GeometryConnectionData>,
+    inPlace: boolean,
+) {
+    const textureVarChanges = new Map<number, number>();
+
+    for (const mapping of textureVarMappings) {
+        const startCoord = mapping.textureCoordinate;
+        const size = TEXTURE_VAR_DATATYPE_SIZE[ mapping.dataType ];
+
+        const geometry = geometries[ mapping.geometryId ];
+        const geometryData = geometryDatas[ mapping.geometryId ];
+        if (!geometry || !geometryData || geometry.version !== mapping.geometryVersion) {
+            continue;
+        }
+        const node = geometry.nodes[ mapping.nodeIndex ];
+        const nodeTemplate = geometryData?.nodeDatas[ mapping.nodeIndex ]?.template;
+        if (!node || !nodeTemplate) {
+            continue;
+        }
+        const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as InputOnlyRowT;
+        const row = node.rows[ rowTemplate.id ] as RowS<InputOnlyRowT>;
+        if (rowTemplate.dataType !== mapping.dataType) {
+            throw new Error(`Datatype mismatch`);
+        }
+        const value = row.value ?? rowTemplate.value;
+
+        if (Array.isArray(value)) {
+            for (let i = 0; i < size; i++) {
+                const coord = startCoord + i;
+                if (textureVarRow[ coord ] !== value[ i ]) {
+                    textureVarChanges.set(coord, value[i]);
+                }
+            }
+        } else if (typeof (value) === 'number') {
+                if (textureVarRow[ startCoord ] !== value) {
+                textureVarChanges.set(startCoord, value);
+            }
+        }
+    }
+
+    const newRow = inPlace ? textureVarRow : textureVarRow.slice();
+    for (const [ coord, value ] of textureVarChanges) {
+        newRow[coord] = value;
+    }
+
+    if (textureVarChanges.size > 0 || inPlace) {
+        return newRow;
+    }
 }

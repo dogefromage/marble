@@ -258,9 +258,9 @@ export const {
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;
 
-export const selectSingleGeometry = (geometryId: string) =>
+export const selectSingleGeometry = (geometryId: string | undefined) =>
     useCallback((state: RootState) => // memoize selector bc. redux will
-        selectGeometries(state)[ geometryId ] as GeometryS | undefined,
+        selectGeometries(state)[geometryId!] as GeometryS | undefined,
         [ geometryId ]
     );
 
