@@ -1,44 +1,43 @@
-import { DataTypes, DefaultArgumentIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes, SpecificRowT } from "../../types"
+import { getTemplateId, GNodeTemplate, SpecificRowT } from "../../types";
 import { glsl } from "../../utils/codeStrings";
-import { TemplateColors } from "./templateConstants"
+import { TemplateColors } from "./templateConstants";
 
-const outputRow: SpecificRowT = 
+const outputRow: SpecificRowT =
 {
     id: 'output',
-    type: RowTypes.Output,
-    dataType: DataTypes.Solid,
+    type: 'output',
+    dataType: 'Solid',
     name: 'Solid',
 };
 
-const coordinateRow: SpecificRowT = 
+const coordinateRow: SpecificRowT =
 {
     id: 'coordinates',
-    type: RowTypes.InputOnly,
+    type: 'input_only',
     name: 'Coordinates',
-    dataType: DataTypes.Vec3,
+    dataType: 'vec3',
     value: [ 0, 0, 0 ],
-    defaultArgumentToken: DefaultArgumentIds.RayPosition,
+    defaultArgumentToken: 'position',
 };
 
-const colorRow: SpecificRowT = 
+const colorRow: SpecificRowT =
 {
     id: 'color',
-    type: RowTypes.InputOnly,
+    type: 'input_only',
     name: 'Color',
-    dataType: DataTypes.Vec3,
+    dataType: 'vec3',
     value: [ 1, 1, 1 ],
 };
 
-const solid_sphere: GNodeT =
+const solid_sphere: GNodeTemplate =
 {
-    id: 'sphere',
+    id: getTemplateId('sphere', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Solids,
+    category: 'solids',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Sphere',
             color: TemplateColors.Primitives,
         },
@@ -46,8 +45,8 @@ const solid_sphere: GNodeT =
         coordinateRow,
         {
             id: 'radius',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'Radius',
             value: 1,
         },
@@ -58,16 +57,15 @@ const solid_sphere: GNodeT =
     `,
 }
 
-const solid_torus: GNodeT =
+const solid_torus: GNodeTemplate =
 {
-    id: 'torus',
+    id: getTemplateId('torus', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Solids,
+    category: 'solids',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Torus',
             color: TemplateColors.Primitives,
         },
@@ -75,15 +73,15 @@ const solid_torus: GNodeT =
         coordinateRow,
         {
             id: 'large_r',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'R',
             value: 1,
         },
         {
             id: 'small_r',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'r',
             value: 0.5,
         },
@@ -95,16 +93,15 @@ const solid_torus: GNodeT =
     `,
 }
 
-const solid_box: GNodeT =
+const solid_box: GNodeTemplate =
 {
-    id: 'box',
+    id: getTemplateId('box', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Solids,
+    category: 'solids',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Box',
             color: TemplateColors.Primitives,
         },
@@ -112,8 +109,8 @@ const solid_box: GNodeT =
         coordinateRow,
         {
             id: 'size',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
+            type: 'field',
+            dataType: 'vec3',
             name: 'Size',
             value: [ 1, 1, 1 ],
         },
@@ -125,16 +122,15 @@ const solid_box: GNodeT =
     `,
 }
 
-const solid_plane: GNodeT =
+const solid_plane: GNodeTemplate =
 {
-    id: 'plane',
+    id: getTemplateId('plane', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Solids,
+    category: 'solids',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'z-Plane',
             color: TemplateColors.Primitives,
         },
@@ -142,8 +138,8 @@ const solid_plane: GNodeT =
         coordinateRow,
         {
             id: 'height',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'Height',
             value: 0,
         },
@@ -154,16 +150,15 @@ const solid_plane: GNodeT =
     `,
 }
 
-const solid_cylinder: GNodeT =
+const solid_cylinder: GNodeTemplate =
 {
-    id: 'cylinder',
+    id: getTemplateId('cylinder', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Solids,
+    category: 'solids',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Cylinder',
             color: TemplateColors.Primitives,
         },
@@ -171,15 +166,15 @@ const solid_cylinder: GNodeT =
         coordinateRow,
         {
             id: 'height',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'Height',
             value: 1,
         },
         {
             id: 'radius',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'Radius',
             value: 1,
         },

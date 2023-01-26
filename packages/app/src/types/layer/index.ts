@@ -1,6 +1,6 @@
-import { IDependency } from "../dependencyGraph";
+import { Dependable } from "../dependencyGraph";
 
-export interface Layer extends IDependency {
+export interface Layer extends Dependable {
     name: string;
     index: number;
     rootGeometryId: string;

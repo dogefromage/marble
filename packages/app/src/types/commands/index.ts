@@ -10,16 +10,8 @@ export interface KeyCombination {
     altKey?: boolean;
 }
 
-export enum CommandScope {
-    Global = 'global',
-    View = 'view',
-}
-
-export enum CommandCallTypes {
-    Toolbar = 'toolbar',
-    ContextMenu = 'contextmenu',
-    KeyCombination = 'keycombination',
-}
+export type CommandScope = 'global' | 'view';
+export type CommandCallTypes = 'toolbar' | 'contextmenu' | 'keycombination';
 
 export interface CommandBaseArgs {
     callType: CommandCallTypes;
@@ -47,12 +39,12 @@ type CommandActionCreator<A extends {}> =
     (scopedArgs: A, parameters: CommandParameterMap) => AnyAction[] | AnyAction | void;
 
 interface GlobalCommand extends BaseCommand {
-    scope: CommandScope.Global,
+    scope: 'global',
     actionCreator: CommandActionCreator<GlobalCommandArgs>;
 }
 
 interface ViewCommand<V extends ViewTypes> extends BaseCommand {
-    scope: CommandScope.View,
+    scope: 'view',
     viewType: V;
     actionCreator: CommandActionCreator<ViewCommandArgs<V>>;
 }

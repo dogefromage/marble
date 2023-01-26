@@ -24,7 +24,7 @@ export default function useDispatchCommand()
 
         let actionOrActions: AnyAction[] | AnyAction | void;
 
-        if (command.scope === CommandScope.Global)
+        if (command.scope === 'global')
         {
             const globalArgs: GlobalCommandArgs = { ...baseArgs };
             actionOrActions = command.actionCreator(globalArgs, paramMap);

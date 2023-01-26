@@ -34,7 +34,7 @@ const ContextMenu = () =>
     return ReactDOM.createPortal(
         <FixedDiv>
             <MenuRoot
-                type={MenuTypes.Context}
+                type={'context'}
                 shape={menuShape}
                 onClose={() => {
                     dispatch(contextMenuClose());

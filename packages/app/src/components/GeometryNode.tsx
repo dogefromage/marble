@@ -6,7 +6,7 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
 import { geometryEditorPanelsPushGeometryId } from '../slices/panelGeometryEditorSlice';
 import GeometryNodeDiv from '../styles/GeometryNodeDiv';
-import { GNodeData, GNodeS, GNodeTemplateTypes, PlanarCamera, RowZ } from '../types';
+import { decomposeTemplateId, GNodeData, GNodeState, GNodeTemplateTypes, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { v2p } from '../utils/linalg';
@@ -16,7 +16,7 @@ import GeometryRowRoot from './GeometryRowRoot';
 interface Props {
     panelId: string;
     geometryId: string;
-    nodeState: GNodeS;
+    nodeState: GNodeState;
     nodeData: GNodeData | null;
     getCamera: () => PlanarCamera | undefined;
     selectionStatus: SelectionStatus;
@@ -88,7 +88,11 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
             }}
             onDoubleClick={e => {
                 // enter nested geometry
-                if (nodeData?.template.type === GNodeTemplateTypes.Composite) {
+                if (nodeData?.template == null) {
+                    return;
+                }
+                const { templateType } = decomposeTemplateId(nodeData.template.id)
+                if (templateType === 'composite') {
                     dispatch(geometryEditorPanelsPushGeometryId({
                         panelId,
                         geometryId: nodeData.template.id,

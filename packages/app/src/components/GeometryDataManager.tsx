@@ -4,9 +4,8 @@ import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { geometriesUpdateExpiredProps, selectGeometries } from '../slices/geometriesSlice';
 import { geometryDatasSetMany, selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, GeometryConnectionData, GeometryS } from '../types';
+import { DependencyNodeType, GeometryConnectionData, GeometryS, getDependencyKey } from '../types';
 import generateGeometryData from '../utils/geometries/generateGeometryData';
-import { getDependencyKey } from '../utils/dependencyGraph';
 
 const GeometryDataManager = () =>
 {
@@ -26,7 +25,7 @@ const GeometryDataManager = () =>
         for (const geometry of Object.values(geometries) as GeometryS[]) {
             lastKeys.delete(geometry.id);
             // get hash from dependency graph
-            const graphKey = getDependencyKey(geometry.id, DependencyNodeType.Geometry);
+            const graphKey = getDependencyKey(geometry.id, 'geometry');
             const graphOrder = dependencyManager.order.get(graphKey);
             if (graphOrder?.state === 'met') {
                 // compare to last entry using hash

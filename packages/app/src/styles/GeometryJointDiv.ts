@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { DataTypes, GeometryJointDirection } from "../types";
+import { StaticDataTypes, GeometryJointDirection } from "../types";
 import { GNODE_ROW_UNIT_HEIGHT } from "./GeometryRowDiv";
 
 export const JOINT_OFFSET = -32;
@@ -9,7 +9,7 @@ interface Props
     direction: GeometryJointDirection;
     connected: boolean;
     additional?: boolean;
-    dataType: DataTypes;
+    dataType: StaticDataTypes;
     isHovering: boolean;
 }
 

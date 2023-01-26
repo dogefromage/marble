@@ -1,11 +1,10 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { mapDynamicValues, preprocessSource, setBlockIndent } from '.';
-import { OUTPUT_TEMPLATE_ID } from '../../content/defaultTemplates/outputTemplates';
-import { DependencyGraph, DependencyNodeType, GeometryConnectionData, GeometryS, GNodeTemplateTypes, InputOnlyRowT, Layer, LayerProgram, ObjMapUndef, ProgramInclude, RowS, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { rootOutputTemplateId } from '../../content/defaultTemplates/outputTemplates';
+import { decomposeTemplateId, DependencyGraph, DependencyNodeType, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplateTypes, InputOnlyRowT, Layer, LayerProgram, ObjMapUndef, ProgramInclude, RowS, splitDependencyKey, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import { findClosingBracket, splitBracketSafe } from '../codeStrings';
-import { getDependencyKey, splitDependencyKey } from '../dependencyGraph';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
@@ -25,7 +24,7 @@ export default class ProgramCompiler {
     }): LayerProgram | null {
         const { layer, geometries, geometryDatas, dependencyGraph, includes, textureVarRowIndex } = args;
 
-        const rootLayerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
+        const rootLayerKey = getDependencyKey(layer.id, 'layer');
 
         const rootOrder = dependencyGraph.order.get(rootLayerKey);
         if (rootOrder?.state !== 'met') {
@@ -39,11 +38,11 @@ export default class ProgramCompiler {
             return null;
         }
 
-        const topSort: string[] = [];
+        const topSortedGeos: string[] = [];
         for (const key of topSortAll) {
             const { type, id } = splitDependencyKey(key);
-            if (type == DependencyNodeType.Geometry) {
-                topSort.push(id);
+            if (type == 'geometry') {
+                topSortedGeos.push(id);
             }
         }
 
@@ -54,9 +53,9 @@ export default class ProgramCompiler {
         // get necessary geometries and datas in right order
         const geoList: GeometryS[] = [];
         const dataList: GeometryConnectionData[] = [];
-        for (let geoIndex = 0; geoIndex < topSort.length; geoIndex++) {
-            const geoId = topSort[ geoIndex ];
-            const geoOrderEl = dependencyGraph.order.get(getDependencyKey(geoId, DependencyNodeType.Geometry))!;
+        for (let geoIndex = 0; geoIndex < topSortedGeos.length; geoIndex++) {
+            const geoId = topSortedGeos[ geoIndex ];
+            const geoOrderEl = dependencyGraph.order.get(getDependencyKey(geoId, 'geometry'))!;
             const geo = geometries[ geoId ];
             const data = geometryDatas[ geoId ];
             if (!geo || !data || geo.version != geoOrderEl.version || geo.version != data.geometryVersion) {
@@ -71,7 +70,7 @@ export default class ProgramCompiler {
             const marker = `# geometry ${geoIndex};`;
             geometryFunctionBlocks.push(marker, functionBlock);
 
-            if (geoIndex == topSort.length - 1) {
+            if (geoIndex == topSortedGeos.length - 1) {
                 rootFunctionName = functionName;
             }
         }
@@ -207,7 +206,7 @@ export default class ProgramCompiler {
         // find lowest index where a node is output
         let outputIndex = -1;
         for (let i = geometry.nodes.length - 1; i >= 0; i--) {
-            if (geometry.nodes[ i ].templateId === OUTPUT_TEMPLATE_ID) {
+            if (geometry.nodes[ i ].templateId === rootOutputTemplateId) {
                 outputIndex = i;
                 break;
             }
@@ -224,7 +223,7 @@ export default class ProgramCompiler {
             const isUsed = components[ nodeIndex ] == outputComponent;
             const nodeData = connectionData.nodeDatas[ nodeIndex ];
             if (isUsed && nodeData != null) {
-                if (nodeData.template.type === GNodeTemplateTypes.Base) {
+                if (decomposeTemplateId(nodeData.template.id).templateType  === 'static') {
                     const marker = `    # node ${nodeIndex};`;
                     const instructionBlock = setBlockIndent(nodeData.template.instructions!, 4);
                     instructions.push(marker, instructionBlock);

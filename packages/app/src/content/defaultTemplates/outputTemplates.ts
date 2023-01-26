@@ -1,27 +1,27 @@
-import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTags, GNodeTemplateTypes, RowTypes } from "../../types";
+import { GNodeTemplate, NameRowT, NodeTemplateId, OutputRowT } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 import { TemplateColors, TEMPLATE_FAR_AWAY } from "./templateConstants";
 
-export const OUTPUT_TEMPLATE_ID = 'output';
+export const rootOutputTemplateId = 'root:output' satisfies NodeTemplateId;
 
-const output_output: GNodeT =
-{
-    id: OUTPUT_TEMPLATE_ID,
+export const outputNameRow: NameRowT = {
+    id: 'name',
+    type: 'name',
+    name: 'Output',
+    color: TemplateColors.Output,
+};
+
+const root_output: GNodeTemplate = {
+    id: rootOutputTemplateId,
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Output,
+    category: 'output',
     rows: [
-        {
-            id: 'name',
-            type: RowTypes.Name,
-            name: 'Output',
-            color: TemplateColors.Output,
-        },
+        outputNameRow, 
         {
             id: 'input',
             name: 'Solid',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Solid,
+            type: 'input_only',
+            dataType: 'Solid',
             value: [ TEMPLATE_FAR_AWAY, 0, 0, 0 ],
         },
     ],
@@ -31,5 +31,5 @@ const output_output: GNodeT =
 }
 
 export default [
-    output_output
+    root_output
 ];

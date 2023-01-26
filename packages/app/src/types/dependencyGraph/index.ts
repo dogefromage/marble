@@ -1,20 +1,25 @@
 
-export enum DependencyNodeType {
-    Layer = 'layer',
-    Geometry = 'geometry',
-    NodeTemplate = 'node-template',
-    ProgramInclude = 'program-include',
+export type DependencyNodeType = 'layer' | 'geometry' | 'node_template';
+
+export function getDependencyKey(id: string, type: DependencyNodeType) {
+    return `dependency:${type}:${id}` as const;
+}
+export type DependencyNodeKey = ReturnType<typeof getDependencyKey>;
+
+export function splitDependencyKey(key: DependencyNodeKey) {
+    const [ _, type, id ] = key.split(':') as [ never, DependencyNodeType, string ];
+    return { type, id }
 }
 
 export interface DependencyGraphNode {
-    key: string;
+    key: DependencyNodeKey;
     type: DependencyNodeType;
     version: number;
-    dependencies: string[];
+    dependencies: DependencyNodeKey[];
 }
 
 export interface OrderedDependencyNode {
-    key: string;
+    key: DependencyNodeKey;
     state: 'met' | 'unmet' | 'cyclic' | 'missing';
     version: number;
     hash: number;
@@ -22,14 +27,12 @@ export interface OrderedDependencyNode {
     dependants: string[];
 }
 
-export type DependencyAdjacency = Map<string, DependencyGraphNode>;
-
 export interface DependencyGraph {
-    nodes: DependencyAdjacency;
-    order: Map<string, OrderedDependencyNode>;
+    nodes: Map<DependencyNodeKey, DependencyGraphNode>;
+    order: Map<DependencyNodeKey, OrderedDependencyNode>;
 }
 
-export interface IDependency {
+export interface Dependable {
     id: string;
     version: number;
 }

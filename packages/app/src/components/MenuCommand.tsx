@@ -35,12 +35,12 @@ const MenuCommand = ({ element, menuStore }: Props) => {
         if (!command) return;
         menuStore.dispatch(menuStoreClose());
 
-        if (menuStore.state.type === MenuTypes.Context) {
+        if (menuStore.state.type === 'context') {
             if (!active) return;
-            dispatchCommand(command, active.paramMap, CommandCallTypes.ContextMenu);
+            dispatchCommand(command, active.paramMap, 'contextmenu');
         }
-        else if (menuStore.state.type === MenuTypes.Toolbar) {
-            dispatchCommand(command, {}, CommandCallTypes.Toolbar);
+        else if (menuStore.state.type === 'toolbar') {
+            dispatchCommand(command, {}, 'toolbar');
         }
         else {
             console.error(`Command not dispatched, menutype not found`);

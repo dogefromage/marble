@@ -1,15 +1,8 @@
 import { MapEvery } from "../UtilityTypes";
 
-export enum DataTypes {
-    Unknown = 'unknown',
-    Float = 'float',
-    Vec2 = 'vec2',
-    Vec3 = 'vec3',
-    Mat3 = 'mat3',
-    Solid = 'Solid',
-}
+export type StaticDataTypes = 'unknown' | 'float' | 'vec2' | 'vec3' | 'mat3' | 'Solid';
 
-export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> = {
+export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<StaticDataTypes, number> = {
     unknown: 0,
     float: 1,
     vec2: 2,
@@ -18,9 +11,8 @@ export const TEXTURE_VAR_DATATYPE_SIZE: MapEvery<DataTypes, number> = {
     Solid: 4,
 }
 
-export interface ProgramTextureVarMapping
-{
-    dataType: DataTypes;
+export interface ProgramTextureVarMapping {
+    dataType: StaticDataTypes;
     textureCoordinate: number;
     geometryId: string;
     geometryVersion: number;

@@ -11,14 +11,14 @@ export const DEFAULT_COMMANDS: Command[] =
     {
         id: 'global.undo',
         name: 'Undo',
-        scope: CommandScope.Global,
+        scope: 'global',
         actionCreator: undo,
         keyCombinations: [ { key: 'z', ctrlKey: true } ],
     },
     {
         id: 'global.redo',
         name: 'Redo',
-        scope: CommandScope.Global,
+        scope: 'global',
         actionCreator: redo,
         keyCombinations: [ { key: 'y', ctrlKey: true } ],
     },
@@ -26,7 +26,7 @@ export const DEFAULT_COMMANDS: Command[] =
      * Console view
      */
     {
-        scope: CommandScope.View,
+        scope: 'view',
         viewType: ViewTypes.Console,
         id: 'console.clearMessages',
         name: 'Clear Messages',

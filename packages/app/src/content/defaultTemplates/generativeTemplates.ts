@@ -1,32 +1,31 @@
-import { DataTypes, DefaultArgumentIds, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
+import { getTemplateId, GNodeTemplate } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 
-const generative_perlin_noise: GNodeT =
+const generative_perlin_noise: GNodeTemplate =
 {
-    id: 'perlin_noise',
+    id: getTemplateId('perlin_noise', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Generative,
+    category: 'generative',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Perlin Noise',
             color: "#654321",
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Noise',
         },
         {
             id: 'coordinates',
-            type: RowTypes.InputOnly,
+            type: 'input_only',
             name: 'Coordinates',
-            dataType: DataTypes.Vec3,
+            dataType: 'vec3',
             value: [ 0, 0, 0 ],
-            defaultArgumentToken: DefaultArgumentIds.RayPosition,
+            defaultArgumentToken: 'position',
         }
     ],
     instructions: glsl`

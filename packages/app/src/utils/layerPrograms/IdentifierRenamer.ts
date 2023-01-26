@@ -152,7 +152,7 @@ export default class IdentifierRenamer
         const incomingEdges = this.getIncomingEdge(this.nodeIndex, rowIndex);
 
         // 1.1 stacked input
-        if (rowTemp.type === RowTypes.InputStacked) {
+        if (rowTemp.type === 'input_stacked') {
             const parentType = path.parent?.type;
             if (parentType !== 'function_call') {
                 throw new Error(`Stacked row identifier must be argument of function call`);

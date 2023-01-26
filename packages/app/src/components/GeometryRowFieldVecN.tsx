@@ -4,7 +4,7 @@ import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';
-import { DataTypes, FieldRowT } from '../types';
+import { StaticDataTypes, FieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { getRowMetadataField } from './GeometryRowField';
 import { RowProps } from './GeometryRowRoot';
@@ -12,7 +12,7 @@ import SlidableInput from './SlideableInput';
 
 export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z' ];
 
-type Props = RowProps<FieldRowT<DataTypes.Vec2 | DataTypes.Vec3>>;
+type Props = RowProps<FieldRowT<'vec2' | 'vec3'>>;
 
 const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) =>
 {

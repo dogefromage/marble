@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "schemagen": "sh src/workflows/schemagen.sh"
+    "schemagen": "sh src/dev/schemagen.sh"
   },
   "dependencies": {
     "@marble/interactive": "^1.0.0",

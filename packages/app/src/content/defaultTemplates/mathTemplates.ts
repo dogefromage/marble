@@ -1,92 +1,58 @@
-import { DataTypes, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types";
+import { getTemplateId, GNodeTemplate } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants";
 
-// const math_product: GNodeT =
-// {
-//     id: 'product',
-//     version: 0,
-//     type: GNodeTemplateTypes.Base,
-//     category: GNodeTemplateCategories.Math,
-//     rows: [
-//         {
-//             id: 'name',
-//             type: RowTypes.Name,
-//             name: 'Product',
-//             color: TemplateColors.Operators,
-//         },
-//         {
-//             id: 'output',
-//             type: RowTypes.Output,
-//             dataType: DataTypes.Float,
-//             name: 'Product',
-//         },
-//         {
-//             id: 'input',
-//             type: RowTypes.InputStacked,
-//             name: 'X',
-//             dataType: DataTypes.Float,
-//             value: 1,
-//         },
-//     ],
-//     instructions: glsl`
-//         #INCLUDE inc_multiply;
-//         float $output = #STACK(inc_multiply, $input, 1.0);
-//     `,
-// }
-
-const math_map: GNodeT =
+const math_map: GNodeTemplate =
 {
-    id: 'map',
+    id: getTemplateId('map', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Math,
+    category: 'math',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Map',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Map',
         },
         {
             id: 'input',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Input',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'from_min',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'From Min',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'from_max',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'From Max',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 1,
         },
         {
             id: 'to_min',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'To Min',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'to_max',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'To Max',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 1,
         },
     ],
@@ -97,6 +63,5 @@ const math_map: GNodeT =
 }
 
 export default [
-    // math_product,
     math_map,
 ];

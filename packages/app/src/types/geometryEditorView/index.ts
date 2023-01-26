@@ -1,6 +1,6 @@
 import { GeometryJointLocation, GeometryJointDirection } from "../geometries";
 import { PanelState } from "../panelManager";
-import { DataTypes } from "../programs";
+import { StaticDataTypes } from "../programs";
 import { Point } from "../UtilityTypes";
 
 export interface PlanarCamera {
@@ -17,7 +17,7 @@ interface TemplateCatalogState {
 export interface GeometryNewLink {
     location: GeometryJointLocation;
     direction: GeometryJointDirection;
-    dataType: DataTypes;
+    dataType: StaticDataTypes;
     offsetPos: Point;
 }
 

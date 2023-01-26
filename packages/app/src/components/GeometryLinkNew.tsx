@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useAppDispatch } from "../redux/hooks";
 import { geometryEditorPanelsSetNewLink } from "../slices/panelGeometryEditorSlice";
-import { GeometryNewLink, GNodeData, GNodeS, PlanarCamera } from "../types";
+import { GeometryNewLink, GNodeData, GNodeState, PlanarCamera } from "../types";
 import getJointPositionWorld from "../utils/geometries/geometryUtils";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../utils/linalg";
@@ -12,7 +12,7 @@ interface Props
 {
     panelId: string;
     newLink: GeometryNewLink;
-    node: GNodeS;
+    node: GNodeState;
     nodeData: GNodeData;
     getCamera: () => PlanarCamera | undefined;
 }

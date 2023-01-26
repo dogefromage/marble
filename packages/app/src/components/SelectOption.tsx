@@ -67,7 +67,7 @@ const SelectOption = ({ value, onChange, options }: Props) =>
         {
             dropdown ? (
                 <MenuRoot
-                    type={MenuTypes.Misc}
+                    type={'misc'}
                     shape={menuShape}
                     anchor={{ x: 0, y: 0 }}
                     onClose={() => setDropdown(false)}

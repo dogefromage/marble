@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { ActivePanel, Command, CommandParameterMap, CommandScope, DataTypes, Point, ViewTypes } from "../../types";
+import { ActivePanel, Command, CommandParameterMap, CommandScope, StaticDataTypes, Point, ViewTypes, getTemplateId } from "../../types";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
 
@@ -23,7 +23,7 @@ function getOffsetPos(activePanel: ActivePanel, params: CommandParameterMap) {
 export const geometryEditorCommands: Command[] =
 [
     {
-        scope: CommandScope.View,
+        scope: 'view',
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.openTemplateCatalog',
         name: 'Add Node',
@@ -39,7 +39,7 @@ export const geometryEditorCommands: Command[] =
         keyCombinations: [ { key: ' ', displayName: 'Space' }],
     },
     {
-        scope: CommandScope.View,
+        scope: 'view',
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.deleteSelected',
         name: 'Delete Selected',
@@ -53,7 +53,7 @@ export const geometryEditorCommands: Command[] =
         keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
     },
     {
-        scope: CommandScope.View,
+        scope: 'view',
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.resetSelected',
         name: 'Reset Selected',
@@ -68,7 +68,7 @@ export const geometryEditorCommands: Command[] =
         // keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
     },
     {
-        scope: CommandScope.View,
+        scope: 'view',
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.createSubgeometry',
         name: 'Create Group',
@@ -76,25 +76,26 @@ export const geometryEditorCommands: Command[] =
             if (!geometryStack.length) return;
 
             const actionToken = 'create-sub-' + uuidv4();
-            const subId = uuidv4();
+            const subGeometryId = uuidv4();
+            const subTemplateId = getTemplateId(subGeometryId, 'composite');
 
             const { offsetPos } = getOffsetPos(activePanel, params);
             const worldPos = v2p(pointScreenToWorld(camera, p2v(offsetPos)));
 
             return [
                 geometriesCreate({
-                    geometryId: subId,
+                    geometryId: subGeometryId,
                     geometryTemplate: {
                         isRoot: false,
                         name: 'Sub geometry',
                         arguments: [],
-                        returnType: DataTypes.Float,
+                        returnType: 'float',
                     },
                     undo: { actionToken }
                 }),
                 geometriesAddNode({
                     geometryId: geometryStack[0],
-                    templateId: subId,
+                    templateId: subTemplateId,
                     position: worldPos,
                     undo: { actionToken },
                 })

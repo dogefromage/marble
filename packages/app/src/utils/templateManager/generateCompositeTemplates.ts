@@ -1,33 +1,35 @@
-import { GeometryS, GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, NameRowT, ObjMapUndef, OutputRowT, RowT, RowTypes, SpecificRowT } from "../../types";
+import { outputNameRow } from "../../content/defaultTemplates/outputTemplates";
+import { decomposeTemplateId, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateCategories, GNodeTemplateTypes, NameRowT, ObjMapUndef, OutputRowT, RowT, RowTypes, SpecificRowT } from "../../types";
+import { glsl } from "../codeStrings";
 
-function generateTemplate(geometry: GeometryS): GNodeT {
+
+function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
     const nameRow: NameRowT = {
-        type: RowTypes.Name,
+        type: 'name',
         id: 'name',
         name: geometry.name,
         color: '#333333',
     };
 
     const outputRow: OutputRowT = {
-        type: RowTypes.Output,
+        type: 'output',
         id: 'output',
         name: 'output',
         dataType: geometry.returnType,
     };
 
     const inputRows: RowT[] = geometry.arguments.map(arg => ({
-        type: RowTypes.InputOnly,
+        type: 'input_only',
         id: arg.id,
         name: arg.name,
         dataType: arg.dataType,
         value: arg.defaultValue,
     }));
 
-    const template: GNodeT = {
-        id: geometry.id,
+    const template: GNodeTemplate = {
+        id: getTemplateId(geometry.id, 'composite'),
         version: geometry.version,
-        category: GNodeTemplateCategories.Composite,
-        type: GNodeTemplateTypes.Composite,
+        category: 'composite',
         instructions: '',
         rows: [ nameRow, outputRow, ...(inputRows as SpecificRowT[]) ],
     }
@@ -35,33 +37,52 @@ function generateTemplate(geometry: GeometryS): GNodeT {
     return template;
 }
 
-export default function generateCompositeTemplates(
-    geometries: ObjMapUndef<GeometryS>,
-    templates: ObjMapUndef<GNodeT>,
-) {
-    const addTemplates: GNodeT[] = [];
+function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
 
-    const templateVersions = new Map<string, number>();
-    for (const template of Object.values(templates) as GNodeT[]) {
-        if (template.type !== GNodeTemplateTypes.Composite) {
-            continue;
-        }
-        templateVersions.set(template.id, template.version);
+    const templateId = getTemplateId(geometry.id, 'output');
+
+    const instructions = ``;
+
+    const outputTemplate: GNodeTemplate = {
+        id: templateId,
+        category: 'output',
+        version: geometry.version,
+        rows: [
+            outputNameRow,
+        ],
+        instructions,
     }
+}
+
+export default function generateDynamicTemplates(
+    geometries: ObjMapUndef<GeometryS>,
+    templates: ObjMapUndef<GNodeTemplate>,
+) {
+    const lastTemplates = new Map<string, GNodeTemplate>();
+
+    for (const template of Object.values(templates) as GNodeTemplate[]) {
+        const { templateType } = decomposeTemplateId(template.id);
+        const dynamicTemplateTypes: GNodeTemplateTypes[] = [ 'composite', 'output' ];
+        if (dynamicTemplateTypes.includes(templateType)) {
+            lastTemplates.set(template.id, template);
+        }
+    }
+
+    const addTemplates: GNodeTemplate[] = [];
 
     for (const geometry of Object.values(geometries)) {
         if (!geometry || geometry?.isRoot) {
             continue;
         }
-        const templateVersion = templateVersions.get(geometry.id);
-        templateVersions.delete(geometry.id);
+        const templateVersion = lastTemplates.get(geometry.id);
+        lastTemplates.delete(geometry.id);
         if (templateVersion == null || templateVersion < geometry.version) {
-            addTemplates.push(generateTemplate(geometry));
+            addTemplates.push(generateCompositeTemplate(geometry));
         }
     }
 
     // keys that remain must be removed since their geometry does not exist anymore
-    const removeTemplateIds: string[] = [ ...templateVersions.keys() ];
+    const removeTemplateIds: string[] = [ ...lastTemplates.keys() ];
 
     return {
         addTemplates,

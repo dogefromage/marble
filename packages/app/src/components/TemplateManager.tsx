@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templatesRemoveTemplates } from '../slices/templatesSlice';
 import { splitIncludesFromSource } from '../utils/layerPrograms';
-import generateCompositeTemplates from '../utils/templateManager/generateCompositeTemplates';
+import generateDynamicTemplates from '../utils/templateManager/generateCompositeTemplates';
 
 const TemplateManager = () =>
 {
@@ -26,7 +26,7 @@ const TemplateManager = () =>
     }, [ dispatch ]);
 
     useEffect(() => {
-        const templateChanges = generateCompositeTemplates(geometries, templates);
+        const templateChanges = generateDynamicTemplates(geometries, templates);
         if (templateChanges.addTemplates.length > 0) {
             dispatch(templatesAddTemplates({
                 templates: templateChanges.addTemplates,

@@ -1,28 +1,31 @@
-import { DataTypes } from "../programs";
+import { StaticDataTypes } from "../programs";
 import { RotationModels, Tuple } from "../UtilityTypes";
-import { GeometryArgument } from "./Geometry";
+import { DefaultArgumentIds, GeometryArgument } from "./Geometry";
 
-/**
- * Values
- */
+export type RowTypes = 
+    | 'name'
+    | 'input_only'
+    | 'input_stacked'
+    | 'output'
+    | 'field'
+    | 'rotation'
+
 export interface RowValueMap {
-    [ DataTypes.Float ]: number;
-    [ DataTypes.Unknown ]: number;
-    [ DataTypes.Vec2 ]: Tuple<number, 2>;
-    [ DataTypes.Vec3 ]: Tuple<number, 3>;
-    [ DataTypes.Mat3 ]: Tuple<number, 9>;
-    [ DataTypes.Solid ]: Tuple<number, 4>;
+    unknown: number;
+    float:   number;
+    vec2:    Tuple<number, 2>;
+    vec3:    Tuple<number, 3>;
+    mat3:    Tuple<number, 9>;
+    Solid:   Tuple<number, 4>;
 }
 
-/**
- * super interfaces
- */
 interface SuperRowT {
     id: string;
     name: string;
+    type: RowTypes;
 }
 
-export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRowT {
+export interface SuperInputRowT<D extends StaticDataTypes = StaticDataTypes> extends SuperRowT {
     dataType: D;
     value: RowValueMap[ D ];
     defaultArgumentToken?: string;
@@ -32,34 +35,26 @@ export interface SuperInputRowT<D extends DataTypes = DataTypes> extends SuperRo
  * Diverse rows
  */
 
-export enum RowTypes {
-    Name = 'name',
-    InputOnly = 'input-only',
-    InputStacked = 'input-stacked',
-    Output = 'output',
-    Field = 'field',
-    Rotation = 'rotation',
-}
 
 export interface NameRowT extends SuperRowT {
-    type: RowTypes.Name;
+    type: 'name';
     color: string;
 }
 
-export interface InputOnlyRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
-    type: RowTypes.InputOnly;
+export interface InputOnlyRowT<D extends StaticDataTypes = StaticDataTypes> extends SuperInputRowT<D> {
+    type: 'input_only';
 }
 
-export interface StackedInputRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
-    type: RowTypes.InputStacked;
+export interface StackedInputRowT<D extends StaticDataTypes = StaticDataTypes> extends SuperInputRowT<D> {
+    type: 'input_stacked';
 }
 
-export interface FieldRowT<D extends DataTypes = DataTypes> extends SuperInputRowT<D> {
-    type: RowTypes.Field;
+export interface FieldRowT<D extends StaticDataTypes = StaticDataTypes> extends SuperInputRowT<D> {
+    type: 'field';
 }
 
-export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3> {
-    type: RowTypes.Rotation;
+export interface RotationRowT extends SuperInputRowT<'mat3'> {
+    type: 'rotation';
     rotationModel: RotationModels;
     currentDisplay?: {
         rotationModel: RotationModels;
@@ -67,12 +62,12 @@ export interface RotationRowT extends SuperInputRowT<DataTypes.Mat3> {
     }
 }
 
-export interface OutputRowT<D extends DataTypes = DataTypes> extends SuperRowT {
-    type: RowTypes.Output;
+export interface OutputRowT<D extends StaticDataTypes = StaticDataTypes> extends SuperRowT {
+    type: 'output';
     dataType: D;
 }
 
-export type RowT<D extends DataTypes = DataTypes> =
+export type RowT<D extends StaticDataTypes = StaticDataTypes> =
     | NameRowT
     | InputOnlyRowT<D>
     | StackedInputRowT<D>
@@ -80,11 +75,10 @@ export type RowT<D extends DataTypes = DataTypes> =
     | FieldRowT<D>
     | RotationRowT
 
-type RowTOverDataTypesMap =
-    {
-        [ D in keyof typeof DataTypes ]: RowT<typeof DataTypes[ D ]>;
-    }
-export type SpecificRowT = RowTOverDataTypesMap[ keyof typeof DataTypes ];
+type RowTOverDataTypesMap = {
+    [ D in StaticDataTypes ]: RowT<D>;
+}
+export type SpecificRowT = RowTOverDataTypesMap[StaticDataTypes];
 
 export enum GeometryIncomingElementTypes {
     RowOutput = 'row-output',
@@ -130,7 +124,7 @@ export interface GeometryJointLocation extends GeometryRowLocation {
 export interface JointLinkDndTransfer {
     location: GeometryJointLocation;
     direction: GeometryJointDirection;
-    dataType: DataTypes;
+    dataType: StaticDataTypes;
     mergeStackInput: boolean;
 }
 

@@ -1,52 +1,53 @@
-import { IDependency } from "../dependencyGraph";
+import { Dependable } from "../dependencyGraph";
 import { Point } from "../UtilityTypes";
 import { RowS, SpecificRowT } from "./Rows";
 
-export enum GNodeTemplateTypes {
-    Base = 'def',
-    Composite = 'comp',
+export type GNodeTemplateCategories = 
+    | 'solids'
+    | 'solid_operators'
+    | 'numbers'
+    | 'vectors'
+    | 'input'
+    | 'output'
+    | 'generative'
+    | 'math'
+    | 'composite'
+
+export const templateCategoryNames: { [ C in GNodeTemplateCategories ]: string } = {
+    'solids':          'Solids',
+    'solid_operators': 'Solid Operators',
+    'numbers':         'Numbers',
+    'vectors':         'Vectors',
+    'input':           'Input',
+    'output':          'Output',
+    'generative':      'Generative',
+    'math':            'Math',
+    'composite':       'Composite',
+};
+
+export type GNodeTemplateTypes = 'static' | 'composite' | 'output';
+
+export function getTemplateId(identifier: string, templateType: GNodeTemplateTypes) {
+    return `${identifier}:${templateType}` as const;
+}
+export type NodeTemplateId = ReturnType<typeof getTemplateId>;
+export function decomposeTemplateId(templateId: NodeTemplateId) {
+    const [ identifier, templateType ] = 
+        templateId.split(':') as [ string, GNodeTemplateTypes ];
+    return { relatedGeometry: identifier, templateType };
 }
 
-export enum GNodeTemplateTags {
-    Output = 'output',
-}
-
-export enum GNodeTemplateCategories {
-    Solids = 'solids',
-    SolidOperators = 'solid_operators',
-    Numbers = 'numbers',
-    Vectors = 'vectors',
-    Input = 'input',
-    Output = 'output',
-    Generative = 'generative',
-    Math = 'math',
-    Composite = 'composite',
-}
-
-export const TEMPLATE_CATEGORY_NAMES: { [ C in GNodeTemplateCategories ]: string } =
-{
-    [ GNodeTemplateCategories.Solids ]: 'Solids',
-    [ GNodeTemplateCategories.SolidOperators ]: 'Solid Operators',
-    [ GNodeTemplateCategories.Numbers ]: 'Numbers',
-    [ GNodeTemplateCategories.Vectors ]: 'Vectors',
-    [ GNodeTemplateCategories.Input ]: 'Input',
-    [ GNodeTemplateCategories.Output ]: 'Output',
-    [ GNodeTemplateCategories.Generative ]: 'Generative',
-    [ GNodeTemplateCategories.Math ]: 'Math',
-    [ GNodeTemplateCategories.Composite ]: 'Composite',
-}
-
-export interface GNodeT extends IDependency {
-    type: GNodeTemplateTypes;
+export interface GNodeTemplate extends Dependable {
+    id: NodeTemplateId;
     rows: Array<SpecificRowT>;
     category: GNodeTemplateCategories;
     instructions: string;
 }
 
-export interface GNodeS {
+export interface GNodeState {
     id: string;
-    templateId: string;
-    templateData: null | { version: number, type: GNodeTemplateTypes }
+    templateId: NodeTemplateId;
+    templateVersion: number;
     position: Point;
     rows: {
         [ rowId: string ]: RowS | undefined;

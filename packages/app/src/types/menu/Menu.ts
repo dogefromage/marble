@@ -77,9 +77,5 @@ export interface MenuStore {
     state: MenuState;
     dispatch: React.Dispatch<AnyAction>;
 }
-
-export enum MenuTypes {
-    Toolbar = 'toolbar',
-    Context = 'context',
-    Misc = 'misc',
-}
+ 
+export type MenuTypes = 'toolbar' | 'context' | 'misc';

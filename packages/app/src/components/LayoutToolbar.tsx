@@ -12,7 +12,7 @@ const LayoutToolbar = ({ }: Props) =>
 {
     return (
         <MenuRoot 
-            type={MenuTypes.Toolbar}
+            type={'toolbar'}
             shape={toolbarShape as MenuShape}
         />
     );

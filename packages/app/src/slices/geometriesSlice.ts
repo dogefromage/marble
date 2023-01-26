@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeS, Point, RowS, SuperRowS, UndoAction } from "../types";
+import { decomposeTemplateId, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, SuperRowS, UndoAction } from "../types";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
 const defaultGeometryContent = {
@@ -64,14 +64,14 @@ export const geometriesSlice = createSlice({
         remove: (s, a: UndoAction<{ geometryId: string }>) => {
             delete s[ a.payload.geometryId ];
         },
-        addNode: (s, a: UndoAction<{ geometryId: string, templateId: string, position: Point }>) => {
+        addNode: (s, a: UndoAction<{ geometryId: string, templateId: NodeTemplateId, position: Point }>) => {
             const g = getGeometry(s, a);
             if (!g) return;
 
-            const node: GNodeS = {
+            const node: GNodeState = {
                 id: generateAlphabeticalId(g.nextIdIndex++),
                 templateId: a.payload.templateId,
-                templateData: null,
+                templateVersion: -1,
                 position: a.payload.position,
                 rows: {},
             }
@@ -229,11 +229,8 @@ export const geometriesSlice = createSlice({
                             node.rows[ rowId ] = superDefaultRow;
                         }
                     }
-
-                    node.templateData = {
-                        version: template.version,
-                        type: template.type,
-                    };
+                    
+                    node.templateVersion = template.version;
                 }
                 g.version++;
             }

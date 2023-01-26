@@ -1,4 +1,4 @@
-import { ActivePanel, Command, ContextMenuState, GeometryS, GNodeT, ProgramInclude, LayerProgram, DependencyGraph, GeometryConnectionData } from ".";
+import { ActivePanel, Command, ContextMenuState, GeometryS, GNodeTemplate, ProgramInclude, LayerProgram, DependencyGraph, GeometryConnectionData } from ".";
 import { ConsoleMessage } from "./console";
 import { Layer } from "./layer";
 import { ObjMapUndef } from "./UtilityTypes";
@@ -10,7 +10,7 @@ export type GeometryDatasSliceState = ObjMapUndef<GeometryConnectionData>;
 export type LayerProgramsSliceState = ObjMapUndef<LayerProgram>;
 
 export type TemplatesSliceState = {
-    templates: ObjMapUndef<GNodeT>;
+    templates: ObjMapUndef<GNodeTemplate>;
     includes: ObjMapUndef<ProgramInclude>;
 }
 

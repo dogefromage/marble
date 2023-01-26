@@ -6,7 +6,7 @@ import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';
-import { RotationModels, RotationRowT, RowMetadata, RowS, Tuple } from '../types';
+import { rotationModelNames, RotationModels, RotationRowT, RowMetadata, RowS, Tuple } from '../types';
 import { Metrics } from '../types/world';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
@@ -20,7 +20,7 @@ export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMe
     let totalUnits = 2; // name + model selector
 
     if (props.state?.currentDisplay) {
-        if (props.state.currentDisplay.rotationModel === RotationModels.Quaternion)
+        if (props.state.currentDisplay.rotationModel === 'xyzw')
             totalUnits += 4; // xyzw
         else
             totalUnits += 3; // xyz
@@ -35,7 +35,7 @@ export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z', 'W' ];
 
 const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
     const dispatch = useAppDispatch();
-    const rowRotationModel = row.rotationModel || RotationModels.Euler_XYZ;
+    const rowRotationModel = row.rotationModel || 'xyz';
 
     useEffect(() => {
         if (row.currentDisplay && row.currentDisplay.rotationModel === rowRotationModel)
@@ -48,7 +48,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
 
         let newDisplayValues: number[];
 
-        if (rowRotationModel === RotationModels.Quaternion) {
+        if (rowRotationModel === 'xyzw') {
             newDisplayValues = [ ...q ];
         }
         else {
@@ -82,7 +82,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
 
             let rotationMatrix = mat3.create();
 
-            if (row.currentDisplay.rotationModel === RotationModels.Quaternion) {
+            if (row.currentDisplay.rotationModel === 'xyzw') {
                 const q = quat.normalize(quat.create(), newDisplayValues as quat);
                 mat3.fromQuat(rotationMatrix, q);
             }
@@ -111,7 +111,6 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
         const rowS: Partial<RowS<RotationRowT>> = {
             rotationModel: newModel,
         }
-
         dispatch(geometriesAssignRowData({
             geometryId: geometryId,
             nodeId: nodeId,
@@ -125,7 +124,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
         state: row, template: row,
         numConnectedJoints: row.numConnectedJoints,
     });
-    const metric = rowRotationModel == RotationModels.Quaternion ? undefined : Metrics.Angle;
+    const metric = rowRotationModel == 'xyzw' ? undefined : Metrics.Angle;
 
     const isConnected = row.numConnectedJoints > 0;
 
@@ -144,8 +143,16 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
                         <IndentRowDiv>
                             <SelectOption
                                 value={rowRotationModel}
-                                onChange={switchRotationModel as (newMode: string) => void}
-                                options={Object.values(RotationModels)}
+                                onChange={(newModelName: string) => {
+                                    const rotationModels = Object.keys(rotationModelNames) as RotationModels[];
+                                    const newModel = rotationModels
+                                        .find(model => rotationModelNames[model] === newModelName);
+                                    if (!newModel) {
+                                        throw new Error(`Model not found`);
+                                    }
+                                    switchRotationModel(newModel);
+                                }}
+                                options={Object.values(rotationModelNames)}
                             />
                         </IndentRowDiv>
                     }

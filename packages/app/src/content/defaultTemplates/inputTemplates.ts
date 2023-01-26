@@ -1,45 +1,44 @@
-import { GNodeT, GNodeTemplateTypes, GNodeTemplateCategories, RowTypes, DataTypes, DefaultArgumentIds } from "../../types";
+import { getTemplateId, GNodeTemplate } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants";
 
-const input_vector_3x1: GNodeT =
+const input_vector_3x1: GNodeTemplate =
 {
-    id: 'vector_3x1',
+    id: getTemplateId('vector_3x1', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Input,
+    category: 'input',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: '3x1 Vector',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec3,
+            type: 'output',
+            dataType: 'vec3',
             name: 'Combined Vector',
         },
         {
             id: 'x',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'X',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'y',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Y',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'z',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Z',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
     ],
@@ -48,37 +47,36 @@ const input_vector_3x1: GNodeT =
     `,
 }
 
-const input_vector_2x1: GNodeT =
+const input_vector_2x1: GNodeTemplate =
 {
-    id: 'vector_2x1',
+    id: getTemplateId('vector_2x1', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Input,
+    category: 'input',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: '2x1 Vector',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec2,
+            type: 'output',
+            dataType: 'vec2',
             name: 'Combined Vector',
         },
         {
             id: 'x',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'X',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
         {
             id: 'y',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Y',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
     ],
@@ -87,30 +85,29 @@ const input_vector_2x1: GNodeT =
     `,
 }
 
-const input_number: GNodeT =
+const input_number: GNodeTemplate =
 {
-    id: 'number',
+    id: getTemplateId('number', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Input,
+    category: 'input',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Number',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Vector',
         },
         {
             id: 'input',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Input',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 0,
         },
     ],

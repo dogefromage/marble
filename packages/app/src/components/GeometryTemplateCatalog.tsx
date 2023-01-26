@@ -5,11 +5,11 @@ import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { GeometryEditorPanelState, GNodeT, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, TEMPLATE_CATEGORY_NAMES, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
+import { GeometryEditorPanelState, GNodeTemplate, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, templateCategoryNames, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
 import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {
-    [C in GNodeTemplateCategories]: GNodeT[];
+    [C in GNodeTemplateCategories]: GNodeTemplate[];
 }
 
 interface Props {
@@ -26,7 +26,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
     
     const [ searchValue, setSearchValue ] = useState('');
 
-    const addNode = (template: GNodeT) => {
+    const addNode = (template: GNodeTemplate) => {
         dispatch(geometriesAddNode({
             geometryId,
             templateId: template.id,
@@ -98,7 +98,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
             const groupedList: MenuElement[] = sortedGroupes.map(([ category, tempOfGroup ]) => ({
                 type: 'expand',
                 key: category,
-                name: TEMPLATE_CATEGORY_NAMES[category as GNodeTemplateCategories],
+                name: templateCategoryNames[category as GNodeTemplateCategories],
                 sublist: {
                     type: 'vertical',
                     list: tempOfGroup.map(template => ({
@@ -128,7 +128,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
     
     return (
         <MenuRoot
-            type={MenuTypes.Misc}
+            type={'misc'}
             shape={menuShape}
             onClose={() => {
                 dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))

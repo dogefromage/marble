@@ -1,46 +1,44 @@
-import { DataTypes, DefaultArgumentIds, RotationModels } from "../../types"
-import { GNodeT, GNodeTemplateCategories, GNodeTemplateTypes, RowTypes } from "../../types/geometries"
+import { getTemplateId, GNodeTemplate } from "../../types/geometries"
 import { glsl } from "../../utils/codeStrings"
-import { TemplateColors, MAT3_IDENTITY } from "./templateConstants"
+import { MAT3_IDENTITY, TemplateColors } from "./templateConstants"
 
-const vectors_mirror_plane: GNodeT =
+const vectors_mirror_plane: GNodeTemplate =
 {
-    id: 'mirror_plane',
+    id: getTemplateId('mirror_plane', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Vectors,
+    category: 'vectors',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Mirror on Plane',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec3,
+            type: 'output',
+            dataType: 'vec3',
             name: 'Mirrored',
         },
         {
             id: 'x',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec3,
-            defaultArgumentToken: DefaultArgumentIds.RayPosition,
+            type: 'input_only',
+            dataType: 'vec3',
+            defaultArgumentToken: 'position',
             value: [ 0, 0, 0 ],
             name: 'Coordinate',
         },
         {
             id: 'o',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
+            type: 'field',
+            dataType: 'vec3',
             value: [ 0, 0, 0 ],
             name: 'Plane Origin',
         },
         {
             id: 'n',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
+            type: 'field',
+            dataType: 'vec3',
             value: [ 1, 0, 0 ],
             name: 'Plane Normal',
         }
@@ -53,37 +51,36 @@ const vectors_mirror_plane: GNodeT =
     `,
 }
 
-const vectors_repeat_cell: GNodeT =
+const vectors_repeat_cell: GNodeTemplate =
 {
-    id: 'repeat_cell',
+    id: getTemplateId('repeat_cell', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Vectors,
+    category: 'vectors',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Repeat Cell',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec3,
+            type: 'output',
+            dataType: 'vec3',
             name: 'Cell Coord',
         },
         {
             id: 'x',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec3,
-            defaultArgumentToken: DefaultArgumentIds.RayPosition,
+            type: 'input_only',
+            dataType: 'vec3',
+            defaultArgumentToken: 'position',
             value: [ 0, 0, 0 ],
             name: 'Coordinate',
         },
         {
             id: 'size',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
+            type: 'field',
+            dataType: 'vec3',
             value: [ 1, 1, 1 ],
             name: 'Cell Size',
         },
@@ -93,58 +90,57 @@ const vectors_repeat_cell: GNodeT =
     `,
 }
 
-const vectors_transform: GNodeT =
+const vectors_transform: GNodeTemplate =
 {
-    id: 'transform',
+    id: getTemplateId('transform', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Vectors,
+    category: 'vectors',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Transform',
             color: '#123456',
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Vec3,
+            type: 'output',
+            dataType: 'vec3',
             name: 'Output Pos',
         },
         {
             id: 'sd_correction',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'SD Correction',
         },
         {
             id: 'input',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec3,
+            type: 'input_only',
+            dataType: 'vec3',
             name: 'Input Pos',
             value: [ 0, 0, 0 ],
-            defaultArgumentToken: DefaultArgumentIds.RayPosition,
+            defaultArgumentToken: 'position',
         },
         {
             id: 'translation',
-            type: RowTypes.Field,
-            dataType: DataTypes.Vec3,
+            type: 'field',
+            dataType: 'vec3',
             name: 'Translation',
             value: [ 0, 0, 0 ],
         },
         {
             id: 'rotation',
-            type: RowTypes.Rotation,
-            dataType: DataTypes.Mat3,
-            rotationModel: RotationModels.Euler_XYZ,
+            type: 'rotation',
+            dataType: 'mat3',
+            rotationModel: 'xyz',
             name: 'Rotation',
             value: MAT3_IDENTITY,
         },
         {
             id: 'scale',
-            type: RowTypes.Field,
-            dataType: DataTypes.Float,
+            type: 'field',
+            dataType: 'float',
             name: 'Scale',
             value: 1,
         }
@@ -155,41 +151,40 @@ const vectors_transform: GNodeT =
     `,
 }
 
-const vectors_separate_3x1: GNodeT =
+const vectors_separate_3x1: GNodeTemplate =
 {
-    id: 'separate_3x1',
+    id: getTemplateId('separate_3x1', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Vectors,
+    category: 'vectors',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Separate XYZ',
             color: '#123456',
         },
         {
             id: 'x',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'X',
         },
         {
             id: 'y',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Y',
         },
         {
             id: 'z',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Z',
         },
         {
             id: 'input',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec3,
+            type: 'input_only',
+            dataType: 'vec3',
             name: 'Input Vector',
             value: [ 0, 0, 0 ],
         },
@@ -201,35 +196,34 @@ const vectors_separate_3x1: GNodeT =
     `,
 }
 
-const vectors_separate_2x1: GNodeT =
+const vectors_separate_2x1: GNodeTemplate =
 {
-    id: 'separate_2x1',
+    id: getTemplateId('separate_2x1', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.Vectors,
+    category: 'vectors',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Separate XY',
             color: '#123456',
         },
         {
             id: 'x',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'X',
         },
         {
             id: 'y',
-            type: RowTypes.Output,
-            dataType: DataTypes.Float,
+            type: 'output',
+            dataType: 'float',
             name: 'Y',
         },
         {
             id: 'input',
-            type: RowTypes.InputOnly,
-            dataType: DataTypes.Vec2,
+            type: 'input_only',
+            dataType: 'vec2',
             name: 'Input Vector',
             value: [ 0, 0 ],
         },

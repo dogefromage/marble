@@ -25,15 +25,11 @@ export interface Rect {
 
 export type MapEvery<M extends string, T> = { [ K in M ]: T };
 
-export enum RotationModels {
-    Quaternion = 'Quaternion',
-    Euler_XYZ = 'XYZ Euler',
-    // Euler_XZY = 'XZY Euler',
-    // Euler_YXZ = 'YXZ Euler',
-    // Euler_YZX = 'YZX Euler',
-    // Euler_ZXY = 'ZXY Euler',
-    // Euler_ZYX = 'ZYX Euler',
-}
+export type RotationModels = 'xyzw' | 'xyz';
+export const rotationModelNames: MapEvery<RotationModels, string> = {
+    'xyzw': 'Quaternion',
+    'xyz':  'Euler XYZ',
+};
 
 export type Tuple<T, N extends number> = N extends N ? number extends N ? T[] : _TupleOf<T, N, []> : never;
 type _TupleOf<T, N extends number, R extends unknown[]> = R[ 'length' ] extends N ? R : _TupleOf<T, N, [ T, ...R ]>;

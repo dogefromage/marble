@@ -18,7 +18,7 @@ export function v2p(v: vec2): Point {
     };
 }
 
-export function eulerToMat3(euler: number[], model: Exclude<RotationModels, RotationModels.Quaternion>) {
+export function eulerToMat3(euler: number[], model: Exclude<RotationModels, 'xyzw'>) {
     const [ sx, sy, sz ] = euler.map(euler => Math.sin(euler));
     const [ cx, cy, cz ] = euler.map(euler => Math.cos(euler));
 

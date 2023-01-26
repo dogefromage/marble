@@ -72,8 +72,7 @@ const ViewportCanvas = ({ panelId }: Props) =>
     /**
      * CAMERA
      */
-    enum CameraDragModes
-    {
+    enum CameraDragModes {
         Orbit,
         Pan,
     }

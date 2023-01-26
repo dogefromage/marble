@@ -1,5 +1,5 @@
-import { GeometryJointLocation, GNodeT } from ".";
-import { DataTypes } from "../programs";
+import { GeometryJointLocation, GNodeTemplate } from ".";
+import { StaticDataTypes } from "../programs";
 import { NullArr, ObjMap } from "../UtilityTypes";
 
 export type GeometryFromIndices = [ number, number ];
@@ -9,14 +9,14 @@ export interface GeometryEdge {
     id: string;
     fromIndices: GeometryFromIndices;
     toIndices: GeometryToIndices;
-    dataType: DataTypes;
+    dataType: StaticDataTypes;
 }
 
 export type DoubleMap<T> = ObjMap<ObjMap<T>>;
 export type GeometryAdjacencyList = DoubleMap<GeometryEdge[]>;
 
 export interface GNodeData {
-    template: GNodeT;
+    template: GNodeTemplate;
     /**
      * Def: 
      *  * **Row Heights** := rowHeight[i] = number of height units to go down until the row is reached
@@ -35,10 +35,9 @@ export interface GeometryConnectionData {
     nodeDatas: NullArr<GNodeData>;
     forwardEdges: GeometryAdjacencyList;
     backwardEdges: GeometryAdjacencyList;
-    dependencies: string[];
     expiredProps: {
         needsUpdate: boolean;
         strayJoints: GeometryJointLocation[];
-        expiredNodeStates: Array<{ nodeIndex: number, template: GNodeT }>;
+        expiredNodeStates: Array<{ nodeIndex: number, template: GNodeTemplate }>;
     }
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesInsertIncomingElement } from '../slices/geometriesSlice';
 import { GeometryJointDiv } from '../styles/GeometryJointDiv';
-import { DataTypes, GeometryIncomingElementTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
+import { StaticDataTypes, GeometryIncomingElementTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
 
 interface Props
 {
@@ -12,7 +12,7 @@ interface Props
     jointLocation: GeometryJointLocation;
     jointDirection: GeometryJointDirection;
     
-    dataType: DataTypes;
+    dataType: StaticDataTypes;
     connected: boolean;
     additional?: boolean;
     isStackedInput?: boolean;

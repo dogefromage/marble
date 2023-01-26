@@ -1,7 +1,7 @@
 import { getRowMetadata } from "../../components/GeometryRowRoot";
 import { NODE_WIDTH } from "../../styles/GeometryNodeDiv";
 import { GNODE_ROW_UNIT_HEIGHT } from "../../styles/GeometryRowDiv";
-import { GeometryJointDirection, GNodeData, GNodeS, GNodeT } from "../../types";
+import { GeometryJointDirection, GNodeData, GNodeState, GNodeTemplate } from "../../types";
 import { ObjMap, Point } from "../../types/UtilityTypes";
 
 export default function getJointPositionWorld(nodePosition: Point, heightUnits: number, direction: GeometryJointDirection) {
@@ -19,7 +19,7 @@ export default function getJointPositionWorld(nodePosition: Point, heightUnits: 
     }
 }
 
-export function generateNodeRowHeights(state: GNodeS, template: GNodeT, rowConnections: ObjMap<number>) {
+export function generateNodeRowHeights(state: GNodeState, template: GNodeTemplate, rowConnections: ObjMap<number>) {
     const heights: GNodeData[ 'rowHeights' ] = [ 0 ];
 
     for (let i = 0; i < template.rows.length; i++) {

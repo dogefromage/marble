@@ -1,12 +1,11 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import { dependencyGraphUpdateGraph } from "../../slices/dependencyGraphSlice";
-import { IDependency, ObjMapUndef, DependencyNodeType, DependencyGraphNode } from "../../types";
-import { getDependencyKey } from ".";
+import { Dependable, DependencyGraphNode, DependencyNodeKey, DependencyNodeType, getDependencyKey, ObjMapUndef } from "../../types";
 
-export function useRegisterDependency<T extends IDependency>(
+export function useRegisterDependency<T extends Dependable>(
     elements: ObjMapUndef<T>,
-    getDependenciesOfElement: (element: T) => string[],
+    getDependenciesOfElement: (element: T) => DependencyNodeKey[],
     dependencyType: DependencyNodeType,
 ) {
     const dispatch = useAppDispatch();
@@ -14,7 +13,7 @@ export function useRegisterDependency<T extends IDependency>(
 
     useEffect(() => {
         const addNodes: DependencyGraphNode[] = [];
-        const removeNodes: string[] = [];
+        const removeNodes: DependencyNodeKey[] = [];
 
         const newElements = new Map<string, T>();
 

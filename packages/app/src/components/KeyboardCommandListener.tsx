@@ -24,7 +24,7 @@ const KeyboardCommandListener = () => {
 
             for (const combination of command.keyCombinations) {
                 if (matchesKeyCombination(combination, e)) {
-                    dispatchCommand(command, {}, CommandCallTypes.KeyCombination);
+                    dispatchCommand(command, {}, 'keycombination');
                     e.preventDefault();
                 }
             }

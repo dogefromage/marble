@@ -6,8 +6,7 @@ import { selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { layerProgramsSetMany, layerProgramsSetRows, selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, Layer, LayerProgram, ObjMap } from '../types';
-import { getDependencyKey } from '../utils/dependencyGraph';
+import { DependencyNodeType, getDependencyKey, Layer, LayerProgram, ObjMap, OrderedDependencyNode } from '../types';
 import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
 import { detectMapDifference } from '../hooks/useReactiveMap';
 import { mapDynamicValues } from '../utils/layerPrograms';
@@ -41,7 +40,7 @@ const CompilerRoot = () =>
                 return null;
             },
             hasChanged: (layer, program) => {
-                const layerKey = getDependencyKey(layer.id, DependencyNodeType.Layer);
+                const layerKey = getDependencyKey(layer.id, 'layer');
                 const layerOrder = dependencyGraph.order.get(layerKey);
                 if (!layerOrder) return false;
                 return layerOrder.hash !== program.hash;

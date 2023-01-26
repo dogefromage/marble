@@ -1,31 +1,30 @@
-import { GNodeT, GNodeTemplateTypes, RowTypes, DataTypes, GNodeTemplateCategories } from "../../types"
+import { getTemplateId, GNodeTemplate } from "../../types"
 import { glsl } from "../../utils/codeStrings"
-import { EMPTY_SOLID, EMPTY_SOLID_LITERAL, TemplateColors, TEMPLATE_FAR_AWAY, TEMPLATE_FAR_AWAY_LITERAL } from "./templateConstants"
+import { EMPTY_SOLID, EMPTY_SOLID_LITERAL, TemplateColors } from "./templateConstants"
 
-const solid_operation_union: GNodeT =
+const solid_operation_union: GNodeTemplate =
 {
-    id: 'union',
+    id: getTemplateId('union', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.SolidOperators,
+    category: 'solid_operators',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Union',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Solid,
+            type: 'output',
+            dataType: 'Solid',
             name: 'Union',
         },
         {
             id: 'inputs',
-            type: RowTypes.InputStacked,
+            type: 'input_stacked',
             name: 'Solid',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
     ],
@@ -35,37 +34,36 @@ const solid_operation_union: GNodeT =
     `,
 }
 
-const solid_operation_difference: GNodeT =
+const solid_operation_difference: GNodeTemplate =
 {
-    id: 'difference',
+    id: getTemplateId('difference', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.SolidOperators,
+    category: 'solid_operators',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Difference',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Solid,
+            type: 'output',
+            dataType: 'Solid',
             name: 'Difference',
         },
         {
             id: 'positive',
-            type: RowTypes.InputOnly,
+            type: 'input_only',
             name: 'Start Solid',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
         {
             id: 'negatives',
-            type: RowTypes.InputStacked,
+            type: 'input_stacked',
             name: 'Complement',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
     ],
@@ -76,30 +74,29 @@ const solid_operation_difference: GNodeT =
     `,
 }
 
-const solid_operation_intersection: GNodeT =
+const solid_operation_intersection: GNodeTemplate =
 {
-    id: 'intersection',
+    id: getTemplateId('intersection', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.SolidOperators,
+    category: 'solid_operators',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Intersection',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Solid,
+            type: 'output',
+            dataType: 'Solid',
             name: 'Intersection',
         },
         {
             id: 'inputs',
-            type: RowTypes.InputStacked,
+            type: 'input_stacked',
             name: 'Solid',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
     ],
@@ -109,37 +106,36 @@ const solid_operation_intersection: GNodeT =
     `,
 }
 
-const solid_operation_set_color: GNodeT =
+const solid_operation_set_color: GNodeTemplate =
 {
-    id: 'set_color',
+    id: getTemplateId('set_color', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.SolidOperators,
+    category: 'solid_operators',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Set Color',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Solid,
+            type: 'output',
+            dataType: 'Solid',
             name: 'Solid',
         },
         {
             id: 'input',
-            type: RowTypes.InputOnly,
+            type: 'input_only',
             name: 'Solid',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
         {
             id: 'color',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Color',
-            dataType: DataTypes.Vec3,
+            dataType: 'vec3',
             value: [ 1, 1, 1 ],
         }
     ],
@@ -148,37 +144,36 @@ const solid_operation_set_color: GNodeT =
     `,
 }
 
-const solid_operation_correct_distance: GNodeT =
+const solid_operation_correct_distance: GNodeTemplate =
 {
-    id: 'reduce_step_size',
+    id: getTemplateId('reduce_step_size', 'static'),
     version: 0,
-    type: GNodeTemplateTypes.Base,
-    category: GNodeTemplateCategories.SolidOperators,
+    category: 'solid_operators',
     rows: [
         {
             id: 'name',
-            type: RowTypes.Name,
+            type: 'name',
             name: 'Correct Distance',
             color: TemplateColors.Operators,
         },
         {
             id: 'output',
-            type: RowTypes.Output,
-            dataType: DataTypes.Solid,
+            type: 'output',
+            dataType: 'Solid',
             name: 'Solid',
         },
         {
             id: 'input',
-            type: RowTypes.InputOnly,
+            type: 'input_only',
             name: 'Solid',
-            dataType: DataTypes.Solid,
+            dataType: 'Solid',
             value: EMPTY_SOLID,
         },
         {
             id: 'factor',
-            type: RowTypes.Field,
+            type: 'field',
             name: 'Factor',
-            dataType: DataTypes.Float,
+            dataType: 'float',
             value: 1,
         }
     ],

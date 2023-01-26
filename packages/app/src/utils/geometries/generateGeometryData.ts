@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeT, GNodeTemplateTypes, InputOnlyRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
+import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputOnlyRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
 import { generateNodeRowHeights } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
@@ -14,7 +14,7 @@ function outputKey(nodeId: string, rowId: string) {
 
 function genAdjList(
     geometry: GeometryS,
-    nodeTemplates: NullArr<GNodeT>,
+    nodeTemplates: NullArr<GNodeTemplate>,
 ) {
     const N = geometry.nodes.length;
 
@@ -126,9 +126,9 @@ function genAdjList(
     }
 }
 
-export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeT>, hash: number) {
+export default function generateGeometryData(geometry: GeometryS, templates: ObjMapUndef<GNodeTemplate>, hash: number) {
     const N = geometry.nodes.length;
-    const nodeTemplates: NullArr<GNodeT> = new Array(N).fill(null);
+    const nodeTemplates: NullArr<GNodeTemplate> = new Array(N).fill(null);
     const expiredNodeStates: GeometryConnectionData[ 'expiredProps' ][ 'expiredNodeStates' ] = [];
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
@@ -136,7 +136,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         const template = templates[ node.templateId ];
         if (!template) continue; // data stays null
 
-        if (node.templateData == null || node.templateData.version < template.version) {
+        if (node.templateVersion < template.version) {
             expiredNodeStates.push({
                 nodeIndex, template,
             });
@@ -152,7 +152,6 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
     } = genAdjList(geometry, nodeTemplates);
 
     const nodeDatas: NullArr<GNodeData> = new Array(N).fill(null);
-    const dependencies = new Set<string>();
 
     for (let nodeIndex = 0; nodeIndex < N; nodeIndex++) {
         const node = geometry.nodes[ nodeIndex ];
@@ -161,9 +160,6 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         if (!template) {
             // default is null
             continue;
-        }
-        if (template.type === GNodeTemplateTypes.Composite) {
-            dependencies.add(template.id);
         }
 
         const rowConnections = rowConnectedJoints[ nodeIndex ]!;
@@ -192,7 +188,6 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
             strayJoints,
             expiredNodeStates,
         },
-        dependencies: Array.from(dependencies),
     }
 
     return connectionData;

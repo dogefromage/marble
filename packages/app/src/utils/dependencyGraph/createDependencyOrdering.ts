@@ -1,11 +1,11 @@
-import { DependencyAdjacency, OrderedDependencyNode } from "../../types";
+import { DependencyGraph, DependencyNodeKey, DependencyGraphNode, OrderedDependencyNode } from "../../types";
 import { ihash } from "../hashInt32";
 
-export default function(dependencyElements: DependencyAdjacency) {
-    const order = new Map<string, OrderedDependencyNode>();
+export default function(dependencyElements: DependencyGraph['nodes']) {
+    const order = new Map<DependencyNodeKey, OrderedDependencyNode>();
     const visited = new Set<string>();
 
-    function orderDfs(key: string): OrderedDependencyNode {
+    function orderDfs(key: DependencyNodeKey): OrderedDependencyNode {
         visited.add(key);
 
         // create empty "missing" node, s.t. the rest of the program still works as expected 

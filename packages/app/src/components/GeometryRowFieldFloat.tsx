@@ -3,12 +3,12 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
-import { DataTypes, FieldRowT } from '../types';
+import { StaticDataTypes, FieldRowT } from '../types';
 import GeometryInputJoint from './GeometryInputJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
 
-type Props = RowProps<FieldRowT<DataTypes.Float>>;
+type Props = RowProps<FieldRowT<'float'>>;
 
 const GeometryRowFieldFloat = ({ geometryId, nodeId, row }: Props) =>
 {

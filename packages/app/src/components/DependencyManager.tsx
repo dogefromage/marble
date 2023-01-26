@@ -1,15 +1,12 @@
-import { useEffect } from 'react';
 import { useAppSelector } from '../redux/hooks';
-import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, GeometryS, GNodeT, GNodeTemplateTypes, Layer } from '../types';
-import { getDependencyKey } from '../utils/dependencyGraph';
+import { decomposeTemplateId, DependencyNodeType, GeometryS, getDependencyKey, GNodeTemplate, GNodeTemplateTypes, Layer } from '../types';
 import { useRegisterDependency } from '../utils/dependencyGraph/useRegisterDependency';
 
 function getLayerDeps(layer: Layer) {
-    return [ getDependencyKey(layer.rootGeometryId, DependencyNodeType.Geometry) ];
+    return [ getDependencyKey(layer.rootGeometryId, 'geometry') ];
 }
 
 function getGeometryDeps(geo: GeometryS) {
@@ -17,12 +14,13 @@ function getGeometryDeps(geo: GeometryS) {
     for (const node of geo.nodes) {
         templateDependencies.add(node.templateId);
     }
-    return [ ...templateDependencies ].map(id => getDependencyKey(id, DependencyNodeType.NodeTemplate));
+    return [ ...templateDependencies ].map(id => getDependencyKey(id, 'node_template'));
 }
 
-function getTemplateDeps(temp: GNodeT) {
-    const dep = getDependencyKey(temp.id, DependencyNodeType.Geometry);
-    return temp.type === GNodeTemplateTypes.Composite ? [ dep ] : [];
+function getTemplateDeps(temp: GNodeTemplate) {
+    const dep = getDependencyKey(temp.id, 'geometry');
+    const { templateType } = decomposeTemplateId(temp.id);
+    return templateType === 'composite' ? [ dep ] : [];
 }
 
 const DependencyManager = () =>
@@ -31,19 +29,19 @@ const DependencyManager = () =>
     useRegisterDependency(
         useAppSelector(selectLayers),
         getLayerDeps,
-        DependencyNodeType.Layer,
+        'layer',
     );
     // geometries
     useRegisterDependency(
         useAppSelector(selectGeometries),
         getGeometryDeps,
-        DependencyNodeType.Geometry,
+        'geometry',
     );
     // templates
     useRegisterDependency(
         useAppSelector(selectTemplates).templates,
         getTemplateDeps,
-        DependencyNodeType.NodeTemplate,
+        'node_template',
     );
 
     // // PRINT

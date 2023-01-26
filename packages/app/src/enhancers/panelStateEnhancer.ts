@@ -5,10 +5,9 @@ import { RootState } from "../redux/store";
 import { PanelState, ObjMap } from "../types";
 import { ViewTypes, PanelStateMap } from "../types";
 
-enum PanelStateActionTypes
-{
-    Bind = 'panelState.create',
-    Remove = 'panelState.remove',
+enum PanelStateActionTypes {
+    Bind = 'panelState/create',
+    Remove = 'panelState/remove',
 }
 
 type BindPayload = { panelId: string, panelState: PanelState, viewType: ViewTypes };
