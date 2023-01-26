@@ -1,7 +1,7 @@
-import { StaticDataTypes, RowValueMap, TEXTURE_VAR_DATATYPE_SIZE, Tuple } from "../../types";
+import { DataTypes, OutputRowT, DataTypeValueTypes, textureVarDatatypeSize, Tuple } from "../../types";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
 
-export function formatLiteral(value: RowValueMap[ StaticDataTypes ], dataType: StaticDataTypes): string {
+export function formatLiteral(value: DataTypeValueTypes[ DataTypes ], dataType: DataTypes): string {
     if (dataType === 'float') {
         const str = value.toString();
         if (/\./.test(str))
@@ -28,7 +28,7 @@ export function formatLiteral(value: RowValueMap[ StaticDataTypes ], dataType: S
     throw new Error(`Cannot convert dataType "${dataType}" to GLSL value`);
 }
 
-function formatTextureLookup(textureCoordinate: number, dataType: StaticDataTypes): string {
+function formatTextureLookup(textureCoordinate: number, dataType: DataTypes): string {
     if (dataType === 'float') {
         return `${TEXTURE_LOOKUP_METHOD_NAME}(${textureCoordinate})`;
     }
@@ -36,7 +36,7 @@ function formatTextureLookup(textureCoordinate: number, dataType: StaticDataType
     if (dataType === 'vec2' ||
         dataType === 'vec3' ||
         dataType === 'mat3') {
-        const count = TEXTURE_VAR_DATATYPE_SIZE[ dataType ];
+        const count = textureVarDatatypeSize[ dataType ];
 
         const coords: number[] = [];
         for (let i = 0; i < count; i++)
@@ -58,10 +58,21 @@ function formatTextureLookup(textureCoordinate: number, dataType: StaticDataType
     throw new Error(`Cannot lookup texture for dataType "${dataType}"`);
 }
 
-export function formatTextureLookupStatement(identifier: string, textureCoordinate: number, dataType: StaticDataTypes) {
+export function formatTextureLookupStatement(identifier: string, textureCoordinate: number, dataType: DataTypes) {
     return `${dataType} ${identifier} = ${formatTextureLookup(textureCoordinate, dataType)};`;
 }
 
 export function generateStackedExpression(func: string, identifier: string, defaultLiteral: string) {
     return `${func}(${defaultLiteral}, ${identifier})`;
+}
+
+export function createReturntypePlaceholder(outputs: OutputRowT[]) {
+    if (outputs.length === 0) return 'void';
+    if (outputs.length === 1) return outputs[0].dataType;
+
+    const outputTypesString = outputs
+        .map(out => out.dataType)
+        .join(', ');
+
+    return `TuplePlaceholder<${outputTypesString}>`
 }

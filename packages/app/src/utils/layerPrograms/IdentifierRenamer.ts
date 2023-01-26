@@ -1,6 +1,6 @@
 import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, ProgramTextureVarMapping, RowS, RowTypes, SuperInputRowT, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, ProgramTextureVarMapping, RowS, RowTypes, SuperInputRowT, textureVarDatatypeSize } from "../../types";
 import { Counter } from "../Counter";
 import { LOOKUP_TEXTURE_WIDTH } from "../viewportView/GLProgramRenderer";
 import { formatLiteral, formatTextureLookupStatement } from "./generateCodeStatements";
@@ -204,7 +204,7 @@ export default class IdentifierRenamer
 
         // case 2.1: argument connected
         const incomingArg = rowState?.incomingElements?.[0];
-        if (incomingArg?.type === GeometryIncomingElementTypes.Argument) {
+        if (incomingArg?.type === 'argument') {
             path.node.identifier = incomingArg.argument.id;
             return;
         }
@@ -224,7 +224,7 @@ export default class IdentifierRenamer
             if (!this.definedLocals.has(dynamicId)) {
                 this.definedLocals.add(dynamicId);
                 // DECLARATION
-                const size = TEXTURE_VAR_DATATYPE_SIZE[rowTempAsInput.dataType];
+                const size = textureVarDatatypeSize[rowTempAsInput.dataType];
                 const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
                 const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTempAsInput.dataType);
                 this.addDeclarationInfront(path, textureLookupCode);

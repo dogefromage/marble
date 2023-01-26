@@ -21,7 +21,7 @@ const generative_perlin_noise: GNodeTemplate =
         },
         {
             id: 'coordinates',
-            type: 'input_only',
+            type: 'input',
             name: 'Coordinates',
             dataType: 'vec3',
             value: [ 0, 0, 0 ],

@@ -2,13 +2,13 @@ import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { mapDynamicValues, preprocessSource, setBlockIndent } from '.';
 import { rootOutputTemplateId } from '../../content/defaultTemplates/outputTemplates';
-import { decomposeTemplateId, DependencyGraph, DependencyNodeType, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplateTypes, InputOnlyRowT, Layer, LayerProgram, ObjMapUndef, ProgramInclude, RowS, splitDependencyKey, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import { findClosingBracket, splitBracketSafe } from '../codeStrings';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
-import { generateStackedExpression } from './generateCodeStatements';
+import { createReturntypePlaceholder, generateStackedExpression } from './generateCodeStatements';
 import IdentifierRenamer from "./IdentifierRenamer";
 
 export default class ProgramCompiler {
@@ -232,11 +232,13 @@ export default class ProgramCompiler {
         }
 
         const functionName = `g_${geometry.id}`;
-        const functionArgString = geometry.arguments
+        const functionArgString = geometry.inputs
             .map(arg => `${arg.dataType} ${arg.id}`)
             .join(', ');
 
-        const functionHeader = `${geometry.returnType} ${functionName}(${functionArgString})`
+        const returnType = createReturntypePlaceholder(geometry.outputs);
+
+        const functionHeader = `${returnType} ${functionName}(${functionArgString})`
         const functionBody = instructions.join('\n');
 
         return {

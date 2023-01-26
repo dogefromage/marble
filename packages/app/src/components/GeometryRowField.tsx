@@ -1,5 +1,5 @@
 import React from 'react';
-import { StaticDataTypes, FieldRowT, RowMetadata } from '../types';
+import { DataTypes, FieldRowT, RowMetadata } from '../types';
 import GeometryRowFieldFloat from './GeometryRowFieldFloat';
 import GeometryRowFieldVecN from './GeometryRowFieldVecN';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';

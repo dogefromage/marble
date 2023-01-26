@@ -1,4 +1,4 @@
-import { GeometryConnectionData, GeometryS, InputOnlyRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, TEXTURE_VAR_DATATYPE_SIZE } from "../../types";
+import { GeometryConnectionData, GeometryS, InputRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, textureVarDatatypeSize } from "../../types";
 
 function removeIndent(s: string, indent: number) {
     for (let i = 0; i < indent; i++) {
@@ -80,7 +80,7 @@ export function mapDynamicValues(
 
     for (const mapping of textureVarMappings) {
         const startCoord = mapping.textureCoordinate;
-        const size = TEXTURE_VAR_DATATYPE_SIZE[ mapping.dataType ];
+        const size = textureVarDatatypeSize[ mapping.dataType ];
 
         const geometry = geometries[ mapping.geometryId ];
         const geometryData = geometryDatas[ mapping.geometryId ];
@@ -92,8 +92,8 @@ export function mapDynamicValues(
         if (!node || !nodeTemplate) {
             continue;
         }
-        const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as InputOnlyRowT;
-        const row = node.rows[ rowTemplate.id ] as RowS<InputOnlyRowT>;
+        const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as InputRowT;
+        const row = node.rows[ rowTemplate.id ] as RowS<InputRowT>;
         if (rowTemplate.dataType !== mapping.dataType) {
             throw new Error(`Datatype mismatch`);
         }
@@ -122,3 +122,4 @@ export function mapDynamicValues(
         return newRow;
     }
 }
+

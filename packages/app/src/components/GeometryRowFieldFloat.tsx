@@ -3,7 +3,7 @@ import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
-import { StaticDataTypes, FieldRowT } from '../types';
+import { DataTypes, FieldRowT } from '../types';
 import GeometryInputJoint from './GeometryInputJoint';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';

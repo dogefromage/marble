@@ -1,44 +1,45 @@
 import React from 'react';
-import { GeometryIncomingElementTypes, GeometryJointLocation, RowT, RowZ, SuperInputRowT } from '../types';
+import { useAppSelector } from '../redux/hooks';
+import { selectSingleGeometry } from '../slices/geometriesSlice';
+import { GeometryJointLocation, InputRowT, RowTypes, RowZ, DataTypes, RowT } from '../types';
 import GeometryArgumentTag from './GeometryArgumentTag';
 import GeometryJoint from './GeometryJoint';
 
-interface Props
-{
+interface Props {
     geometryId: string;
-    row: RowZ<RowT & SuperInputRowT>;
+    row: RowZ & Pick<InputRowT, 'defaultArgumentToken' | 'dataType'>;
     jointLocation: GeometryJointLocation;
 }
 
-const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) =>
-{
-    let incomingElement = row.incomingElements?.[jointLocation.subIndex];
+const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
 
-    if (incomingElement == null && 
-        jointLocation.subIndex === 0 && 
+    const geometry = useAppSelector(selectSingleGeometry(geometryId));
+    if (!geometry) return null;
+
+    let incomingElement = row.incomingElements?.[ jointLocation.subIndex ];
+    if (incomingElement == null &&
+        jointLocation.subIndex === 0 &&
         row.defaultArgumentToken != null
     ) {
         incomingElement = {
-            type: GeometryIncomingElementTypes.Argument,
-            argument: {
-                id: row.defaultArgumentToken,
-                dataType: row.dataType,
-                name: row.defaultArgumentToken, // change this
-                defaultValue: 0,
-            }
+            type: 'argument',
+            argument: row.defaultArgumentToken,
         }
     }
 
+    const argumentId = incomingElement?.type === 'argument' && incomingElement.argument;
+    const argument = geometry.inputs.find(input => input.id === argumentId);
+
     return (<>
         {
-            incomingElement?.type === GeometryIncomingElementTypes.Argument &&
-            <GeometryArgumentTag 
+            argument &&
+            <GeometryArgumentTag
                 geometryId={geometryId}
-                argument={incomingElement.argument}
+                argument={argument}
             />
         }
-        <GeometryJoint 
-            geometryId={ geometryId }
+        <GeometryJoint
+            geometryId={geometryId}
             jointLocation={jointLocation}
             jointDirection='input'
             connected={incomingElement != null}

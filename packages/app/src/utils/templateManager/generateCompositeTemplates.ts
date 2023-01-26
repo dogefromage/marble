@@ -1,7 +1,6 @@
 import { outputNameRow } from "../../content/defaultTemplates/outputTemplates";
-import { decomposeTemplateId, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateCategories, GNodeTemplateTypes, NameRowT, ObjMapUndef, OutputRowT, RowT, RowTypes, SpecificRowT } from "../../types";
-import { glsl } from "../codeStrings";
-
+import { decomposeTemplateId, defaultDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, InputRowT, NameRowT, ObjMapUndef, SpecificRowT } from "../../types";
+import { createReturntypePlaceholder } from "../layerPrograms/generateCodeStatements";
 
 function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
     const nameRow: NameRowT = {
@@ -11,27 +10,19 @@ function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
         color: '#333333',
     };
 
-    const outputRow: OutputRowT = {
-        type: 'output',
-        id: 'output',
-        name: 'output',
-        dataType: geometry.returnType,
-    };
-
-    const inputRows: RowT[] = geometry.arguments.map(arg => ({
-        type: 'input_only',
-        id: arg.id,
-        name: arg.name,
-        dataType: arg.dataType,
-        value: arg.defaultValue,
-    }));
+    const inputs =  geometry.inputs as SpecificRowT[];
+    const outputs = geometry.outputs as SpecificRowT[];
 
     const template: GNodeTemplate = {
         id: getTemplateId(geometry.id, 'composite'),
         version: geometry.version,
         category: 'composite',
         instructions: '',
-        rows: [ nameRow, outputRow, ...(inputRows as SpecificRowT[]) ],
+        rows: [ 
+            nameRow,
+            ...inputs,
+            ...outputs,
+        ],
     }
 
     return template;
@@ -41,17 +32,35 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
 
     const templateId = getTemplateId(geometry.id, 'output');
 
-    const instructions = ``;
+    const inputRows: InputRowT[] = geometry.outputs.map(output => {
+        return {
+            id: output.id,
+            type: 'input',
+            name: output.name,
+            dataType: output.dataType,
+            value: defaultDataTypeValue[output.dataType],
+        }
+    });
+
+    /**
+     * calls and returns a constructor function of a 
+     * placeholder datatype which will be overwritten during compilation.
+     */    
+    const returnType = createReturntypePlaceholder(geometry.outputs);
+    const constructionArgs = geometry.outputs.map(output => output.id).join(', ');
+    const instructions = `return ${returnType}(${constructionArgs})`;
 
     const outputTemplate: GNodeTemplate = {
         id: templateId,
-        category: 'output',
         version: geometry.version,
+        category: 'output',
         rows: [
             outputNameRow,
+            ...inputRows as SpecificRowT[],
         ],
         instructions,
     }
+    return outputTemplate;
 }
 
 export default function generateDynamicTemplates(
@@ -70,10 +79,7 @@ export default function generateDynamicTemplates(
 
     const addTemplates: GNodeTemplate[] = [];
 
-    for (const geometry of Object.values(geometries)) {
-        if (!geometry || geometry?.isRoot) {
-            continue;
-        }
+    for (const geometry of Object.values(geometries) as GeometryS[]) {
         const templateVersion = lastTemplates.get(geometry.id);
         lastTemplates.delete(geometry.id);
         if (templateVersion == null || templateVersion < geometry.version) {

@@ -4,7 +4,7 @@ import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';
-import { StaticDataTypes, FieldRowT } from '../types';
+import { DataTypes, FieldRowT } from '../types';
 import GeometryJoint from './GeometryJoint';
 import { getRowMetadataField } from './GeometryRowField';
 import { RowProps } from './GeometryRowRoot';

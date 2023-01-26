@@ -1,46 +1,40 @@
 import { Dependable } from "../dependencyGraph";
-import { StaticDataTypes } from "../programs";
+import { DataTypes } from "../layerPrograms";
 import { GNodeState } from "./GNode";
-import { RowValueMap } from "./Rows";
-
-export interface GeometryArgument<D extends StaticDataTypes = StaticDataTypes> {
-    id: string;
-    name: string;
-    dataType: D;
-    defaultValue: RowValueMap[ D ]
-}
-
-export type DefaultArgumentIds = 'position';
-
-export const rootGeometryArguments: GeometryArgument[] = [
-    {
-        id: 'position',
-        name: 'Position',
-        dataType: 'vec3',
-        defaultValue: [ 0, 0, 0 ],
-    },
-];
+import { InputRowT, OutputRowT } from "./Rows";
 
 export interface GeometryTemplate {
-    isRoot: boolean;
-    arguments: GeometryArgument[];
-    returnType: StaticDataTypes;
     name?: string;
+    inputs: InputRowT[];
+    outputs: OutputRowT[];
 }
 
-export const ROOT_GEOMETRY_TEMPLATE: GeometryTemplate = {
-    isRoot: true,
-    arguments: rootGeometryArguments,
-    returnType: 'Solid',
+export const rootGeometryTemplate: GeometryTemplate = {
+    inputs: [
+        {
+            id: 'position',
+            type: 'input',
+            name: 'Position',
+            dataType: 'vec3',
+            value: [ 0, 0, 0 ],
+        },
+    ],
+    outputs: [
+        {
+            id: 'solid',
+            type: 'output',
+            name: 'Solid',
+            dataType: 'Solid',
+        }
+    ],
 }
 
 export interface GeometryS extends Dependable {
     // basic
     name: string;
-    isRoot: boolean;
     // in/out
-    arguments: GeometryArgument[];
-    returnType: StaticDataTypes;
+    inputs: InputRowT[];
+    outputs: OutputRowT[];
     // content
     nodes: Array<GNodeState>;
     rowStateInvalidator: number;

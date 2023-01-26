@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { StaticDataTypes } from '../types';
+import { DataTypes } from '../types';
 import { GNODE_ROW_UNIT_HEIGHT } from './GeometryRowDiv';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
@@ -11,7 +11,7 @@ export const GeometryArgumentTagWrapperDiv = styled.div`
 
 export interface GeometryArgumentTagDivProps
 {
-    dataType: StaticDataTypes;
+    dataType: DataTypes;
 }
 
 export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`

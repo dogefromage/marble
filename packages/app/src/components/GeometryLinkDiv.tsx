@@ -1,9 +1,9 @@
-import { StaticDataTypes, Point } from "../types";
+import { DataTypes, Point } from "../types";
 import styled from 'styled-components';
 
 interface LinkDivProps
 {
-    dataType: StaticDataTypes;
+    dataType: DataTypes;
     A: Point;
     B: Point;
 }

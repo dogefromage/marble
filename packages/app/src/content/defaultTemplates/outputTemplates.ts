@@ -20,7 +20,7 @@ const root_output: GNodeTemplate = {
         {
             id: 'input',
             name: 'Solid',
-            type: 'input_only',
+            type: 'input',
             dataType: 'Solid',
             value: [ TEMPLATE_FAR_AWAY, 0, 0, 0 ],
         },

@@ -1,6 +1,7 @@
+import { defaultDataTypeValue } from "../../types"
 import { getTemplateId, GNodeTemplate } from "../../types/geometries"
 import { glsl } from "../../utils/codeStrings"
-import { MAT3_IDENTITY, TemplateColors } from "./templateConstants"
+import { TemplateColors } from "./templateConstants"
 
 const vectors_mirror_plane: GNodeTemplate =
 {
@@ -22,7 +23,7 @@ const vectors_mirror_plane: GNodeTemplate =
         },
         {
             id: 'x',
-            type: 'input_only',
+            type: 'input',
             dataType: 'vec3',
             defaultArgumentToken: 'position',
             value: [ 0, 0, 0 ],
@@ -71,7 +72,7 @@ const vectors_repeat_cell: GNodeTemplate =
         },
         {
             id: 'x',
-            type: 'input_only',
+            type: 'input',
             dataType: 'vec3',
             defaultArgumentToken: 'position',
             value: [ 0, 0, 0 ],
@@ -116,7 +117,7 @@ const vectors_transform: GNodeTemplate =
         },
         {
             id: 'input',
-            type: 'input_only',
+            type: 'input',
             dataType: 'vec3',
             name: 'Input Pos',
             value: [ 0, 0, 0 ],
@@ -135,7 +136,7 @@ const vectors_transform: GNodeTemplate =
             dataType: 'mat3',
             rotationModel: 'xyz',
             name: 'Rotation',
-            value: MAT3_IDENTITY,
+            value: defaultDataTypeValue['mat3'],
         },
         {
             id: 'scale',
@@ -183,7 +184,7 @@ const vectors_separate_3x1: GNodeTemplate =
         },
         {
             id: 'input',
-            type: 'input_only',
+            type: 'input',
             dataType: 'vec3',
             name: 'Input Vector',
             value: [ 0, 0, 0 ],
@@ -222,7 +223,7 @@ const vectors_separate_2x1: GNodeTemplate =
         },
         {
             id: 'input',
-            type: 'input_only',
+            type: 'input',
             dataType: 'vec2',
             name: 'Input Vector',
             value: [ 0, 0 ],

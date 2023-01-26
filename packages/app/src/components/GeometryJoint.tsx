@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesInsertIncomingElement } from '../slices/geometriesSlice';
 import { GeometryJointDiv } from '../styles/GeometryJointDiv';
-import { StaticDataTypes, GeometryIncomingElementTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
+import { DataTypes, GeometryIncomingElementTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
 
 interface Props
 {
@@ -12,7 +12,7 @@ interface Props
     jointLocation: GeometryJointLocation;
     jointDirection: GeometryJointDirection;
     
-    dataType: StaticDataTypes;
+    dataType: DataTypes;
     connected: boolean;
     additional?: boolean;
     isStackedInput?: boolean;
@@ -28,7 +28,7 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
         {
             e.dataTransfer.setDragImage(new Image(), 0, 0);
             return {
-                elementType: GeometryIncomingElementTypes.RowOutput,
+                elementType: 'row_output',
                 location: jointLocation,
                 direction: jointDirection,
                 dataType,
@@ -38,7 +38,7 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
     });
 
     const canDrop = (transfer: JointLinkDndTransfer) => {
-        // if (transfer.elementType === GeometryIncomingElementTypes.Argument) {
+        // if (transfer.elementType === 'argument') {
         //     return (
         //         transfer.argument.dataType === dataType &&
         //         direction === 'input'
@@ -67,12 +67,12 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
         {
             if (!canDrop(transfer)) return;
 
-            // if (transfer.elementType === GeometryIncomingElementTypes.Argument) {
+            // if (transfer.elementType === 'argument') {
             //     dispatch(geometriesInsertIncomingElement({
             //         geometryId,
             //         jointLocation: jointLocation,
             //         incomingElement: { 
-            //             type: GeometryIncomingElementTypes.Argument,
+            //             type: 'argument',
             //             argument: transfer.argument,
             //         },
             //         isStackedInput,
@@ -91,7 +91,7 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
                     geometryId,
                     jointLocation: inputJointLocation,
                     incomingElement: {
-                        type: GeometryIncomingElementTypes.RowOutput,
+                        type: 'row_output',
                         location: outputJointLocation,
                     },
                     isStackedInput,

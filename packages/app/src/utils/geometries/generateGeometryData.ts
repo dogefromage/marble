@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryIncomingElementTypes, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputOnlyRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
+import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
 import { generateNodeRowHeights } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
@@ -54,14 +54,14 @@ function genAdjList(
         if (!template) continue;
 
         for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
-            const templateRow = template.rows[ rowIndex ] as InputOnlyRowT;
+            const templateRow = template.rows[ rowIndex ] as InputRowT;
             const rowId = templateRow.id;
             const row = node.rows[ rowId ];
             if (!row) continue; // unconnected
 
             for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++) {
                 const incoming = row.incomingElements[ subIndex ];
-                if (incoming.type === GeometryIncomingElementTypes.Argument) {
+                if (incoming.type === 'argument') {
                     // is not a connection
                     continue;
                 }

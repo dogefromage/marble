@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { decomposeTemplateId, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, SuperRowS, UndoAction } from "../types";
+import { decomposeTemplateId, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, BaseRowS, UndoAction } from "../types";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
 const defaultGeometryContent = {
@@ -109,7 +109,7 @@ export const geometriesSlice = createSlice({
             if (!n) return;
 
             if (a.payload.rowData) {
-                const superDefault: SuperRowS = {
+                const superDefault: BaseRowS = {
                     incomingElements: [],
                 }
                 // @ts-ignore
@@ -208,7 +208,7 @@ export const geometriesSlice = createSlice({
                 // remove all stray joints
                 removeIncomingElements(s, geometryId, expiredProps.strayJoints);
 
-                const superDefaultRow: SuperRowS = { incomingElements: [] };
+                const superDefaultRow: BaseRowS = { incomingElements: [] };
 
                 // update templates
                 for (const { nodeIndex, template } of expiredProps.expiredNodeStates) {

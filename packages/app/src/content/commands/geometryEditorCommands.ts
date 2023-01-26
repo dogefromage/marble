@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { ActivePanel, Command, CommandParameterMap, CommandScope, StaticDataTypes, Point, ViewTypes, getTemplateId } from "../../types";
+import { ActivePanel, Command, CommandParameterMap, CommandScope, DataTypes, Point, ViewTypes, getTemplateId } from "../../types";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
 
@@ -86,10 +86,9 @@ export const geometryEditorCommands: Command[] =
                 geometriesCreate({
                     geometryId: subGeometryId,
                     geometryTemplate: {
-                        isRoot: false,
-                        name: 'Sub geometry',
-                        arguments: [],
-                        returnType: 'float',
+                        name: 'Sub Geometry',
+                        inputs: [],
+                        outputs: [],
                     },
                     undo: { actionToken }
                 }),

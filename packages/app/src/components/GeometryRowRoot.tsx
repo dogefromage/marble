@@ -41,7 +41,7 @@ const GeometryRowRoot = (props: RowProps) => {
     switch (props.row.type) {
         case 'name':
             return <GeometryRowName {...props as RowProps<NameRowT>} />;
-        case 'input_only':
+        case 'input':
             return <GeometryRowInputOnly {...props as RowProps<InputOnlyRowT>} />;
         case 'input_stacked':
             return <GeometryRowInputStacked {...props as RowProps<StackedInputRowT>} />;

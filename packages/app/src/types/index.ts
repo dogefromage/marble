@@ -2,7 +2,7 @@ export * from './commands';
 export * from './menu';
 export * from './geometries';
 export * from './panelManager';
-export * from './programs';
+export * from './layerPrograms';
 export * from './undo';
 export * from './UtilityTypes';
 export * from './viewportView';

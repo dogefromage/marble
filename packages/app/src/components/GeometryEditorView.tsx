@@ -12,7 +12,7 @@ import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from "../utils/testSetup";
 import GeometryEditorTransform from "./GeometryEditorTransform";
 import GeometryTemplateCatalog from "./GeometryTemplateCatalog";
 import PanelBody from "./PanelBody";
-import { ROOT_GEOMETRY_TEMPLATE } from "../types";
+import { rootGeometryTemplate } from "../types";
 import { ViewProps, ViewTypes } from "../types/panelManager/views";
 import GeometryEditorBreadCrumbs from "./GeometryEditorBreadCrumbs";
 
@@ -119,7 +119,7 @@ const GeometryEditorView = (viewProps: ViewProps) => {
                             }))
                             dispatch(geometriesCreate({
                                 geometryId,
-                                geometryTemplate: ROOT_GEOMETRY_TEMPLATE,
+                                geometryTemplate: rootGeometryTemplate,
                                 undo: { actionToken },
                             }));
                         }}

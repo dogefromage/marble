@@ -1,5 +1,5 @@
 import { GeometryJointLocation, GNodeTemplate } from ".";
-import { StaticDataTypes } from "../programs";
+import { DataTypes } from "../layerPrograms";
 import { NullArr, ObjMap } from "../UtilityTypes";
 
 export type GeometryFromIndices = [ number, number ];
@@ -9,7 +9,7 @@ export interface GeometryEdge {
     id: string;
     fromIndices: GeometryFromIndices;
     toIndices: GeometryToIndices;
-    dataType: StaticDataTypes;
+    dataType: DataTypes;
 }
 
 export type DoubleMap<T> = ObjMap<ObjMap<T>>;

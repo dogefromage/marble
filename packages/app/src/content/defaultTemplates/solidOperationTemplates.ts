@@ -54,7 +54,7 @@ const solid_operation_difference: GNodeTemplate =
         },
         {
             id: 'positive',
-            type: 'input_only',
+            type: 'input',
             name: 'Start Solid',
             dataType: 'Solid',
             value: EMPTY_SOLID,
@@ -126,7 +126,7 @@ const solid_operation_set_color: GNodeTemplate =
         },
         {
             id: 'input',
-            type: 'input_only',
+            type: 'input',
             name: 'Solid',
             dataType: 'Solid',
             value: EMPTY_SOLID,
@@ -164,7 +164,7 @@ const solid_operation_correct_distance: GNodeTemplate =
         },
         {
             id: 'input',
-            type: 'input_only',
+            type: 'input',
             name: 'Solid',
             dataType: 'Solid',
             value: EMPTY_SOLID,
