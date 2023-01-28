@@ -1,6 +1,6 @@
-import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
+import { AstNode, CompoundStatementNode, DeclarationNode, IdentifierNode, LiteralNode, Path, Program } from "@shaderfrog/glsl-parser/ast";
 import { getRowMetadata } from "../../components/GeometryRowRoot";
-import { GeometryConnectionData, GeometryIncomingElementTypes, GeometryS, InputOnlyRowT, ProgramTextureVarMapping, RowS, RowTypes, SuperInputRowT, textureVarDatatypeSize } from "../../types";
+import { DataTypes, GeometryConnectionData, GeometryS, BaseInputRowT, ProgramTextureVarMapping, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
 import { Counter } from "../Counter";
 import { LOOKUP_TEXTURE_WIDTH } from "../viewportView/GLProgramRenderer";
 import { formatLiteral, formatTextureLookupStatement } from "./generateCodeStatements";
@@ -35,12 +35,13 @@ export default class IdentifierRenamer
         this.textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH, counterOffset);
     }
 
-    public setGeometry(geometry: GeometryS, connectionData: GeometryConnectionData) {
+    public setGeometryScope(geometry: GeometryS, connectionData: GeometryConnectionData) {
         this.geometry = geometry;
         this.connectionData = connectionData;
+        this.definedLocals.clear();
     }
 
-    public setNode(nodeIndex: number) {
+    public setNodeScope(nodeIndex: number) {
         this.nodeIndex = nodeIndex;
     }
 
@@ -127,8 +128,7 @@ export default class IdentifierRenamer
         });
     }
 
-    public replaceReference(path: Path<IdentifierNode>): void
-    {
+    public replaceReference(path: Path<IdentifierNode>): void {
         const { geometry } = this.getGeometry();
         const { node, nodeData } = this.getNode();
         const token = path.node.identifier;
@@ -144,8 +144,10 @@ export default class IdentifierRenamer
             return;
         } 
 
-        const rowTemp = nodeData.template.rows[rowIndex];
-        const rowTempAsInput = rowTemp as SuperInputRowT;
+        const rowTemp = nodeData.template.rows[rowIndex] as BaseInputRowT<DataTypes, RowTypes>;
+        if (!rowTemp.dataType) {
+            throw new Error(`Must be input row`);
+        }
         const rowState = node.rows[rowTemp.id];
 
         // case 1: connection
@@ -205,17 +207,21 @@ export default class IdentifierRenamer
         // case 2.1: argument connected
         const incomingArg = rowState?.incomingElements?.[0];
         if (incomingArg?.type === 'argument') {
-            path.node.identifier = incomingArg.argument.id;
+            path.node.identifier = incomingArg.argument;
             return;
         }
         
         // case 2.2 argument fallback
-        if (rowTempAsInput.defaultArgumentToken != null) {
-            path.node.identifier = rowTempAsInput.defaultArgumentToken;
+        if (rowTemp.defaultArgumentToken != null) {
+            path.node.identifier = rowTemp.defaultArgumentToken;
             return;
         }
 
-        const rowMetadata = getRowMetadata({ state: rowState, template: rowTemp, numConnectedJoints: 0 });
+        const rowMetadata = getRowMetadata({ 
+            state: rowState, 
+            template: rowTemp as BaseInputRowT, 
+            numConnectedJoints: 0 
+        });
 
         // case 3: parameter texture lookup
         if (rowMetadata.dynamicValue) {
@@ -224,13 +230,13 @@ export default class IdentifierRenamer
             if (!this.definedLocals.has(dynamicId)) {
                 this.definedLocals.add(dynamicId);
                 // DECLARATION
-                const size = textureVarDatatypeSize[rowTempAsInput.dataType];
+                const size = textureVarDatatypeSize[rowTemp.dataType];
                 const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
-                const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTempAsInput.dataType);
+                const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTemp.dataType);
                 this.addDeclarationInfront(path, textureLookupCode);
                 // VAR MAPPING
                 this.textureVarMappings.push({
-                    dataType: rowTempAsInput.dataType,
+                    dataType: rowTemp.dataType,
                     textureCoordinate,
                     geometryId: geometry.id,
                     geometryVersion: geometry.version,
@@ -242,8 +248,8 @@ export default class IdentifierRenamer
         }
 
         // case 4: fixed constant
-        const value = (rowState as RowS<InputOnlyRowT>).value ?? rowTempAsInput.value;
-        const valueLitteral = formatLiteral(value, rowTempAsInput.dataType);
+        const value = (rowState as RowS<BaseInputRowT>).value ?? rowTemp.value;
+        const valueLitteral = formatLiteral(value, rowTemp.dataType);
         path.node.identifier = valueLitteral;
         return;
     }

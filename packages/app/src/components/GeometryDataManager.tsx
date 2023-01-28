@@ -1,14 +1,13 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { geometriesUpdateExpiredProps, selectGeometries } from '../slices/geometriesSlice';
 import { geometryDatasSetMany, selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, GeometryConnectionData, GeometryS, getDependencyKey } from '../types';
+import { GeometryConnectionData, GeometryS, getDependencyKey } from '../types';
 import generateGeometryData from '../utils/geometries/generateGeometryData';
 
-const GeometryDataManager = () =>
-{
+const GeometryDataManager = () =>{
     const dispatch = useAppDispatch();
     const geometryDatas = useAppSelector(selectGeometryDatas);
     const geometries = useAppSelector(selectGeometries);
@@ -27,7 +26,8 @@ const GeometryDataManager = () =>
             // get hash from dependency graph
             const graphKey = getDependencyKey(geometry.id, 'geometry');
             const graphOrder = dependencyManager.order.get(graphKey);
-            if (graphOrder?.state === 'met') {
+            if (!graphOrder) continue;
+            // if (graphOrder?.state === 'met') {
                 // compare to last entry using hash
                 const last = geometryDatas[geometry.id];
                 if (last == null || last.hash != graphOrder.hash) {
@@ -44,7 +44,7 @@ const GeometryDataManager = () =>
                         setDatas.push(newData);
                     }
                 }
-            }
+            // }
         }
 
         // if key from last time wasn't in geometries, remove
@@ -53,7 +53,7 @@ const GeometryDataManager = () =>
         if (expiredProps.length > 0) {
             dispatch(geometriesUpdateExpiredProps({
                 geometries: expiredProps,
-            }))
+            }));
         }
         if (setDatas.length + removeDatas.length > 0) {
             dispatch(geometryDatasSetMany({

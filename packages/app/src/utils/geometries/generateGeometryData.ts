@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
+import { decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, BaseInputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
 import { generateNodeRowHeights } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
@@ -54,7 +54,7 @@ function genAdjList(
         if (!template) continue;
 
         for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
-            const templateRow = template.rows[ rowIndex ] as InputRowT;
+            const templateRow = template.rows[ rowIndex ] as BaseInputRowT;
             const rowId = templateRow.id;
             const row = node.rows[ rowId ];
             if (!row) continue; // unconnected
@@ -136,7 +136,10 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         const template = templates[ node.templateId ];
         if (!template) continue; // data stays null
 
-        if (node.templateVersion < template.version) {
+        const { type: templateType } = decomposeTemplateId(template.id);
+        const isOutput = templateType === 'output'; 
+
+        if (node.templateVersion < template.version && !isOutput) {
             expiredNodeStates.push({
                 nodeIndex, template,
             });

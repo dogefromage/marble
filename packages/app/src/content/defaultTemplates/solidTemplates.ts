@@ -12,9 +12,9 @@ const outputRow: SpecificRowT =
 
 const coordinateRow: SpecificRowT =
 {
-    id: 'coordinates',
+    id: 'position',
     type: 'input',
-    name: 'Coordinates',
+    name: 'Position',
     dataType: 'vec3',
     value: [ 0, 0, 0 ],
     defaultArgumentToken: 'position',
@@ -53,7 +53,7 @@ const solid_sphere: GNodeTemplate =
         colorRow,
     ],
     instructions: glsl`
-        Solid output = Solid(length(coordinates) - radius, color);
+        Solid output = Solid(length(position) - radius, color);
     `,
 }
 
@@ -88,7 +88,7 @@ const solid_torus: GNodeTemplate =
         colorRow,
     ],
     instructions: glsl`
-        vec2 q = vec2(length(coordinates.xz) - large_r, coordinates.y);
+        vec2 q = vec2(length(position.xz) - large_r, position.y);
         Solid output = Solid(length(q) - small_r, color);
     `,
 }
@@ -117,7 +117,7 @@ const solid_box: GNodeTemplate =
         colorRow,
     ],
     instructions: glsl`
-        vec3 q = abs(coordinates) - size;
+        vec3 q = abs(position) - size;
         Solid output = Solid(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
     `,
 }
@@ -146,7 +146,7 @@ const solid_plane: GNodeTemplate =
         colorRow,
     ],
     instructions: glsl`
-        Solid output = Solid(coordinates.z - height, color);
+        Solid output = Solid(position.z - height, color);
     `,
 }
 
@@ -181,7 +181,7 @@ const solid_cylinder: GNodeTemplate =
         colorRow,
     ],
     instructions: glsl`
-        vec2 d = abs(vec2(length(coordinates.xz), coordinates.y)) - vec2(radius, height);
+        vec2 d = abs(vec2(length(position.xz), position.y)) - vec2(radius, height);
         Solid output = Solid(min(max(d.x,d.y),0.0) + length(max(d,0.0)), color);
     `,
 }

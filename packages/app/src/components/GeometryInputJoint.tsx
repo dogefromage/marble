@@ -1,21 +1,16 @@
 import React from 'react';
-import { useAppSelector } from '../redux/hooks';
-import { selectSingleGeometry } from '../slices/geometriesSlice';
-import { GeometryJointLocation, InputRowT, RowTypes, RowZ, DataTypes, RowT } from '../types';
+import { GeometryJointLocation, InputRowT, RowZ } from '../types';
 import GeometryArgumentTag from './GeometryArgumentTag';
 import GeometryJoint from './GeometryJoint';
 
 interface Props {
     geometryId: string;
-    row: RowZ & Pick<InputRowT, 'defaultArgumentToken' | 'dataType'>;
+    row: RowZ<InputRowT>;
     jointLocation: GeometryJointLocation;
 }
 
 const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
-
-    const geometry = useAppSelector(selectSingleGeometry(geometryId));
-    if (!geometry) return null;
-
+    
     let incomingElement = row.incomingElements?.[ jointLocation.subIndex ];
     if (incomingElement == null &&
         jointLocation.subIndex === 0 &&
@@ -28,14 +23,13 @@ const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
     }
 
     const argumentId = incomingElement?.type === 'argument' && incomingElement.argument;
-    const argument = geometry.inputs.find(input => input.id === argumentId);
 
     return (<>
         {
-            argument &&
+            argumentId &&
             <GeometryArgumentTag
                 geometryId={geometryId}
-                argument={argument}
+                argumentId={argumentId}
             />
         }
         <GeometryJoint

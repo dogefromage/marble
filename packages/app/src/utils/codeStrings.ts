@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 
 export class CodeTemplate {
     constructor(
@@ -73,3 +74,22 @@ export function splitBracketSafe(s: string, char: string) {
 
 export const glsl = (stringArr: TemplateStringsArray, ...values: any[]) => 
     String.raw({ raw: stringArr }, ...values);
+
+/**
+ * Throws error if fails
+ */
+export function splitFirst(input: string, searchValue: RegExp | string) {
+    const match = input.match(searchValue);
+    if (match?.index == null) {
+        throw new Error(`String cannot be split by searchValue`);
+    }
+    return [
+        input.substring(0, match.index!),
+        input.substring(match.index! + match[0].length),
+    ];
+}
+
+export function generateCodeSafeUUID() {
+    const id = uuidv4();
+    return id.replaceAll('-', '_');
+}

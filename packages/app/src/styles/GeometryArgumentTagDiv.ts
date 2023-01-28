@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { DataTypes } from '../types';
 import { GNODE_ROW_UNIT_HEIGHT } from './GeometryRowDiv';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
@@ -9,9 +9,9 @@ export const GeometryArgumentTagWrapperDiv = styled.div`
     left: -14px;
 `;
 
-export interface GeometryArgumentTagDivProps
-{
+export interface GeometryArgumentTagDivProps {
     dataType: DataTypes;
+    missing: boolean;
 }
 
 export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
@@ -25,7 +25,7 @@ export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
 
     background-color: white;
     border-right: solid 7px;
-    border-color: ${({ dataType, theme }) => theme.colors.dataTypes[dataType] };
+    border-color: ${({ dataType, theme }) => theme.colors.dataTypes[ dataType ]};
 
     ${BOX_SHADOW}
 
@@ -38,5 +38,10 @@ export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
     p {
         font-weight: bold;
         margin: 0;
+
+        ${({ missing }) => missing && css`
+            text-decoration: line-through;
+            font-style: italic;
+        `}
     }
 `;

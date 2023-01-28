@@ -1,4 +1,4 @@
-import { GeometryConnectionData, GeometryS, InputRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, textureVarDatatypeSize } from "../../types";
+import { GeometryConnectionData, GeometryS, BaseInputRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, textureVarDatatypeSize } from "../../types";
 
 function removeIndent(s: string, indent: number) {
     for (let i = 0; i < indent; i++) {
@@ -92,8 +92,8 @@ export function mapDynamicValues(
         if (!node || !nodeTemplate) {
             continue;
         }
-        const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as InputRowT;
-        const row = node.rows[ rowTemplate.id ] as RowS<InputRowT>;
+        const rowTemplate = nodeTemplate.rows[ mapping.rowIndex ] as BaseInputRowT;
+        const row = node.rows[ rowTemplate.id ] as RowS<BaseInputRowT>;
         if (rowTemplate.dataType !== mapping.dataType) {
             throw new Error(`Datatype mismatch`);
         }
@@ -123,3 +123,6 @@ export function mapDynamicValues(
     }
 }
 
+export function prefixGeometryFunction(geometryId: string) {
+    return `geo_${geometryId}`;
+}

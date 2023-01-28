@@ -25,18 +25,18 @@ export interface OutputRowT<D extends DataTypes = DataTypes> extends BaseRowT {
     dataType: D;
 }
 
-export interface InputRowT<D extends DataTypes = DataTypes, T extends RowTypes = 'input'> extends BaseRowT {
+export interface BaseInputRowT<D extends DataTypes = DataTypes, T extends RowTypes = 'input'> extends BaseRowT {
     type: T;
     dataType: D;
     value: DataTypeValueTypes[ D ];
     defaultArgumentToken?: string;
 }
 
-export type StackedInputRowT<D extends DataTypes = DataTypes> = InputRowT<D, 'input_stacked'>;
+export type StackedInputRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D, 'input_stacked'>;
 
-export type FieldRowT<D extends DataTypes = DataTypes> = InputRowT<D, 'field'>;
+export type FieldRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D, 'field'>;
 
-export interface RotationRowT extends InputRowT<'mat3', 'rotation'> {
+export interface RotationRowT extends BaseInputRowT<'mat3', 'rotation'> {
     rotationModel: RotationModels;
     currentDisplay?: {
         rotationModel: RotationModels;
@@ -44,14 +44,17 @@ export interface RotationRowT extends InputRowT<'mat3', 'rotation'> {
     }
 }
 
-export type RowT<D extends DataTypes = DataTypes> =
-    | NameRowT
-    | OutputRowT<D>
-    | InputRowT<D>
-    | InputRowT<D>
+export type InputRowT<D extends DataTypes = DataTypes> =
+    | BaseInputRowT<D>
     | StackedInputRowT<D>
     | FieldRowT<D>
     | RotationRowT
+    
+
+export type RowT<D extends DataTypes = DataTypes> =
+    | NameRowT
+    | InputRowT<D>
+    | OutputRowT<D>
 
 type RowTOverDataTypesMap = {
     [ D in DataTypes ]: RowT<D>;

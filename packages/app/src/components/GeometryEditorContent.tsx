@@ -22,12 +22,12 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     const connectionData = useAppSelector(selectSingleGeometryData(geometryId));
 
-    if (!geometry) return null;
+    if (!geometry) return <p>Missing geometry</p>;
     
     if (!geometry ||
-        connectionData == null || 
-        connectionData.geometryVersion < geometry?.version
-        ) return null;
+        connectionData == null 
+        || connectionData.geometryVersion < geometry?.version
+        ) return <p>No geometry data</p>;
 
     const { forwardEdges, nodeDatas } = connectionData;
 

@@ -23,7 +23,7 @@ export function useRegisterDependency<T extends Dependable>(
             const lastElement = lastElements.current.get(element.id);
             lastElements.current.delete(element.id);
 
-            if (lastElement != null && lastElement.version == element.version) {
+            if (lastElement != null && lastElement.version === element.version) {
                 continue;
             }
 
@@ -35,7 +35,6 @@ export function useRegisterDependency<T extends Dependable>(
             const depsOfElement = getDependenciesOfElement(element);
             addNodes.push({
                 key: getDependencyKey(element.id, dependencyType),
-                type: dependencyType,
                 version: element.version,
                 dependencies: depsOfElement,
             });

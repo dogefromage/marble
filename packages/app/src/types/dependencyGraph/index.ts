@@ -1,19 +1,19 @@
+import { splitFirst } from "../../utils/codeStrings";
 
 export type DependencyNodeType = 'layer' | 'geometry' | 'node_template';
 
 export function getDependencyKey(id: string, type: DependencyNodeType) {
-    return `dependency:${type}:${id}` as const;
+    return `${type}:${id}` as const;
 }
 export type DependencyNodeKey = ReturnType<typeof getDependencyKey>;
 
 export function splitDependencyKey(key: DependencyNodeKey) {
-    const [ _, type, id ] = key.split(':') as [ never, DependencyNodeType, string ];
+    const [ type, id ] = splitFirst(key, ':') as [ DependencyNodeType, string ];
     return { type, id }
 }
 
 export interface DependencyGraphNode {
     key: DependencyNodeKey;
-    type: DependencyNodeType;
     version: number;
     dependencies: DependencyNodeKey[];
 }

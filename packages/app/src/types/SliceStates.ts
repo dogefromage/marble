@@ -1,4 +1,4 @@
-import { ActivePanel, Command, ContextMenuState, GeometryS, GNodeTemplate, ProgramInclude, LayerProgram, DependencyGraph, GeometryConnectionData } from ".";
+import { ActivePanel, Command, ContextMenuState, DependencyGraph, GeometryConnectionData, GeometryS, GNodeTemplate, LayerProgram, ProgramInclude } from ".";
 import { ConsoleMessage } from "./console";
 import { Layer } from "./layer";
 import { ObjMapUndef } from "./UtilityTypes";

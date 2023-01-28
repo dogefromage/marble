@@ -20,9 +20,9 @@ const generative_perlin_noise: GNodeTemplate =
             name: 'Noise',
         },
         {
-            id: 'coordinates',
+            id: 'position',
             type: 'input',
-            name: 'Coordinates',
+            name: 'Position',
             dataType: 'vec3',
             value: [ 0, 0, 0 ],
             defaultArgumentToken: 'position',
@@ -30,7 +30,7 @@ const generative_perlin_noise: GNodeTemplate =
     ],
     instructions: glsl`
         #INCLUDE inc_perlin_noise;
-        float output = inc_perlin_noise(coordinates);
+        float output = inc_perlin_noise(position);
     `,
 }
 

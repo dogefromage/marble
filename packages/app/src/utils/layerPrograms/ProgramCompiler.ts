@@ -1,8 +1,7 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
-import { mapDynamicValues, preprocessSource, setBlockIndent } from '.';
-import { rootOutputTemplateId } from '../../content/defaultTemplates/outputTemplates';
-import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
+import { mapDynamicValues, prefixGeometryFunction, preprocessSource, setBlockIndent } from '.';
+import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplateTypes, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import { findClosingBracket, splitBracketSafe } from '../codeStrings';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
@@ -66,12 +65,14 @@ export default class ProgramCompiler {
             geoList.push(geo);
             dataList.push(data);
             // generate code for geometry
-            const { functionName, functionBlock } = this.generateGeometryFunction(geo, data);
+            const geometryCode = this.generateGeometryFunction(geo, data);
+            if (geometryCode == null) continue;
+
             const marker = `# geometry ${geoIndex};`;
-            geometryFunctionBlocks.push(marker, functionBlock);
+            geometryFunctionBlocks.push(marker, geometryCode.functionBlock);
 
             if (geoIndex == topSortedGeos.length - 1) {
-                rootFunctionName = functionName;
+                rootFunctionName = geometryCode.functionName;
             }
         }
 
@@ -119,14 +120,14 @@ export default class ProgramCompiler {
                         const geometryIndex = Number(matchGeo[ 1 ]);
                         const geo = geoList[ geometryIndex ];
                         const data = dataList[ geometryIndex ];
-                        renamer.setGeometry(geo, data);
+                        renamer.setGeometryScope(geo, data);
                         path.remove();
                     }
                     // # node ....
                     const matchNode = pre.match(/#\s*node\s+(\w+);/i);
                     if (matchNode != null) {
                         const nodeIndex = Number(matchNode[ 1 ]);
-                        renamer.setNode(nodeIndex);
+                        renamer.setNodeScope(nodeIndex);
                         path.remove();
                     }
                     // # include ....
@@ -193,6 +194,10 @@ export default class ProgramCompiler {
         geometry: GeometryS,
         connectionData: GeometryConnectionData,
     ) {
+        if (geometry.outputs.length === 0) {
+            return;
+        }
+
         const n = geometry.nodes.length;
         const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
         const { topOrder, cycles, components } = analyzeGraph(n, nodeAdjacency);
@@ -206,7 +211,8 @@ export default class ProgramCompiler {
         // find lowest index where a node is output
         let outputIndex = -1;
         for (let i = geometry.nodes.length - 1; i >= 0; i--) {
-            if (geometry.nodes[ i ].templateId === rootOutputTemplateId) {
+            const { id: templateIdentifier, type: templateType } = decomposeTemplateId(geometry.nodes[i].templateId);
+            if (geometry.id === templateIdentifier && templateType === 'output') {
                 outputIndex = i;
                 break;
             }
@@ -223,15 +229,14 @@ export default class ProgramCompiler {
             const isUsed = components[ nodeIndex ] == outputComponent;
             const nodeData = connectionData.nodeDatas[ nodeIndex ];
             if (isUsed && nodeData != null) {
-                if (decomposeTemplateId(nodeData.template.id).templateType  === 'static') {
-                    const marker = `    # node ${nodeIndex};`;
-                    const instructionBlock = setBlockIndent(nodeData.template.instructions!, 4);
-                    instructions.push(marker, instructionBlock);
-                }
+                const { type: templateType } = decomposeTemplateId(nodeData.template.id);
+                const marker = `    # node ${nodeIndex};`;
+                const instructionBlock = setBlockIndent(nodeData.template.instructions!, 4);
+                instructions.push(marker, instructionBlock);
             }
         }
 
-        const functionName = `g_${geometry.id}`;
+        const functionName = prefixGeometryFunction(geometry.id);
         const functionArgString = geometry.inputs
             .map(arg => `${arg.dataType} ${arg.id}`)
             .join(', ');

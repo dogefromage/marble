@@ -1,6 +1,6 @@
-import { getTemplateId, GNodeTemplate } from "../../types"
+import { defaultDataTypeValue, getTemplateId, GNodeTemplate } from "../../types"
 import { glsl } from "../../utils/codeStrings"
-import { EMPTY_SOLID, EMPTY_SOLID_LITERAL, TemplateColors } from "./templateConstants"
+import { EMPTY_SOLID_LITERAL, TemplateColors } from "./templateConstants"
 
 const solid_operation_union: GNodeTemplate =
 {
@@ -25,7 +25,7 @@ const solid_operation_union: GNodeTemplate =
             type: 'input_stacked',
             name: 'Solid',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
     ],
     instructions: glsl`
@@ -57,14 +57,14 @@ const solid_operation_difference: GNodeTemplate =
             type: 'input',
             name: 'Start Solid',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
         {
             id: 'negatives',
             type: 'input_stacked',
             name: 'Complement',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
     ],
     instructions: glsl`
@@ -97,7 +97,7 @@ const solid_operation_intersection: GNodeTemplate =
             type: 'input_stacked',
             name: 'Solid',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
     ],
     instructions: glsl`
@@ -129,7 +129,7 @@ const solid_operation_set_color: GNodeTemplate =
             type: 'input',
             name: 'Solid',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
         {
             id: 'color',
@@ -167,7 +167,7 @@ const solid_operation_correct_distance: GNodeTemplate =
             type: 'input',
             name: 'Solid',
             dataType: 'Solid',
-            value: EMPTY_SOLID,
+            value: defaultDataTypeValue['Solid'],
         },
         {
             id: 'factor',

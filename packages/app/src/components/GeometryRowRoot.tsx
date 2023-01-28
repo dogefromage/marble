@@ -1,7 +1,7 @@
 import React from 'react';
-import { FieldRowT, InputOnlyRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
+import { FieldRowT, BaseInputRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
-import GeometryRowInputOnly from './GeometryRowInputOnly';
+import GeometryRowInputOnly from './GeometryRowInput';
 import GeometryRowInputStacked, { getRowMetadataStackedInput } from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
@@ -42,7 +42,7 @@ const GeometryRowRoot = (props: RowProps) => {
         case 'name':
             return <GeometryRowName {...props as RowProps<NameRowT>} />;
         case 'input':
-            return <GeometryRowInputOnly {...props as RowProps<InputOnlyRowT>} />;
+            return <GeometryRowInputOnly {...props as RowProps<BaseInputRowT>} />;
         case 'input_stacked':
             return <GeometryRowInputStacked {...props as RowProps<StackedInputRowT>} />;
         case 'output':

@@ -1,3 +1,4 @@
+import { splitFirst } from "../../utils/codeStrings";
 import { Dependable } from "../dependencyGraph";
 import { Point } from "../UtilityTypes";
 import { RowS, SpecificRowT } from "./Rows";
@@ -28,13 +29,12 @@ export const templateCategoryNames: { [ C in GNodeTemplateCategories ]: string }
 export type GNodeTemplateTypes = 'static' | 'composite' | 'output';
 
 export function getTemplateId(identifier: string, templateType: GNodeTemplateTypes) {
-    return `${identifier}:${templateType}` as const;
+    return `${templateType}:${identifier}` as const;
 }
 export type NodeTemplateId = ReturnType<typeof getTemplateId>;
 export function decomposeTemplateId(templateId: NodeTemplateId) {
-    const [ identifier, templateType ] = 
-        templateId.split(':') as [ string, GNodeTemplateTypes ];
-    return { relatedGeometry: identifier, templateType };
+    const [ type, id ] = splitFirst(templateId, ':') as [ GNodeTemplateTypes, string ];
+    return { type, id  };
 }
 
 export interface GNodeTemplate extends Dependable {

@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useAppSelector } from '../redux/hooks';
+import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { decomposeTemplateId, DependencyNodeType, GeometryS, getDependencyKey, GNodeTemplate, GNodeTemplateTypes, Layer } from '../types';
+import { decomposeTemplateId, DependencyNodeKey, GeometryS, getDependencyKey, getTemplateId, GNodeTemplate, Layer } from '../types';
 import { useRegisterDependency } from '../utils/dependencyGraph/useRegisterDependency';
 
 function getLayerDeps(layer: Layer) {
@@ -10,21 +12,26 @@ function getLayerDeps(layer: Layer) {
 }
 
 function getGeometryDeps(geo: GeometryS) {
-    const templateDependencies = new Set<string>();
+    const templateDependencies = new Set<DependencyNodeKey>();
     for (const node of geo.nodes) {
-        templateDependencies.add(node.templateId);
+        const { id, type } = decomposeTemplateId(node.templateId);
+        if (type === 'composite') {
+            templateDependencies.add(getDependencyKey(node.templateId, 'node_template'));
+        }
     }
-    return [ ...templateDependencies ].map(id => getDependencyKey(id, 'node_template'));
+    return [ ...templateDependencies ];
 }
 
 function getTemplateDeps(temp: GNodeTemplate) {
-    const dep = getDependencyKey(temp.id, 'geometry');
-    const { templateType } = decomposeTemplateId(temp.id);
-    return templateType === 'composite' ? [ dep ] : [];
+    const { id, type: templateType } = decomposeTemplateId(temp.id);
+    if (templateType != 'composite') {
+        return [];
+    }
+    const deps = [ getDependencyKey(id, 'geometry') ];
+    return deps;
 }
 
-const DependencyManager = () =>
-{
+const DependencyManager = () => {
     // layers
     useRegisterDependency(
         useAppSelector(selectLayers),

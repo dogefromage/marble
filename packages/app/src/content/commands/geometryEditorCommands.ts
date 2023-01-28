@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
 import { ActivePanel, Command, CommandParameterMap, CommandScope, DataTypes, Point, ViewTypes, getTemplateId } from "../../types";
+import { generateCodeSafeUUID } from "../../utils/codeStrings";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
 
@@ -20,8 +21,7 @@ function getOffsetPos(activePanel: ActivePanel, params: CommandParameterMap) {
     return { offsetPos, center };
 }
 
-export const geometryEditorCommands: Command[] =
-[
+export const geometryEditorCommands: Command[] = [
     {
         scope: 'view',
         viewType: ViewTypes.GeometryEditor,
@@ -36,17 +36,17 @@ export const geometryEditorCommands: Command[] =
                 center,
             });
         },
-        keyCombinations: [ { key: ' ', displayName: 'Space' }],
+        keyCombinations: [ { key: ' ', displayName: 'Space' } ],
     },
     {
         scope: 'view',
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.deleteSelected',
         name: 'Delete Selected',
-        actionCreator({ panelState: { geometryStack }}, params) {
+        actionCreator({ panelState: { geometryStack } }, params) {
             if (!geometryStack.length) return;
             return geometriesRemoveNode({
-                geometryId: geometryStack[0],
+                geometryId: geometryStack[ 0 ],
                 undo: {},
             });
         },
@@ -57,11 +57,10 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.resetSelected',
         name: 'Reset Selected',
-        actionCreator({ panelState: { geometryStack }}, params)
-        {
+        actionCreator({ panelState: { geometryStack } }, params) {
             if (!geometryStack.length) return;
             return geometriesResetStateSelected({
-                geometryId: geometryStack[0],
+                geometryId: geometryStack[ 0 ],
                 undo: {},
             });
         },
@@ -72,11 +71,11 @@ export const geometryEditorCommands: Command[] =
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.createSubgeometry',
         name: 'Create Group',
-        actionCreator({ activePanel, panelState: { geometryStack, camera }}, params) {
+        actionCreator({ activePanel, panelState: { geometryStack, camera } }, params) {
             if (!geometryStack.length) return;
 
-            const actionToken = 'create-sub-' + uuidv4();
-            const subGeometryId = uuidv4();
+            const subGeometryId = generateCodeSafeUUID();;
+            const actionToken = 'createsub:' + subGeometryId;
             const subTemplateId = getTemplateId(subGeometryId, 'composite');
 
             const { offsetPos } = getOffsetPos(activePanel, params);
@@ -87,13 +86,29 @@ export const geometryEditorCommands: Command[] =
                     geometryId: subGeometryId,
                     geometryTemplate: {
                         name: 'Sub Geometry',
-                        inputs: [],
-                        outputs: [],
+                        inputs: [
+                            {
+                                id: 'position',
+                                name: 'Position',
+                                type: 'input',
+                                dataType: 'vec3',
+                                defaultArgumentToken: 'position',
+                                value: 0,
+                            }
+                        ],
+                        outputs: [
+                            {
+                                id: 'basic_output',
+                                type: 'output',
+                                name: 'Output',
+                                dataType: 'Solid',
+                            }
+                        ],
                     },
                     undo: { actionToken }
                 }),
                 geometriesAddNode({
-                    geometryId: geometryStack[0],
+                    geometryId: geometryStack[ 0 ],
                     templateId: subTemplateId,
                     position: worldPos,
                     undo: { actionToken },

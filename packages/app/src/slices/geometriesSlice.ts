@@ -2,7 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { decomposeTemplateId, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, BaseRowS, UndoAction } from "../types";
+import { BaseRowS, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, UndoAction } from "../types";
+import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
 const defaultGeometryContent = {
@@ -50,7 +51,10 @@ export const geometriesSlice = createSlice({
             geometryId?: string,
             geometryTemplate: GeometryTemplate,
         }>) => {
-            const id = a.payload.geometryId || uuidv4();
+            const id = a.payload.geometryId || generateCodeSafeUUID();
+            if (!/^\w+$/.test(id)) {
+                throw new Error(`Invalid characters in id`);
+            }
             if (s[ id ] != null) {
                 throw new Error(`Geometry with id ${id} already exists!`);
             }

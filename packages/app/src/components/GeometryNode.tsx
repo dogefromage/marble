@@ -91,11 +91,11 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
                 if (nodeData?.template == null) {
                     return;
                 }
-                const { templateType } = decomposeTemplateId(nodeData.template.id)
+                const { id: subGeoId, type: templateType } = decomposeTemplateId(nodeData.template.id);
                 if (templateType === 'composite') {
                     dispatch(geometryEditorPanelsPushGeometryId({
                         panelId,
-                        geometryId: nodeData.template.id,
+                        geometryId: subGeoId,
                     }));
                     e.stopPropagation();
                 }

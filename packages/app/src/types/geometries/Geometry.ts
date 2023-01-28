@@ -1,7 +1,7 @@
 import { Dependable } from "../dependencyGraph";
 import { DataTypes } from "../layerPrograms";
 import { GNodeState } from "./GNode";
-import { InputRowT, OutputRowT } from "./Rows";
+import { InputRowT, BaseInputRowT, OutputRowT } from "./Rows";
 
 export interface GeometryTemplate {
     name?: string;

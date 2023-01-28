@@ -1,11 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { GeometryEditorPanelState, GNodeTemplate, GNodeTemplateCategories, MenuElement, MenuTypes, SearchMenuElement, templateCategoryNames, TitleMenuElement, VerticalMenuShape, ViewTypes } from '../types';
+import { decomposeTemplateId, GeometryEditorPanelState, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, VerticalMenuShape } from '../types';
 import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {
@@ -18,12 +17,9 @@ interface Props {
     templateCatalog: NonNullable<GeometryEditorPanelState['templateCatalog']>;
 }
 
-const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props) =>
-{
+const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props) => {
     const dispatch = useAppDispatch();
     const { templates } = useAppSelector(selectTemplates);
-    // const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
-    
     const [ searchValue, setSearchValue ] = useState('');
 
     const addNode = (template: GNodeTemplate) => {
@@ -39,7 +35,16 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
     }
 
     const menuShape = useMemo(() => {
-        const allTemplates = Object.values(templates);
+
+        const allTemplates = (Object.values(templates) as GNodeTemplate[])
+            .filter(template => {
+            const { id, type } = decomposeTemplateId(template.id);
+
+            const isForeignOutput = type === 'output' && id !== geometryId;
+            const isCurrentComposedTemplate = type === 'composite' && id === geometryId;
+
+            return !isForeignOutput && !isCurrentComposedTemplate;
+        });
 
         const title: TitleMenuElement = {
             type: 'title',

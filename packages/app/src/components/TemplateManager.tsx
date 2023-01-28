@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templatesRemoveTemplates } from '../slices/templatesSlice';
 import { splitIncludesFromSource } from '../utils/layerPrograms';
-import generateDynamicTemplates from '../utils/templateManager/generateCompositeTemplates';
+import generateDynamicTemplates from '../utils/templateManager/generateDynamicTemplates';
 
 const TemplateManager = () =>
 {
