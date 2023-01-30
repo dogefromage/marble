@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { BaseRowS, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, NodeTemplateId, Point, RowS, UndoAction } from "../types";
+import { allowedInputRows, allowedOutputRowKeys, allowedOutputRows, BaseRowS, DataTypes, decomposeRowDataTypeCombination, defaultDataTypeValue, FieldRowT, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NameRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, RowTypes, SpecificRowT, UndoAction } from "../types";
 import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
@@ -41,6 +41,26 @@ function removeIncomingElements(s: GeometriesSliceState, geometryId: string, ele
     }
 }
 
+function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination) {
+    const displayName = allowedInputRows[rowAndDataType] || allowedOutputRows[rowAndDataType];
+    const rowName = `New ` + (displayName || 'Row');
+
+    const { rowType, dataType } = decomposeRowDataTypeCombination(rowAndDataType);
+
+    switch (rowType) {
+        case 'field':
+        case 'input':
+        case 'output':
+            const row: RowT = {
+                id, type: rowType, dataType, name: rowName,
+                value: defaultDataTypeValue[dataType],
+            }
+            return row;
+        default: 
+            throw new Error(`${rowAndDataType} not implemented`);
+    }
+}
+
 const initialState: GeometriesSliceState = {};
 
 export const geometriesSlice = createSlice({
@@ -64,6 +84,13 @@ export const geometriesSlice = createSlice({
                 ...a.payload.geometryTemplate,
                 id,
             }
+        },
+        rename: (s, a: UndoAction<{ geometryId: string, newName: string }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            g.name = a.payload.newName;
+            g.version++;
+
         },
         remove: (s, a: UndoAction<{ geometryId: string }>) => {
             delete s[ a.payload.geometryId ];
@@ -238,13 +265,81 @@ export const geometriesSlice = createSlice({
                 }
                 g.version++;
             }
-        }
+        },
+        addRow: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out' }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            // prefix r so it can be a variable name
+            const id = "r_" + generateAlphabeticalId(g.nextIdIndex++); 
+            
+            if (a.payload.direction === 'in') {
+                g.inputs.push(createBlankRow(id, 'field:float') as InputRowT);
+            } else {
+                g.outputs.push(createBlankRow(id, 'output:float') as OutputRowT);
+            }
+            g.version++;
+        },
+        replaceRow: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out', rowId: string, rowAndDataType: RowDataTypeCombination }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            const rows: RowT[] = a.payload.direction === 'in' ? g.inputs : g.outputs;
+            const index = rows.findIndex(row => row.id === a.payload.rowId);
+            const newRow = createBlankRow(a.payload.rowId, a.payload.rowAndDataType);
+            newRow.name = rows[index].name; // manual name copy
+            rows.splice(index, 1, newRow);
+            g.version++;
+        },
+        updateRow: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out', rowId: string, newState: Partial<RowT> }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+
+            const rows: RowT[] = a.payload.direction === 'in' ? g.inputs : g.outputs;
+            const row = rows.find(row => row.id === a.payload.rowId);
+            if (!row) {
+                return console.error(`Row not found`);
+            }
+            Object.assign(row, a.payload.newState);
+            g.version++;
+        },
+        removeRow: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out', rowId: string }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            const filter = (row: RowT) => row.id != a.payload.rowId;
+            if (a.payload.direction === 'in') {
+                g.inputs = g.inputs.filter(filter);
+            } else {
+                g.outputs = g.outputs.filter(filter);
+            }
+            g.version++;
+        },
+        reorderRows: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out', newOrder: string[] }>) => {
+            const g = getGeometry(s, a);
+            if (!g) return;
+            // get
+            const rows: RowT[] = a.payload.direction === 'in' ? g.inputs : g.outputs;
+            // map
+            const newRows = a.payload.newOrder
+                .map(rowId => rows.find(row => row.id === rowId));
+            if (!newRows.every(row => row != null)) {
+                console.error('Invalid row ids passed');
+            }
+            // put
+            if (a.payload.direction === 'in') {
+                g.inputs = newRows as InputRowT[];
+            } else {
+                g.outputs = newRows as OutputRowT[];
+            }
+            g.version++;
+        },
     }
 });
 
 export const {
+    // CRUD
     create: geometriesCreate,
+    rename: geometriesRename,
     remove: geometriesRemove,
+    // CONTENT
     addNode: geometriesAddNode,
     removeNode: geometriesRemoveNode,
     positionNode: geometriesPositionNode,
@@ -255,6 +350,12 @@ export const {
     setSelectedNodes: geometriesSetSelectedNodes,
     resetStateSelected: geometriesResetStateSelected,
     updateExpiredProps: geometriesUpdateExpiredProps,
+    // META
+    addRow: geometriesAddRow,
+    updateRow: geometriesUpdateRow,
+    removeRow: geometriesRemoveRow,
+    replaceRow: geometriesReplaceRow,
+    reorderRows: geometriesReorderRows,
 } = geometriesSlice.actions;
 
 export const selectGeometries = (state: RootState) => state.project.present.geometries;

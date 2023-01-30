@@ -1,6 +1,6 @@
 import React from 'react';
 import toolbarShape from '../content/menus/toolbar.json';
-import { MenuShape, MenuTypes } from '../types';
+import { MenuShape } from '../types';
 import MenuRoot from './MenuRoot';
 
 interface Props

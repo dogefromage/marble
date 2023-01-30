@@ -1,15 +1,22 @@
-import React from 'react';
-import { useCallback, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
+import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { panelManagerSetActive } from '../slices/panelManagerSlice';
-import PanelDiv from '../styles/panelManager';
 import { ViewProps } from '../types';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
 
+const PanelDiv = styled.div`
+    /* position: relative; */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+`;
+
 interface Props
 {
-    children: JSX.Element;
+    children: React.ReactNode;
     viewProps: ViewProps;
 }
 

@@ -6,12 +6,11 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectWorld } from '../slices/worldSlice';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
-import { BORDER_RADIUS, FONT_FAMILY } from '../styles/utils';
+import { BORDER_RADIUS, INSET_SHADOW } from '../styles/utils';
 import { Metrics, UnitNames } from '../types/world';
 import { Units } from '../utils/formatUnitValues';
 
 const SlidableInputDiv = styled.div`
-
     position: relative;
     width: 100%;
     height: ${GNODE_ROW_UNIT_HEIGHT * 0.7}px;
@@ -38,14 +37,13 @@ const SlidableInputDiv = styled.div`
         {
             padding: 0 0.5em;
             ${BORDER_RADIUS}
-            background-color: #e5e4eb;
-            box-shadow: inset 2px 2px #00000033;
+            ${INSET_SHADOW}
+            background-color: ${({ theme }) => theme.colors.general.fields };
             border: none;
             outline: none;
             
             text-align: right;
 
-            font-family: ${FONT_FAMILY};
             font-weight: bold;
             font-size: 14px;
 

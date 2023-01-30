@@ -1,21 +1,33 @@
 import { decomposeTemplateId, defaultDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, BaseInputRowT, NameRowT, ObjMapUndef, SpecificRowT } from "../../types";
 import { prefixGeometryFunction } from "../layerPrograms";
-import { createReturntypePlaceholder } from "../layerPrograms/generateCodeStatements";
+import { createReturntypePlaceholder, getStructurePropertyKey } from "../layerPrograms/generateCodeStatements";
 
 function generateCompositeInstructions(geometry: GeometryS) {
     const { inputs, outputs } = geometry;
     if (outputs.length === 0) {
         return '';
     }
-    if (outputs.length > 1) {
-        throw new Error(`implement multiple outputs`);
-    }
+
     const instructionInputArgs = inputs.map(input => input.id).join(', ');
     const functionName = prefixGeometryFunction(geometry.id);
     const functionInvoc = `${functionName}(${instructionInputArgs})`;
+    const returnType = createReturntypePlaceholder(geometry.outputs);
+
+    if (outputs.length === 1) {
+        `${returnType} ${outputs[0].id} = ${functionInvoc};`; 
+    } else {
+        const invocStatement = `${returnType} res = ${functionInvoc};`;
+        const destructuringStatements = outputs.map((output, index) => 
+            `${output.dataType} ${output.id} = res.${getStructurePropertyKey(index)};`
+        );
+        return [ invocStatement, ...destructuringStatements ].join('\n');
+    }
+
+
+    
 
     const output = outputs[0];
-    return `${output.dataType} ${output.id} = ${functionInvoc};`;
+    return ``;
 }
 
 function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
@@ -34,8 +46,8 @@ function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
         instructions,
         rows: [ 
             nameRow,
-            ...geometry.inputs as SpecificRowT[],
             ...geometry.outputs as SpecificRowT[],
+            ...geometry.inputs as SpecificRowT[],
         ],
     }
     return template;

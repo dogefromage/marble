@@ -86,6 +86,7 @@ export const geometryEditorCommands: Command[] = [
                     geometryId: subGeometryId,
                     geometryTemplate: {
                         name: 'Sub Geometry',
+                        isRoot: false,
                         inputs: [
                             {
                                 id: 'position',
@@ -93,6 +94,13 @@ export const geometryEditorCommands: Command[] = [
                                 type: 'input',
                                 dataType: 'vec3',
                                 defaultArgumentToken: 'position',
+                                value: [ 0, 0, 0 ],
+                            },
+                            {
+                                id: 'asdasd',
+                                name: 'Test',
+                                type: 'field',
+                                dataType: 'float',
                                 value: 0,
                             }
                         ],

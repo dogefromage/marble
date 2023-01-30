@@ -1,6 +1,5 @@
 import { mat3, quat } from 'gl-matrix';
-import React from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/geometriesSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
@@ -11,7 +10,7 @@ import { Metrics } from '../types/world';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
-import SelectOption from './SelectOption';
+import SelectOptionSubRow from './SelectOptionSubRow';
 import SlidableInput from './SlideableInput';
 
 export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMetadata {
@@ -139,37 +138,31 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
             </GeometryRowNameP>
             {
                 !isConnected && row.currentDisplay && <>
-                    {
-                        <IndentRowDiv>
-                            <SelectOption
-                                value={rowRotationModel}
-                                onChange={(newModelName: string) => {
-                                    const rotationModels = Object.keys(rotationModelNames) as RotationModels[];
-                                    const newModel = rotationModels
-                                        .find(model => rotationModelNames[model] === newModelName);
-                                    if (!newModel) {
-                                        throw new Error(`Model not found`);
-                                    }
-                                    switchRotationModel(newModel);
-                                }}
-                                options={Object.values(rotationModelNames)}
+                {
+                    <IndentRowDiv>
+                        <SelectOptionSubRow
+                            value={rowRotationModel}
+                            onChange={(newModel: string) => {
+                                switchRotationModel(newModel as RotationModels);
+                            }}
+                            options={Object.keys(rotationModelNames) as RotationModels[]}
+                            mapName={rotationModelNames}
+                        />
+                    </IndentRowDiv>
+                }{
+                    row.currentDisplay.displayValues.map((value, index) =>
+                        <IndentRowDiv
+                            key={index}
+                        >
+                            <SlidableInput
+                                value={value}
+                                onChange={updateValue(index)}
+                                name={FIELD_ROW_LIST_NAMES[ index ]}
+                                metric={metric}
                             />
                         </IndentRowDiv>
-                    }
-                    {
-                        row.currentDisplay.displayValues.map((value, index) =>
-                            <IndentRowDiv
-                                key={index}
-                            >
-                                <SlidableInput
-                                    value={value}
-                                    onChange={updateValue(index)}
-                                    name={FIELD_ROW_LIST_NAMES[ index ]}
-                                    metric={metric}
-                                />
-                            </IndentRowDiv>
-                        )
-                    }
+                    )
+                }
                 </>
             }
             <GeometryJoint

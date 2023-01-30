@@ -3,9 +3,13 @@ import { BORDER_RADIUS } from "./utils";
 
 export const MENU_ROW_HEIGHT = 30;
 
-export const MenuElementDiv = styled.div.attrs({
-    tabIndex: -1,
-})`
+export interface MenuElementDivProps {
+    tabIndex?: number;
+}
+
+export const MenuElementDiv = styled.div.attrs<MenuElementDivProps>(({ tabIndex }) => ({
+    tabIndex: tabIndex ?? -1,
+}))<MenuElementDivProps>`
     position: relative;
     width: 100%;
     height: ${MENU_ROW_HEIGHT}px;
@@ -19,8 +23,13 @@ export const MenuElementDiv = styled.div.attrs({
     ${BORDER_RADIUS}
     cursor: pointer;
 
-    &:hover {
+    &:hover,
+    &:focus {
         background-color: #ddd;
+    }
+
+    &:focus {
+        outline: solid 1px #aaa;
     }
 
     p {
@@ -31,14 +40,10 @@ export const MenuElementDiv = styled.div.attrs({
         text-overflow: ellipsis;
     }
 
-    &:focus {
-        outline: solid 1px #aaa;
-    }
 `;
 
 export const MenuCommandDiv = styled(MenuElementDiv)`
     grid-template-columns: auto 1fr;
-
     & > :nth-child(2) {
         text-align: right;  
         opacity: 0.7;
@@ -47,7 +52,7 @@ export const MenuCommandDiv = styled(MenuElementDiv)`
 `;
 
 export const MenuExpandDiv = styled(MenuCommandDiv)`
-    
+
 `;
 
 export const MenuHorizontalExpandDiv = styled(MenuElementDiv)`

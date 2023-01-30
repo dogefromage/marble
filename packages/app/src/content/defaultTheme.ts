@@ -1,10 +1,11 @@
 import { DefaultTheme } from "styled-components";
 import { SelectionStatus } from "../types";
 
-const defaultTheme: DefaultTheme = 
-{
-    colors: 
-    {
+const defaultTheme: DefaultTheme = {
+    colors: {
+        general: {
+            fields: '#e3e3e3',
+        },
         geometryEditor: {
             background: '#ddd',
             backgroundDots: '#bbb',

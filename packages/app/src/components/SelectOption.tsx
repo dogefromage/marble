@@ -1,32 +1,28 @@
-import React, { useMemo } from 'react';
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
 import { BORDER_RADIUS } from '../styles/utils';
-import { MenuShape, MenuTypes } from '../types';
+import { MenuShape, ObjMap } from '../types';
 import MaterialSymbol from './MaterialSymbol';
 import MenuRoot from './MenuRoot';
 
 const SelectOptionDiv = styled.div`
     position: relative;
-    z-index: 1;
 
-    height: ${GNODE_ROW_UNIT_HEIGHT * 0.8}px;
+    height: 30px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.3rem;
 
-    margin: ${GNODE_ROW_UNIT_HEIGHT * 0.1}px 0;
-    
-    padding: 0 0.5em;
-    /* border: dashed 1px #00000079; */
+    padding: 0 0.5rem;
     ${BORDER_RADIUS}
-    background-color: #e5e4eb;
-    /* box-shadow: 2px 2px #00000033; */
+    background-color: ${({ theme }) => theme.colors.general.fields};
 
-    p
-    {
+    cursor: pointer;
+
+    p {
         margin: 0;
         overflow: hidden;
         white-space: nowrap;
@@ -34,54 +30,45 @@ const SelectOptionDiv = styled.div`
     }
 `;
 
-interface Props
-{
+export interface SelectOptionProps {
     value: string;
     options: string[];
     onChange: (newValue: string) => void;
+    mapName?: ObjMap<string>;
 }
 
-const SelectOption = ({ value, onChange, options }: Props) =>
-{
+const SelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) => {
     const [ dropdown, setDropdown ] = useState(false);
 
-    const menuShape: MenuShape = useMemo(() => {
-        return {
-            type: 'vertical',
-            list: options.map(option => ({
-                type: 'button',
-                name: option,
-                key: option,
-                onClick: () => {
-                    onChange(option);
-                    setDropdown(() => false);
-                }
-            })),
-        };
-    }, [ options ]);
+    const menuShape: MenuShape = useMemo(() => ({
+        type: 'vertical',
+        list: options.map((option, index) => ({
+            type: 'button',
+            name: mapName?.[ option ] || option,
+            key: option,
+            tabIndex: 1 + index,
+            onClick: () => {
+                onChange(option);
+                setDropdown(() => false);
+            }
+        })),
+    }), [ options ]);
 
     return (
         <SelectOptionDiv
             onClick={() => setDropdown(true)}
-        > 
-        {
-            dropdown ? (
+        >
+            <p>{mapName?.[ value ] ?? value}</p>
+            {
+                dropdown &&
                 <MenuRoot
                     type={'misc'}
                     shape={menuShape}
                     anchor={{ x: 0, y: 0 }}
                     onClose={() => setDropdown(false)}
                 />
-            ) : (
-                <>
-                    <p>{ value }</p>
-                    <MaterialSymbol
-                        size={20}
-                        style={{ transform: 'translate(6.5px)' }}
-                    >expand_more</MaterialSymbol>
-                </>
-            )
-        }
+            }
+            <MaterialSymbol size={20}>expand_more</MaterialSymbol>
         </SelectOptionDiv>
     );
 }

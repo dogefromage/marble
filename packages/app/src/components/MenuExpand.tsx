@@ -19,7 +19,6 @@ const MenuExpand = ({ element, menuStore, depth }: Props) =>
 
     return (
         <MenuExpandDiv
-            key={element.name}
             onMouseEnter={e => {
                 const div = e.currentTarget as HTMLDivElement;
                 if (!div) return;
@@ -36,6 +35,7 @@ const MenuExpand = ({ element, menuStore, depth }: Props) =>
                     }
                 }));
             }}
+            tabIndex={element.tabIndex}
         >
             <p>{ element.name }</p>
             <MaterialSymbol size={20}>chevron_right</MaterialSymbol>

@@ -248,7 +248,7 @@ export default class IdentifierRenamer
         }
 
         // case 4: fixed constant
-        const value = (rowState as RowS<BaseInputRowT>).value ?? rowTemp.value;
+        const value = (rowState as RowS<BaseInputRowT>)?.value ?? rowTemp.value;
         const valueLitteral = formatLiteral(value, rowTemp.dataType);
         path.node.identifier = valueLitteral;
         return;

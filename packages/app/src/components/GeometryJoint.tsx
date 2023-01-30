@@ -81,10 +81,12 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
             // } else {
                 let outputJointLocation = transfer.location;
                 let inputJointLocation = jointLocation;
+                let stacked = isStackedInput;
     
                 if (jointDirection === 'output') { // swap
                     outputJointLocation = jointLocation;
                     inputJointLocation = transfer.location;
+                    stacked = transfer.mergeStackInput;
                 }
     
                 dispatch(geometriesInsertIncomingElement({
@@ -94,7 +96,7 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
                         type: 'row_output',
                         location: outputJointLocation,
                     },
-                    isStackedInput,
+                    isStackedInput: stacked,
                     undo: {}
                 }));
             // }

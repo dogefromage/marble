@@ -6,8 +6,7 @@ import { HorizontalMenuShape, MenuShape, MenuTypes, Point, VerticalMenuShape } f
 import MenuHorizontal from './MenuHorizontal';
 import MenuVertical from './MenuVertical';
 
-interface Props
-{
+interface Props {
     type: MenuTypes;
     shape: MenuShape
     anchor?: Point;
@@ -18,19 +17,18 @@ interface Props
 
 const INITIAL_DEPTH = 0;
 
-const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Props) =>
-{
+const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Props) => {
     const menuStore = useMenuStore(type);
     const wrapperDivRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (onClose && menuStore.state.closed) 
+        if (onClose && menuStore.state.closed)
             onClose();
-    }, [ menuStore.state.closed ]);
+    }, [menuStore.state.closed]);
 
     useEffect(() => {
         onSearchUpdated?.(menuStore.state.searchValue);
-    }, [ menuStore.state.searchValue ]);
+    }, [menuStore.state.searchValue]);
 
     useClickedOutside(wrapperDivRef, () => {
         menuStore.dispatch(menuStoreClose());
@@ -39,7 +37,7 @@ const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Pro
     let left: string | undefined, top: string | undefined;
     if (anchor != null) {
         let leftPx = anchor.x;
-        if (center) 
+        if (center)
             leftPx -= VERTICAL_MENU_WIDTH / 2;
         left = `${leftPx}px`;
         top = `${anchor.y}px`;
@@ -48,24 +46,26 @@ const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Pro
     return (
         <div
             ref={wrapperDivRef}
-        >
-        {
-            shape.type === 'vertical' ? (
-                <MenuVertical
-                    depth={INITIAL_DEPTH}
-                    menuStore={menuStore}
-                    shape={shape as VerticalMenuShape}
-                    left={left}
-                    top={top}
-                />
-            ) : (
-                <MenuHorizontal 
-                    depth={INITIAL_DEPTH}
-                    menuStore={menuStore}
-                    shape={shape as HorizontalMenuShape}
-                />
-            )
-        }
+            style={{
+                zIndex: 100,
+            }}
+        > {
+                shape.type === 'vertical' ? (
+                    <MenuVertical
+                        depth={INITIAL_DEPTH}
+                        menuStore={menuStore}
+                        shape={shape as VerticalMenuShape}
+                        left={left}
+                        top={top}
+                    />
+                ) : (
+                    <MenuHorizontal
+                        depth={INITIAL_DEPTH}
+                        menuStore={menuStore}
+                        shape={shape as HorizontalMenuShape}
+                    />
+                )
+            }
         </div>
     );
 }

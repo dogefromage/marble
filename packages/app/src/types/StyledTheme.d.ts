@@ -5,6 +5,9 @@ import { DataTypes, SelectionStatus } from '.';
 declare module 'styled-components' {
     export interface DefaultTheme {
         colors: {
+            general: {
+                fields: string;
+            }
             geometryEditor: {
                 background: string;
                 backgroundDots: string;

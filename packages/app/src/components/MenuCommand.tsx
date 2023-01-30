@@ -50,6 +50,7 @@ const MenuCommand = ({ element, menuStore }: Props) => {
     return (
         <MenuCommandDiv
             onClick={invoke}
+            tabIndex={element.tabIndex}
         >
             {
                 <p>{text}</p>

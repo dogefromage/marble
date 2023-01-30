@@ -97,7 +97,7 @@ export function mapDynamicValues(
         if (rowTemplate.dataType !== mapping.dataType) {
             throw new Error(`Datatype mismatch`);
         }
-        const value = row.value ?? rowTemplate.value;
+        const value = row?.value ?? rowTemplate.value;
 
         if (Array.isArray(value)) {
             for (let i = 0; i < size; i++) {

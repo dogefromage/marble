@@ -4,12 +4,14 @@ import { GNodeState } from "./GNode";
 import { InputRowT, BaseInputRowT, OutputRowT } from "./Rows";
 
 export interface GeometryTemplate {
+    isRoot: boolean;
     name?: string;
     inputs: InputRowT[];
     outputs: OutputRowT[];
 }
 
 export const rootGeometryTemplate: GeometryTemplate = {
+    isRoot: true,
     inputs: [
         {
             id: 'position',
@@ -33,6 +35,7 @@ export interface GeometryS extends Dependable {
     // basic
     name: string;
     // in/out
+    isRoot: boolean; // disallows changing of IO
     inputs: InputRowT[];
     outputs: OutputRowT[];
     // content

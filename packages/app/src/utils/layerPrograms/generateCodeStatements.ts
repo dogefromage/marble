@@ -76,3 +76,33 @@ export function createReturntypePlaceholder(outputs: OutputRowT[]) {
 
     return `TuplePlaceholder<${outputTypesString}>`
 }
+
+export function generateStructureIdentifier(typeList: string[]) {
+    if (!typeList.length) {
+        throw new Error(`Cannot make emptry structure`);
+    }
+    let struct = '';
+    for (const name of typeList) {
+        const upperCased = name.charAt(0).toUpperCase() + name.slice(1);
+        struct += upperCased;
+    }
+    return struct;
+}
+
+export function getStructurePropertyKey(index: number) {
+    if (index >= 26) {
+        throw new Error(`maximum properties reached`);
+    }
+    const charCodeIndex = 'a'.charCodeAt(0) + index;
+    return String.fromCharCode(charCodeIndex);
+}
+
+export function generateStructureDefinition(typeList: string[]) {
+    const identifier = generateStructureIdentifier(typeList);
+
+    const propertyList = typeList.map((typeName, index) => {
+        return `    ${typeName} ${getStructurePropertyKey(index)};\n`;
+    });
+    const block = `struct ${identifier} {\n${propertyList.join('')}};`;
+    return block;
+}

@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
+import { detectMapDifference } from '../hooks/useReactiveMap';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectGeometryDatas } from '../slices/geometryDatasSlice';
-import { selectLayers } from '../slices/layersSlice';
 import { layerProgramsSetMany, layerProgramsSetRows, selectLayerPrograms } from '../slices/layerProgramsSlice';
+import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { DependencyNodeType, getDependencyKey, Layer, LayerProgram, ObjMap, OrderedDependencyNode } from '../types';
-import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
-import { detectMapDifference } from '../hooks/useReactiveMap';
+import { getDependencyKey, Layer, LayerProgram, ObjMap } from '../types';
 import { mapDynamicValues } from '../utils/layerPrograms';
+import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
 
 const CompilerRoot = () =>
 {

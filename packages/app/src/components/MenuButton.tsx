@@ -18,6 +18,7 @@ const MenuButton = ({ menuStore, element }: Props) =>
                 menuStore.dispatch(menuStoreClose());
                 element.onClick();
             }}
+            tabIndex={element.tabIndex}
         >
         {
             <p>{ element.name }</p>

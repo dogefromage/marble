@@ -1,13 +1,13 @@
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { mapDynamicValues, prefixGeometryFunction, preprocessSource, setBlockIndent } from '.';
-import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplateTypes, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
+import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import { findClosingBracket, splitBracketSafe } from '../codeStrings';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
-import { createReturntypePlaceholder, generateStackedExpression } from './generateCodeStatements';
+import { createReturntypePlaceholder, generateStackedExpression, generateStructureDefinition, generateStructureIdentifier } from './generateCodeStatements';
 import IdentifierRenamer from "./IdentifierRenamer";
 
 export default class ProgramCompiler {
@@ -77,10 +77,14 @@ export default class ProgramCompiler {
         }
 
         const source = geometryFunctionBlocks.join(`\n`);
+        console.info(source);
+
+        const structures = new Set<string>();
 
         // PREPROCESSING
-        const preprocessedSource = preprocessSource(
-            source, /#REDUCE\(/i,
+        let preprocessedSource = source;
+        preprocessedSource = preprocessSource(
+            preprocessedSource, /#REDUCE\(/i,
             ({ source, index, length }) => {
                 const closingBracketIndex = findClosingBracket(source, index + length - 1);
                 if (closingBracketIndex <= 0) {
@@ -97,6 +101,24 @@ export default class ProgramCompiler {
                 return source.replace(fullExpression, stackedExpression)
             }
         );
+        preprocessedSource = preprocessSource(
+            preprocessedSource, /TuplePlaceholder<[\w\s,]+>/i,
+            ({ source, index, length }) => {
+                const substring = source.substring(index, index + length);
+                const inner = substring.match(/<(.+)>/)?.[1]!;
+                const typeList = inner.split(',').map(s => s.trim());
+                const structureKey = typeList.join('.');
+                structures.add(structureKey);
+                const identifier = generateStructureIdentifier(typeList);
+                return source.replaceAll(substring, identifier);
+            }
+        )
+
+        const structureDefinitions = [ ...structures ]
+            .map(struct => generateStructureDefinition(struct.split('.')));
+        const structureDefinitionsBlock = structureDefinitions.join('\n');
+        // add structures
+        preprocessedSource = structureDefinitionsBlock + '\n\n' + preprocessedSource;
         // console.info(preprocessedSource);
 
         // parse source
@@ -165,7 +187,8 @@ export default class ProgramCompiler {
         const textureVarRow = mapDynamicValues(textureVarMappings, emptyRow, geometries, geometryDatas, true)!;
 
         const generatedCode = generate(programAst);
-        console.info(generatedCode);
+        // console.info(generatedCode);
+
         const usedIncludesArr = [ ...usedIncludes ].map(incId => {
             const inc = includes[ incId ];
             if (!inc) {
@@ -200,7 +223,12 @@ export default class ProgramCompiler {
 
         const n = geometry.nodes.length;
         const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
-        const { topOrder, cycles, components } = analyzeGraph(n, nodeAdjacency);
+        // if (geometry.id === 'testing_root_geometry') {
+        //     console.log(nodeAdjacency);
+        // }
+        // console.log(geometry.nodes.map(node => node.templateId));
+        const graph = analyzeGraph(n, nodeAdjacency);
+        const { topOrder, cycles, components } = graph;
 
         if (cycles.length) { // invalid because cycles
             throw new Error(`Cyclic nodes found while compiling geometry.`);
@@ -229,13 +257,12 @@ export default class ProgramCompiler {
             const isUsed = components[ nodeIndex ] == outputComponent;
             const nodeData = connectionData.nodeDatas[ nodeIndex ];
             if (isUsed && nodeData != null) {
-                const { type: templateType } = decomposeTemplateId(nodeData.template.id);
                 const marker = `    # node ${nodeIndex};`;
                 const instructionBlock = setBlockIndent(nodeData.template.instructions!, 4);
                 instructions.push(marker, instructionBlock);
             }
         }
-
+        
         const functionName = prefixGeometryFunction(geometry.id);
         const functionArgString = geometry.inputs
             .map(arg => `${arg.dataType} ${arg.id}`)

@@ -1,15 +1,13 @@
 import styled from "styled-components";
 import { MenuElementDiv, MENU_ROW_HEIGHT } from "./MenuElementDiv";
-import { BORDER_RADIUS, FONT_FAMILY } from "./utils";
+import { BORDER_RADIUS } from "./utils";
 
 export const MenuSearchDiv = styled(MenuElementDiv)`
-    &:hover
-    {
+    &:hover {
         background-color: unset;
     }
 
-    form
-    {
+    form {
         input
         {
             width: 100%;
@@ -26,7 +24,6 @@ export const MenuSearchDiv = styled(MenuElementDiv)`
 
             font-weight: normal;
             font-size: 1rem;
-            font-family: ${FONT_FAMILY};
         }
     }
 `;

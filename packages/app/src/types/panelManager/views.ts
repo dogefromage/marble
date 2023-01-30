@@ -8,8 +8,7 @@ export interface ViewProps {
 /**
  * Serves also as keys of panels slice in store
  */
-export enum ViewTypes
-{
+export enum ViewTypes {
     GeometryEditor = 'geometryEditor',
     Viewport = 'viewport',
     Console = 'console',
