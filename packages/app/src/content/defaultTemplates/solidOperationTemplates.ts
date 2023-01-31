@@ -133,7 +133,7 @@ const solid_operation_set_color: GNodeTemplate =
         },
         {
             id: 'color',
-            type: 'field',
+            type: 'color',
             name: 'Color',
             dataType: 'vec3',
             value: [ 1, 1, 1 ],

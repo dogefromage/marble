@@ -5,6 +5,7 @@ import { selectSingleGeometry } from '../slices/geometriesSlice';
 import { selectSingleGeometryData } from '../slices/geometryDatasSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus } from '../types';
 import { ViewTypes } from '../types/panelManager/views';
+import getJointPositionWorld from '../utils/geometries/geometryUtils';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
@@ -51,13 +52,20 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                         const toData = nodeDatas[edge.toIndices[0]]!;
                         const fromNodeTemplate = fromData.template;
                         const toNodeTemplate = toData.template;
-
                         if (!fromNodeTemplate || !toNodeTemplate) {
                             console.warn('these templates should exist');
                         }
 
-                        const fromHeightUnits = fromData.rowHeights[ edge.fromIndices[1] ];
-                        const toHeightUnits = toData.rowHeights[ edge.toIndices[1] ] + edge.toIndices[2]; // add subindex
+                        const A = getJointPositionWorld(
+                            fromNodeState.position, 
+                            fromData.rowHeights[ edge.fromIndices[1] ], 
+                            fromData.widthPixels, 'output'
+                        );
+                        const B = getJointPositionWorld(
+                            toNodeState.position, 
+                            toData.rowHeights[ edge.toIndices[1] ] + edge.toIndices[2],
+                            toData.widthPixels, 'input'
+                        );
                                                 
                         const joints: GeometryJointLocation[] = [ 
                             {
@@ -76,10 +84,8 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                                 key={edge.id}
                                 geometryId={geometry.id}
                                 edge={edge}
-                                fromPosition={fromNodeState.position}
-                                fromHeightUnits={fromHeightUnits}
-                                toPosition={toNodeState.position}
-                                toHeightUnits={toHeightUnits}
+                                posA={A}
+                                posB={B}
                                 joints={joints}
                             />
                         );

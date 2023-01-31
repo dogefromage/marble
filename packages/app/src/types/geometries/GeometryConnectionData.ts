@@ -26,6 +26,7 @@ export interface GNodeData {
      * * **Row Connections** := rowId -> number of connected joints in row
      */
     rowConnections: ObjMap<number>;
+    widthPixels: number;
 }
 
 export interface GeometryConnectionData {

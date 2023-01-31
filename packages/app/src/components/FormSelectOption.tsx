@@ -1,9 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
-import { BORDER_RADIUS, BOX_SHADOW } from '../styles/utils';
-import { MenuShape, ObjMap, Point } from '../types';
 import MaterialSymbol from '../styles/MaterialSymbol';
+import { BORDER_RADIUS } from '../styles/utils';
+import { MenuShape, ObjMap, Point } from '../types';
 import MenuRoot from './MenuRoot';
 
 const SelectOptionDiv = styled.div`

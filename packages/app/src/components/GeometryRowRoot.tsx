@@ -1,5 +1,6 @@
 import React from 'react';
-import { FieldRowT, BaseInputRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
+import { BaseInputRowT, ColorRowT, FieldRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
+import GeometryRowColor, { getRowMetadataColor } from './GeometryRowColor';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInput';
 import GeometryRowInputStacked, { getRowMetadataStackedInput } from './GeometryRowInputStacked';
@@ -13,8 +14,13 @@ export type RowMetaProps<T extends RowT = RowT> = {
     numConnectedJoints: number;
 };
 
-export function rowMeta(heightUnits = 1, dynamicValue = false): RowMetadata {
-    return { heightUnits, dynamicValue };
+export function rowMeta(props?: Partial<RowMetadata>): RowMetadata {
+    return {
+        heightUnits: 1,
+        dynamicValue: false,
+        minWidth: 0,
+        ...props,
+    }
 }
 
 export function getRowMetadata(props: RowMetaProps): RowMetadata {
@@ -24,18 +30,17 @@ export function getRowMetadata(props: RowMetaProps): RowMetadata {
         return getRowMetadataRotation(props as RowMetaProps<RotationRowT>);
     if (props.template.type === 'input_stacked')
         return getRowMetadataStackedInput(props as RowMetaProps<StackedInputRowT>);
-
-
+    if (props.template.type === 'color')
+        return getRowMetadataColor(props as RowMetaProps<ColorRowT>);
     return rowMeta();
 }
 
-export type RowProps<T extends RowT = RowT> =
-    {
-        geometryId: string;
-        panelId: string;
-        nodeId: string;
-        row: RowZ<T>;
-    }
+export type RowProps<T extends RowT = RowT> = {
+    geometryId: string;
+    panelId: string;
+    nodeId: string;
+    row: RowZ<T>;
+}
 
 const GeometryRowRoot = (props: RowProps) => {
     switch (props.row.type) {
@@ -51,6 +56,8 @@ const GeometryRowRoot = (props: RowProps) => {
             return <GeometryRowField {...props as RowProps<FieldRowT>} />;
         case 'rotation':
             return <GeometryRowRotation {...props as RowProps<RotationRowT>} />;
+        case 'color':
+            return <GeometryRowColor {...props as RowProps<ColorRowT>} />;
         default:
             console.warn('row component missing');
             return null;

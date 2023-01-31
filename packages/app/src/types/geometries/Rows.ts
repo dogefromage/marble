@@ -9,6 +9,7 @@ export type RowTypes =
     | 'output'
     | 'field'
     | 'rotation'
+    | 'color'
 
 interface BaseRowT {
     id: string;
@@ -37,6 +38,8 @@ export type StackedInputRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D,
 
 export type FieldRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D, 'field'>;
 
+export type ColorRowT = BaseInputRowT<'vec3', 'color'>;
+
 export interface RotationRowT extends BaseInputRowT<'mat3', 'rotation'> {
     rotationModel: RotationModels;
     currentDisplay?: {
@@ -50,6 +53,7 @@ export type InputRowT<D extends DataTypes = DataTypes> =
     | StackedInputRowT<D>
     | FieldRowT<D>
     | RotationRowT
+    | ColorRowT
     
 export type RowT<D extends DataTypes = DataTypes> =
     | NameRowT
@@ -65,7 +69,6 @@ export type GeometryIncomingElementTypes = 'row_output' | 'argument';
 export type GeometryIncomingElement =
     | { type: 'row_output', location: GeometryRowLocation }
     | { type: 'argument', argument: string }
-
 
 export type RowDataTypeCombination = `${RowTypes}:${DataTypes}`;
 export function getRowDataTypeCombination(rowType: RowTypes, dataType: DataTypes): RowDataTypeCombination {
@@ -86,6 +89,7 @@ export const allowedInputRows: Partial<MapEvery<RowDataTypeCombination, string>>
     'input:vec3':    '3-Vector Input',
     'input:mat3':    '3x3-Matrix Input',
     'rotation:mat3': 'Rotation',
+    'color:vec3': 'Color',
 };
 export const allowedOutputRows: Partial<MapEvery<RowDataTypeCombination, string>> = {
     'output:Solid': 'Solid Output',
@@ -111,7 +115,8 @@ export type RowZ<T extends RowT = RowT> = Partial<RowS<T>> & T & {
  */
 export interface RowMetadata {
     heightUnits: number;
-    dynamicValue?: boolean;
+    dynamicValue: boolean;
+    minWidth: number;
 }
 
 /**

@@ -1,15 +1,9 @@
 import React from 'react';
-import styled from 'styled-components';
+import { GeometryNodeNameWrapper, GeometryNodeTitle } from '../styles/GeometryNodeNameDivs';
 import { NameRowT } from '../types';
 import { RowProps } from './GeometryRowRoot';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
-import GeometryRowNameP from '../styles/GeometryRowNameP';
-import { GeometryNodeNameWrapper, GeometryNodeTitle } from '../styles/GeometryNodeNameDivs';
 
-
-
-const GeometryRowName = ({ row }: RowProps<NameRowT>) =>
-{
+const GeometryRowName = ({ row }: RowProps<NameRowT>) => {
     return (
         <GeometryNodeNameWrapper
             heightUnits={1}

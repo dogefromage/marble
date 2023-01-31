@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
-import { generateNodeRowHeights } from "./geometryUtils";
+import { readNodeSizes } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
     if (_.isArray(objValue)) {
@@ -170,12 +170,13 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         }
 
         const rowConnections = rowConnectedJoints[nodeIndex]!;
-        const rowHeights = generateNodeRowHeights(node, template, rowConnections);
+        const { widthPixels, rowHeights } = readNodeSizes(node, template, rowConnections);
 
         const nodeData: GNodeData = {
             template,
             rowHeights,
             rowConnections,
+            widthPixels,
         };
         nodeDatas[nodeIndex] = nodeData;
     }

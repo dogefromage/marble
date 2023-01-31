@@ -35,6 +35,7 @@ const CompilerRoot = () =>
                         layer, geometries, geometryDatas, dependencyGraph, includes, textureVarRowIndex: layer.index,
                     });
                 } catch (e: any) {
+                    // throw e;
                     console.warn(e.message);
                 }
                 return null;

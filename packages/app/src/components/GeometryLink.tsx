@@ -2,40 +2,32 @@ import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesRemoveIncomingElements } from '../slices/geometriesSlice';
 import { GeometryEdge, GeometryJointLocation, Point } from '../types';
-import getJointPositionWorld from '../utils/geometries/geometryUtils';
 import GeometryLinkDiv from './GeometryLinkDiv';
 
 interface Props
 {
     geometryId: string;
     edge: GeometryEdge;
-    fromPosition: Point;
-    fromHeightUnits: number;
-    toPosition: Point;
-    toHeightUnits: number;
+    posA: Point;
+    posB: Point;
     joints: GeometryJointLocation[];
 }
 
 const LinkComponent = ({ 
     geometryId, 
     edge, 
-    fromPosition,
-    fromHeightUnits,
-    toPosition,
-    toHeightUnits,
+    posA,
+    posB,
     joints,
 }: Props) =>
 {
     const dispatch = useAppDispatch();
 
-    const A = getJointPositionWorld(fromPosition, fromHeightUnits, 'output');
-    const B = getJointPositionWorld(toPosition,   toHeightUnits,   'input');
-
     return (
         <GeometryLinkDiv
             dataType={edge.dataType}
-            A={A}
-            B={B}
+            A={posA}
+            B={posB}
             onMouseDown={e => e.stopPropagation()}
             onClick={e =>
             {

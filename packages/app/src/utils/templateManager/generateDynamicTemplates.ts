@@ -14,7 +14,7 @@ function generateCompositeInstructions(geometry: GeometryS) {
     const returnType = createReturntypePlaceholder(geometry.outputs);
 
     if (outputs.length === 1) {
-        `${returnType} ${outputs[0].id} = ${functionInvoc};`; 
+        return `${returnType} ${outputs[0].id} = ${functionInvoc};`; 
     } else {
         const invocStatement = `${returnType} res = ${functionInvoc};`;
         const destructuringStatements = outputs.map((output, index) => 
@@ -22,12 +22,6 @@ function generateCompositeInstructions(geometry: GeometryS) {
         );
         return [ invocStatement, ...destructuringStatements ].join('\n');
     }
-
-
-    
-
-    const output = outputs[0];
-    return ``;
 }
 
 function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {

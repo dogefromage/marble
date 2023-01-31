@@ -10,7 +10,7 @@ const MAX_ROWS = 64;
 
 export function getRowMetadataStackedInput(props: RowMetaProps<StackedInputRowT>): RowMetadata {
     const heightUnits = Math.min(MAX_ROWS, props.numConnectedJoints + 1);
-    return rowMeta(heightUnits, false);
+    return rowMeta({ heightUnits });
 }
 
 const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<StackedInputRowT>) => {

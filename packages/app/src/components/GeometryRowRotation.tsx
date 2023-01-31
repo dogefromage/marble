@@ -14,18 +14,21 @@ import GeometrySelectOptionSubRow from './GeometrySelectOptionSubRow';
 import SlidableInput from './SlideableInput';
 
 export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMetadata {
-    if (props.numConnectedJoints > 0) return rowMeta(1, true);
+    let heightUnits = 1;
 
-    let totalUnits = 2; // name + model selector
-
-    if (props.state?.currentDisplay) {
-        if (props.state.currentDisplay.rotationModel === 'xyzw')
-            totalUnits += 4; // xyzw
-        else
-            totalUnits += 3; // xyz
+    if (props.numConnectedJoints === 0) {
+        if (props.state?.currentDisplay) {
+            if (props.state.currentDisplay.rotationModel === 'xyzw')
+                heightUnits += 5; // xyzw
+            else
+                heightUnits += 4; // xyz
+        }
     }
 
-    return rowMeta(totalUnits, true);
+    return rowMeta({ 
+        heightUnits, 
+        dynamicValue: true,
+    });
 }
 
 type Props = RowProps<RotationRowT>;

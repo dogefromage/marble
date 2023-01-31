@@ -2,18 +2,19 @@ import styled, { css } from 'styled-components';
 import { Point, SelectionStatus } from '../types';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
-export const NODE_WIDTH = 180;
+export const DEFAULT_NODE_WIDTH = 180;
 
 export interface GeometryNodeDivProps
 {
     position: Point;
+    width: number;
     selectionStatus: SelectionStatus;
 }
 
-const GeometryNodeDiv = styled.div.attrs<GeometryNodeDivProps>(({ position }) =>
-({
+const GeometryNodeDiv = styled.div.attrs<GeometryNodeDivProps>(({ position, width }) => ({
     style: {
-        transform: `translate(${position.x}px, ${position.y}px)`
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        width: `${width}px`,
     }
 }))<GeometryNodeDivProps>`
 
@@ -21,8 +22,6 @@ const GeometryNodeDiv = styled.div.attrs<GeometryNodeDivProps>(({ position }) =>
     top: 0;
     left: 0;
 
-    width: ${NODE_WIDTH}px;
-    
     background-color: white;
     ${BORDER_RADIUS}
     ${BOX_SHADOW}

@@ -3,9 +3,8 @@ import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
-import { selectPanelClientRect, selectPanelManager } from '../slices/panelManagerSlice';
+import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
 import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
 import { offsetToClientPos } from '../utils/panelManager';
 import MenuRoot from './MenuRoot';
@@ -34,7 +33,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             geometryId,
             templateId: template.id,
             position: {
-                x: templateCatalog.worldPosition.x - 0.5 * NODE_WIDTH,
+                x: templateCatalog.worldPosition.x,
                 y: templateCatalog.worldPosition.y, 
             },
             undo: {}

@@ -173,7 +173,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
     const mapName = direction === 'in' ? allowedInputRows : allowedOutputRows;
     const [ selectedId, setSelectedId ] = useState('');
 
-    function addRow() {
+    const addRow = () => {
         if (!editable) return;
         dispatch(geometriesAddRow({
             geometryId,
@@ -182,7 +182,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
         }));
     }
     
-    function removeRow(rowId: string) {
+    const removeRow = (rowId: string) => {
         if (!editable) return;
         dispatch(geometriesRemoveRow({
             geometryId,
@@ -192,7 +192,8 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
         }))
     }
 
-    function setList(newState: typeof rows) {
+    const setList = (newState: typeof rows) => {
+        if (!editable) return;
         const newOrder = newState.map(row => row.id);
         dispatch(geometriesReorderRows({
             geometryId,
@@ -202,7 +203,8 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
         }));
     }
 
-    function replaceRow(rowId: string, newRowType: RowDataTypeCombination) {
+    const replaceRow = (rowId: string, newRowType: RowDataTypeCombination) => {
+        if (!editable) return;
         dispatch(geometriesReplaceRow({
             geometryId,
             rowId,
@@ -212,7 +214,8 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
         }));
     }
 
-    function updateRowName(rowId: string, name: string) {
+    const updateRowName = (rowId: string, name: string) => {
+        if (!editable) return;
         dispatch(geometriesUpdateRow({
             geometryId,
             rowId,
@@ -238,9 +241,9 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                 rows.map(row =>
                     <RowListItemDiv
                         key={row.id}
-                        selected={row.id === selectedId}
-                        onClick={() => setSelectedId(row.id)}
                         disabled={!editable}
+                        selected={editable && row.id === selectedId}
+                        onClick={() => setSelectedId(row.id)}
                     >
                         <div className='header'>
                             <div className='left'>
@@ -260,7 +263,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                                 </SymbolButton>
                             </div>
                         </div> {
-                            // row.id === selectedId &&
+                            editable && 
                             <SettingsTable className='details'> 
                                 <p>Row type</p>
                                 <FormSelectOption

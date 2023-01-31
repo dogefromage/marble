@@ -290,6 +290,7 @@ export const geometriesSlice = createSlice({
         replaceRow: (s, a: UndoAction<{ geometryId: string, direction: 'in' | 'out', rowId: string, rowAndDataType: RowDataTypeCombination }>) => {
             const g = getGeometry(s, a);
             if (!g) return;
+
             const rows: RowT[] = a.payload.direction === 'in' ? g.inputs : g.outputs;
             const index = rows.findIndex(row => row.id === a.payload.rowId);
             const newRow = createBlankRow(a.payload.rowId, a.payload.rowAndDataType);

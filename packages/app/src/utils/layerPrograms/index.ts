@@ -21,7 +21,7 @@ export function setBlockIndent(instructions: string, newIndent: number) {
     const lines = instructions
         .split('\n')
         .filter(lines => /^\s*$/.test(lines) === false);
-    if (lines.length < 0) return '';
+    if (lines.length === 0) return '';
 
     const startIndent = getCurrentIndent(lines[ 0 ]);
     const newIndentString = ' '.repeat(newIndent);

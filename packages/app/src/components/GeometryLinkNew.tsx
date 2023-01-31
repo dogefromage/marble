@@ -8,8 +8,7 @@ import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../utils/linalg";
 import GeometryLinkDiv from "./GeometryLinkDiv";
 
-interface Props
-{
+interface Props {
     panelId: string;
     newLink: GeometryNewLink;
     node: GNodeState;
@@ -17,20 +16,18 @@ interface Props
     getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryLinkNew = ({ panelId, newLink, node, nodeData, getCamera }: Props) =>
-{
+const GeometryLinkNew = ({ panelId, newLink, node, nodeData, getCamera }: Props) => {
     const dispatch = useAppDispatch();
-    
+
     // delete old link
     const debouncedTrigger = useDebouncedValue(newLink, 200, undefined);
-    useEffect(() =>
-    {
+    useEffect(() => {
         if (!debouncedTrigger) return;
         dispatch(geometryEditorPanelsSetNewLink({
             panelId,
             newLink: null,
         }))
-    }, [ debouncedTrigger ]);
+    }, [debouncedTrigger]);
 
     const cam = getCamera();
     if (!cam) return null;
@@ -38,14 +35,14 @@ const GeometryLinkNew = ({ panelId, newLink, node, nodeData, getCamera }: Props)
     const endLocation = newLink.location;
     const rowIndex = nodeData.template.rows.findIndex(r => r.id == endLocation.rowId);
     const endJointHeight = nodeData.rowHeights[rowIndex] + endLocation.subIndex;
-    const endJointPos = getJointPositionWorld(node.position, endJointHeight, newLink.direction);
+    const endJointPos = getJointPositionWorld(node.position, endJointHeight, nodeData.widthPixels, newLink.direction);
 
     const offsetPosVec = p2v(newLink.offsetPos);
     const worldCursor = pointScreenToWorld(cam, offsetPosVec);
     const worldPoint = v2p(worldCursor);
 
     return (
-        <GeometryLinkDiv 
+        <GeometryLinkDiv
             A={endJointPos}
             B={worldPoint}
             dataType={newLink.dataType}

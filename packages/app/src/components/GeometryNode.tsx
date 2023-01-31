@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
 import { geometryEditorPanelsPushGeometryId } from '../slices/panelGeometryEditorSlice';
-import GeometryNodeDiv from '../styles/GeometryNodeDiv';
+import GeometryNodeDiv, { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
 import { decomposeTemplateId, GNodeData, GNodeState, GNodeTemplateTypes, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
@@ -78,9 +78,12 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
         cursor: 'grab',
     });
 
+    const width = nodeData?.widthPixels || DEFAULT_NODE_WIDTH;
+
     return (
         <GeometryNodeDiv
             position={nodeState.position}
+            width={width}
             selectionStatus={selectionStatus}
             {...handlers}
             onClick={e => {

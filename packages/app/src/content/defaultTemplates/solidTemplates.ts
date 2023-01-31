@@ -23,7 +23,7 @@ const coordinateRow: SpecificRowT =
 const colorRow: SpecificRowT =
 {
     id: 'color',
-    type: 'input',
+    type: 'color',
     name: 'Color',
     dataType: 'vec3',
     value: [ 1, 1, 1 ],

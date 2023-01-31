@@ -223,17 +223,11 @@ export default class ProgramCompiler {
 
         const n = geometry.nodes.length;
         const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
-        // if (geometry.id === 'testing_root_geometry') {
-        //     console.log(nodeAdjacency);
-        // }
-        // console.log(geometry.nodes.map(node => node.templateId));
         const graph = analyzeGraph(n, nodeAdjacency);
-        const { topOrder, cycles, components } = graph;
+        const { topologicalSorting, cycles, components } = graph;
 
-        if (cycles.length) { // invalid because cycles
+        if (cycles.length) {
             throw new Error(`Cyclic nodes found while compiling geometry.`);
-            // for (const cycle of cycles) {
-            // }
         }
 
         // find lowest index where a node is output
@@ -252,7 +246,7 @@ export default class ProgramCompiler {
 
         const instructions: string[] = [];
 
-        for (const nodeIndex of topOrder) {
+        for (const nodeIndex of topologicalSorting) {
             // check if node is in same component as output
             const isUsed = components[ nodeIndex ] == outputComponent;
             const nodeData = connectionData.nodeDatas[ nodeIndex ];
