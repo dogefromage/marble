@@ -23,7 +23,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
 })<MenuVerticalDivProps>`
     position: absolute;
 
-    padding: 0 0.5rem 0.25rem;
+    padding: 0 0.25rem 0.25rem;
     display: flex;
     flex-direction: column;
 
@@ -32,7 +32,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     background-color: white;
     ${BORDER_RADIUS}
     ${BOX_SHADOW}
-    outline: solid 1px black;
+    outline: solid 1px #00000077;
 
     z-index: 1;
 `;

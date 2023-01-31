@@ -91,5 +91,6 @@ export function splitFirst(input: string, searchValue: RegExp | string) {
 
 export function generateCodeSafeUUID() {
     const id = uuidv4();
+    // @ts-ignore
     return id.replaceAll('-', '_');
 }

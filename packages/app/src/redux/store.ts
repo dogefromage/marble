@@ -15,7 +15,9 @@ function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
                     'sceneProgram.textureVarLookupData',
                     'commands',
                     'runtime',
+                    'editor.panelManager.clientRects',
                 ],
+                ignoreActions: true,
             },
         }),
     ];

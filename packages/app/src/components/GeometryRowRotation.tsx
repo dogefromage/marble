@@ -10,7 +10,7 @@ import { Metrics } from '../types/world';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
 import GeometryJoint from './GeometryJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
-import SelectOptionSubRow from './SelectOptionSubRow';
+import GeometrySelectOptionSubRow from './GeometrySelectOptionSubRow';
 import SlidableInput from './SlideableInput';
 
 export function getRowMetadataRotation(props: RowMetaProps<RotationRowT>): RowMetadata {
@@ -140,7 +140,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
                 !isConnected && row.currentDisplay && <>
                 {
                     <IndentRowDiv>
-                        <SelectOptionSubRow
+                        <GeometrySelectOptionSubRow
                             value={rowRotationModel}
                             onChange={(newModel: string) => {
                                 switchRotationModel(newModel as RotationModels);

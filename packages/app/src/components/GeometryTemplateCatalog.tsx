@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
+import { selectPanelClientRect, selectPanelManager } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { decomposeTemplateId, GeometryEditorPanelState, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, VerticalMenuShape } from '../types';
+import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
+import { offsetToClientPos } from '../utils/panelManager';
 import MenuRoot from './MenuRoot';
 
 type GroupedTemplatesMap = {
@@ -14,15 +17,19 @@ type GroupedTemplatesMap = {
 interface Props {
     panelId: string;
     geometryId: string;
-    templateCatalog: NonNullable<GeometryEditorPanelState['templateCatalog']>;
 }
 
-const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props) => {
+const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
     const dispatch = useAppDispatch();
     const { templates } = useAppSelector(selectTemplates);
     const [ searchValue, setSearchValue ] = useState('');
 
+    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
+    const currentPanelRect = useAppSelector(selectPanelClientRect(panelId));
+    const templateCatalog = panelState?.templateCatalog;
+
     const addNode = (template: GNodeTemplate) => {
+        if (!templateCatalog) return;
         dispatch(geometriesAddNode({
             geometryId,
             templateId: template.id,
@@ -35,7 +42,6 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
     }
 
     const menuShape = useMemo(() => {
-
         const allTemplates = (Object.values(templates) as GNodeTemplate[])
             .filter(template => {
             const { id, type } = decomposeTemplateId(template.id);
@@ -71,8 +77,8 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
                 onClick: () => addNode(template!),
             }));
             
-            const menuShape: VerticalMenuShape = {
-                type: 'vertical',
+            const menuShape: FloatingMenuShape = {
+                type: 'floating',
                 list: [
                     title,
                     searchBar,
@@ -93,19 +99,14 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
                 }, {} as GroupedTemplatesMap);
             
             const sortedGroupes = Object.entries(groupedTemplatesMap)
-                .sort((group1, group2) => {
-                    const cat1 = group1[0].toLowerCase();
-                    const cat2 = group2[0].toLowerCase();
-                    if (cat1 === cat2) return 0;
-                    return cat1 > cat2 ? 1 : -1;
-                });
+                .sort(([ a ], [ b ]) => a.localeCompare(b));
 
             const groupedList: MenuElement[] = sortedGroupes.map(([ category, tempOfGroup ]) => ({
                 type: 'expand',
                 key: category,
                 name: templateCategoryNames[category as GNodeTemplateCategories],
                 sublist: {
-                    type: 'vertical',
+                    type: 'floating',
                     list: tempOfGroup.map(template => ({
                         type: 'button',
                         key: template.id,
@@ -115,8 +116,8 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
                 } 
             }));
             
-            const menuShape: VerticalMenuShape = {
-                type: 'vertical',
+            const menuShape: FloatingMenuShape = {
+                type: 'floating',
                 list: [
                     title,
                     searchBar,
@@ -130,7 +131,13 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
     useEffect(() => {
         setSearchValue('');
     }, [ templateCatalog ]);
+
     
+
+    if (!templateCatalog || !currentPanelRect) return null;
+
+    const clientPos = offsetToClientPos(currentPanelRect, templateCatalog.offsetPosition);
+
     return (
         <MenuRoot
             type={'misc'}
@@ -138,7 +145,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId, templateCatalog }: Props
             onClose={() => {
                 dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))
             }}
-            anchor={templateCatalog.offsetPosition}
+            anchor={clientPos}
             onSearchUpdated={setSearchValue}
             center={templateCatalog.center}
         />

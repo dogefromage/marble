@@ -4,11 +4,11 @@ interface Props {
     size?: number;
 }
 
-const MaterialSymbol = styled.span.attrs(() => {
+const MaterialSymbol = styled.span.attrs<Props>(({ className }) => {
     return {
-        className: 'material-symbols-outlined'
+        className: `${className} material-symbols-outlined`,
     }
-}) <Props>`
+})<Props>`
     user-select: none;
     ${({ size }) => size && `font-size: ${size}px;`}
 `;

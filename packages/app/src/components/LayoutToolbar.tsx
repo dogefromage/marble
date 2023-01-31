@@ -8,10 +8,9 @@ interface Props
 
 }
 
-const LayoutToolbar = ({ }: Props) =>
-{
+const LayoutToolbar = ({ }: Props) => {
     return (
-        <MenuRoot 
+        <MenuRoot
             type={'toolbar'}
             shape={toolbarShape as MenuShape}
         />

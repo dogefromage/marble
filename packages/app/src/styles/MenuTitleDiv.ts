@@ -3,8 +3,8 @@ import { BORDER_RADIUS_TOP } from "./utils";
 
 export const MenuTitleDiv = styled.div<{ backColor?: string }>`
 
-    width: calc(100% + 1rem);
-    margin: 0 -0.5rem; // ugly hack
+    width: calc(100% + 0.5rem);
+    margin: 0 -0.25rem; // ugly hack
 
     height: 35px;
 

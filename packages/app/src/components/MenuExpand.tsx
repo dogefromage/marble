@@ -2,8 +2,8 @@ import React from 'react';
 import { menuStoreSetElement } from '../hooks/useMenuStore';
 import { MenuExpandDiv } from '../styles/MenuElementDiv';
 import { ExpandMenuElement, MenuStackElement, MenuStore, Point } from '../types';
-import MaterialSymbol from './MaterialSymbol';
-import MenuVertical from './MenuVertical';
+import MaterialSymbol from '../styles/MaterialSymbol';
+import MenuFloating from './MenuVertical';
 
 interface Props
 {
@@ -41,7 +41,7 @@ const MenuExpand = ({ element, menuStore, depth }: Props) =>
             <MaterialSymbol size={20}>chevron_right</MaterialSymbol>
             {
                 currentStackEl?.key === element.name &&
-                <MenuVertical
+                <MenuFloating
                     depth={depth + 1}
                     menuStore={menuStore}
                     shape={element.sublist}

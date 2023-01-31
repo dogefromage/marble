@@ -1,7 +1,7 @@
-import { ActivePanel, Command, ContextMenuState, DependencyGraph, GeometryConnectionData, GeometryS, GNodeTemplate, LayerProgram, ProgramInclude } from ".";
+import { Command, ContextMenuState, DependencyGraph, GeometryConnectionData, GeometryS, GNodeTemplate, LayerProgram, ProgramInclude } from ".";
 import { ConsoleMessage } from "./console";
 import { Layer } from "./layer";
-import { ObjMapUndef } from "./UtilityTypes";
+import { ObjMapUndef, Rect } from "./UtilityTypes";
 import { World } from "./world";
 
 export type GeometriesSliceState = ObjMapUndef<GeometryS>;
@@ -17,7 +17,8 @@ export type TemplatesSliceState = {
 export interface CommandsSliceState { commands: ObjMapUndef<Command> };
 
 export interface PanelManagerSliceState {
-    activePanel?: ActivePanel;
+    activePanelId: string;
+    clientRects: Map<string, Rect>;
 }
 
 export interface ContextMenuSliceState {

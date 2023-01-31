@@ -86,7 +86,6 @@ const GeometryEditorViewport = ({ panelId }: Props) => {
                 <GeometryTemplateCatalog
                     panelId={panelId}
                     geometryId={geometryId}
-                    templateCatalog={panelState.templateCatalog}
                 />
             }{
                 // only for testing

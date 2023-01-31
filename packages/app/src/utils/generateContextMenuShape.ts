@@ -1,8 +1,8 @@
-import { Command, VerticalMenuShape } from "../types";
+import { Command, FloatingMenuShape } from "../types";
 
 export default function generateContextMenuShape(commandList: Command[]) {
-    const root: VerticalMenuShape = {
-        type: 'vertical',
+    const root: FloatingMenuShape = {
+        type: 'floating',
         list: commandList.map(command => ({
             type: 'command',
             key: command.id,

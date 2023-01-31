@@ -2,10 +2,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "anyOf": [
         {
-            "$ref": "#/definitions/VerticalMenuShape"
+            "$ref": "#/definitions/FloatingMenuShape"
         },
         {
-            "$ref": "#/definitions/HorizontalMenuShape"
+            "$ref": "#/definitions/InlineMenuShape"
         }
     ],
     "definitions": {
@@ -19,6 +19,9 @@
                 },
                 "onClick": {
                     "type": "object"
+                },
+                "tabIndex": {
+                    "type": "number"
                 },
                 "type": {
                     "enum": [
@@ -46,6 +49,9 @@
                 "name": {
                     "type": "string"
                 },
+                "tabIndex": {
+                    "type": "number"
+                },
                 "type": {
                     "enum": [
                         "command"
@@ -70,7 +76,10 @@
                     "type": "string"
                 },
                 "sublist": {
-                    "$ref": "#/definitions/VerticalMenuShape"
+                    "$ref": "#/definitions/FloatingMenuShape"
+                },
+                "tabIndex": {
+                    "type": "number"
                 },
                 "type": {
                     "enum": [
@@ -87,7 +96,28 @@
             ],
             "type": "object"
         },
-        "HorizontalMenuShape": {
+        "FloatingMenuShape": {
+            "properties": {
+                "list": {
+                    "items": {
+                        "$ref": "#/definitions/MenuElement"
+                    },
+                    "type": "array"
+                },
+                "type": {
+                    "enum": [
+                        "floating"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "list",
+                "type"
+            ],
+            "type": "object"
+        },
+        "InlineMenuShape": {
             "properties": {
                 "list": {
                     "items": {
@@ -97,7 +127,7 @@
                 },
                 "type": {
                     "enum": [
-                        "horizontal"
+                        "inline"
                     ],
                     "type": "string"
                 }
@@ -141,6 +171,9 @@
                 "placeholder": {
                     "type": "string"
                 },
+                "tabIndex": {
+                    "type": "number"
+                },
                 "type": {
                     "enum": [
                         "search"
@@ -168,6 +201,9 @@
                 "name": {
                     "type": "string"
                 },
+                "tabIndex": {
+                    "type": "number"
+                },
                 "type": {
                     "enum": [
                         "title"
@@ -178,27 +214,6 @@
             "required": [
                 "key",
                 "name",
-                "type"
-            ],
-            "type": "object"
-        },
-        "VerticalMenuShape": {
-            "properties": {
-                "list": {
-                    "items": {
-                        "$ref": "#/definitions/MenuElement"
-                    },
-                    "type": "array"
-                },
-                "type": {
-                    "enum": [
-                        "vertical"
-                    ],
-                    "type": "string"
-                }
-            },
-            "required": [
-                "list",
                 "type"
             ],
             "type": "object"

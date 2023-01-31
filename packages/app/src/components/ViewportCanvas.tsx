@@ -27,21 +27,19 @@ const CanvasWrapperDiv = styled.div`
     }
 `;
 
-interface Props
-{
+interface Props {
     panelId: string;
 }
 
-const ViewportCanvas = ({ panelId }: Props) =>
-{
+const ViewportCanvas = ({ panelId }: Props) => {
     const dispatch = useAppDispatch();
     const viewportPanelState = useAppSelector(selectPanelState(ViewTypes.Viewport, panelId));
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    
-    const [ ctx, setCtx  ] = useState<WebGL2RenderingContext>();
-    const [ size, setSize ] = useState<DOMRectReadOnly>();
+
+    const [ctx, setCtx] = useState<WebGL2RenderingContext>();
+    const [size, setSize] = useState<DOMRectReadOnly>();
 
     /**
      * CANVAS 
@@ -58,8 +56,8 @@ const ViewportCanvas = ({ panelId }: Props) =>
         }
         setCtx(_gl);
     }, []);
-    
-    useResizeObserver(wrapperRef, div => setSize(div.contentRect))
+
+    useResizeObserver(wrapperRef, div => setSize(div.contentRect));
 
     useLayoutEffect(() => {
         if (!size || !canvasRef.current) return;
@@ -67,7 +65,7 @@ const ViewportCanvas = ({ panelId }: Props) =>
         canvasRef.current.height = size.height;
         if (!ctx) return;
         ctx.viewport(0, 0, size.width, size.height);
-    }, [ size ]);
+    }, [size]);
 
     /**
      * CAMERA
@@ -85,52 +83,48 @@ const ViewportCanvas = ({ panelId }: Props) =>
 
     const { catcher: divCatcher, handlers: divHandlers } = useMouseDrag({
         mouseButton: 1,
-        start: e => 
-        {
+        start: e => {
             if (!viewportPanelState) return;
 
             let mode: CameraDragModes = CameraDragModes.Orbit;
             if (e.shiftKey) mode = CameraDragModes.Pan;
-            
-            dragRef.current = 
-            { 
+
+            dragRef.current =
+            {
                 dragStart: { x: e.clientX, y: e.clientY },
                 lastCamera: viewportPanelState.uniformSources.viewportCamera,
                 mode,
             }
         },
-        move: e =>
-        {
+        move: e => {
             if (!dragRef.current) return;
-    
+
             const deltaX = e.clientX - dragRef.current.dragStart.x;
             const deltaY = e.clientY - dragRef.current.dragStart.y;
 
-            if (dragRef.current.mode === CameraDragModes.Orbit)
-            {
+            if (dragRef.current.mode === CameraDragModes.Orbit) {
                 const verticalSensitivity = -0.8;
                 const horizontalSensitivity = -0.8;
-    
+
                 const deltaRot = vec2.fromValues(
                     verticalSensitivity * deltaY,
                     horizontalSensitivity * deltaX,
                 );
-    
+
                 const rotation = vec2.add(vec2.create(), dragRef.current.lastCamera.rotation, deltaRot);
-    
+
                 dispatch(viewportPanelEditCamera({
-                    panelId, 
+                    panelId,
                     partialCamera: {
                         rotation,
                     }
                 }))
             }
-            else
-            {
+            else {
                 if (!size) return;
 
                 const lastCam = dragRef.current.lastCamera;
-                
+
                 const { cameraRotation, cameraDir } = getViewportDirection(lastCam);
 
                 const factor = 1.0 / (2 * size.height); // somehow this is just about right
@@ -151,10 +145,9 @@ const ViewportCanvas = ({ panelId }: Props) =>
         },
     });
 
-    const onWheel: React.WheelEventHandler = e =>
-    {
+    const onWheel: React.WheelEventHandler = e => {
         if (!viewportPanelState) return;
-        
+
         const zoomMultiplier = 1.1;
         const zoomFactor = Math.pow(zoomMultiplier, e.deltaY / 100);
 
@@ -169,7 +162,7 @@ const ViewportCanvas = ({ panelId }: Props) =>
     }
 
     return (
-        <CanvasWrapperDiv 
+        <CanvasWrapperDiv
             ref={wrapperRef}
             {...divHandlers}
             onWheel={onWheel}
@@ -178,14 +171,14 @@ const ViewportCanvas = ({ panelId }: Props) =>
                 ref={canvasRef}
             />
             {
-                ctx && size && 
-                <ViewportProgramRenderer 
-                    gl={ctx} 
+                ctx && size &&
+                <ViewportProgramRenderer
+                    gl={ctx}
                     size={size}
                     panelId={panelId}
                 />
             }
-            { divCatcher }
+            {divCatcher}
         </CanvasWrapperDiv>
     );
 }

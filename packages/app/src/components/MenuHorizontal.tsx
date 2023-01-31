@@ -1,18 +1,18 @@
 import React from 'react';
 import { menuStoreSetElement } from '../hooks/useMenuStore';
 import { MenuHorizontalExpandDiv } from '../styles/MenuElementDiv';
-import MenuHorizontalDiv from '../styles/MenuHorizontalDiv';
-import { HorizontalMenuShape, MenuStackElement, MenuStore, Point } from '../types';
-import MenuVertical from './MenuVertical';
+import MenuHorizontalDiv from '../styles/MenuInlineDiv';
+import { InlineMenuShape, MenuStackElement, MenuStore, Point } from '../types';
+import MenuFloating from './MenuVertical';
 
 interface Props
 {
     depth: number;
     menuStore: MenuStore;
-    shape: HorizontalMenuShape;
+    shape: InlineMenuShape;
 }
 
-const MenuHorizontal = ({ depth, menuStore, shape }: Props) =>
+const MenuInline = ({ depth, menuStore, shape }: Props) =>
 {
     const { state: menuState, dispatch: menuDispatch } = menuStore;
     const currentStackEl = menuState.stack[depth] as MenuStackElement | undefined;
@@ -43,7 +43,7 @@ const MenuHorizontal = ({ depth, menuStore, shape }: Props) =>
                     { expandElement.name }
                     {
                         currentStackEl?.key === expandElement.name &&
-                        <MenuVertical
+                        <MenuFloating
                             depth={depth + 1}
                             menuStore={menuStore}
                             shape={expandElement.sublist}
@@ -58,4 +58,4 @@ const MenuHorizontal = ({ depth, menuStore, shape }: Props) =>
     );
 }
 
-export default MenuHorizontal;
+export default MenuInline;

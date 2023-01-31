@@ -1,13 +1,13 @@
 {
     "$schema": "../schemas/menu.json",
-    "type": "horizontal",
+    "type": "inline",
     "list": [
         {
             "type": "expand",
             "name": "Project",
             "key": "project",
             "sublist": {
-                "type": "vertical",
+                "type": "floating",
                 "list": [
                     {  "type": "command", "key": "save", "name": "Save", "command": "project.save" },
                     {  "type": "command", "key": "exit", "name": "Exit", "command": "project.exit" }
@@ -19,7 +19,7 @@
             "key": "edit",
             "type": "expand",
             "sublist": {
-                "type": "vertical",
+                "type": "floating",
                 "list": [
                     {  "type": "command", "key": "undo", "name": "Undo", "command": "global.undo" },
                     {  "type": "command", "key": "redo", "name": "Redo", "command": "global.redo" }

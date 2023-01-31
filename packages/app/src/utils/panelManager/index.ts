@@ -2,7 +2,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { useEffect } from "react";
 import { panelStateBind, panelStateRemove } from "../../enhancers/panelStateEnhancer";
 import { useAppDispatch } from "../../redux/hooks";
-import { CreatePanelStateCallback, PanelState, ObjMap } from "../../types";
+import { CreatePanelStateCallback, ObjMap, PanelState, Point, Rect } from "../../types";
 import { ViewTypes } from "../../types/panelManager/views";
 
 export function useBindPanelState(panelId: string, createPanelState: CreatePanelStateCallback, viewType: ViewTypes) {
@@ -21,4 +21,18 @@ export function getPanelState<T extends PanelState>(s: ObjMap<T>, a: PayloadActi
     const ps = s[ a.payload.panelId ];
     if (!ps) return console.error(`Panel state not found panelId=${a.payload.panelId}`);
     return ps;
+}
+
+export function offsetToClientPos(clientRect: Rect, offsetPos: Point): Point {
+    return {
+        x: offsetPos.x + clientRect.x,
+        y: offsetPos.y + clientRect.y,
+    }
+}
+
+export function clientToOffsetPos(clientRect: Rect, clientPos: Point): Point {
+    return {
+        x: clientPos.x - clientRect.x,
+        y: clientPos.y - clientRect.y,
+    }
 }

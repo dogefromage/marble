@@ -1,6 +1,6 @@
 import React from 'react';
-import MenuVerticalDiv from '../styles/MenuVerticalDiv';
-import { ButtonMenuElement, CommandMenuElement, ExpandMenuElement, MenuElement, MenuStore, SearchMenuElement, TitleMenuElement, VerticalMenuShape } from '../types';
+import MenuVerticalDiv from '../styles/MenuFloatingDiv';
+import { ButtonMenuElement, CommandMenuElement, ExpandMenuElement, MenuElement, MenuStore, SearchMenuElement, TitleMenuElement, FloatingMenuShape } from '../types';
 import MenuButton from './MenuButton';
 import MenuCommand from './MenuCommand';
 import MenuExpand from './MenuExpand';
@@ -18,7 +18,7 @@ const MenuElementSwitch = (props: SwitchProps) => {
 
     if (type === 'button')
         return <MenuButton {...props as SwitchProps<ButtonMenuElement>} />
-    if (type === 'command') 
+    if (type === 'command')
         return <MenuCommand {...props as SwitchProps<CommandMenuElement>} />
     if (type === 'expand')
         return <MenuExpand  {...props as SwitchProps<ExpandMenuElement>} />
@@ -30,39 +30,37 @@ const MenuElementSwitch = (props: SwitchProps) => {
     return null;
 }
 
-interface Props
-{
+interface Props {
     depth: number;
     menuStore: MenuStore;
-    shape: VerticalMenuShape;
-    
+    shape: FloatingMenuShape;
+
     left?: string;
     top?: string;
     bottom?: string;
     right?: string;
 }
 
-const MenuVertical = ({ 
+const MenuFloating = ({
     depth, menuStore, shape,
     left, top, bottom, right
-}: Props) =>
-{
+}: Props) => {
     return (
         <MenuVerticalDiv
-            left={left} top={top}bottom={bottom} right={right}
+            left={left} top={top} bottom={bottom} right={right}
         >
-        {
-            shape.list.map(element => 
-                <MenuElementSwitch 
-                    key={element.key}
-                    depth={depth} 
-                    menuStore={menuStore} 
-                    element={element} 
-                />
-            )
-        }
+            {
+                shape.list.map(element =>
+                    <MenuElementSwitch
+                        key={element.key}
+                        depth={depth}
+                        menuStore={menuStore}
+                        element={element}
+                    />
+                )
+            }
         </MenuVerticalDiv>
     );
 }
 
-export default MenuVertical;
+export default MenuFloating;

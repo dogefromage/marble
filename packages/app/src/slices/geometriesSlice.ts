@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { allowedInputRows, allowedOutputRowKeys, allowedOutputRows, BaseRowS, DataTypes, decomposeRowDataTypeCombination, defaultDataTypeValue, FieldRowT, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NameRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, RowTypes, SpecificRowT, UndoAction } from "../types";
+import { allowedInputRows, allowedOutputRowKeys, allowedOutputRows, BaseRowS, DataTypes, decomposeRowDataTypeCombination, defaultDataTypeValue, FieldRowT, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NameRowT, NodeTemplateId, OutputRowT, Point, RotationRowT, RowDataTypeCombination, RowS, RowT, RowTypes, SpecificRowT, UndoAction } from "../types";
 import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
@@ -41,7 +41,7 @@ function removeIncomingElements(s: GeometriesSliceState, geometryId: string, ele
     }
 }
 
-function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination) {
+function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination): RowT {
     const displayName = allowedInputRows[rowAndDataType] || allowedOutputRows[rowAndDataType];
     const rowName = `New ` + (displayName || 'Row');
 
@@ -51,11 +51,19 @@ function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination) {
         case 'field':
         case 'input':
         case 'output':
-            const row: RowT = {
+            return {
                 id, type: rowType, dataType, name: rowName,
                 value: defaultDataTypeValue[dataType],
             }
-            return row;
+        case 'rotation':
+            return {
+                id,
+                type: 'rotation', 
+                dataType: 'mat3',
+                name: rowName,
+                value: defaultDataTypeValue['mat3'],
+                rotationModel: 'xyz',
+            }
         default: 
             throw new Error(`${rowAndDataType} not implemented`);
     }

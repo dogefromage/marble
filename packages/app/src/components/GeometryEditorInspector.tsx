@@ -1,17 +1,17 @@
 import _ from 'lodash';
-import React, { Fragment, useState } from 'react';
-import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
+import React, { useState } from 'react';
 import { ReactSortable } from 'react-sortablejs';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddRow, geometriesRemoveRow, geometriesRename, geometriesReorderRows, geometriesReplaceRow, geometriesUpdateRow, selectSingleGeometry } from '../slices/geometriesSlice';
-import { BOX_SHADOW, INSET_SHADOW } from '../styles/utils';
-import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, GeometryS, getRowDataTypeCombination, InputRowT, OutputRowT, RowDataTypeCombination, RowT, RowTypes, SpecificRowT, ViewTypes } from '../types';
+import MaterialSymbol from '../styles/MaterialSymbol';
+import SymbolButton from '../styles/SymbolButton';
+import { INSET_SHADOW } from '../styles/utils';
+import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, getRowDataTypeCombination, InputRowT, OutputRowT, RowDataTypeCombination, RowT, ViewTypes } from '../types';
 import ExpandableRegion from './ExpandableRegion';
-import MaterialSymbol from './MaterialSymbol';
-import RenameField from './RenameField';
-import SelectOption from './SelectOption';
+import FormRenameField from './FormRenameField';
+import FormSelectOption from './FormSelectOption';
 
 const InspectorWrapper = styled.div`
     min-height: 100%;
@@ -23,13 +23,6 @@ const SettingsTable = styled.div`
     grid-template-columns: 180px 1fr;
     align-items: center;
     grid-row-gap: 0.5rem;
-`;
-
-const Section = styled.div`
-    margin-left: 5px;
-    border-left: solid 1px black;
-    padding-left: 10px;
-    margin-bottom: 10px;
 `;
 
 interface Props {
@@ -46,27 +39,19 @@ const GeometryEditorInspector = ({ panelId }: Props) => {
         <InspectorWrapper>
             <ExpandableRegion name='Active Geometry' defaultValue={true}> {
                 (geometry && geometryId) ? (<>
-                    <p>GENERAL</p>
-                    <Section>
-                        <SettingsTable>
-                            <p>Geometry Name</p>
-                            <RenameField
-                                value={geometry.name}
-                                onChange={newName => dispatch(geometriesRename({
-                                    geometryId, newName, undo: {},
-                                }))}
-                            />
-                            <p>Is root</p>{ JSON.stringify(geometry.isRoot) }
-                        </SettingsTable>
-                    </Section>
+                    <SettingsTable>
+                        <p>Geometry Name</p>
+                        <FormRenameField
+                            value={geometry.name}
+                            onChange={newName => dispatch(geometriesRename({
+                                geometryId, newName, undo: {},
+                            }))}
+                        />
+                    </SettingsTable>
                     <p>INPUTS { geometry.isRoot && '(ROOT)'}</p> 
-                    <Section>
-                        <RowList geometryId={geometryId} editable={!geometry.isRoot} rows={geometry.inputs} direction='in' />
-                    </Section>
+                    <RowList geometryId={geometryId} editable={!geometry.isRoot} rows={geometry.inputs} direction='in' />
                     <p>OUTPUTS { geometry.isRoot && '(ROOT)'}</p>
-                    <Section>
-                        <RowList geometryId={geometryId} editable={!geometry.isRoot} rows={geometry.outputs} direction='out' />
-                    </Section>
+                    <RowList geometryId={geometryId} editable={!geometry.isRoot} rows={geometry.outputs} direction='out' />
                 </>) : (
                     <p>No active geometry found</p>
                 )
@@ -78,9 +63,7 @@ const GeometryEditorInspector = ({ panelId }: Props) => {
 
 export default GeometryEditorInspector;
 
-
-
-const RowListDiv = styled.div<{ isDisabled: boolean }>`
+const RowListDiv = styled.div<{ disabled: boolean }>`
     width: 100%;
     padding: 8px;
     background-color: #e1e1e1;
@@ -99,65 +82,76 @@ const RowListDiv = styled.div<{ isDisabled: boolean }>`
 
     .add {
         width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        outline: none;
-        border: none;
-        background-color: unset;
-
-        cursor: ${({ isDisabled }) => isDisabled ? 'not-allowed' : 'pointer' };
-
-        &:hover {
-            background-color: #bbb;
-        }
+        aspect-ratio: unset;
     }
 `;
 
-const RowListItemDiv = styled.div<{ isSelected: boolean, isDisabled: boolean }>`
+interface RowListItemDivProps {
+    selected: boolean;
+    disabled: boolean;
+}
+
+const RowListItemDiv = styled.div.attrs<RowListItemDivProps>(({ selected }) => ({
+    className: selected && 'selected',
+}))<RowListItemDivProps>`
     width: 100%;
-    height: 1.8rem;
-    /* ${BOX_SHADOW} */
-    background-color: ${({ isSelected }) => isSelected ? '#ccc' : '#eee'};
+    height: fit-content;
+    max-height: 1.8rem;
+    transition: max-height 250ms cubic-bezier(.4,.01,.59,1.11);
+    overflow: hidden;
+    
+    &.selected {
+        max-height: 150px;
+    }
+
+    background-color: ${({ selected: isSelected }) => isSelected ? '#ccc' : '#eee'};
+    &:active {
+        background-color: #ccc;
+    }
+
     padding: 0 0.5rem;
-
+    
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
 
-    cursor: ${({ isDisabled }) => isDisabled ? 'not-allowed' : 'move' };
+    .header{
+        cursor: pointer;
 
-    .left, .right {
+        height: 1.8rem;
+        flex-shrink: 0;
+
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
-        gap: 0.25rem;
 
-        button:is(.close, .copy) {
-
-            width: 1.4rem;
-            aspect-ratio: 1;
-
-            outline: none;
-            border: none;
-            background-color: unset;
-            
+        .left, .right {
             display: flex;
+            justify-content: space-around;
             align-items: center;
-            justify-content: center;
-            
-            cursor: ${({ isDisabled }) => isDisabled ? 'not-allowed' : 'pointer' };
-
-            &:hover {
-                background-color: #bbb;
+            gap: 0.25rem;
+    
+            .handle {
+                width: 1.4rem;
+                aspect-ratio: 1;
+                
+                display: flex;
+                align-items: center;
+                justify-content: center;
+    
+                cursor: ${({ disabled: isDisabled }) => isDisabled ? 'not-allowed' : 'move' };
             }
         }
     }
-`;
 
-const RowDetailsDiv = styled.div`
-    display: flex;
+    .details {
+        margin: 0.25rem 0;
+        border-top: solid 1px #00000077;
+        padding-top: 0.25rem;
+        
+        &>* {
+            min-height: 1.4rem;
+        }
+    }
 `;
 
 function rowTHasKey<T extends RowT, K extends keyof T = keyof T>(row: RowT, key: K): row is RowT & Pick<T, K> {
@@ -177,8 +171,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
 
     const options = direction === 'in' ? allowedInputRowKeys : allowedOutputRowKeys;
     const mapName = direction === 'in' ? allowedInputRows : allowedOutputRows;
-    const [selectedId, setSelectedId] = useState('');
-    const selectedRow = editable && rows.find(row => row.id === selectedId);
+    const [ selectedId, setSelectedId ] = useState('');
 
     function addRow() {
         if (!editable) return;
@@ -233,63 +226,65 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
     const mutableRows = _.cloneDeep(rows);
     
     return (<>
-        <RowListDiv isDisabled={!editable}> {
+        <RowListDiv disabled={!editable}> {
             <ReactSortable 
                 list={mutableRows} 
                 setList={setList}
                 className='sortable-div'
                 disabled={!editable}
+                handle='.handle'
+                animation={100}
             >{ // <-- do not insert space
                 rows.map(row =>
                     <RowListItemDiv
                         key={row.id}
-                        isSelected={row.id === selectedId}
+                        selected={row.id === selectedId}
                         onClick={() => setSelectedId(row.id)}
-                        isDisabled={!editable}
+                        disabled={!editable}
                     >
-                        <div className='left'>
-                            <RenameField 
-                                value={row.name} 
-                                onChange={newValue => updateRowName(row.id, newValue)} 
-                                disabled={!editable}
-                            />
-                        </div>
-                        <div className='right'>
-                            {/* <button className='copy'>
-                                <MaterialSymbol size={18}>content_copy</MaterialSymbol>
-                            </button> */}
-                            <button className='close' onClick={() => removeRow(row.id)}>
-                                <MaterialSymbol size={20}>close</MaterialSymbol>
-                            </button>
-                        </div>
+                        <div className='header'>
+                            <div className='left'>
+                                <MaterialSymbol className='handle' size={20}>drag_handle</MaterialSymbol>
+                                <FormRenameField 
+                                    value={row.name} 
+                                    onChange={newValue => updateRowName(row.id, newValue)} 
+                                    disabled={!editable}
+                                />
+                            </div>
+                            <div className='right'>
+                                {/* <button className='copy'>
+                                    <MaterialSymbol size={18}>content_copy</MaterialSymbol>
+                                </button> */}
+                                <SymbolButton onClick={() => removeRow(row.id)}>
+                                    <MaterialSymbol size={22}>close</MaterialSymbol>
+                                </SymbolButton>
+                            </div>
+                        </div> {
+                            // row.id === selectedId &&
+                            <SettingsTable className='details'> 
+                                <p>Row type</p>
+                                <FormSelectOption
+                                    value={getRowDataTypeCombination(row.type, row.dataType)}
+                                    onChange={newType => replaceRow(row.id, newType as RowDataTypeCombination)}
+                                    options={options}
+                                    mapName={mapName}
+                                /> {
+                                    // rowTHasKey<InputRowT>(row, 'value') && <>
+                                    //     <p>Default value</p>
+                                    //     <p>{JSON.stringify(row.value)}</p>
+                                    //     <p>Default input tag</p>
+                                    //     <p>{JSON.stringify(row.defaultArgumentToken || null)}</p>
+                                    // </>
+                                }
+                            </SettingsTable>
+                        }
                     </RowListItemDiv>
                 )}
             </ReactSortable>
-        }
-        <button className='add' onClick={addRow}>
-            <MaterialSymbol size={20}>add</MaterialSymbol>
-        </button>
+            }
+            <SymbolButton className='add' onClick={addRow} disabled={!editable}>
+                <MaterialSymbol size={20}>add</MaterialSymbol>
+            </SymbolButton>
         </RowListDiv>
-        {
-            selectedRow && (<>
-                <p>Details of row <b>{selectedRow.name}</b></p>
-                <SettingsTable>
-                    <p>Row type</p>
-                    <SelectOption
-                        value={getRowDataTypeCombination(selectedRow.type, selectedRow.dataType)}
-                        onChange={newType => replaceRow(selectedRow.id, newType as RowDataTypeCombination)}
-                        options={options}
-                        mapName={mapName}
-                    /> {
-                        rowTHasKey<InputRowT>(selectedRow, 'value') && <>
-                            <p>Default value</p>
-                            <p>{JSON.stringify(selectedRow.value)}</p>
-                            <p>Default argument</p>
-                            <p>{JSON.stringify(selectedRow.defaultArgumentToken || null)}</p>
-                        </>
-                    }
-                </SettingsTable>
-            </>)
-        }
     </>);
 }

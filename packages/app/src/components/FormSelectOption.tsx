@@ -1,21 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
-import { BORDER_RADIUS } from '../styles/utils';
-import { MenuShape, ObjMap } from '../types';
-import MaterialSymbol from './MaterialSymbol';
+import { BORDER_RADIUS, BOX_SHADOW } from '../styles/utils';
+import { MenuShape, ObjMap, Point } from '../types';
+import MaterialSymbol from '../styles/MaterialSymbol';
 import MenuRoot from './MenuRoot';
 
 const SelectOptionDiv = styled.div`
     position: relative;
 
-    height: 30px;
+    height: 1.6rem;
+    max-height: 100%;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.3rem;
-
+    
     padding: 0 0.5rem;
     ${BORDER_RADIUS}
     background-color: ${({ theme }) => theme.colors.general.fields};
@@ -37,11 +38,14 @@ export interface SelectOptionProps {
     mapName?: ObjMap<string>;
 }
 
-const SelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) => {
-    const [ dropdown, setDropdown ] = useState(false);
+const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) => {
+    const [ dropdown, setDropdown ] = useState<{
+        anchor: Point;
+    }>();
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
     const menuShape: MenuShape = useMemo(() => ({
-        type: 'vertical',
+        type: 'floating',
         list: options.map((option, index) => ({
             type: 'button',
             name: mapName?.[ option ] || option,
@@ -49,14 +53,20 @@ const SelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) 
             tabIndex: 1 + index,
             onClick: () => {
                 onChange(option);
-                setDropdown(() => false);
+                setDropdown(undefined);
             }
         })),
     }), [ options ]);
 
     return (
         <SelectOptionDiv
-            onClick={() => setDropdown(true)}
+            onClick={() => {
+                const rect = wrapperRef.current!.getBoundingClientRect();
+                setDropdown({
+                    anchor: { x: rect.left, y: rect.top }
+                });
+            }}
+            ref={wrapperRef}
         >
             <p>{mapName?.[ value ] ?? value}</p>
             {
@@ -64,8 +74,8 @@ const SelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) 
                 <MenuRoot
                     type={'misc'}
                     shape={menuShape}
-                    anchor={{ x: 0, y: 0 }}
-                    onClose={() => setDropdown(false)}
+                    anchor={dropdown.anchor}
+                    onClose={() => setDropdown(undefined)}
                 />
             }
             <MaterialSymbol size={20}>expand_more</MaterialSymbol>
@@ -73,4 +83,4 @@ const SelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) 
     );
 }
 
-export default SelectOption;
+export default FormSelectOption;

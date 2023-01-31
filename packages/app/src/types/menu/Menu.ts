@@ -7,33 +7,28 @@ export interface BaseMenuElement {
     tabIndex?: number;
 }
 
-export interface ExpandMenuElement extends BaseMenuElement
-{
+export interface ExpandMenuElement extends BaseMenuElement {
     type: 'expand';
-    sublist: VerticalMenuShape;
+    sublist: FloatingMenuShape;
 }
 
-export interface CommandMenuElement extends BaseMenuElement
-{
+export interface CommandMenuElement extends BaseMenuElement {
     type: 'command';
     command: string;
 }
 
-export interface ButtonMenuElement extends BaseMenuElement
-{
+export interface ButtonMenuElement extends BaseMenuElement {
     type: 'button';
     onClick: () => void;
 }
 
-export interface SearchMenuElement extends BaseMenuElement
-{
+export interface SearchMenuElement extends BaseMenuElement {
     type: 'search',
     placeholder: string;
     autofocus: boolean;
 }
 
-export interface TitleMenuElement extends BaseMenuElement
-{
+export interface TitleMenuElement extends BaseMenuElement {
     type: 'title',
     color?: string;
 }
@@ -45,24 +40,21 @@ export type MenuElement =
     | SearchMenuElement
     | TitleMenuElement
 
-export interface HorizontalMenuShape
-{
-    type: 'horizontal';
+export interface InlineMenuShape {
+    type: 'inline';
     list: ExpandMenuElement[];
 }
 
-export interface VerticalMenuShape
-{
-    type: 'vertical';
+export interface FloatingMenuShape {
+    type: 'floating';
     list: MenuElement[];
 }
 
-export type MenuShape = 
-    | HorizontalMenuShape
-    | VerticalMenuShape
+export type MenuShape =
+    | InlineMenuShape
+    | FloatingMenuShape
 
-export interface MenuStackElement 
-{
+export interface MenuStackElement {
     key: string;
     position: Point;
 }
@@ -78,5 +70,5 @@ export interface MenuStore {
     state: MenuState;
     dispatch: React.Dispatch<AnyAction>;
 }
- 
+
 export type MenuTypes = 'toolbar' | 'context' | 'misc';

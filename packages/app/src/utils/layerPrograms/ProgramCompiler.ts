@@ -77,7 +77,7 @@ export default class ProgramCompiler {
         }
 
         const source = geometryFunctionBlocks.join(`\n`);
-        console.info(source);
+        // console.info(source);
 
         const structures = new Set<string>();
 

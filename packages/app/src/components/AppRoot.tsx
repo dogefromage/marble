@@ -49,7 +49,7 @@ const AppRoot = ({ projectId }: Props) =>
                 <GeometryDataManager />
                 {/* COMPILATION */}
                 <ServiceErrorBoundary serviceName='Program Compiler'>
-                    <CompilerRoot />
+                    {/* <CompilerRoot /> */}
                 </ServiceErrorBoundary>
                 {/* Views */}
                 <ThemeProvider theme={defaultTheme}>

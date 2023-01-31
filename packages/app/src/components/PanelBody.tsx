@@ -1,13 +1,13 @@
+import useResizeObserver from '@react-hook/resize-observer';
 import React, { useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { panelManagerSetActive } from '../slices/panelManagerSlice';
-import { ViewProps } from '../types';
+import { panelManagerSetActive, panelManagerSetClientRect } from '../slices/panelManagerSlice';
+import { Rect, ViewProps } from '../types';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
 
 const PanelDiv = styled.div`
-    /* position: relative; */
     width: 100%;
     height: 100%;
     display: flex;
@@ -20,26 +20,31 @@ interface Props
     viewProps: ViewProps;
 }
 
-const PanelBody = ({ children, viewProps: { panelId } }: Props) =>
-{
+const PanelBody = ({ children, viewProps: { panelId } }: Props) => {
     const dispatch = useAppDispatch();
     const panelDiv = useRef<HTMLDivElement>(null);
 
     const mouseEnter = useCallback(() => {
         if (!panelDiv.current) return;
-        const rect = panelDiv.current.getBoundingClientRect();
         dispatch(panelManagerSetActive({
-            activePanel: { 
-                panelId,
-                panelClientRect: {
-                    x: rect.left,
-                    y: rect.top,
-                    w: rect.width,
-                    h: rect.height,
-                },
-            },
+            activePanel: panelId,
         }))
     }, [ dispatch ]);
+
+    useResizeObserver(panelDiv, div => {
+        const bounds = div.target.getBoundingClientRect();
+        const rect: Rect = {
+            x: bounds.left,
+            y: bounds.top,
+            w: bounds.width,
+            h: bounds.height
+        }
+
+        dispatch(panelManagerSetClientRect({
+            panelId,
+            rect,
+        }));
+    });
 
     return (
         <PanelDiv

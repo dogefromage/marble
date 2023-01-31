@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import MaterialSymbol from './MaterialSymbol';
+import MaterialSymbol from '../styles/MaterialSymbol';
 
 const RenameFieldDiv = styled.div`
 
     height: 1.4rem;
-    
     padding: 0 0.5rem;
-
     display: flex;
     gap: 0.5rem;
     align-items: center;
@@ -35,7 +33,7 @@ interface Props {
     disabled?: boolean;
 }
 
-const RenameField = ({ value, onChange, disabled }: Props) => {
+const FormRenameField = ({ value, onChange, disabled }: Props) => {
 
     const inputRef = useRef<HTMLInputElement>(null);
     
@@ -79,4 +77,4 @@ const RenameField = ({ value, onChange, disabled }: Props) => {
     );
 }
 
-export default RenameField;
+export default FormRenameField;

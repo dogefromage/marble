@@ -1,10 +1,20 @@
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import styled from 'styled-components';
 import useClickedOutside from '../hooks/useClickedOutside';
 import useMenuStore, { menuStoreClose } from '../hooks/useMenuStore';
-import { VERTICAL_MENU_WIDTH } from '../styles/MenuVerticalDiv';
-import { HorizontalMenuShape, MenuShape, MenuTypes, Point, VerticalMenuShape } from '../types';
-import MenuHorizontal from './MenuHorizontal';
-import MenuVertical from './MenuVertical';
+import { VERTICAL_MENU_WIDTH } from '../styles/MenuFloatingDiv';
+import { InlineMenuShape, MenuShape, MenuTypes, Point, FloatingMenuShape } from '../types';
+import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
+import MenuInline from './MenuHorizontal';
+import MenuFloating from './MenuVertical';
+
+const FixedFullscreenDiv = styled.div`
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+`;
 
 interface Props {
     type: MenuTypes;
@@ -34,39 +44,36 @@ const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Pro
         menuStore.dispatch(menuStoreClose());
     });
 
-    let left: string | undefined, top: string | undefined;
-    if (anchor != null) {
-        let leftPx = anchor.x;
-        if (center)
-            leftPx -= VERTICAL_MENU_WIDTH / 2;
-        left = `${leftPx}px`;
-        top = `${anchor.y}px`;
+    if (shape.type === 'inline') {
+        return (
+            <div ref={wrapperDivRef}>
+                <MenuInline
+                    depth={INITIAL_DEPTH}
+                    menuStore={menuStore}
+                    shape={shape as InlineMenuShape}
+                />
+            </div>
+        )
     }
 
-    return (
-        <div
-            ref={wrapperDivRef}
-            style={{
-                zIndex: 100,
-            }}
-        > {
-                shape.type === 'vertical' ? (
-                    <MenuVertical
-                        depth={INITIAL_DEPTH}
-                        menuStore={menuStore}
-                        shape={shape as VerticalMenuShape}
-                        left={left}
-                        top={top}
-                    />
-                ) : (
-                    <MenuHorizontal
-                        depth={INITIAL_DEPTH}
-                        menuStore={menuStore}
-                        shape={shape as HorizontalMenuShape}
-                    />
-                )
-            }
-        </div>
+    let left: string | undefined, 
+        top: string | undefined;
+    if (anchor) {
+        left = `${ center ? anchor.x - 0.5 * VERTICAL_MENU_WIDTH : anchor.x }px`; 
+        top  = `${ anchor.y }px`;
+    }
+
+    return ReactDOM.createPortal(
+        <FixedFullscreenDiv ref={wrapperDivRef}>
+            <MenuFloating
+                depth={INITIAL_DEPTH}
+                menuStore={menuStore}
+                shape={shape as FloatingMenuShape}
+                left={left}
+                top={top}
+            />
+        </FixedFullscreenDiv>,
+        document.querySelector(`#${CONTEXT_MENU_PORTAL_MOUNT_ID}`)!
     );
 }
 

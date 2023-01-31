@@ -1,6 +1,6 @@
 import { AnyAction } from '@reduxjs/toolkit';
-import { ActivePanel } from '../panelManager';
 import { PanelStateMap, ViewTypes } from '../panelManager/views';
+import { Rect } from '../UtilityTypes';
 
 export interface KeyCombination {
     key: string;
@@ -20,7 +20,8 @@ export interface CommandBaseArgs {
 export interface GlobalCommandArgs extends CommandBaseArgs { }
 
 export interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends CommandBaseArgs {
-    activePanel: ActivePanel;
+    activePanelId: string;
+    panelClientRect: Rect;
     panelState: PanelStateMap[ V ];
 }
 

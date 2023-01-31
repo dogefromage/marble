@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import styled from 'styled-components';
-import MaterialSymbol from './MaterialSymbol';
+import MaterialSymbol from '../styles/MaterialSymbol';
 
 const ExpandableHeaderDiv = styled.div`
     width: 100%;

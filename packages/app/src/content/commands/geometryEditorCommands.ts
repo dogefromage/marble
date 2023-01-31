@@ -1,17 +1,15 @@
-import { v4 as uuidv4 } from "uuid";
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { ActivePanel, Command, CommandParameterMap, CommandScope, DataTypes, Point, ViewTypes, getTemplateId } from "../../types";
+import { Command, CommandParameterMap, getTemplateId, Point, Rect, ViewTypes } from "../../types";
 import { generateCodeSafeUUID } from "../../utils/codeStrings";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
 
-function getOffsetPos(activePanel: ActivePanel, params: CommandParameterMap) {
+function getOffsetPos(panelClientRect: Rect, params: CommandParameterMap) {
     let offsetPos: Point, center = false;
     if (params.offsetPos == null) {
-        const bounds = activePanel.panelClientRect;
         offsetPos = {
-            x: 0.5 * bounds.w,
+            x: 0.5 * panelClientRect.w,
             y: 50,
         };
         center = true;
@@ -27,11 +25,11 @@ export const geometryEditorCommands: Command[] = [
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.openTemplateCatalog',
         name: 'Add Node',
-        actionCreator({ activePanel }, params) {
-            const { offsetPos, center } = getOffsetPos(activePanel, params);
+        actionCreator({ activePanelId, panelClientRect }, params) {
+            const { offsetPos, center } = getOffsetPos(panelClientRect, params);
 
             return geometryEditorPanelsOpenTemplateCatalog({
-                panelId: activePanel.panelId,
+                panelId: activePanelId,
                 offsetPos,
                 center,
             });
@@ -71,7 +69,7 @@ export const geometryEditorCommands: Command[] = [
         viewType: ViewTypes.GeometryEditor,
         id: 'geometryEditor.createSubgeometry',
         name: 'Create Group',
-        actionCreator({ activePanel, panelState: { geometryStack, camera } }, params) {
+        actionCreator({ panelClientRect: activePanel, panelState: { geometryStack, camera } }, params) {
             if (!geometryStack.length) return;
 
             const subGeometryId = generateCodeSafeUUID();;
