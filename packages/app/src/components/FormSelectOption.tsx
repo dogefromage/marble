@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { v4 as uuidv4 } from 'uuid';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import { BORDER_RADIUS } from '../styles/utils';
-import { MenuShape, ObjMap, Point } from '../types';
+import { ButtonMenuElement, MenuShape, ObjMap, Point } from '../types';
 import MenuRoot from './MenuRoot';
 
 const SelectOptionDiv = styled.div`
@@ -39,22 +40,27 @@ export interface SelectOptionProps {
 
 const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) => {
     const [ dropdown, setDropdown ] = useState<{
+        menuId: string;
         anchor: Point;
     }>();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const menuShape: MenuShape = useMemo(() => ({
         type: 'floating',
-        list: options.map((option, index) => ({
-            type: 'button',
-            name: mapName?.[ option ] || option,
-            key: option,
-            tabIndex: 1 + index,
-            onClick: () => {
-                onChange(option);
-                setDropdown(undefined);
-            }
-        })),
+        list: options.map((option, index) => {
+            const button: ButtonMenuElement = {
+                type: 'button',
+                name: mapName?.[ option ] || option,
+                key: option,
+                tabIndex: 1 + index,
+                onClick: e => {
+                    onChange(option);
+                    setDropdown(undefined);
+                    e.stopPropagation();
+                }
+            };
+            return button;
+        }),
     }), [ options ]);
 
     return (
@@ -62,16 +68,17 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
             onClick={() => {
                 const rect = wrapperRef.current!.getBoundingClientRect();
                 setDropdown({
+                    menuId: `select-option-menu:${uuidv4()}`,
                     anchor: { x: rect.left, y: rect.top }
                 });
             }}
             ref={wrapperRef}
         >
-            <p>{mapName?.[ value ] ?? value}</p>
-            {
+            <p>{mapName?.[ value ] ?? value}</p> {
                 dropdown &&
                 <MenuRoot
-                    type={'misc'}
+                    menuId={dropdown.menuId}
+                    menuType={'misc'}
                     shape={menuShape}
                     anchor={dropdown.anchor}
                     onClose={() => setDropdown(undefined)}

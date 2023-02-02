@@ -7,8 +7,7 @@ const defaultCommandMap = Object.fromEntries(
     DEFAULT_COMMANDS.map(c => ([ c.id, c ]))
 );
 
-const initialState: CommandsSliceState = 
-{
+const initialState: CommandsSliceState = {
     commands: defaultCommandMap,
 };
 

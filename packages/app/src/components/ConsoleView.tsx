@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEffect, useRef } from 'react';
-import useContextMenu from '../utils/contextMenu/useContextMenu';
+import useContextMenu from '../utils/menus/useContextMenu';
 import { useAppSelector } from '../redux/hooks';
 import { selectConsole } from '../slices/consoleSlice';
 import { ConsoleDiv, ConsoleMessageP } from '../styles/console';

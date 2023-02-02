@@ -1,27 +1,21 @@
 import React from 'react';
-import { menuStoreClose } from '../hooks/useMenuStore';
+import { useAppDispatch } from '../redux/hooks';
+import { menusClose } from '../slices/menusSlice';
 import { MenuElementDiv } from '../styles/MenuElementDiv';
-import { ButtonMenuElement, MenuStore } from '../types';
+import { ButtonMenuElement } from '../types';
+import { MenuElementProps } from './MenuFloating';
 
-interface Props
-{
-    depth: number;
-    menuStore: MenuStore;
-    element: ButtonMenuElement;
-}
-
-const MenuButton = ({ menuStore, element }: Props) =>
-{
+const MenuButton = ({ menuId, element }: MenuElementProps<ButtonMenuElement>) => {
+    const dispatch = useAppDispatch();
     return (
         <MenuElementDiv
-            onClick={() => {
-                menuStore.dispatch(menuStoreClose());
-                element.onClick();
+            onClick={e => {
+                dispatch(menusClose({ menuId }));
+                element.onClick(e);
             }}
             tabIndex={element.tabIndex}
-        >
-        {
-            <p>{ element.name }</p>
+        > {
+            <p>{element.name}</p>
         }
         </MenuElementDiv>
     );

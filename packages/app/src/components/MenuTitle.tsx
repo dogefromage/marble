@@ -1,20 +1,14 @@
 import React from 'react';
 import { MenuTitleDiv } from '../styles/MenuTitleDiv';
-import { MenuStore, TitleMenuElement } from '../types';
+import { TitleMenuElement } from '../types';
+import { MenuElementProps } from './MenuFloating';
 
-interface Props
-{
-    depth: number;
-    menuStore: MenuStore;
-    element: TitleMenuElement;
-}
-const MenuTitle = ({ element }: Props) =>
-{
+const MenuTitle = ({ element }: MenuElementProps<TitleMenuElement>) => {
     return (
         <MenuTitleDiv
             backColor={element.color}
         >
-            <p>{ element.name }</p>
+            <p>{element.name}</p>
         </MenuTitleDiv>
     );
 }

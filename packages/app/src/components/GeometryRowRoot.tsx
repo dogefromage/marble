@@ -1,11 +1,13 @@
 import React from 'react';
-import { BaseInputRowT, ColorRowT, FieldRowT, NameRowT, OutputRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
+import { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
+import { BaseInputRowT, ColorRowT, FieldRowT, NameRowT, OutputRowT, PassthroughRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
 import GeometryRowColor, { getRowMetadataColor } from './GeometryRowColor';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInput';
 import GeometryRowInputStacked, { getRowMetadataStackedInput } from './GeometryRowInputStacked';
 import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
+import GeometryRowPassthrough, { getRowMetadataPassthrough } from './GeometryRowPassthrough';
 import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
 
 export type RowMetaProps<T extends RowT = RowT> = {
@@ -18,7 +20,7 @@ export function rowMeta(props?: Partial<RowMetadata>): RowMetadata {
     return {
         heightUnits: 1,
         dynamicValue: false,
-        minWidth: 0,
+        minWidth: DEFAULT_NODE_WIDTH,
         ...props,
     }
 }
@@ -32,6 +34,8 @@ export function getRowMetadata(props: RowMetaProps): RowMetadata {
         return getRowMetadataStackedInput(props as RowMetaProps<StackedInputRowT>);
     if (props.template.type === 'color')
         return getRowMetadataColor(props as RowMetaProps<ColorRowT>);
+    if (props.template.type === 'passthrough')
+        return getRowMetadataPassthrough(props as RowMetaProps<PassthroughRowT>);
     return rowMeta();
 }
 
@@ -58,6 +62,8 @@ const GeometryRowRoot = (props: RowProps) => {
             return <GeometryRowRotation {...props as RowProps<RotationRowT>} />;
         case 'color':
             return <GeometryRowColor {...props as RowProps<ColorRowT>} />;
+        case 'passthrough':
+            return <GeometryRowPassthrough {...props as RowProps<PassthroughRowT>} />;
         default:
             console.warn('row component missing');
             return null;

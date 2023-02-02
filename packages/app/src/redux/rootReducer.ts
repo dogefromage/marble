@@ -7,12 +7,13 @@ import contextMenuReducer from "../slices/contextMenuSlice";
 import dependencyGraphReducer from "../slices/dependencyGraphSlice";
 import geometriesReducer from "../slices/geometriesSlice";
 import geometryDatasReducer from "../slices/geometryDatasSlice";
+import layerProgramsReducer from "../slices/layerProgramsSlice";
 import layersReducer from "../slices/layersSlice";
+import menusReducer from "../slices/menusSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
 import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import preferencesReducer from "../slices/preferencesSlice";
-import layerProgramsReducer from "../slices/layerProgramsSlice";
 import templatesReducer from "../slices/templatesSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
@@ -39,9 +40,10 @@ const rootReducer = combineReducers({
     runtime: combineReducers({
         geometryDatas: geometryDatasReducer,
         dependencyGraph: dependencyGraphReducer,
-        contextMenu: contextMenuReducer,
         layerPrograms: layerProgramsReducer,
         console: consoleReducer,
+        menus: menusReducer,
+        contextMenu: contextMenuReducer,
     }),
     templates: templatesReducer,
     commands: commandsReducer,

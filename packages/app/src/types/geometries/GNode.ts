@@ -26,9 +26,9 @@ export const templateCategoryNames: { [ C in GNodeTemplateCategories ]: string }
     'composite':       'Composite',
 };
 
-export type GNodeTemplateTypes = 'static' | 'composite' | 'output';
+export type GNodeTemplateTypes = 'static' | 'composite' | 'output' | 'input';
 
-export function getTemplateId(identifier: string, templateType: GNodeTemplateTypes) {
+export function getTemplateId(templateType: GNodeTemplateTypes, identifier: string) {
     return `${templateType}:${identifier}` as const;
 }
 export type NodeTemplateId = ReturnType<typeof getTemplateId>;

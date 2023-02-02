@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { RootState } from "../redux/store";
-import { allowedInputRows, allowedOutputRowKeys, allowedOutputRows, BaseRowS, DataTypes, decomposeRowDataTypeCombination, defaultDataTypeValue, FieldRowT, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NameRowT, NodeTemplateId, OutputRowT, Point, RotationRowT, RowDataTypeCombination, RowS, RowT, RowTypes, SpecificRowT, UndoAction } from "../types";
+import { allowedInputRows, allowedOutputRows, BaseRowS, decomposeRowDataTypeCombination, defaultDataTypeValue, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, UndoAction } from "../types";
 import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
@@ -63,6 +62,14 @@ function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination): Row
                 name: rowName,
                 value: defaultDataTypeValue['mat3'],
                 rotationModel: 'xyz',
+            }
+        case 'color':
+            return {
+                id,
+                type: 'color', 
+                dataType: 'vec3',
+                name: rowName,
+                value: [ 1, 1, 1 ],
             }
         default: 
             throw new Error(`${rowAndDataType} not implemented`);
@@ -371,7 +378,7 @@ export const selectGeometries = (state: RootState) => state.project.present.geom
 
 export const selectSingleGeometry = (geometryId: string | undefined) =>
     useCallback((state: RootState) => // memoize selector bc. redux will
-        selectGeometries(state)[geometryId!] as GeometryS | undefined,
+        selectGeometries(state)[geometryId!],
         [ geometryId ]
     );
 

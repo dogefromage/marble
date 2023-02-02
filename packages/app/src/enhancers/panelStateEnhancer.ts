@@ -13,8 +13,8 @@ enum PanelStateActionTypes {
 type BindPayload = { panelId: string, panelState: PanelState, viewType: ViewTypes };
 type RemovePayload = { panelId: string };
 
-type PanelStateAction = 
-    | PayloadAction<BindPayload, PanelStateActionTypes.Bind> 
+type PanelStateAction =
+    | PayloadAction<BindPayload, PanelStateActionTypes.Bind>
     | PayloadAction<RemovePayload, PanelStateActionTypes.Remove>
 
 export const panelStateBind = (payload: BindPayload) => ({
@@ -28,28 +28,21 @@ export const panelStateRemove = (payload: RemovePayload) => ({
 });
 
 export default function panelStateEnhancer<S extends PanelState, A extends AnyAction>
-    (reducer: Reducer<ObjMap<S>, A>, viewType: ViewTypes): 
-        Reducer<ObjMap<S>, A>
-{
-    return (state = {}, action) =>
-    {
+    (reducer: Reducer<ObjMap<S>, A>, viewType: ViewTypes):
+    Reducer<ObjMap<S>, A> {
+    return (state = {}, action) => {
         const a = action as unknown as PanelStateAction;
 
-        if (a.type === PanelStateActionTypes.Bind)
-        {
-            if (a.payload.viewType === viewType)
-            {
-                return produce(state, s =>
-                {
+        if (a.type === PanelStateActionTypes.Bind) {
+            if (a.payload.viewType === viewType) {
+                return produce(state, s => {
                     s[a.payload.panelId] = a.payload.panelState as Draft<S>;
                 })
             }
         }
 
-        if (a.type === PanelStateActionTypes.Remove)
-        {
-            return produce(state, s => 
-            {
+        if (a.type === PanelStateActionTypes.Remove) {
+            return produce(state, s => {
                 delete s[a.payload.panelId];
             })
         }
@@ -61,12 +54,11 @@ export default function panelStateEnhancer<S extends PanelState, A extends AnyAc
 /**
  * Returns memoized typed selector with viewType and panelId
  */
-export function selectPanelState<T extends ViewTypes>(viewType: T, panelId: string): 
-    (state: RootState) => PanelStateMap[T] | undefined 
-{
+export function selectPanelState<T extends ViewTypes>(viewType: T, panelId: string):
+    (state: RootState) => PanelStateMap[T] | undefined {
     return useCallback((state: RootState) => {
         type ReducerState = RootState['editor']['panels'];
         const panelsOfType = state.editor.panels[viewType as keyof ReducerState]!;
         return panelsOfType[panelId] as PanelStateMap[T];
-    }, [ viewType, panelId ]);
+    }, [viewType, panelId]);
 }

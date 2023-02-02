@@ -4,7 +4,7 @@ import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
 import { selectGeometries } from '../slices/geometriesSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { decomposeTemplateId, DependencyNodeKey, GeometryS, getDependencyKey, getTemplateId, GNodeTemplate, Layer } from '../types';
+import { decomposeTemplateId, DependencyNodeKey, GeometryS, getDependencyKey, GNodeTemplate, Layer } from '../types';
 import { useRegisterDependency } from '../utils/dependencyGraph/useRegisterDependency';
 
 function getLayerDeps(layer: Layer) {
@@ -51,7 +51,7 @@ const DependencyManager = () => {
         'node_template',
     );
 
-    // // PRINT
+    // // // PRINT
     // const dependencyGraph = useAppSelector(selectDependencyGraph);
     // useEffect(() => {
     //     console.info(dependencyGraph);

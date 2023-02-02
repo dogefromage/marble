@@ -31,7 +31,7 @@ const colorRow: SpecificRowT =
 
 const solid_sphere: GNodeTemplate =
 {
-    id: getTemplateId('sphere', 'static'),
+    id: getTemplateId('static', 'sphere'),
     version: 0,
     category: 'solids',
     rows: [
@@ -59,7 +59,7 @@ const solid_sphere: GNodeTemplate =
 
 const solid_torus: GNodeTemplate =
 {
-    id: getTemplateId('torus', 'static'),
+    id: getTemplateId('static', 'torus'),
     version: 0,
     category: 'solids',
     rows: [
@@ -95,7 +95,7 @@ const solid_torus: GNodeTemplate =
 
 const solid_box: GNodeTemplate =
 {
-    id: getTemplateId('box', 'static'),
+    id: getTemplateId('static', 'box'),
     version: 0,
     category: 'solids',
     rows: [
@@ -124,7 +124,7 @@ const solid_box: GNodeTemplate =
 
 const solid_plane: GNodeTemplate =
 {
-    id: getTemplateId('plane', 'static'),
+    id: getTemplateId('static', 'plane'),
     version: 0,
     category: 'solids',
     rows: [
@@ -152,7 +152,7 @@ const solid_plane: GNodeTemplate =
 
 const solid_cylinder: GNodeTemplate =
 {
-    id: getTemplateId('cylinder', 'static'),
+    id: getTemplateId('static', 'cylinder'),
     version: 0,
     category: 'solids',
     rows: [

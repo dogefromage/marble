@@ -1,48 +1,38 @@
 import React, { useMemo } from 'react';
-import ReactDOM from 'react-dom';
-import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectCommands } from '../slices/commandsSlice';
 import { contextMenuClose, selectContextMenu } from '../slices/contextMenuSlice';
-import { Command, MenuTypes } from '../types';
+import { Command } from '../types';
 import generateContextMenuShape from '../utils/generateContextMenuShape';
-import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
 import MenuRoot from './MenuRoot';
 
-const FixedDiv = styled.div`
-    position: fixed;
-    left: 0;
-    top: 0;
-`;
+const CONTEXT_MENU_ID = `context_menu`;
 
-const ContextMenu = () =>
-{
+const ContextMenu = () => {
     const dispatch = useAppDispatch();
-    const { active } = useAppSelector(selectContextMenu);
+    const { contextMenu } = useAppSelector(selectContextMenu);
     const { commands } = useAppSelector(selectCommands);
 
     const menuShape = useMemo(() => {
-        if (active == null) return;
-        const commandList = active.commandIds
+        if (contextMenu == null) return;
+        const commandList = contextMenu.commandIds
             .map(commandId => commands[commandId])
             .filter(command => command != null) as Command[];
         return generateContextMenuShape(commandList);
-    }, [ active, commands ]);
+    }, [ contextMenu, commands ]);
 
-    if (!menuShape || !active) return null;
+    if (!menuShape || !contextMenu) return null;
 
-    return ReactDOM.createPortal(
-        <FixedDiv>
-            <MenuRoot
-                type={'context'}
-                shape={menuShape}
-                onClose={() => {
-                    dispatch(contextMenuClose());
-                }}
-                anchor={active.position}
-            />
-        </FixedDiv>,
-        document.querySelector(`#${CONTEXT_MENU_PORTAL_MOUNT_ID}`)!
+    return (
+        <MenuRoot
+            menuId={CONTEXT_MENU_ID}
+            menuType={'context'}
+            shape={menuShape}
+            onClose={() => {
+                dispatch(contextMenuClose());
+            }}
+            anchor={contextMenu.position}
+        />
     );
 }
 

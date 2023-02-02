@@ -74,7 +74,7 @@ export const geometryEditorCommands: Command[] = [
 
             const subGeometryId = generateCodeSafeUUID();;
             const actionToken = 'createsub:' + subGeometryId;
-            const subTemplateId = getTemplateId(subGeometryId, 'composite');
+            const subTemplateId = getTemplateId('composite', subGeometryId);
 
             const { offsetPos } = getOffsetPos(activePanel, params);
             const worldPos = v2p(pointScreenToWorld(camera, p2v(offsetPos)));

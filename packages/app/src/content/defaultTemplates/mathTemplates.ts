@@ -2,9 +2,40 @@ import { getTemplateId, GNodeTemplate } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 import { TemplateColors } from "./templateConstants";
 
+const math_number_value: GNodeTemplate =
+{
+    id: getTemplateId('static', 'number'),
+    version: 0,
+    category: 'math',
+    rows: [
+        {
+            id: 'name',
+            type: 'name',
+            name: 'Number Value',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: 'output',
+            dataType: 'float',
+            name: 'Vector',
+        },
+        {
+            id: 'input',
+            type: 'field',
+            name: 'Input',
+            dataType: 'float',
+            value: 0,
+        },
+    ],
+    instructions: glsl`
+        float output = input;
+    `,
+}
+
 const math_map: GNodeTemplate =
 {
-    id: getTemplateId('map', 'static'),
+    id: getTemplateId('static', 'map'),
     version: 0,
     category: 'math',
     rows: [
@@ -63,5 +94,6 @@ const math_map: GNodeTemplate =
 }
 
 export default [
+    math_number_value,
     math_map,
 ];

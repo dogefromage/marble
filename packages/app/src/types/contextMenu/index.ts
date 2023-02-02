@@ -1,9 +1,6 @@
-import { CommandParameterMap, Point } from '..';
+import { CommandParameterMap, Point } from "..";
 
-export * from './Menu';
-
-export interface ContextMenuState
-{
+export interface ContextMenuState {
     panelId: string;
     name: string;
     position: Point;

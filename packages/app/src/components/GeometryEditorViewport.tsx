@@ -7,7 +7,7 @@ import { selectSingleGeometry, geometriesCreate } from '../slices/geometriesSlic
 import { layersCreate } from '../slices/layersSlice';
 import { geometryEditorPanelsOpenTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { rootGeometryTemplate, ViewTypes } from '../types';
-import useContextMenu from '../utils/contextMenu/useContextMenu';
+import useContextMenu from '../utils/menus/useContextMenu';
 import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from '../utils/testSetup';
 import GeometryEditorBreadCrumbs from './GeometryEditorBreadCrumbs';
 import GeometryEditorTransform from './GeometryEditorTransform';

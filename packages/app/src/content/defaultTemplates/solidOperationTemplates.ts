@@ -4,7 +4,7 @@ import { EMPTY_SOLID_LITERAL, TemplateColors } from "./templateConstants"
 
 const solid_operation_union: GNodeTemplate =
 {
-    id: getTemplateId('union', 'static'),
+    id: getTemplateId('static', 'union'),
     version: 0,
     category: 'solid_operators',
     rows: [
@@ -36,7 +36,7 @@ const solid_operation_union: GNodeTemplate =
 
 const solid_operation_difference: GNodeTemplate =
 {
-    id: getTemplateId('difference', 'static'),
+    id: getTemplateId('static', 'difference'),
     version: 0,
     category: 'solid_operators',
     rows: [
@@ -76,7 +76,7 @@ const solid_operation_difference: GNodeTemplate =
 
 const solid_operation_intersection: GNodeTemplate =
 {
-    id: getTemplateId('intersection', 'static'),
+    id: getTemplateId('static', 'intersection'),
     version: 0,
     category: 'solid_operators',
     rows: [
@@ -108,7 +108,7 @@ const solid_operation_intersection: GNodeTemplate =
 
 const solid_operation_set_color: GNodeTemplate =
 {
-    id: getTemplateId('set_color', 'static'),
+    id: getTemplateId('static', 'set_color'),
     version: 0,
     category: 'solid_operators',
     rows: [
@@ -146,7 +146,7 @@ const solid_operation_set_color: GNodeTemplate =
 
 const solid_operation_correct_distance: GNodeTemplate =
 {
-    id: getTemplateId('reduce_step_size', 'static'),
+    id: getTemplateId('static', 'reduce_step_size'),
     version: 0,
     category: 'solid_operators',
     rows: [

@@ -22,15 +22,13 @@ export default function useContextMenu(
 
         const paramMap = paramMapCallback?.(e) || {};
 
-        dispatch(contextMenuOpen({
-            active: {
-                panelId,
-                name: menuName,
-                position,
-                commandIds,
-                paramMap,
-            }
-        }));
+        dispatch(contextMenuOpen({ contextMenu: {
+            panelId,
+            name: menuName,
+            position,
+            commandIds,
+            paramMap,
+        }}));
     }
 
     return openContextMenu;

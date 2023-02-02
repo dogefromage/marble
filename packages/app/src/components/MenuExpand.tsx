@@ -1,21 +1,18 @@
+import { current } from 'immer';
 import React from 'react';
-import { menuStoreSetElement } from '../hooks/useMenuStore';
-import { MenuExpandDiv } from '../styles/MenuElementDiv';
-import { ExpandMenuElement, MenuStackElement, MenuStore, Point } from '../types';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { menusSetNode, selectSingleMenu } from '../slices/menusSlice';
 import MaterialSymbol from '../styles/MaterialSymbol';
-import MenuFloating from './MenuVertical';
+import { MenuExpandDiv } from '../styles/MenuElementDiv';
+import { ExpandMenuElement, MenuStackNode, Point } from '../types';
+import MenuFloating, { MenuElementProps } from './MenuFloating';
 
-interface Props
-{
-    depth: number;
-    menuStore: MenuStore;
-    element: ExpandMenuElement;
-}
-
-const MenuExpand = ({ element, menuStore, depth }: Props) =>
-{
-    const { state: menuState, dispatch: menuDispatch } = menuStore;
-    const currentStackEl = menuState.stack[depth] as MenuStackElement | undefined;
+const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuElement>) => {
+    const dispatch = useAppDispatch();
+    const menu = useAppSelector(selectSingleMenu(menuId));
+    if (!menu) return null;
+    
+    const currentStackEl = menu.nodeStack[depth] as MenuStackNode | undefined;
 
     return (
         <MenuExpandDiv
@@ -27,23 +24,20 @@ const MenuExpand = ({ element, menuStore, depth }: Props) =>
                     x: rect.width,
                     y: 0,
                 }; // relative position
-                menuDispatch(menuStoreSetElement({
+                dispatch(menusSetNode({
+                    menuId,
                     depth,
-                    element: {
-                        key: element.name,
-                        position,
-                    }
+                    node: { key: element.key, position }
                 }));
             }}
             tabIndex={element.tabIndex}
         >
-            <p>{ element.name }</p>
-            <MaterialSymbol size={20}>chevron_right</MaterialSymbol>
-            {
-                currentStackEl?.key === element.name &&
+            <p>{element.name}</p>
+            <MaterialSymbol size={20}>chevron_right</MaterialSymbol> {
+                currentStackEl?.key === element.key &&
                 <MenuFloating
+                    menuId={menuId}
                     depth={depth + 1}
-                    menuStore={menuStore}
                     shape={element.sublist}
                     left={`${currentStackEl.position.x}px`}
                     top={`${currentStackEl.position.y}px`}

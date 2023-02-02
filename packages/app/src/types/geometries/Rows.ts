@@ -10,6 +10,7 @@ export type RowTypes =
     | 'field'
     | 'rotation'
     | 'color'
+    | 'passthrough'
 
 interface BaseRowT {
     id: string;
@@ -34,9 +35,9 @@ export interface BaseInputRowT<D extends DataTypes = DataTypes, T extends RowTyp
     defaultArgumentToken?: string;
 }
 
-export type StackedInputRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D, 'input_stacked'>;
-
-export type FieldRowT<D extends DataTypes = DataTypes> = BaseInputRowT<D, 'field'>;
+export type StackedInputRowT <D extends DataTypes = DataTypes> = BaseInputRowT<D, 'input_stacked'>;
+export type FieldRowT        <D extends DataTypes = DataTypes> = BaseInputRowT<D, 'field'        >;
+export type PassthroughRowT  <D extends DataTypes = DataTypes> = BaseInputRowT<D, 'passthrough'  >;
 
 export type ColorRowT = BaseInputRowT<'vec3', 'color'>;
 
@@ -54,6 +55,7 @@ export type InputRowT<D extends DataTypes = DataTypes> =
     | FieldRowT<D>
     | RotationRowT
     | ColorRowT
+    | PassthroughRowT<D>
     
 export type RowT<D extends DataTypes = DataTypes> =
     | NameRowT
@@ -89,7 +91,7 @@ export const allowedInputRows: Partial<MapEvery<RowDataTypeCombination, string>>
     'input:vec3':    '3-Vector Input',
     'input:mat3':    '3x3-Matrix Input',
     'rotation:mat3': 'Rotation',
-    'color:vec3': 'Color',
+    'color:vec3':    'Color',
 };
 export const allowedOutputRows: Partial<MapEvery<RowDataTypeCombination, string>> = {
     'output:Solid': 'Solid Output',

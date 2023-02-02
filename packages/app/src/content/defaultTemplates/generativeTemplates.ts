@@ -3,7 +3,7 @@ import { glsl } from "../../utils/codeStrings";
 
 const generative_perlin_noise: GNodeTemplate =
 {
-    id: getTemplateId('perlin_noise', 'static'),
+    id: getTemplateId('static', 'perlin_noise'),
     version: 0,
     category: 'generative',
     rows: [

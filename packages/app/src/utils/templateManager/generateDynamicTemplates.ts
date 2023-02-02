@@ -1,4 +1,5 @@
-import { decomposeTemplateId, defaultDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, BaseInputRowT, NameRowT, ObjMapUndef, SpecificRowT } from "../../types";
+import { rowMeta } from "../../components/GeometryRowRoot";
+import { BaseInputRowT, decomposeTemplateId, defaultDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, NameRowT, ObjMapUndef, PassthroughRowT, SpecificRowT } from "../../types";
 import { prefixGeometryFunction } from "../layerPrograms";
 import { createReturntypePlaceholder, getStructurePropertyKey } from "../layerPrograms/generateCodeStatements";
 
@@ -34,7 +35,7 @@ function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
     const instructions = generateCompositeInstructions(geometry);
 
     const template: GNodeTemplate = {
-        id: getTemplateId(geometry.id, 'composite'),
+        id: getTemplateId('composite', geometry.id),
         version: geometry.version,
         category: 'composite',
         instructions,
@@ -47,9 +48,40 @@ function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
     return template;
 }
 
+function generateInputTemplate(geometry: GeometryS, inputId: string) {
+    const input = geometry.inputs.find(input => input.id === inputId);
+    if (!input) {
+        throw new Error(`Row should exist`);
+    }
+
+    const templateIdentifier = [ geometry.id, input.id ].join(':');
+    const templateId = getTemplateId('input', templateIdentifier);
+    const row: PassthroughRowT = {
+        id: 'passthrough',
+        name: input.name,
+        type: 'passthrough',
+        dataType: input.dataType,
+        defaultArgumentToken: input.id,
+        value: defaultDataTypeValue[input.dataType],
+    }
+    /**
+     * The compiler will replace the declaration of passthrough with a symbol for the output joint,
+     * The reference on the rhs will be replaced with either the defaultArgumentToken or the connected input.
+     */
+    const instructions = `${input.dataType} passthrough = passthrough;`;
+    const template: GNodeTemplate = {
+        id: templateId,
+        category: 'input',
+        version: geometry.version,
+        rows: [ row as SpecificRowT ],
+        instructions,
+    }
+    return template;
+}
+
 function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
 
-    const templateId = getTemplateId(geometry.id, 'output');
+    const templateId = getTemplateId('output', geometry.id);
 
     const inputRows: BaseInputRowT[] = geometry.outputs.map(output => {
         return {
@@ -101,7 +133,7 @@ export default function generateDynamicTemplates(
 
     for (const template of Object.values(templates) as GNodeTemplate[]) {
         const { type: templateType } = decomposeTemplateId(template.id);
-        const dynamicTemplateTypes: GNodeTemplateTypes[] = [ 'composite', 'output' ];
+        const dynamicTemplateTypes: GNodeTemplateTypes[] = [ 'composite', 'output', 'input' ];
         if (dynamicTemplateTypes.includes(templateType)) {
             lastTemplates.set(template.id, template);
         }
@@ -110,18 +142,36 @@ export default function generateDynamicTemplates(
     const addTemplates: GNodeTemplate[] = [];
 
     for (const geometry of Object.values(geometries) as GeometryS[]) {
+        const inputPassthroughIds = geometry.inputs.map(input =>
+            getTemplateId('input', [ geometry.id, input.id ].join(':'))
+        );
+        const geometryTemplateIds = [
+            getTemplateId('output', geometry.id),
+            getTemplateId('composite', geometry.id),
+            ...inputPassthroughIds,
+        ];
 
-        const outputTemplateId = getTemplateId(geometry.id, 'output');
-        const compositeTemplateId = getTemplateId(geometry.id, 'composite');
-        const lastOutputTemplate = lastTemplates.get(outputTemplateId);
-        const lastCompositeTemplate = lastTemplates.get(compositeTemplateId);
-        lastTemplates.delete(outputTemplateId);
-        lastTemplates.delete(compositeTemplateId);
-        if (lastOutputTemplate == null || lastOutputTemplate.version < geometry.version) {
-            addTemplates.push(generateOutputTemplate(geometry));
-        }
-        if (lastCompositeTemplate == null || lastCompositeTemplate.version < geometry.version) {
-            addTemplates.push(generateCompositeTemplate(geometry));
+        for (const templateId of geometryTemplateIds) {
+            const lastTemplate = lastTemplates.get(templateId);
+            lastTemplates.delete(templateId);
+            if (lastTemplate == null || lastTemplate.version < geometry.version) {
+                let newTemplate: GNodeTemplate | null = null;
+                const { type: templateType, id: identifier } = decomposeTemplateId(templateId);
+                switch (templateType) {
+                    case 'composite':
+                        newTemplate = generateCompositeTemplate(geometry);
+                        break;
+                    case 'output':
+                        newTemplate = generateOutputTemplate(geometry);
+                        break;
+                    case 'input':
+                        const inputId = identifier.split(':')[1];
+                        newTemplate = generateInputTemplate(geometry, inputId);
+                }
+                if (newTemplate != null) {
+                    addTemplates.push(newTemplate);
+                }
+            }
         }
     }
 

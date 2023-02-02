@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import useClickedOutside from '../hooks/useClickedOutside';
-import useMenuStore, { menuStoreClose } from '../hooks/useMenuStore';
+import { useAppDispatch } from '../redux/hooks';
+import { menusClose } from '../slices/menusSlice';
 import { VERTICAL_MENU_WIDTH } from '../styles/MenuFloatingDiv';
-import { InlineMenuShape, MenuShape, MenuTypes, Point, FloatingMenuShape } from '../types';
-import { CONTEXT_MENU_PORTAL_MOUNT_ID } from './ContextMenuPortalMount';
-import MenuInline from './MenuHorizontal';
-import MenuFloating from './MenuVertical';
+import { FloatingMenuShape, InlineMenuShape, MenuShape, MenuTypes, Point } from '../types';
+import { useBindMenuState } from '../utils/menus';
+import { MENU_PORTAL_MOUNT_ID } from './MenuPortalMount';
+import MenuInline from './MenuInline';
+import MenuFloating from './MenuFloating';
 
 const FixedFullscreenDiv = styled.div`
     position: fixed;
@@ -17,40 +19,36 @@ const FixedFullscreenDiv = styled.div`
 `;
 
 interface Props {
-    type: MenuTypes;
+    menuId: string;
+    menuType: MenuTypes;
     shape: MenuShape
+    onClose: () => void;
     anchor?: Point;
     center?: boolean;
-    onSearchUpdated?: (newValue: string) => void;
-    onClose?: () => void;
 }
 
 const INITIAL_DEPTH = 0;
 
-const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Props) => {
-    const menuStore = useMenuStore(type);
+const MenuRoot = ({ menuId, menuType, anchor, shape, onClose, center }: Props) => {
+    const menuState = useBindMenuState(menuId, menuType);
     const wrapperDivRef = useRef<HTMLDivElement>(null);
+    const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        if (onClose && menuStore.state.closed)
-            onClose();
-    }, [menuStore.state.closed]);
-
-    useEffect(() => {
-        onSearchUpdated?.(menuStore.state.searchValue);
-    }, [menuStore.state.searchValue]);
+    if (menuState?.isClosed) {
+        onClose();
+    }
 
     useClickedOutside(wrapperDivRef, () => {
-        menuStore.dispatch(menuStoreClose());
+        dispatch(menusClose({ menuId }));
     });
 
     if (shape.type === 'inline') {
         return (
             <div ref={wrapperDivRef}>
                 <MenuInline
-                    depth={INITIAL_DEPTH}
-                    menuStore={menuStore}
+                    menuId={menuId}
                     shape={shape as InlineMenuShape}
+                    depth={INITIAL_DEPTH}
                 />
             </div>
         )
@@ -66,14 +64,14 @@ const MenuRoot = ({ type, anchor, shape, onClose, onSearchUpdated, center }: Pro
     return ReactDOM.createPortal(
         <FixedFullscreenDiv ref={wrapperDivRef}>
             <MenuFloating
+                menuId={menuId}
                 depth={INITIAL_DEPTH}
-                menuStore={menuStore}
                 shape={shape as FloatingMenuShape}
                 left={left}
                 top={top}
             />
         </FixedFullscreenDiv>,
-        document.querySelector(`#${CONTEXT_MENU_PORTAL_MOUNT_ID}`)!
+        document.querySelector(`#${MENU_PORTAL_MOUNT_ID}`)!
     );
 }
 

@@ -3,9 +3,92 @@ import { getTemplateId, GNodeTemplate } from "../../types/geometries"
 import { glsl } from "../../utils/codeStrings"
 import { TemplateColors } from "./templateConstants"
 
+const vectors_vector_3x1: GNodeTemplate =
+{
+    id: getTemplateId('static', 'vector_3x1'),
+    version: 0,
+    category: 'vectors',
+    rows: [
+        {
+            id: 'name',
+            type: 'name',
+            name: 'Combine to 3-Vector',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: 'output',
+            dataType: 'vec3',
+            name: 'Combined Vector',
+        },
+        {
+            id: 'x',
+            type: 'field',
+            name: 'X',
+            dataType: 'float',
+            value: 0,
+        },
+        {
+            id: 'y',
+            type: 'field',
+            name: 'Y',
+            dataType: 'float',
+            value: 0,
+        },
+        {
+            id: 'z',
+            type: 'field',
+            name: 'Z',
+            dataType: 'float',
+            value: 0,
+        },
+    ],
+    instructions: glsl`
+        vec3 output = vec3(x, y, z);
+    `,
+}
+
+const vectors_vector_2x1: GNodeTemplate =
+{
+    id: getTemplateId('static', 'vector_2x1'),
+    version: 0,
+    category: 'vectors',
+    rows: [
+        {
+            id: 'name',
+            type: 'name',
+            name: 'Combine to 2-Vector',
+            color: TemplateColors.Operators,
+        },
+        {
+            id: 'output',
+            type: 'output',
+            dataType: 'vec2',
+            name: 'Combined Vector',
+        },
+        {
+            id: 'x',
+            type: 'field',
+            name: 'X',
+            dataType: 'float',
+            value: 0,
+        },
+        {
+            id: 'y',
+            type: 'field',
+            name: 'Y',
+            dataType: 'float',
+            value: 0,
+        },
+    ],
+    instructions: glsl`
+        vec2 output = vec2(x, y);
+    `,
+}
+
 const vectors_mirror_plane: GNodeTemplate =
 {
-    id: getTemplateId('mirror_plane', 'static'),
+    id: getTemplateId('static', 'mirror_plane'),
     version: 0,
     category: 'vectors',
     rows: [
@@ -26,35 +109,34 @@ const vectors_mirror_plane: GNodeTemplate =
             type: 'input',
             dataType: 'vec3',
             defaultArgumentToken: 'position',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
             name: 'Coordinate',
         },
         {
             id: 'o',
             type: 'field',
             dataType: 'vec3',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
             name: 'Plane Origin',
         },
         {
             id: 'n',
             type: 'field',
             dataType: 'vec3',
-            value: [ 1, 0, 0 ],
+            value: [1, 0, 0],
             name: 'Plane Normal',
         }
     ],
     instructions: glsl`
-        // TODO replace with householder matrix
         vec3 norm = normalize(n);
         float xn = dot(norm, x - o);
-        vec3 output = x - norm * (abs(xn) + xn); // mirror if dot negative, nothing if positive
+        vec3 output = x - norm * (abs(xn) + xn);
     `,
 }
 
 const vectors_repeat_cell: GNodeTemplate =
 {
-    id: getTemplateId('repeat_cell', 'static'),
+    id: getTemplateId('static', 'repeat_cell'),
     version: 0,
     category: 'vectors',
     rows: [
@@ -75,14 +157,14 @@ const vectors_repeat_cell: GNodeTemplate =
             type: 'input',
             dataType: 'vec3',
             defaultArgumentToken: 'position',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
             name: 'Coordinate',
         },
         {
             id: 'size',
             type: 'field',
             dataType: 'vec3',
-            value: [ 1, 1, 1 ],
+            value: [1, 1, 1],
             name: 'Cell Size',
         },
     ],
@@ -93,7 +175,7 @@ const vectors_repeat_cell: GNodeTemplate =
 
 const vectors_transform: GNodeTemplate =
 {
-    id: getTemplateId('transform', 'static'),
+    id: getTemplateId('static', 'transform'),
     version: 0,
     category: 'vectors',
     rows: [
@@ -120,7 +202,7 @@ const vectors_transform: GNodeTemplate =
             type: 'input',
             dataType: 'vec3',
             name: 'Input Pos',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
             defaultArgumentToken: 'position',
         },
         {
@@ -128,7 +210,7 @@ const vectors_transform: GNodeTemplate =
             type: 'field',
             dataType: 'vec3',
             name: 'Translation',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
         },
         {
             id: 'rotation',
@@ -154,14 +236,14 @@ const vectors_transform: GNodeTemplate =
 
 const vectors_separate_3x1: GNodeTemplate =
 {
-    id: getTemplateId('separate_3x1', 'static'),
+    id: getTemplateId('static', 'separate_3x1'),
     version: 0,
     category: 'vectors',
     rows: [
         {
             id: 'name',
             type: 'name',
-            name: 'Separate XYZ',
+            name: 'Separate 3-Vector',
             color: '#123456',
         },
         {
@@ -187,7 +269,7 @@ const vectors_separate_3x1: GNodeTemplate =
             type: 'input',
             dataType: 'vec3',
             name: 'Input Vector',
-            value: [ 0, 0, 0 ],
+            value: [0, 0, 0],
         },
     ],
     instructions: glsl`
@@ -199,14 +281,14 @@ const vectors_separate_3x1: GNodeTemplate =
 
 const vectors_separate_2x1: GNodeTemplate =
 {
-    id: getTemplateId('separate_2x1', 'static'),
+    id: getTemplateId('static', 'separate_2x1'),
     version: 0,
     category: 'vectors',
     rows: [
         {
             id: 'name',
             type: 'name',
-            name: 'Separate XY',
+            name: 'Separate 2-Vector',
             color: '#123456',
         },
         {
@@ -226,7 +308,7 @@ const vectors_separate_2x1: GNodeTemplate =
             type: 'input',
             dataType: 'vec2',
             name: 'Input Vector',
-            value: [ 0, 0 ],
+            value: [0, 0],
         },
     ],
     instructions: glsl`
@@ -236,6 +318,8 @@ const vectors_separate_2x1: GNodeTemplate =
 }
 
 export default [
+    vectors_vector_3x1,
+    vectors_vector_2x1,
     vectors_mirror_plane,
     vectors_repeat_cell,
     vectors_transform,

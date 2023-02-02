@@ -8,10 +8,8 @@ import { DataTypes, GeometryIncomingElementTypes, GeometryJointDirection, Geomet
 interface Props
 {
     geometryId: string;
-    
     jointLocation: GeometryJointLocation;
     jointDirection: GeometryJointDirection;
-    
     dataType: DataTypes;
     connected: boolean;
     additional?: boolean;

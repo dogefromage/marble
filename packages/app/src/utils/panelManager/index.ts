@@ -10,7 +10,6 @@ export function useBindPanelState(panelId: string, createPanelState: CreatePanel
     useEffect(() => {
         const panelState = createPanelState(panelId);
         dispatch(panelStateBind({ panelId, panelState, viewType }));
-
         return () => {
             dispatch(panelStateRemove({ panelId }))
         };

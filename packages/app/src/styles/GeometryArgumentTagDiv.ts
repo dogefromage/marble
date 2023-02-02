@@ -39,6 +39,8 @@ export const GeometryArgumentTagDiv = styled.div<GeometryArgumentTagDivProps>`
         font-weight: bold;
         margin: 0;
 
+        white-space: nowrap;
+
         ${({ missing }) => missing && css`
             text-decoration: line-through;
             font-style: italic;

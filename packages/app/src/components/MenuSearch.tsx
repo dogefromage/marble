@@ -1,49 +1,42 @@
 import React, { useEffect, useRef } from 'react';
-import { menuStoreSetSearchValue } from '../hooks/useMenuStore';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { menusSetState, selectSingleMenu } from '../slices/menusSlice';
 import { MenuSearchDiv } from '../styles/MenuSearchDiv';
-import { MenuStore, SearchMenuElement } from '../types';
+import { SearchMenuElement } from '../types';
+import { MenuElementProps } from './MenuFloating';
 
-interface Props
-{
-    // value: string;
-    // onChange: (newValue: string) => void;
-    // placeholder: string;
-    // autoFocus?: boolean;
-    
-    depth: number;
-    menuStore: MenuStore;
-    element: SearchMenuElement;
-}
+const MenuSearch = ({ menuId, element }: MenuElementProps<SearchMenuElement>) => {
+    const dispatch = useAppDispatch();
+    const menuState = useAppSelector(selectSingleMenu(menuId));
 
-const MenuSearch = ({ menuStore, element }: Props) =>
-{
     const inputRef = useRef<HTMLInputElement>(null);
-    useEffect(() =>
-    {
+    useEffect(() => {
         if (!element.autofocus) return;
-        setTimeout(() =>
-        {
+        setTimeout(() => {
             inputRef.current?.focus();
         }, 50)
-    }, [ inputRef ]);
+    }, [inputRef]);
+
+    const searchValue = menuState?.state.get(element.key) ?? '';
 
     return (
         <MenuSearchDiv>
             <form
-                onSubmit={e => 
-                {
+                onSubmit={e => {
                     e.preventDefault();
                 }}
             >
-                <input 
+                <input
                     type='text'
-                    value={menuStore.state.searchValue}
+                    value={searchValue}
                     ref={inputRef}
-                    onChange={e =>
-                    {
-                        menuStore.dispatch(menuStoreSetSearchValue({
-                            value: (e.currentTarget as HTMLInputElement).value,
-                        }));
+                    onChange={e => {
+                        const target = e.currentTarget as HTMLInputElement;
+                        dispatch(menusSetState({
+                            menuId,
+                            key: element.key,
+                            value: target.value,
+                        }))
                     }}
                     placeholder={element.placeholder}
                     autoComplete='off'

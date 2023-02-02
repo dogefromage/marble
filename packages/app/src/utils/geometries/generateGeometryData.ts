@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
+import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, GNodeTemplateTypes, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
 import { readNodeSizes } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
@@ -140,10 +140,10 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         const template = templates[node.templateId];
         if (!template) continue; // data stays null
 
+        const invalidatableTemplateTypes: GNodeTemplateTypes[] = [ 'static', 'composite' ];
         const { type: templateType } = decomposeTemplateId(template.id);
-        const isOutput = templateType === 'output';
-
-        if (node.templateVersion < template.version && !isOutput) {
+        const isInvalidatable = invalidatableTemplateTypes.includes(templateType);
+        if (node.templateVersion < template.version && isInvalidatable) {
             expiredNodeStates.push({
                 nodeIndex, template,
             });

@@ -1,45 +1,42 @@
 import React from 'react';
-import { menuStoreClose } from '../hooks/useMenuStore';
-import { useAppSelector } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectCommands } from '../slices/commandsSlice';
 import { selectContextMenu } from '../slices/contextMenuSlice';
+import { menusClose, selectSingleMenu } from '../slices/menusSlice';
 import { MenuCommandDiv } from '../styles/MenuElementDiv';
-import { CommandCallTypes, CommandMenuElement, MenuStore, MenuTypes } from '../types';
+import { CommandMenuElement } from '../types';
 import { formatKeyCombination } from '../utils/commands/keyCombinations';
 import useDispatchCommand from '../utils/commands/useDispatchCommand';
+import { MenuElementProps } from './MenuFloating';
 
-interface Props {
-    depth: number;
-    menuStore: MenuStore;
-    element: CommandMenuElement;
-}
-
-const MenuCommand = ({ element, menuStore }: Props) => {
-    const { active } = useAppSelector(selectContextMenu);
+const MenuCommand = ({ menuId, element }: MenuElementProps<CommandMenuElement>) => {
+    const dispatch = useAppDispatch();
+    const menuState = useAppSelector(selectSingleMenu(menuId));
+    const { contextMenu } = useAppSelector(selectContextMenu);
     const { commands } = useAppSelector(selectCommands);
     const dispatchCommand = useDispatchCommand();
 
     let text = element.command;
     let info = '';
 
-    const command = commands[ element.command ];
+    const command = commands[element.command];
     if (command != null) {
         text = command.name;
-        const keyComb = command.keyCombinations?.[ 0 ];
+        const keyComb = command.keyCombinations?.[0];
         if (keyComb) {
             info = formatKeyCombination(keyComb);
         }
     }
 
     const invoke = () => {
-        if (!command) return;
-        menuStore.dispatch(menuStoreClose());
+        if (!command || !menuState) return;
+        dispatch(menusClose({ menuId }));
 
-        if (menuStore.state.type === 'context') {
-            if (!active) return;
-            dispatchCommand(command, active.paramMap, 'contextmenu');
+        if (menuState.type === 'context') {
+            if (!contextMenu) return;
+            dispatchCommand(command, contextMenu.paramMap, 'contextmenu');
         }
-        else if (menuStore.state.type === 'toolbar') {
+        else if (menuState.type === 'toolbar') {
             dispatchCommand(command, {}, 'toolbar');
         }
         else {
@@ -52,11 +49,8 @@ const MenuCommand = ({ element, menuStore }: Props) => {
             onClick={invoke}
             tabIndex={element.tabIndex}
         >
-            {
-                <p>{text}</p>
-            }{
-                info && <p>{info}</p>
-            }
+            { <p>{text}</p> }
+            { info && <p>{info}</p> }
         </MenuCommandDiv>
     );
 }

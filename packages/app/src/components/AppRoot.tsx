@@ -9,7 +9,7 @@ import defaultTheme from '../content/defaultTheme';
 import { initStore, RootState } from '../redux/store';
 import CompilerRoot from './CompilerRoot';
 import ContextMenu from './ContextMenu';
-import { ContextMenuPortalMount } from './ContextMenuPortalMount';
+import { MenuPortalMount } from './MenuPortalMount';
 import TemplateManager from './TemplateManager';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
@@ -60,7 +60,7 @@ const AppRoot = ({ projectId }: Props) =>
                 <ContextMenu />
                 <StartAnouncer projectId={projectId} />
                 {/* PORTAL MOUNTS */}
-                <ContextMenuPortalMount />
+                <MenuPortalMount />
                 <DragzonePortalMount />
             </Provider>
         </ErrorBoundary>

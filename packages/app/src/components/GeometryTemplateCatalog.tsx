@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
+import { selectSingleMenu } from '../slices/menusSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
@@ -18,10 +19,15 @@ interface Props {
     geometryId: string;
 }
 
+const SEARCH_ELEMENT_KEY = 'search';
+
 const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
     const dispatch = useAppDispatch();
     const { templates } = useAppSelector(selectTemplates);
-    const [ searchValue, setSearchValue ] = useState('');
+
+    const menuId = `template-catalog:${geometryId}`;
+    const menuState = useAppSelector(selectSingleMenu(menuId));
+    const searchValue = menuState?.state.get(SEARCH_ELEMENT_KEY) ?? '';
 
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     const currentPanelRect = useAppSelector(selectPanelClientRect(panelId));
@@ -46,9 +52,10 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             const { id, type } = decomposeTemplateId(template.id);
 
             const isForeignOutput = type === 'output' && id !== geometryId;
+            const isForeignInput = type === 'input' && id.split(':')[0] !== geometryId;
             const isCurrentComposedTemplate = type === 'composite' && id === geometryId;
 
-            return !isForeignOutput && !isCurrentComposedTemplate;
+            return !isForeignOutput && !isCurrentComposedTemplate && !isForeignInput;
         });
 
         const title: TitleMenuElement = {
@@ -57,8 +64,8 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             name: 'Add Template',
         }
         const searchBar: SearchMenuElement = {
+            key: SEARCH_ELEMENT_KEY,
             type: 'search',
-            key: 'search',
             name: 'search',
             placeholder: 'Search...',
             autofocus: true,
@@ -85,8 +92,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
                 ],
             }
             return menuShape;
-        }
-        else {
+        } else {
             // render grouped
             const groupedTemplatesMap = allTemplates
                 .reduce((groupes, current) =>
@@ -127,25 +133,19 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
         }
     }, [ templates, searchValue ]);
 
-    useEffect(() => {
-        setSearchValue('');
-    }, [ templateCatalog ]);
-
-    
-
     if (!templateCatalog || !currentPanelRect) return null;
 
     const clientPos = offsetToClientPos(currentPanelRect, templateCatalog.offsetPosition);
 
     return (
         <MenuRoot
-            type={'misc'}
+            menuId={menuId}
+            menuType={'misc'}
             shape={menuShape}
             onClose={() => {
                 dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))
             }}
             anchor={clientPos}
-            onSearchUpdated={setSearchValue}
             center={templateCatalog.center}
         />
     );

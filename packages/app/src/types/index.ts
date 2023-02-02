@@ -1,5 +1,5 @@
 export * from './commands';
-export * from './menu';
+export * from './menus';
 export * from './geometries';
 export * from './panelManager';
 export * from './layerPrograms';
@@ -10,3 +10,7 @@ export * from './layer';
 export * from './dependencyGraph';
 export * from './geometryEditorView';
 export * from './sliceStates';
+export * from './contextMenu';
+export * from './layer';
+export * from './console';
+export * from './world';

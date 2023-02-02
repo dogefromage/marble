@@ -18,7 +18,7 @@ export default function getJointPositionWorld(nodePosition: Point, heightUnits: 
 
 export function readNodeSizes(state: GNodeState, template: GNodeTemplate, rowConnections: ObjMap<number>) {
     const rowHeights: GNodeData[ 'rowHeights' ] = [ 0 ];
-    let widthPixels = DEFAULT_NODE_WIDTH;
+    let widthPixels = 0;
 
     for (let i = 0; i < template.rows.length; i++) {
         const rowTemplate = template.rows[ i ];
