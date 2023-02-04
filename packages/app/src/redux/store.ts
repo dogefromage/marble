@@ -2,6 +2,7 @@ import { AnyAction, configureStore, Dispatch, Middleware, ThunkDispatch } from "
 import { CurriedGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
 import { enableMapSet } from "immer";
 import { createLogger } from "redux-logger";
+import { UndoAction } from "../types";
 import rootReducer from "./rootReducer";
 enableMapSet();
 
@@ -22,7 +23,15 @@ function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware)
         }),
     ];
     
-    // middleware.push(createLogger({ collapsed: true }));
+    middleware.push(createLogger({ 
+        collapsed: true, 
+        actionTransformer: (action: UndoAction) => {
+            if (action.payload.undo != null) {
+                console.log(`Undoable Action: actionToken=${action.payload.undo.actionToken}`);
+            }
+            return action; 
+        }
+    }));
 
     return middleware;
 }

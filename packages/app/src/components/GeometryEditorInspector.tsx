@@ -9,7 +9,7 @@ import MaterialSymbol from '../styles/MaterialSymbol';
 import SymbolButton from '../styles/SymbolButton';
 import { INSET_SHADOW } from '../styles/utils';
 import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, getRowDataTypeCombination, InputRowT, OutputRowT, RowDataTypeCombination, RowT, ViewTypes } from '../types';
-import ExpandableRegion from './ExpandableRegion';
+import FormExpandableRegion from './FormExpandableRegion';
 import FormRenameField from './FormRenameField';
 import FormSelectOption from './FormSelectOption';
 
@@ -20,7 +20,7 @@ const InspectorWrapper = styled.div`
 
 const SettingsTable = styled.div`
     display: grid;
-    grid-template-columns: 180px 1fr;
+    grid-template-columns: 140px 1fr;
     align-items: center;
     grid-row-gap: 0.5rem;
 `;
@@ -37,7 +37,7 @@ const GeometryEditorInspector = ({ panelId }: Props) => {
 
     return (
         <InspectorWrapper>
-            <ExpandableRegion name='Active Geometry' defaultValue={true}> {
+            <FormExpandableRegion name='Active Geometry' defaultValue={true}> {
                 (geometry && geometryId) ? (<>
                     <SettingsTable>
                         <p>Geometry Name</p>
@@ -56,7 +56,7 @@ const GeometryEditorInspector = ({ panelId }: Props) => {
                     <p>No active geometry found</p>
                 )
             }
-            </ExpandableRegion>
+            </FormExpandableRegion>
         </InspectorWrapper>
     );
 }

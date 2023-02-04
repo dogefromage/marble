@@ -31,7 +31,7 @@ interface Props {
     defaultValue?: boolean;
 }
 
-const ExpandableRegion = ({ name, children, defaultValue }: Props) => {
+const FormExpandableRegion = ({ name, children, defaultValue }: Props) => {
     const [ expanded, setExpanded ] = useState(defaultValue || false);
     const icon = expanded ? 'expand_more' : 'chevron_right';
     return (<>
@@ -50,4 +50,4 @@ const ExpandableRegion = ({ name, children, defaultValue }: Props) => {
     </>);
 }
 
-export default ExpandableRegion;
+export default FormExpandableRegion;
