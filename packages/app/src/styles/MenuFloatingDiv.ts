@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
-export const VERTICAL_MENU_WIDTH = 320;
+export const VERTICAL_MENU_WIDTH = 240;
 
 export interface MenuVerticalDivProps
 {

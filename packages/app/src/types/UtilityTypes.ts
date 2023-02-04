@@ -23,6 +23,8 @@ export interface Rect {
     h: number;
 }
 
+export type ColorTuple = [ number, number, number ];
+
 export type MapEvery<M extends string, T> = { [ K in M ]: T };
 
 export type RotationModels = 'xyzw' | 'xyz';

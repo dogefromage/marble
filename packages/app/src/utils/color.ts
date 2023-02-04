@@ -1,6 +1,7 @@
+import { ColorTuple } from "../types";
 
 
-export function colorArrayToHex(rgb: [ number, number, number ]) {
+export function colorTupleToHex(rgb: ColorTuple) {
 
     const hexLiterals = rgb.map(dec => {
         const intCol = Math.floor(255 * dec);
@@ -9,12 +10,12 @@ export function colorArrayToHex(rgb: [ number, number, number ]) {
     return `#${hexLiterals.join('')}`;
 }
 
-export function hexToColorArray(hex: string) {
+export function hexToColorTuple(hex: string): ColorTuple {
     const match = hex.match(/^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i);
     if (!match) {
         throw new Error(`Input ${hex} is not hex color`);
     }
     const [ _, r, g, b ] = match;
     const tuple = [ r, g, b ].map(v => parseInt(v, 16) / 255.0);
-    return tuple as [ number, number, number ];
+    return tuple as ColorTuple;
 }

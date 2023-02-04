@@ -2,7 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import useClickedOutside from '../hooks/useClickedOutside';
-import useTrigger from '../hooks/useTrigger';
+import { useEventListener } from '../hooks/useEventListener';
+import useStopMouseEvents from '../hooks/useStopMouseEvents';
 import { useAppDispatch } from '../redux/hooks';
 import { menusSetClosed } from '../slices/menusSlice';
 import { VERTICAL_MENU_WIDTH } from '../styles/MenuFloatingDiv';
@@ -38,9 +39,10 @@ const MenuRootFloating = ({ menuId, menuType, anchor, shape, onClose, center }: 
         }
     });
 
-    useClickedOutside(wrapperDivRef, () => {
+    const close = () => {
         dispatch(menusSetClosed({ menuId }));
-    });
+    }
+    useClickedOutside(wrapperDivRef, close);
 
     let x = anchor.x;
     let y = anchor.y;
@@ -48,8 +50,13 @@ const MenuRootFloating = ({ menuId, menuType, anchor, shape, onClose, center }: 
         x -= 0.5 * VERTICAL_MENU_WIDTH;
     }
 
+    const stopMouseHandlers = useStopMouseEvents();
+
     return ReactDOM.createPortal(
-        <FixedFullscreenDiv ref={wrapperDivRef}>
+        <FixedFullscreenDiv
+            {...stopMouseHandlers} 
+            ref={wrapperDivRef}
+        >
             <MenuFloating
                 menuId={menuId}
                 depth={0}

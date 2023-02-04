@@ -1,7 +1,8 @@
 import React from 'react';
 import MenuFloatingDiv from '../styles/MenuFloatingDiv';
-import { ButtonMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, SearchMenuElement, TitleMenuElement } from '../types';
+import { ButtonMenuElement, ColorMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, SearchMenuElement, TitleMenuElement } from '../types';
 import MenuButton from './MenuButton';
+import MenuColor from './MenuColor';
 import MenuCommand from './MenuCommand';
 import MenuExpand from './MenuExpand';
 import MenuSearch from './MenuSearch';
@@ -25,6 +26,10 @@ const MenuElementSwitch = (props: MenuElementProps) => {
         return <MenuTitle  {...props as MenuElementProps<TitleMenuElement>} />
     if (type === 'search')
         return <MenuSearch  {...props as MenuElementProps<SearchMenuElement>} />
+    if (type === 'color')
+        return <MenuColor  {...props as MenuElementProps<ColorMenuElement>} />
+    
+    console.error(`Unknown menu element: ${type}`);
     return null;
 }
 

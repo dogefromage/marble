@@ -1,7 +1,7 @@
 import React from "react";
-import { Point } from "../UtilityTypes";
+import { ColorTuple, Point } from "../UtilityTypes";
 
-export type MenuElementTypes = 'expand' | 'command' | 'button' | 'search' | 'title';
+export type MenuElementTypes = 'expand' | 'command' | 'button' | 'search' | 'title' | 'color';
 
 export type BaseMenuElement<T extends MenuElementTypes> = {
     type: T;
@@ -31,12 +31,15 @@ export interface TitleMenuElement extends BaseMenuElement<'title'> {
     color?: string;
 }
 
+export interface ColorMenuElement extends BaseMenuElement<'color'> {}
+
 export type MenuElement =
     | ExpandMenuElement
     | CommandMenuElement
     | ButtonMenuElement
     | SearchMenuElement
     | TitleMenuElement
+    | ColorMenuElement
 
 export interface InlineMenuShape {
     type: 'inline';
