@@ -27,10 +27,10 @@ export const menusSlice = createSlice({
         remove: (s, a: PayloadAction<{ menuId: string }>) => {
             delete s[a.payload.menuId];
         },
-        close: (s, a: PayloadAction<{ menuId: string }>) => {
+        setClosed: (s, a: PayloadAction<{ menuId: string, closed?: boolean }>) => {
             const menu = getMenu(s, a);
             if (menu) {
-                menu.isClosed = true;
+                menu.isClosed = a.payload.closed ?? true;
             }
         },
         setNode: (s, a: PayloadAction<{ menuId: string, depth: number, node: MenuStackNode }>) => {
@@ -52,7 +52,7 @@ export const menusSlice = createSlice({
 export const {
     add: menusAdd,
     remove: menusRemove,
-    close: menusClose,
+    setClosed: menusSetClosed,
     setNode: menusSetNode,
     setState: menusSetState,
 } = menusSlice.actions;

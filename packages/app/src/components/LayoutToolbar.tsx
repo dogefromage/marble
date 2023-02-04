@@ -1,7 +1,7 @@
 import React from 'react';
 import toolbarShape from '../content/menus/toolbar.json';
-import { MenuShape } from '../types';
-import MenuRoot from './MenuRoot';
+import { InlineMenuShape } from '../types';
+import MenuRootInline from './MenuRootInline';
 
 interface Props {
 
@@ -9,11 +9,10 @@ interface Props {
 
 const LayoutToolbar = ({}: Props) => {
     return (
-        <MenuRoot
+        <MenuRootInline
             menuId='layout'
             menuType={'toolbar'}
-            shape={toolbarShape as MenuShape}
-            onClose={() => {}}
+            shape={toolbarShape as InlineMenuShape}
         />
     );
 }

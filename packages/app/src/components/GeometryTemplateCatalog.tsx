@@ -8,7 +8,7 @@ import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
 import { offsetToClientPos } from '../utils/panelManager';
-import MenuRoot from './MenuRoot';
+import MenuRootFloating from './MenuRootFloating';
 
 type GroupedTemplatesMap = {
     [C in GNodeTemplateCategories]: GNodeTemplate[];
@@ -138,7 +138,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
     const clientPos = offsetToClientPos(currentPanelRect, templateCatalog.offsetPosition);
 
     return (
-        <MenuRoot
+        <MenuRootFloating
             menuId={menuId}
             menuType={'misc'}
             shape={menuShape}

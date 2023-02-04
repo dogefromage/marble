@@ -4,7 +4,7 @@ import { selectCommands } from '../slices/commandsSlice';
 import { contextMenuClose, selectContextMenu } from '../slices/contextMenuSlice';
 import { Command } from '../types';
 import generateContextMenuShape from '../utils/generateContextMenuShape';
-import MenuRoot from './MenuRoot';
+import MenuRootFloating from './MenuRootFloating';
 
 const CONTEXT_MENU_ID = `context_menu`;
 
@@ -24,7 +24,7 @@ const ContextMenu = () => {
     if (!menuShape || !contextMenu) return null;
 
     return (
-        <MenuRoot
+        <MenuRootFloating
             menuId={CONTEXT_MENU_ID}
             menuType={'context'}
             shape={menuShape}

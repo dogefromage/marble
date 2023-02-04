@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectCommands } from '../slices/commandsSlice';
 import { selectContextMenu } from '../slices/contextMenuSlice';
-import { menusClose, selectSingleMenu } from '../slices/menusSlice';
+import { menusSetClosed, selectSingleMenu } from '../slices/menusSlice';
 import { MenuCommandDiv } from '../styles/MenuElementDiv';
 import { CommandMenuElement } from '../types';
 import { formatKeyCombination } from '../utils/commands/keyCombinations';
@@ -30,7 +30,7 @@ const MenuCommand = ({ menuId, element }: MenuElementProps<CommandMenuElement>) 
 
     const invoke = () => {
         if (!command || !menuState) return;
-        dispatch(menusClose({ menuId }));
+        dispatch(menusSetClosed({ menuId }));
 
         if (menuState.type === 'context') {
             if (!contextMenu) return;

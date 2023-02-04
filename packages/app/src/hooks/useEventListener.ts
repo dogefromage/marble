@@ -6,10 +6,7 @@ export function useEventListener<K extends keyof DocumentEventMap>(event: K, cb:
 
     useEffect(() => {
         const handler = (e: DocumentEventMap[ K ]) => cbRef.current?.(e);
-
         target.addEventListener(event, handler);
-
         return () => target.removeEventListener(event, handler);
-
     }, [ event, target, cbRef ]);
 }

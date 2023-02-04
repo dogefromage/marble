@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import { BORDER_RADIUS } from '../styles/utils';
-import { ButtonMenuElement, MenuShape, ObjMap, Point } from '../types';
-import MenuRoot from './MenuRoot';
+import { ButtonMenuElement, FloatingMenuShape, ObjMap, Point } from '../types';
+import MenuRootFloating from './MenuRootFloating';
 
 const SelectOptionDiv = styled.div`
     position: relative;
@@ -45,7 +45,7 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
     }>();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    const menuShape: MenuShape = useMemo(() => ({
+    const menuShape: FloatingMenuShape = useMemo(() => ({
         type: 'floating',
         list: options.map((option, index) => {
             const button: ButtonMenuElement = {
@@ -76,7 +76,7 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
         >
             <p>{mapName?.[ value ] ?? value}</p> {
                 dropdown &&
-                <MenuRoot
+                <MenuRootFloating
                     menuId={dropdown.menuId}
                     menuType={'misc'}
                     shape={menuShape}
