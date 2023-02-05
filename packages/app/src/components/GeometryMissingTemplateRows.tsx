@@ -28,10 +28,10 @@ const GeometryMissingTemplateRows = () =>
             >
                 {`Template missing!`}
             </GeometryNodeTitle>
-            <GeometryRowDiv
+            {/* <GeometryRowDiv
                 heightUnits={2}
             >
-            </GeometryRowDiv>
+            </GeometryRowDiv> */}
 
         </GeometryNodeNameWrapper>
     </>);

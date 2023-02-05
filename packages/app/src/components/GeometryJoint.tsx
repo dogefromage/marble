@@ -3,10 +3,9 @@ import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesInsertIncomingElement } from '../slices/geometriesSlice';
 import { GeometryJointDiv } from '../styles/GeometryJointDiv';
-import { DataTypes, GeometryIncomingElementTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
+import { DataTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
 
-interface Props
-{
+interface Props {
     geometryId: string;
     jointLocation: GeometryJointLocation;
     jointDirection: GeometryJointDirection;
@@ -16,14 +15,12 @@ interface Props
     isStackedInput?: boolean;
 }
 
-const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, connected, additional, isStackedInput }: Props) =>
-{
+const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, connected, additional, isStackedInput }: Props) => {
     const dispatch = useAppDispatch();
 
     const drag = useDraggable<JointLinkDndTransfer>({
         tag: JOINT_LINK_DND_TAG,
-        start: e => 
-        {
+        start: e => {
             e.dataTransfer.setDragImage(new Image(), 0, 0);
             return {
                 elementType: 'row_output',
@@ -36,18 +33,11 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
     });
 
     const canDrop = (transfer: JointLinkDndTransfer) => {
-        // if (transfer.elementType === 'argument') {
-        //     return (
-        //         transfer.argument.dataType === dataType &&
-        //         direction === 'input'
-        //     );
-        // } else {
         return (
             transfer.dataType === dataType &&
             transfer.location.nodeId !== jointLocation.nodeId &&
             transfer.direction !== jointDirection
         );
-        // }
     }
 
     const droppableHandler = (e: React.DragEvent, transfer: JointLinkDndTransfer) => {
@@ -61,43 +51,29 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
         enter: droppableHandler,
         over: droppableHandler,
         leave: droppableHandler,
-        drop: (e, transfer) => 
-        {
+        drop: (e, transfer) => {
             if (!canDrop(transfer)) return;
 
-            // if (transfer.elementType === 'argument') {
-            //     dispatch(geometriesInsertIncomingElement({
-            //         geometryId,
-            //         jointLocation: jointLocation,
-            //         incomingElement: { 
-            //             type: 'argument',
-            //             argument: transfer.argument,
-            //         },
-            //         isStackedInput,
-            //         undo: {}
-            //     }));
-            // } else {
-                let outputJointLocation = transfer.location;
-                let inputJointLocation = jointLocation;
-                let stacked = isStackedInput;
-    
-                if (jointDirection === 'output') { // swap
-                    outputJointLocation = jointLocation;
-                    inputJointLocation = transfer.location;
-                    stacked = transfer.mergeStackInput;
-                }
-    
-                dispatch(geometriesInsertIncomingElement({
-                    geometryId,
-                    jointLocation: inputJointLocation,
-                    incomingElement: {
-                        type: 'row_output',
-                        location: outputJointLocation,
-                    },
-                    isStackedInput: stacked,
-                    undo: {}
-                }));
-            // }
+            let outputJointLocation = transfer.location;
+            let inputJointLocation = jointLocation;
+            let stacked = isStackedInput;
+
+            if (jointDirection === 'output') { // swap
+                outputJointLocation = jointLocation;
+                inputJointLocation = transfer.location;
+                stacked = transfer.mergeStackInput;
+            }
+
+            dispatch(geometriesInsertIncomingElement({
+                geometryId,
+                jointLocation: inputJointLocation,
+                incomingElement: {
+                    type: 'row_output',
+                    location: outputJointLocation,
+                },
+                isStackedInput: stacked,
+                undo: { desc: `Linked two nodes in active geometry.` }
+            }));
         },
     });
 
@@ -107,12 +83,12 @@ const GeometryJoint = ({ geometryId, jointLocation, jointDirection, dataType, co
             connected={connected}
             additional={additional}
             dataType={dataType}
-            { ...drag.handlers }
-            { ...drop.handlers }
+            {...drag.handlers}
+            {...drop.handlers}
             onMouseDown={e => e.stopPropagation()}
             isHovering={drop.isHovering}
         >
-            <div className='joint-inner'/>
+            <div className='joint-inner' />
         </GeometryJointDiv>
     );
 }

@@ -13,7 +13,7 @@ export const preferencesSlice = createSlice({
 // export const {
 // } = preferencesSlice.actions;
 
-export const selectPreferences = (state: RootState) => state.editor.preferences;
+// export const selectPreferences = (state: RootState) => state.editor.preferences;
 
 const preferencesReducer = preferencesSlice.reducer;
 

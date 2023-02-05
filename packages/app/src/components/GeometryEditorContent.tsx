@@ -6,6 +6,7 @@ import { selectSingleGeometryData } from '../slices/geometryDatasSlice';
 import { GeometryJointLocation, PlanarCamera, SelectionStatus } from '../types';
 import { ViewTypes } from '../types/panelManager/views';
 import getJointPositionWorld from '../utils/geometries/geometryUtils';
+import { TEST_USER_ID } from '../utils/testSetup';
 import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
@@ -102,12 +103,16 @@ const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
                 getCamera={getCamera}
             />
         }{
-            geometry.nodes.map((node, nodeIndex) =>
-            {
+            geometry.nodes.map((node, nodeIndex) => {
                 let selectionStatus = SelectionStatus.Nothing;
-                if (geometry.selectedNodes.includes(node.id)) {
-                    selectionStatus = SelectionStatus.Selected;
+
+                for (const [ userId, selection ] of Object.entries(geometry.selections)) {
+                    if (selection!.includes(node.id)) {
+                        selectionStatus = userId === TEST_USER_ID ?
+                            SelectionStatus.Selected : SelectionStatus.SelectedForeign;
+                    }
                 }
+
                 const nodeData = nodeDatas[nodeIndex];
 
                 return (

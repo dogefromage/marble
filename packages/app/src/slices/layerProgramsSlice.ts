@@ -31,7 +31,7 @@ export const {
     setRows: layerProgramsSetRows,
 } = layerProgramsSlice.actions;
 
-export const selectLayerPrograms = (state: RootState) => state.runtime.layerPrograms;
+export const selectLayerPrograms = (state: RootState) => state.recorded.present.layerPrograms;
 
 const layerProgramsReducer = layerProgramsSlice.reducer;
 

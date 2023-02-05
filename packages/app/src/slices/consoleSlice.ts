@@ -35,7 +35,7 @@ export const {
     clearMessages: consoleClearMessages,
 } = consoleSlice.actions;
 
-export const selectConsole = (state: RootState) => state.runtime.console;
+export const selectConsole = (state: RootState) => state.console;
 
 const consoleReducer = consoleSlice.reducer;
 

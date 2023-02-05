@@ -57,7 +57,7 @@ export const {
     setState: menusSetState,
 } = menusSlice.actions;
 
-export const selectMenus = (state: RootState) => state.runtime.menus;
+export const selectMenus = (state: RootState) => state.menus;
 
 export const selectSingleMenu = (menuId: string | undefined) => 
     useCallback((state: RootState) => 

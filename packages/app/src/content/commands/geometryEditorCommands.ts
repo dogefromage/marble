@@ -1,9 +1,10 @@
-import { geometriesAddNode, geometriesCreate, geometriesRemoveNode, geometriesResetStateSelected } from "../../slices/geometriesSlice";
+import { geometriesAddNode, geometriesCreate, geometriesRemoveNodes, geometriesResetUserSelectedNodes } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
-import { Command, CommandParameterMap, getTemplateId, Point, Rect, ViewTypes } from "../../types";
+import { Command, CommandParameterMap, getTemplateId, Point, Rect, UndoRecord, ViewTypes } from "../../types";
 import { generateCodeSafeUUID } from "../../utils/codeStrings";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
+import { TEST_USER_ID } from "../../utils/testSetup";
 
 function getOffsetPos(panelClientRect: Rect, params: CommandParameterMap) {
     let offsetPos: Point, center = false;
@@ -27,7 +28,6 @@ export const geometryEditorCommands: Command[] = [
         name: 'Add Node',
         actionCreator({ activePanelId, panelClientRect }, params) {
             const { offsetPos, center } = getOffsetPos(panelClientRect, params);
-
             return geometryEditorPanelsOpenTemplateCatalog({
                 panelId: activePanelId,
                 offsetPos,
@@ -42,10 +42,12 @@ export const geometryEditorCommands: Command[] = [
         id: 'geometryEditor.deleteSelected',
         name: 'Delete Selected',
         actionCreator({ panelState: { geometryStack } }, params) {
-            if (!geometryStack.length) return;
-            return geometriesRemoveNode({
-                geometryId: geometryStack[ 0 ],
-                undo: {},
+            const geometryId = geometryStack[ 0 ];
+            if (geometryId == null) return;
+            return geometriesRemoveNodes({
+                geometryId,
+                userId: TEST_USER_ID,
+                undo: { desc: `Removed all selected nodes in active geometry.` },
             });
         },
         keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
@@ -56,10 +58,12 @@ export const geometryEditorCommands: Command[] = [
         id: 'geometryEditor.resetSelected',
         name: 'Reset Selected',
         actionCreator({ panelState: { geometryStack } }, params) {
-            if (!geometryStack.length) return;
-            return geometriesResetStateSelected({
-                geometryId: geometryStack[ 0 ],
-                undo: {},
+            const geometryId = geometryStack[ 0 ];
+            if (geometryId == null) return;
+            return geometriesResetUserSelectedNodes({
+                geometryId,
+                userId: TEST_USER_ID,
+                undo: { desc: `Reset values of all selected nodes in active geometry.` },
             });
         },
         // keyCombinations: [ { key: 'Delete', displayName: 'Del' }, { key: 'x', ctrlKey: true } ],
@@ -70,14 +74,18 @@ export const geometryEditorCommands: Command[] = [
         id: 'geometryEditor.createSubgeometry',
         name: 'Create Group',
         actionCreator({ panelClientRect: activePanel, panelState: { geometryStack, camera } }, params) {
-            if (!geometryStack.length) return;
+            const parentGeometryId = geometryStack[ 0 ];
+            if (parentGeometryId == null) return;
 
-            const subGeometryId = generateCodeSafeUUID();;
-            const actionToken = 'createsub:' + subGeometryId;
+            const subGeometryId = generateCodeSafeUUID();
             const subTemplateId = getTemplateId('composite', subGeometryId);
-
             const { offsetPos } = getOffsetPos(activePanel, params);
             const worldPos = v2p(pointScreenToWorld(camera, p2v(offsetPos)));
+            
+            const undoRecord: UndoRecord = {
+                actionToken: 'createsub:' + subGeometryId,
+                desc: `Created new subgeometry and placed node into current.`
+            }
 
             return [
                 geometriesCreate({
@@ -111,13 +119,13 @@ export const geometryEditorCommands: Command[] = [
                             }
                         ],
                     },
-                    undo: { actionToken }
+                    undo: undoRecord,
                 }),
                 geometriesAddNode({
-                    geometryId: geometryStack[ 0 ],
+                    geometryId: parentGeometryId,
                     templateId: subTemplateId,
                     position: worldPos,
-                    undo: { actionToken },
+                    undo: undoRecord,
                 })
             ];
         },

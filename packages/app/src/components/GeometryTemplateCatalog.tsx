@@ -42,7 +42,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
                 x: templateCatalog.worldPosition.x,
                 y: templateCatalog.worldPosition.y, 
             },
-            undo: {}
+            undo: { desc: `Added new node to active geometry.` }
         }));
     }
 

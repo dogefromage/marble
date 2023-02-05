@@ -71,7 +71,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
             nodeId,
             rowId: row.id,
             rowData: rowS,
-            undo: { doNotRecord },
+            undo: { doNotRecord, desc: `Updated rotation row values.` },
         }));
     }, [ rowRotationModel, row.currentDisplay ]);
 
@@ -105,7 +105,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
                 nodeId: nodeId,
                 rowId: row.id,
                 rowData: rowS,
-                undo: { actionToken },
+                undo: { actionToken, desc: `Updated rotation row values.` },
             }));
         }
 
@@ -118,7 +118,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
             nodeId: nodeId,
             rowId: row.id,
             rowData: rowS,
-            undo: {},
+            undo: { desc: `Switched rotation model of row.` },
         }));
     }
 

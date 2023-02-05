@@ -19,7 +19,8 @@ const defaultTheme: DefaultTheme = {
             Solid: '#d4a63b',
         },
         selectionStatus: {
-            [SelectionStatus.Selected]: '#e7b84a',
+            [SelectionStatus.Selected]:        '#e7b84a',
+            [SelectionStatus.SelectedForeign]: '#4ae7df55',
         }
     },
 };

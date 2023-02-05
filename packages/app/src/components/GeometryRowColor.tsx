@@ -32,7 +32,7 @@ const GeometryRowColor = ({ geometryId, panelId, nodeId, row }: RowProps<ColorRo
             nodeId: nodeId,
             rowId: row.id,
             rowData: { value: newColor },
-            undo: { actionToken },
+            undo: { actionToken, desc: `Updated value of color row in active geometry.` },
         }));
     }
 

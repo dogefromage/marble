@@ -28,7 +28,7 @@ export const {
     create: layersCreate,
 } = layersSlice.actions;
 
-export const selectLayers = (state: RootState) => state.project.present.layers;
+export const selectLayers = (state: RootState) => state.recorded.present.project.layers;
 
 const layersReducer = layersSlice.reducer;
 

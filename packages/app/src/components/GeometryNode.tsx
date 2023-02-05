@@ -3,13 +3,14 @@ import { vec2 } from 'gl-matrix';
 import React, { useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesMoveNodes, geometriesSetSelectedNodes } from '../slices/geometriesSlice';
+import { geometriesMoveUserSelection, geometriesSetUserSelection } from '../slices/geometriesSlice';
 import { geometryEditorPanelsPushGeometryId } from '../slices/panelGeometryEditorSlice';
 import GeometryNodeDiv, { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
 import { decomposeTemplateId, GNodeData, GNodeState, GNodeTemplateTypes, PlanarCamera, RowZ } from '../types';
 import { Point, SelectionStatus } from '../types/UtilityTypes';
 import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { v2p } from '../utils/linalg';
+import { TEST_USER_ID } from '../utils/testSetup';
 import GeometryMissingTemplateRows from './GeometryMissingTemplateRows';
 import GeometryRowRoot from './GeometryRowRoot';
 
@@ -33,11 +34,12 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
     }>();
 
     const ensureSelection = () => {
-        if (selectionStatus == SelectionStatus.Nothing) {
-            dispatch(geometriesSetSelectedNodes({
+        if (selectionStatus !== SelectionStatus.Selected) {
+            dispatch(geometriesSetUserSelection({
                 geometryId,
+                userId: TEST_USER_ID,
                 selection: [ nodeState.id ],
-                undo: {},
+                undo: { desc: `Selected single node in active geometry.` },
             }))
         }
     }
@@ -68,10 +70,11 @@ const GeometryNode = ({ panelId, geometryId, nodeState, nodeData, getCamera, sel
             const worldMove = vectorScreenToWorld(camera, screenDelta);
             const delta = v2p(worldMove);
 
-            dispatch(geometriesMoveNodes({
+            dispatch(geometriesMoveUserSelection({
                 geometryId,
+                userId: TEST_USER_ID,
                 delta,
-                undo: { actionToken: dragRef.current!.stackToken },
+                undo: { actionToken: dragRef.current!.stackToken, desc: `Moved selection in active geometry.` },
             }));
         },
     }, {

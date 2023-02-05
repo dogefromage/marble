@@ -4,8 +4,7 @@ import { geometriesRemoveIncomingElements } from '../slices/geometriesSlice';
 import { GeometryEdge, GeometryJointLocation, Point } from '../types';
 import GeometryLinkDiv from './GeometryLinkDiv';
 
-interface Props
-{
+interface Props {
     geometryId: string;
     edge: GeometryEdge;
     posA: Point;
@@ -13,14 +12,13 @@ interface Props
     joints: GeometryJointLocation[];
 }
 
-const LinkComponent = ({ 
-    geometryId, 
-    edge, 
+const LinkComponent = ({
+    geometryId,
+    edge,
     posA,
     posB,
     joints,
-}: Props) =>
-{
+}: Props) => {
     const dispatch = useAppDispatch();
 
     return (
@@ -29,12 +27,11 @@ const LinkComponent = ({
             A={posA}
             B={posB}
             onMouseDown={e => e.stopPropagation()}
-            onClick={e =>
-            {
+            onClick={e => {
                 dispatch(geometriesRemoveIncomingElements({
                     geometryId,
                     joints,
-                    undo: {},
+                    undo: { desc: `Removed link between two nodes in active geometry.` },
                 }))
                 e.stopPropagation();
             }}

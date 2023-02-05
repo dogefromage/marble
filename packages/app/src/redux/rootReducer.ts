@@ -13,21 +13,26 @@ import menusReducer from "../slices/menusSlice";
 import geometryEditorPanelsReducer from "../slices/panelGeometryEditorSlice";
 import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
-import preferencesReducer from "../slices/preferencesSlice";
 import templatesReducer from "../slices/templatesSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
 
 const rootReducer = combineReducers({
-    project: undoableEnhancer(
-        localStorageEnhancer(
-            combineReducers({
-                world: worldReducer,
-                geometries: geometriesReducer,
-                layers: layersReducer,
-            }),
-            'project'
-        )
+    recorded: undoableEnhancer(
+        combineReducers({
+            project: localStorageEnhancer(
+                combineReducers({
+                    world: worldReducer,
+                    geometries: geometriesReducer,
+                    layers: layersReducer,
+                }),
+                'project'
+            ),
+            geometryDatas: geometryDatasReducer,
+            dependencyGraph: dependencyGraphReducer,
+            layerPrograms: layerProgramsReducer,
+            templates: templatesReducer,    
+        })
     ),
     editor: combineReducers({
         panels: combineReducers({
@@ -35,17 +40,10 @@ const rootReducer = combineReducers({
             [ViewTypes.Viewport]: viewportPanelsReducer,
         }),
         panelManager: panelManagerReducer,
-        preferences: preferencesReducer,
     }),
-    runtime: combineReducers({
-        geometryDatas: geometryDatasReducer,
-        dependencyGraph: dependencyGraphReducer,
-        layerPrograms: layerProgramsReducer,
-        console: consoleReducer,
-        menus: menusReducer,
-        contextMenu: contextMenuReducer,
-    }),
-    templates: templatesReducer,
+    console: consoleReducer,
+    menus: menusReducer,
+    contextMenu: contextMenuReducer,
     commands: commandsReducer,
 });
 

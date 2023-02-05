@@ -1,7 +1,8 @@
 import { Dependable } from "../dependencyGraph";
 import { DataTypes } from "../layerPrograms";
+import { ObjMap, ObjMapUndef } from "../UtilityTypes";
 import { GNodeState } from "./GNode";
-import { InputRowT, BaseInputRowT, OutputRowT } from "./Rows";
+import { InputRowT, BaseInputRowT, OutputRowT, SpecificRowT } from "./Rows";
 
 export interface GeometryTemplate {
     isRoot: boolean;
@@ -10,26 +11,33 @@ export interface GeometryTemplate {
     outputs: OutputRowT[];
 }
 
+export const defaultInputRows: ObjMap<InputRowT> = {
+    'position': {
+        id: 'position',
+        type: 'input',
+        name: 'Position',
+        dataType: 'vec3',
+        value: [ 0, 0, 0 ],
+        defaultArgumentToken: 'position',
+    }
+};
+
+export const defaultOutputRows: ObjMap<OutputRowT> = {
+    'solid': {
+        id: 'solid',
+        type: 'output',
+        name: 'Solid',
+        dataType: 'Solid',
+    }
+};
+
 export const rootGeometryTemplate: GeometryTemplate = {
     isRoot: true,
-    inputs: [
-        {
-            id: 'position',
-            type: 'input',
-            name: 'Position',
-            dataType: 'vec3',
-            value: [ 0, 0, 0 ],
-        },
-    ],
-    outputs: [
-        {
-            id: 'solid',
-            type: 'output',
-            name: 'Solid',
-            dataType: 'Solid',
-        }
-    ],
+    inputs: [ defaultInputRows['position'] ],
+    outputs: [ defaultOutputRows['solid'] ],
 }
+
+type GeometrySelections = ObjMapUndef<string[]>; // per user
 
 export interface GeometryS extends Dependable {
     // basic
@@ -42,5 +50,5 @@ export interface GeometryS extends Dependable {
     nodes: Array<GNodeState>;
     rowStateInvalidator: number;
     nextIdIndex: number;
-    selectedNodes: string[];
+    selections: GeometrySelections;
 }

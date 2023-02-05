@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import MaterialSymbol from '../styles/MaterialSymbol';
@@ -6,9 +6,8 @@ import { BORDER_RADIUS } from '../styles/utils';
 import { ButtonMenuElement, FloatingMenuShape, ObjMap, Point } from '../types';
 import MenuRootFloating from './MenuRootFloating';
 
-const SelectOptionDiv = styled.div`
+const SelectOptionDiv = styled.div<{ disabled?: boolean }>`
     position: relative;
-
     height: 1.6rem;
     max-height: 100%;
 
@@ -21,7 +20,9 @@ const SelectOptionDiv = styled.div`
     ${BORDER_RADIUS}
     background-color: ${({ theme }) => theme.colors.general.fields};
 
-    cursor: pointer;
+    cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer' };
+
+    ${({ disabled }) => disabled && `color: #00000066;` }
 
     p {
         margin: 0;
@@ -36,9 +37,12 @@ export interface SelectOptionProps {
     options: string[];
     onChange: (newValue: string) => void;
     mapName?: ObjMap<string>;
+    className?: string;
+    icon?: string;
+    disabled?: boolean;
 }
 
-const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionProps) => {
+const FormSelectOption = ({ className, icon, value, onChange, options, mapName, disabled }: SelectOptionProps) => {
     const [ dropdown, setDropdown ] = useState<{
         menuId: string;
         anchor: Point;
@@ -61,11 +65,13 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
             };
             return button;
         }),
-    }), [ options ]);
+    }), [ options, onChange, mapName ]);
 
     return (
         <SelectOptionDiv
+            className={className}
             onClick={() => {
+                if (disabled) return;
                 const rect = wrapperRef.current!.getBoundingClientRect();
                 setDropdown({
                     menuId: `select-option-menu:${uuidv4()}`,
@@ -73,8 +79,10 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
                 });
             }}
             ref={wrapperRef}
+            disabled={disabled}
         >
-            <p>{mapName?.[ value ] ?? value}</p> {
+            <p>{mapName?.[ value ] ?? value}</p>
+            {
                 dropdown &&
                 <MenuRootFloating
                     menuId={dropdown.menuId}
@@ -84,7 +92,7 @@ const FormSelectOption = ({ value, onChange, options, mapName }: SelectOptionPro
                     onClose={() => setDropdown(undefined)}
                 />
             }
-            <MaterialSymbol size={20}>expand_more</MaterialSymbol>
+            <MaterialSymbol size={20}>{ icon ?? 'expand_more' }</MaterialSymbol>
         </SelectOptionDiv>
     );
 }

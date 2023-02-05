@@ -38,6 +38,6 @@ type _TupleOf<T, N extends number, R extends unknown[]> = R[ 'length' ] extends 
 
 export enum SelectionStatus {
     Nothing = 0,
-    Selected = 1,
-    Active = 2,
+    SelectedForeign = 1,
+    Selected = 2,
 }

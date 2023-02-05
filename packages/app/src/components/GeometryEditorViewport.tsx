@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectSingleGeometry, geometriesCreate } from '../slices/geometriesSlice';
 import { layersCreate } from '../slices/layersSlice';
 import { geometryEditorPanelsOpenTemplateCatalog } from '../slices/panelGeometryEditorSlice';
-import { rootGeometryTemplate, ViewTypes } from '../types';
+import { rootGeometryTemplate, UndoRecord, ViewTypes } from '../types';
 import useContextMenu from '../utils/menus/useContextMenu';
 import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from '../utils/testSetup';
 import GeometryEditorBreadCrumbs from './GeometryEditorBreadCrumbs';
@@ -92,16 +92,19 @@ const GeometryEditorViewport = ({ panelId }: Props) => {
                 geometryId && !geometry &&
                 <TestButton
                     onClick={() => {
-                        const actionToken = uuidv4();
+                        const record: UndoRecord = {
+                            actionToken: uuidv4(),
+                            desc: `Created test geometry.`,
+                        }
                         dispatch(layersCreate({
                             id: TEST_LAYER_ID,
                             rootGeometryId: TEST_ROOT_GEOMETRY_ID,
-                            undo: { actionToken },
+                            undo: record,
                         }))
                         dispatch(geometriesCreate({
                             geometryId,
                             geometryTemplate: rootGeometryTemplate,
-                            undo: { actionToken },
+                            undo: record,
                         }));
                     }}
                 >

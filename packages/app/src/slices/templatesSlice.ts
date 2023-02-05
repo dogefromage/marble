@@ -35,7 +35,7 @@ export const {
     addIncludes: templatesAddGLSLSnippets,
 } = templatesSlice.actions;
 
-export const selectTemplates = (state: RootState) => state.templates;
+export const selectTemplates = (state: RootState) => state.recorded.present.templates;
 
 const templatesReducer = templatesSlice.reducer;
 

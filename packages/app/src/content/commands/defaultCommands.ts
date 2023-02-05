@@ -32,7 +32,7 @@ export const DEFAULT_COMMANDS: Command[] =
         name: 'Clear Messages',
         actionCreator() {
             return consoleClearMessages({
-                undo: {}
+                undo: { desc: `Cleared all messages from the console.` }
             });
         },
     },

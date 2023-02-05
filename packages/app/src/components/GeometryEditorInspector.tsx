@@ -1,14 +1,14 @@
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ReactSortable } from 'react-sortablejs';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesAddRow, geometriesRemoveRow, geometriesRename, geometriesReorderRows, geometriesReplaceRow, geometriesUpdateRow, selectSingleGeometry } from '../slices/geometriesSlice';
+import { geometriesAddCustomRow, geometriesAddDefaultRow, geometriesRemoveRow, geometriesRename, geometriesReorderRows, geometriesReplaceRow, geometriesUpdateRow, selectSingleGeometry } from '../slices/geometriesSlice';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import SymbolButton from '../styles/SymbolButton';
 import { INSET_SHADOW } from '../styles/utils';
-import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, getRowDataTypeCombination, InputRowT, OutputRowT, RowDataTypeCombination, RowT, ViewTypes } from '../types';
+import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, defaultInputRows, defaultOutputRows, getRowDataTypeCombination, InputRowT, ObjMap, OutputRowT, RowDataTypeCombination, RowT, ViewTypes } from '../types';
 import FormExpandableRegion from './FormExpandableRegion';
 import FormRenameField from './FormRenameField';
 import FormSelectOption from './FormSelectOption';
@@ -44,7 +44,7 @@ const GeometryEditorInspector = ({ panelId }: Props) => {
                         <FormRenameField
                             value={geometry.name}
                             onChange={newName => dispatch(geometriesRename({
-                                geometryId, newName, undo: {},
+                                geometryId, newName, undo: { desc: `Renamed geometry to ${newName}.` },
                             }))}
                         />
                     </SettingsTable>
@@ -78,11 +78,6 @@ const RowListDiv = styled.div<{ disabled: boolean }>`
         display: flex;
         flex-direction: column;
         gap: 5px;
-    }
-
-    .add {
-        width: 100%;
-        aspect-ratio: unset;
     }
 `;
 
@@ -154,6 +149,19 @@ const RowListItemDiv = styled.div.attrs<RowListItemDivProps>(({ selected }) => (
     }
 `;
 
+const AddSplitDiv = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    .add-dropdown {
+        background-color: #eee;
+        &:active {
+            background-color: #ccc;
+        }
+    }
+`;
+
 function rowTHasKey<T extends RowT, K extends keyof T = keyof T>(row: RowT, key: K): row is RowT & Pick<T, K> {
     return Object.hasOwn(row, key);
 }
@@ -165,30 +173,55 @@ interface RowListProps {
     direction: 'in' | 'out';
 }
 
+const fullDirection = {
+    'in': 'input',
+    'out': 'output',
+}
+
 const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
 
     const dispatch = useAppDispatch();
-
     const options = direction === 'in' ? allowedInputRowKeys : allowedOutputRowKeys;
-    const mapName = direction === 'in' ? allowedInputRows : allowedOutputRows;
+    const mapName = direction === 'in' ? allowedInputRows    : allowedOutputRows   ;
     const [ selectedId, setSelectedId ] = useState('');
 
-    const addRow = () => {
+    // default rows
+    const defaultRows = direction === 'in' ?
+        defaultInputRows : defaultOutputRows;
+    const defaultRowKeys = Object.keys(defaultRows);
+    const defaultRowNameMap = defaultRowKeys.reduce((nameMap, key) => {
+        nameMap[key] = defaultRows[key].name;
+        return nameMap;
+    }, {} as ObjMap<string>);
+
+    const addCustomRow = (rowAndDataType: RowDataTypeCombination) => {
         if (!editable) return;
-        dispatch(geometriesAddRow({
+        dispatch(geometriesAddCustomRow({
             geometryId,
             direction,
-            undo: {},
+            rowAndDataType,
+            undo: { desc: `Added custom ${fullDirection[direction]} row to active geometry.`},
         }));
     }
-    
+
+    const addDefaultRow = (defaultRowKey: string) => {
+        const defaultRow = defaultRows[defaultRowKey];
+        if (!editable || !defaultRow) return;
+        dispatch(geometriesAddDefaultRow({
+            geometryId,
+            direction,
+            defaultRow,
+            undo: { desc: `Added default ${fullDirection[direction]} row to active geometry.`},
+        }));
+    }
+
     const removeRow = (rowId: string) => {
         if (!editable) return;
         dispatch(geometriesRemoveRow({
             geometryId,
             direction,
             rowId,
-            undo: {},
+            undo: { desc: `Removed ${fullDirection[direction]} row "${rowId}" from active geometry.` },
         }))
     }
 
@@ -199,18 +232,18 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
             geometryId,
             direction,
             newOrder,
-            undo: {},
+            undo: { desc: `Reordered ${fullDirection[direction]} rows of active geometry.` },
         }));
     }
 
-    const replaceRow = (rowId: string, newRowType: RowDataTypeCombination) => {
+    const replaceRow = (rowId: string, rowAndDataType: RowDataTypeCombination) => {
         if (!editable) return;
         dispatch(geometriesReplaceRow({
             geometryId,
             rowId,
             direction,
-            rowAndDataType: newRowType,
-            undo: {},
+            rowAndDataType,
+            undo: { desc: `Replaced ${fullDirection[direction]} row "${rowId}" with a new row of type "${rowAndDataType}".` },
         }));
     }
 
@@ -221,7 +254,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
             rowId,
             direction,
             newState: { name },
-            undo: {},
+            undo: { desc: `Renamed ${fullDirection[direction]} row to ${name}.` },
         }));
     }
 
@@ -255,10 +288,7 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                                 />
                             </div>
                             <div className='right'>
-                                {/* <button className='copy'>
-                                    <MaterialSymbol size={18}>content_copy</MaterialSymbol>
-                                </button> */}
-                                <SymbolButton onClick={() => removeRow(row.id)}>
+                                <SymbolButton onClick={() => removeRow(row.id)} disabled={!editable}>
                                     <MaterialSymbol size={22}>close</MaterialSymbol>
                                 </SymbolButton>
                             </div>
@@ -271,23 +301,33 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                                     onChange={newType => replaceRow(row.id, newType as RowDataTypeCombination)}
                                     options={options}
                                     mapName={mapName}
-                                /> {
-                                    // rowTHasKey<InputRowT>(row, 'value') && <>
-                                    //     <p>Default value</p>
-                                    //     <p>{JSON.stringify(row.value)}</p>
-                                    //     <p>Default input tag</p>
-                                    //     <p>{JSON.stringify(row.defaultArgumentToken || null)}</p>
-                                    // </>
-                                }
+                                />
                             </SettingsTable>
                         }
                     </RowListItemDiv>
                 )}
             </ReactSortable>
             }
-            <SymbolButton className='add' onClick={addRow} disabled={!editable}>
-                <MaterialSymbol size={20}>add</MaterialSymbol>
-            </SymbolButton>
+            <AddSplitDiv>
+                <FormSelectOption 
+                    className='add-dropdown' 
+                    onChange={addCustomRow as (rowAndDataType: string) => void} 
+                    options={options} 
+                    mapName={mapName}
+                    icon='add'
+                    value='Add Custom'
+                    disabled={!editable}
+                />
+                <FormSelectOption 
+                    className='add-dropdown' 
+                    onChange={addDefaultRow} 
+                    mapName={defaultRowNameMap} 
+                    options={defaultRowKeys}
+                    icon='add'
+                    value='Add default'
+                    disabled={!editable}
+                />
+            </AddSplitDiv>
         </RowListDiv>
     </>);
 }

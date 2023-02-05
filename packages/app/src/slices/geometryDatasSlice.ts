@@ -24,7 +24,7 @@ export const {
     setMany: geometryDatasSetMany,
 } = geometryDatasSlice.actions;
 
-export const selectGeometryDatas = (state: RootState) => state.runtime.geometryDatas;
+export const selectGeometryDatas = (state: RootState) => state.recorded.present.geometryDatas;
 
 export const selectSingleGeometryData = (geometryId: string) => 
     useCallback((state: RootState) => // memoize selector bc. redux will

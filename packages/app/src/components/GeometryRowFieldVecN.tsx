@@ -27,7 +27,7 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) => {
                 nodeId: nodeId,
                 rowId: row.id,
                 rowData: { value: combinedValue },
-                undo: { actionToken },
+                undo: { actionToken, desc: `Updated row field value.` },
             }));
         }
 

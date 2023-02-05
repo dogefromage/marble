@@ -34,7 +34,7 @@ const GeometryRowFieldFloat = ({ geometryId, nodeId, row }: Props) =>
                             nodeId: nodeId,
                             rowId: row.id, 
                             rowData: { value },
-                            undo: { actionToken },
+                            undo: { actionToken, desc: `Updated row field value.` },
                         }))}
                         name={row.name}
                     />

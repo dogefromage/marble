@@ -23,7 +23,7 @@ export const {
     close: contextMenuClose,
 } = contextMenuSlice.actions;
 
-export const selectContextMenu = (state: RootState) => state.runtime.contextMenu;
+export const selectContextMenu = (state: RootState) => state.contextMenu;
 
 const contextMenuReducer = contextMenuSlice.reducer;
 

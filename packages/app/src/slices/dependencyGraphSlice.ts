@@ -34,7 +34,7 @@ export const {
     updateGraph: dependencyGraphUpdateGraph,
 } = dependencyGraphSlice.actions;
 
-export const selectDependencyGraph = (state: RootState) => state.runtime.dependencyGraph;
+export const selectDependencyGraph = (state: RootState) => state.recorded.present.dependencyGraph;
 
 const dependencyGraphReducer = dependencyGraphSlice.reducer;
 
