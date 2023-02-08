@@ -1,0 +1,22 @@
+{
+  "name": "@marble/language",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "type": "module",
+  "scripts": {
+    "peg": "sh build.sh",
+    "test": "jest"
+  },
+  "author": "dogefromage",
+  "license": "MIT",
+  "dependencies": {
+    "@shaderfrog/glsl-parser": "1.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.4.0",
+    "jest": "^29.4.1",
+    "ts-jest": "^29.0.5",
+    "peggy": "^1.2.0"
+  }
+}
