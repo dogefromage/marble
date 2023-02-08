@@ -2,17 +2,15 @@ import { mat4 } from 'gl-matrix';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from '../content/shaderTemplates';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
+import useReactiveMap from '../hooks/useReactiveMap';
 import useTrigger from '../hooks/useTrigger';
 import { useAppSelector } from '../redux/hooks';
 import { selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { LayerProgram, ViewTypes } from '../types';
 import { CodeTemplate } from '../utils/codeStrings';
-import useReactiveMap from '../hooks/useReactiveMap';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewportView/cameraMath';
 import { GLProgram } from '../utils/viewportView/GLProgram';
 import GLProgramRenderer from '../utils/viewportView/GLProgramRenderer';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { logCodeWithLines } from '../utils/debugging';
 
 function generateShaders(sceneProgram: LayerProgram) {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);

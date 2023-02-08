@@ -1,4 +1,6 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { consoleAppendMessage } from "../slices/consoleSlice";
 
 interface Props {
     children: React.ReactNode;

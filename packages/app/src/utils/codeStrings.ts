@@ -94,3 +94,9 @@ export function generateCodeSafeUUID() {
     // @ts-ignore
     return id.replaceAll('-', '_');
 }
+
+export function formatVariable(word: string) {
+    if (!word.length) return word;
+    word = word.replaceAll('_', ' ');
+    return word.charAt(0).toUpperCase() + word.slice(1);
+}

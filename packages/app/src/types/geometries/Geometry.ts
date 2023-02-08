@@ -11,34 +11,6 @@ export interface GeometryTemplate {
     outputs: OutputRowT[];
 }
 
-export const defaultInputRows: ObjMap<InputRowT> = {
-    'position': {
-        id: 'position',
-        type: 'input',
-        name: 'Position',
-        dataType: 'vec3',
-        value: [ 0, 0, 0 ],
-        defaultArgumentToken: 'position',
-    }
-};
-
-export const defaultOutputRows: ObjMap<OutputRowT> = {
-    'solid': {
-        id: 'solid',
-        type: 'output',
-        name: 'Solid',
-        dataType: 'Solid',
-    }
-};
-
-export const rootGeometryTemplate: GeometryTemplate = {
-    isRoot: true,
-    inputs: [ defaultInputRows['position'] ],
-    outputs: [ defaultOutputRows['solid'] ],
-}
-
-type GeometrySelections = ObjMapUndef<string[]>; // per user
-
 export interface GeometryS extends Dependable {
     // basic
     name: string;
@@ -50,5 +22,5 @@ export interface GeometryS extends Dependable {
     nodes: Array<GNodeState>;
     rowStateInvalidator: number;
     nextIdIndex: number;
-    selections: GeometrySelections;
+    selections: ObjMapUndef<string[]>;
 }

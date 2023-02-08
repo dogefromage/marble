@@ -1,4 +1,7 @@
 
+// various: https://iquilezles.org/articles/distfunctions/
+// perlin noise: https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+
 #DEFINCLUDE inc_union;
 Solid inc_union(Solid a, Solid b)
 {
@@ -21,11 +24,37 @@ Solid inc_difference(Solid a, Solid b)
     else             return b;
 }
 
+#DEFINCLUDE inc_smooth_union;
+Solid inc_smooth_union( Solid a, Solid b, float k ) {
+    float h = clamp( 0.5 + 0.5*(b.sd-a.sd)/k, 0.0, 1.0 );
+    return Solid(mix( b.sd, a.sd, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
+}
+
+#DEFINCLUDE inc_smooth_difference;
+Solid inc_smooth_difference( Solid a, Solid b, float k ) {
+    float h = clamp( 0.5 - 0.5*(a.sd+b.sd)/k, 0.0, 1.0 );
+    return Solid(mix( a.sd, -b.sd, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
+}
+
+#DEFINCLUDE inc_smooth_intersection;
+Solid inc_smooth_intersection( Solid a, Solid b, float k ) {
+    float h = clamp( 0.5 - 0.5*(b.sd-a.sd)/k, 0.0, 1.0 );
+    return Solid(mix( b.sd, a.sd, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
+}
+
+#DEFINCLUDE inc_extrude_z;
+Solid inc_extrude_z(vec3 p, Solid s, float h) {
+    vec2 w = vec2( s.sd, abs(p.z) - h);
+    return Solid(min(max(w.x,w.y),0.0) + length(max(w,0.0)), s.color);
+}
+
+// float opRevolution( in vec3 p, in sdf2d primitive, float o )
+// {
+//     vec2 q = vec2( length(p.xz) - o, p.y );
+//     return primitive(q)
+// }
+
 #DEFINCLUDE inc_perlin_noise;
-// https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
-//	Classic Perlin 3D Noise 
-//	by Stefan Gustavson
-//
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
 vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
@@ -96,4 +125,43 @@ float inc_perlin_noise(vec3 P){
     vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
     float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
     return 2.2 * n_xyz;
+}
+
+#DEFINCLUDE modSelective;
+
+vec3 modSelective(vec3 v, vec3 m) {
+    if (m.x > 0.) v.x = mod(v.x, m.x);
+    if (m.y > 0.) v.y = mod(v.y, m.y);
+    if (m.z > 0.) v.z = mod(v.z, m.z);
+    return v;
+}
+
+#DEFINCLUDE inc_voronoi;
+
+vec3 inc_voronoi_hash(vec3 p3) {
+	p3 = fract(p3 * vec3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz+33.33);
+    return fract((p3.xxy + p3.yxx)*p3.zyx);
+}
+
+vec4 inc_voronoi(vec3 x, float scale, float margin) {
+    x /= scale;
+    vec3 cellPos = floor(x);
+    vec3 fracPart = fract(x);
+    vec3 outPoint;
+    float minDist = 1000.0;
+
+    for (int k = -1; k <= 1; k++)
+    for (int j = -1; j <= 1; j++)
+    for (int i = -1; i <= 1; i++) {
+        vec3 off = vec3(i, j, k);
+        vec3 hash = inc_voronoi_hash(cellPos + off);
+        vec3 cellPoint = 0.5 * margin + hash * (1. - margin);
+        float currMin = length(cellPoint + off - fracPart);
+        if (currMin < minDist) {
+            minDist = currMin;
+            outPoint = cellPos + cellPoint + off;
+        }
+    }
+    return vec4(scale * outPoint, scale * minDist);
 }

@@ -1,5 +1,6 @@
 import { getTemplateId, GNodeTemplate } from "../../types";
 import { glsl } from "../../utils/codeStrings";
+import { inputRow, nameRow, outputRow } from "./rowShorthands";
 import { TemplateColors } from "./templateConstants";
 
 const math_number_value: GNodeTemplate =
@@ -12,7 +13,7 @@ const math_number_value: GNodeTemplate =
             id: 'name',
             type: 'name',
             name: 'Number Value',
-            color: TemplateColors.Operators,
+            color: TemplateColors.SolidOperations,
         },
         {
             id: 'output',
@@ -43,7 +44,7 @@ const math_map: GNodeTemplate =
             id: 'name',
             type: 'name',
             name: 'Map',
-            color: TemplateColors.Operators,
+            color: TemplateColors.SolidOperations,
         },
         {
             id: 'output',
@@ -93,7 +94,30 @@ const math_map: GNodeTemplate =
     `,
 }
 
+const evaluate_bezier: GNodeTemplate =
+{
+    id: getTemplateId('static', 'evaluate_bezier'),
+    version: 0,
+    category: 'math',
+    rows: [
+        nameRow('Evaluate Bezier'),
+        outputRow('y', 'y-Value', 'float'), 
+        {
+            id: 'bezier',
+            name: 'Bezier Curve',
+            type: 'bezier',
+            dataType: 'mat3',
+            value: [ 0, 0, 0.2, 0.7, 0.6, 0.4, 1, 0.7, 0 ],
+        },
+        inputRow('x', 'x-Value', 'float'),
+    ],
+    instructions: glsl`
+        float y = x;
+    `,
+}
+
 export default [
     math_number_value,
     math_map,
+    evaluate_bezier,
 ];

@@ -8,7 +8,8 @@ import { geometriesAddCustomRow, geometriesAddDefaultRow, geometriesRemoveRow, g
 import MaterialSymbol from '../styles/MaterialSymbol';
 import SymbolButton from '../styles/SymbolButton';
 import { INSET_SHADOW } from '../styles/utils';
-import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, defaultInputRows, defaultOutputRows, getRowDataTypeCombination, InputRowT, ObjMap, OutputRowT, RowDataTypeCombination, RowT, ViewTypes } from '../types';
+import { allowedInputRowKeys, allowedInputRows, allowedOutputRowKeys, allowedOutputRows, getRowDataTypeCombination, InputRowT, ObjMap, ObjMapUndef, OutputRowT, RowDataTypeCombination, RowT, SpecificRowT, ViewTypes } from '../types';
+import { defaultInputRows, defaultOutputRows } from '../types/geometries/defaultRows';
 import FormExpandableRegion from './FormExpandableRegion';
 import FormRenameField from './FormRenameField';
 import FormSelectOption from './FormSelectOption';
@@ -186,8 +187,8 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
     const [ selectedId, setSelectedId ] = useState('');
 
     // default rows
-    const defaultRows = direction === 'in' ?
-        defaultInputRows : defaultOutputRows;
+    const defaultRows = (direction === 'in' ?
+        defaultInputRows : defaultOutputRows) as ObjMap<InputRowT> | ObjMap<OutputRowT>;
     const defaultRowKeys = Object.keys(defaultRows);
     const defaultRowNameMap = defaultRowKeys.reduce((nameMap, key) => {
         nameMap[key] = defaultRows[key].name;
@@ -307,27 +308,27 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                     </RowListItemDiv>
                 )}
             </ReactSortable>
+            } {
+                editable &&
+                <AddSplitDiv>
+                    <FormSelectOption 
+                        className='add-dropdown' 
+                        onChange={addCustomRow as (rowAndDataType: string) => void} 
+                        options={options} 
+                        mapName={mapName}
+                        icon='add'
+                        value='Add Custom'
+                    />
+                    <FormSelectOption 
+                        className='add-dropdown' 
+                        onChange={addDefaultRow} 
+                        mapName={defaultRowNameMap} 
+                        options={defaultRowKeys}
+                        icon='add'
+                        value='Add default'
+                    />
+                </AddSplitDiv>
             }
-            <AddSplitDiv>
-                <FormSelectOption 
-                    className='add-dropdown' 
-                    onChange={addCustomRow as (rowAndDataType: string) => void} 
-                    options={options} 
-                    mapName={mapName}
-                    icon='add'
-                    value='Add Custom'
-                    disabled={!editable}
-                />
-                <FormSelectOption 
-                    className='add-dropdown' 
-                    onChange={addDefaultRow} 
-                    mapName={defaultRowNameMap} 
-                    options={defaultRowKeys}
-                    icon='add'
-                    value='Add default'
-                    disabled={!editable}
-                />
-            </AddSplitDiv>
         </RowListDiv>
     </>);
 }

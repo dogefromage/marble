@@ -13,9 +13,10 @@ const defaultTheme: DefaultTheme = {
         dataTypes: {
             unknown: '#636363',
             float: '#5f91c9',
-            vec2: '#5f64c9',
-            vec3: '#5d48b0',
-            mat3: '#b03bd4',
+            vec2: '#3f478c',
+            vec3: '#6a40a8',
+            vec4: '#5532bf',
+            mat3: '#9840ad',
             Solid: '#d4a63b',
         },
         selectionStatus: {

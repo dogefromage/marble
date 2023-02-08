@@ -1,25 +1,16 @@
 import { defaultDataTypeValue, getTemplateId, GNodeTemplate } from "../../types"
+import { defaultInputRows } from "../../types/geometries/defaultRows"
 import { glsl } from "../../utils/codeStrings"
+import { inputField, inputRow, nameRow, outputRow } from "./rowShorthands"
 import { EMPTY_SOLID_LITERAL, TemplateColors } from "./templateConstants"
 
-const solid_operation_union: GNodeTemplate =
-{
+const union: GNodeTemplate = {
     id: getTemplateId('static', 'union'),
     version: 0,
     category: 'solid_operators',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Union',
-            color: TemplateColors.Operators,
-        },
-        {
-            id: 'output',
-            type: 'output',
-            dataType: 'Solid',
-            name: 'Union',
-        },
+        nameRow('Union', TemplateColors.SolidOperations),
+        outputRow('output', 'Union', 'Solid'),
         {
             id: 'inputs',
             type: 'input_stacked',
@@ -34,24 +25,13 @@ const solid_operation_union: GNodeTemplate =
     `,
 }
 
-const solid_operation_difference: GNodeTemplate =
-{
+const difference: GNodeTemplate = {
     id: getTemplateId('static', 'difference'),
     version: 0,
     category: 'solid_operators',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Difference',
-            color: TemplateColors.Operators,
-        },
-        {
-            id: 'output',
-            type: 'output',
-            dataType: 'Solid',
-            name: 'Difference',
-        },
+        nameRow('Difference', TemplateColors.SolidOperations),
+        outputRow('output', 'Difference', 'Solid'),
         {
             id: 'positive',
             type: 'input',
@@ -74,24 +54,13 @@ const solid_operation_difference: GNodeTemplate =
     `,
 }
 
-const solid_operation_intersection: GNodeTemplate =
-{
+const intersection: GNodeTemplate = {
     id: getTemplateId('static', 'intersection'),
     version: 0,
     category: 'solid_operators',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Intersection',
-            color: TemplateColors.Operators,
-        },
-        {
-            id: 'output',
-            type: 'output',
-            dataType: 'Solid',
-            name: 'Intersection',
-        },
+        nameRow('Intersection', TemplateColors.SolidOperations),
+        outputRow('output', 'Intersection', 'Solid'),
         {
             id: 'inputs',
             type: 'input_stacked',
@@ -106,76 +75,129 @@ const solid_operation_intersection: GNodeTemplate =
     `,
 }
 
-const solid_operation_set_color: GNodeTemplate =
-{
+const smooth_union: GNodeTemplate = {
+    id: getTemplateId('static', 'smooth_union'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Smooth Union', TemplateColors.SolidOperations),
+        outputRow('output', 'Smooth Union', 'Solid'),
+        inputRow('a', 'Solid A', 'Solid'),
+        inputRow('b', 'Solid B', 'Solid'),
+        inputField('k', 'Smoothness', 'float'),
+    ],
+    instructions: glsl`
+        #INCLUDE inc_smooth_union;
+        Solid output = inc_smooth_union(a, b, k);
+    `,
+}
+
+const smooth_difference: GNodeTemplate = {
+    id: getTemplateId('static', 'smooth_difference'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Smooth Difference', TemplateColors.SolidOperations),
+        outputRow('output', 'Smooth Difference', 'Solid'),
+        inputRow('a', 'Solid A', 'Solid'),
+        inputRow('b', 'Solid B', 'Solid'),
+        inputField('k', 'Smoothness', 'float'),
+    ],
+    instructions: glsl`
+        #INCLUDE inc_smooth_difference;
+        Solid output = inc_smooth_difference(a, b, k);
+    `,
+}
+
+const smooth_intersection: GNodeTemplate = {
+    id: getTemplateId('static', 'smooth_intersection'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Smooth Intersection', TemplateColors.SolidOperations),
+        outputRow('output', 'Smooth Intersection', 'Solid'),
+        inputRow('a', 'Solid A', 'Solid'),
+        inputRow('b', 'Solid B', 'Solid'),
+        inputField('k', 'Smoothness', 'float'),
+    ],
+    instructions: glsl`
+        #INCLUDE inc_smooth_intersection;
+        Solid output = inc_smooth_intersection(a, b, k);
+    `,
+}
+
+const round_corners: GNodeTemplate = {
+    id: getTemplateId('static', 'round_corners'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Round Corners', TemplateColors.SolidOperations),
+        outputRow('output', 'Rounded Solid', 'Solid'),
+        inputRow('solid', 'Solid', 'Solid'),
+        inputField('radius', 'Radius', 'float', 0),
+    ],
+    instructions: glsl`
+        Solid output = Solid(solid.sd - radius, solid.color);
+    `,
+}
+
+const onion: GNodeTemplate = {
+    id: getTemplateId('static', 'onion'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Onion', TemplateColors.SolidOperations),
+        outputRow('output', 'Onioned Solid', 'Solid'),
+        inputRow('solid', 'Solid', 'Solid'),
+        inputField('thickness', 'Thickness', 'float', 0.1),
+    ],
+    instructions: glsl`
+        Solid output = Solid(abs(solid.sd) - thickness, solid.color);
+    `,
+}
+
+const extrude_z: GNodeTemplate = {
+    id: getTemplateId('static', 'extrude_z'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Extrude on z-Axis', TemplateColors.SolidOperations),
+        outputRow('output', 'Extrusion', 'Solid'),
+        defaultInputRows['position'],
+        inputRow('solid', 'xy-Solid', 'Solid'),
+        inputField('height', 'Height', 'float', 1),
+    ],
+    instructions: glsl`
+        #INCLUDE inc_extrude_z;
+        Solid output = inc_extrude_z(position, solid, height);
+    `,
+}
+
+const set_color: GNodeTemplate = {
     id: getTemplateId('static', 'set_color'),
     version: 0,
     category: 'solid_operators',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Set Color',
-            color: TemplateColors.Operators,
-        },
-        {
-            id: 'output',
-            type: 'output',
-            dataType: 'Solid',
-            name: 'Solid',
-        },
-        {
-            id: 'input',
-            type: 'input',
-            name: 'Solid',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
-        },
-        {
-            id: 'color',
-            type: 'color',
-            name: 'Color',
-            dataType: 'vec3',
-            value: [ 1, 1, 1 ],
-        }
+        nameRow('Set Color', TemplateColors.SolidOperations),
+        outputRow('output', 'Smooth Union', 'Solid'),
+        inputRow('input', 'Solid', 'Solid'),
+        inputRow('color', 'Color', 'vec3'),
     ],
     instructions: glsl`
         Solid output = Solid(input.sd, color);
     `,
 }
 
-const solid_operation_correct_distance: GNodeTemplate =
+const operation_correct_distance: GNodeTemplate =
 {
     id: getTemplateId('static', 'reduce_step_size'),
     version: 0,
     category: 'solid_operators',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Correct Distance',
-            color: TemplateColors.Operators,
-        },
-        {
-            id: 'output',
-            type: 'output',
-            dataType: 'Solid',
-            name: 'Solid',
-        },
-        {
-            id: 'input',
-            type: 'input',
-            name: 'Solid',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
-        },
-        {
-            id: 'factor',
-            type: 'field',
-            name: 'Factor',
-            dataType: 'float',
-            value: 1,
-        }
+        nameRow('Correct Distance', TemplateColors.SolidOperations),
+        outputRow('output', 'Smooth Union', 'Solid'),
+        inputRow('input', 'Solid', 'Solid'),
+        inputField('factor', 'Factor', 'float', 1),
     ],
     instructions: glsl`
         Solid output = Solid(factor * input.sd, input.color);
@@ -183,9 +205,11 @@ const solid_operation_correct_distance: GNodeTemplate =
 }
 
 export default [
-    solid_operation_union,
-    solid_operation_difference,
-    solid_operation_intersection,
-    solid_operation_set_color,
-    solid_operation_correct_distance,
+    union, difference, intersection,
+    smooth_union, smooth_difference, smooth_intersection,
+
+    round_corners, onion,
+    extrude_z,
+    
+    set_color, operation_correct_distance,
 ];

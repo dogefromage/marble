@@ -1,6 +1,6 @@
 import React from 'react';
 import { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { BaseInputRowT, ColorRowT, FieldRowT, NameRowT, OutputRowT, PassthroughRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
+import { BaseInputRowT, BezierRowT, ColorRowT, FieldRowT, NameRowT, OutputRowT, PassthroughRowT, RotationRowT, RowMetadata, RowS, RowT, RowZ, StackedInputRowT } from '../types';
 import GeometryRowColor, { getRowMetadataColor } from './GeometryRowColor';
 import GeometryRowField, { getRowMetadataField } from './GeometryRowField';
 import GeometryRowInputOnly from './GeometryRowInput';
@@ -9,6 +9,7 @@ import GeometryRowName from './GeometryRowName';
 import GeometryRowOutput from './GeometryRowOutput';
 import GeometryRowPassthrough, { getRowMetadataPassthrough } from './GeometryRowPassthrough';
 import GeometryRowRotation, { getRowMetadataRotation } from './GeometryRowRotation';
+import GeometryRowBezier, { getRowMetadataBezier } from './GeometryRowBezier';
 
 export type RowMetaProps<T extends RowT = RowT> = {
     template: T | RowZ<T>;
@@ -36,6 +37,8 @@ export function getRowMetadata(props: RowMetaProps): RowMetadata {
         return getRowMetadataColor(props as RowMetaProps<ColorRowT>);
     if (props.template.type === 'passthrough')
         return getRowMetadataPassthrough(props as RowMetaProps<PassthroughRowT>);
+    if (props.template.type === 'bezier')
+        return getRowMetadataBezier(props as RowMetaProps<BezierRowT>);
     return rowMeta();
 }
 
@@ -64,6 +67,8 @@ const GeometryRowRoot = (props: RowProps) => {
             return <GeometryRowColor {...props as RowProps<ColorRowT>} />;
         case 'passthrough':
             return <GeometryRowPassthrough {...props as RowProps<PassthroughRowT>} />;
+        case 'bezier':
+            return <GeometryRowBezier {...props as RowProps<BezierRowT>} />;
         default:
             console.warn('row component missing');
             return null;

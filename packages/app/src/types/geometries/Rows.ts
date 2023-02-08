@@ -11,6 +11,7 @@ export type RowTypes =
     | 'rotation'
     | 'color'
     | 'passthrough'
+    | 'bezier'
 
 interface BaseRowT {
     id: string;
@@ -27,6 +28,8 @@ export interface OutputRowT<D extends DataTypes = DataTypes> extends BaseRowT {
     type: 'output';
     dataType: D;
 }
+
+export type BezierRowT = BaseInputRowT<'mat3', 'bezier'>;
 
 export interface BaseInputRowT<D extends DataTypes = DataTypes, T extends RowTypes = 'input'> extends BaseRowT {
     type: T;
@@ -53,9 +56,10 @@ export type InputRowT<D extends DataTypes = DataTypes> =
     | BaseInputRowT<D>
     | StackedInputRowT<D>
     | FieldRowT<D>
+    | PassthroughRowT<D>
     | RotationRowT
     | ColorRowT
-    | PassthroughRowT<D>
+    | BezierRowT
     
 export type RowT<D extends DataTypes = DataTypes> =
     | NameRowT

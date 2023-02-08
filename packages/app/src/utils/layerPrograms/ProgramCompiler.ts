@@ -248,7 +248,8 @@ export default class ProgramCompiler {
 
         for (const nodeIndex of topologicalSorting) {
             // check if node is in same component as output
-            const isUsed = components[ nodeIndex ] == outputComponent;
+            const isUsed = true;
+            // const isUsed = components[ nodeIndex ] == outputComponent;
             const nodeData = connectionData.nodeDatas[ nodeIndex ];
             if (isUsed && nodeData != null) {
                 const marker = `    # node ${nodeIndex};`;

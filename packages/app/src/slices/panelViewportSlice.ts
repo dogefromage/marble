@@ -15,7 +15,7 @@ export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelSta
                 distance: 15,
                 fov: degToRad(30),
             },
-            maxIterations: 500,
+            maxIterations: 200,
         }
     };
 }
