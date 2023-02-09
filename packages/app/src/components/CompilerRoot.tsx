@@ -10,10 +10,8 @@ import { selectTemplates } from '../slices/templatesSlice';
 import { getDependencyKey, Layer, LayerProgram, ObjMap } from '../types';
 import { mapDynamicValues } from '../utils/layerPrograms';
 import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
-import { parse as parseMarbleLanguage } from '@marble/language';
 
-const CompilerRoot = () =>
-{
+const CompilerRoot = () => {
     const compilerRef = useRef(new ProgramCompiler());
     
     const dispatch = useAppDispatch();
@@ -33,10 +31,11 @@ const CompilerRoot = () =>
             map: (layer) => {
                 try {
                     return compiler.compileProgram({ 
-                        layer, geometries, geometryDatas, dependencyGraph, includes, textureVarRowIndex: layer.index,
+                        layer, geometries, includes,
+                        geometryDatas, dependencyGraph,  
+                        textureVarRowIndex: layer.index,
                     });
                 } catch (e: any) {
-                    // throw e;
                     console.warn(e.message);
                 }
                 return null;

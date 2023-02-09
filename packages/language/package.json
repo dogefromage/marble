@@ -2,8 +2,8 @@
   "name": "@marble/language",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/index.js",
-  "types": "types",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "peg": "sh build.sh",
     "test": "jest",

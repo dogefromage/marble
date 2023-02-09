@@ -22,20 +22,17 @@ import GeometryDataManager from './GeometryDataManager';
 
 glMatrix.setMatrixArrayType(Array);
 
-interface Props
-{
+interface Props {
     projectId: string;
 }
 
-const AppRoot = ({ projectId }: Props) =>
-{
-    const [ store, setStore ] = useState<EnhancedStore<RootState, AnyAction>>();
+const AppRoot = ({ projectId }: Props) => {
+    const [store, setStore] = useState<EnhancedStore<RootState, AnyAction>>();
 
-    useEffect(() =>
-    {
+    useEffect(() => {
         if (!projectId || store != null) return;
         setStore(initStore());
-    }, [ projectId ])
+    }, [projectId])
     if (!store) return null;
 
     return (
@@ -45,7 +42,7 @@ const AppRoot = ({ projectId }: Props) =>
             <Provider store={store}>
                 {/* APP STATE */}
                 <DependencyManager />
-                <TemplateManager />
+                <TemplateManager staticOnly={true} />
                 <GeometryDataManager />
                 {/* COMPILATION */}
                 <ServiceErrorBoundary serviceName='Program Compiler'>

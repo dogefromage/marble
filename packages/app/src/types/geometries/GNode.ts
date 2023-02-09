@@ -1,3 +1,4 @@
+import { FunctionNode } from "@shaderfrog/glsl-parser/ast/node";
 import { splitFirst } from "../../utils/codeStrings";
 import { Dependable } from "../dependencyGraph";
 import { Point } from "../UtilityTypes";
@@ -37,11 +38,13 @@ export function decomposeTemplateId(templateId: NodeTemplateId) {
     return { type, id  };
 }
 
+type TemplateInstructions = FunctionNode;
+
 export interface GNodeTemplate extends Dependable {
     id: NodeTemplateId;
     rows: Array<SpecificRowT>;
     category: GNodeTemplateCategories;
-    instructions: string;
+    instructions: TemplateInstructions;
 }
 
 export interface GNodeState {

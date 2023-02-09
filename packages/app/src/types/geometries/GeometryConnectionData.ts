@@ -12,8 +12,9 @@ export interface GeometryEdge {
     dataType: DataTypes;
 }
 
-export type DoubleMap<T> = ObjMap<ObjMap<T>>;
-export type GeometryAdjacencyList = DoubleMap<GeometryEdge[]>;
+export type DoubleNumberedMap<T> = { [k1: number]: { [k2: number]: T } };
+// export type DoubleMap<T> = ObjMap<ObjMap<T>>;
+export type GeometryAdjacencyList = DoubleNumberedMap<GeometryEdge[]>;
 
 export interface GNodeData {
     template: GNodeTemplate;

@@ -7,8 +7,11 @@ import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templ
 import { splitIncludesFromSource } from '../utils/layerPrograms';
 import generateDynamicTemplates from '../utils/templateManager/generateDynamicTemplates';
 
-const TemplateManager = () =>
-{
+interface Props {
+    staticOnly?: boolean;
+}
+
+const TemplateManager = ({ staticOnly }: Props) => {
     const dispatch = useAppDispatch();
     const geometries = useAppSelector(selectGeometries);
     const { templates } = useAppSelector(selectTemplates);
@@ -26,6 +29,8 @@ const TemplateManager = () =>
     }, [ dispatch ]);
 
     useEffect(() => {
+        if (staticOnly) return;
+        
         const templateChanges = generateDynamicTemplates(geometries, templates);
         if (templateChanges.addTemplates.length > 0) {
             dispatch(templatesAddTemplates({

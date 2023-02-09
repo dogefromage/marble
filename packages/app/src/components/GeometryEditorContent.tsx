@@ -11,15 +11,13 @@ import LinkComponent from './GeometryLink';
 import GeometryLinkNew from './GeometryLinkNew';
 import GeometryNode from './GeometryNode';
 
-interface Props
-{
+interface Props {
     panelId: string;
     geometryId: string;
     getCamera: () => PlanarCamera | undefined;
 }
 
-const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) =>
-{
+const GeometryEditorContent = ({ geometryId, panelId, getCamera }: Props) => {
     const geometry = useAppSelector(selectSingleGeometry(geometryId));
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     const connectionData = useAppSelector(selectSingleGeometryData(geometryId));
