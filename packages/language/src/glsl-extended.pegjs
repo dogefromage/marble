@@ -357,6 +357,8 @@ STRUCT = token:"struct" t:terminal { return node('keyword', { token, whitespace:
 VOID = token:"void" t:terminal { return node('keyword', { token, whitespace: t }); }
 WHILE = token:"while" t:terminal { return node('keyword', { token, whitespace: t }); }
 
+LAMBDA = token:"lambda" t:terminal { return node('keyword', { token, whitespace: t }); }
+
 // INVARIANT = token:"invariant" t:terminal { return node('keyword', { token, whitespace: t }); }
 // PRECISE = token:"precise" t:terminal { return node('keyword', { token, whitespace: t }); }
 // HIGH_PRECISION = token:"highp" t:terminal { return node('keyword', { token, whitespace: t }); }
@@ -399,6 +401,7 @@ keyword "keyword" = /* ATTRIBUTE / VARYING / CONST / */ BOOL / FLOAT / DOUBLE / 
   / IMAGE2DMS / IIMAGE2DMS / UIMAGE2DMS / IMAGE2DMSARRAY / IIMAGE2DMSARRAY
   / UIMAGE2DMSARRAY / */ STRUCT / VOID / WHILE /* / INVARIANT / PRECISE
   / HIGH_PRECISION / MEDIUM_PRECISION / LOW_PRECISION / PRECISION */
+  / LAMBDA
 
 LEFT_OP = token:"<<" _:_? { return node('literal', { literal: token, whitespace: _ }); }
 RIGHT_OP = token:">>" _:_? { return node('literal', { literal: token, whitespace: _ }); }
@@ -448,30 +451,31 @@ AMPERSAND = token:"&" _:_? { return node('literal', { literal: token, whitespace
 QUESTION = token:"?" _:_? { return node('literal', { literal: token, whitespace: _ }); }
 
 IDENTIFIER = !keyword identifier:$([A-Za-z_] [A-Za-z_0-9]*) _:_? { return node('identifier', { identifier, whitespace: _ }); }
-TYPE_NAME = !keyword ident:IDENTIFIER { return ident; }/* {
-  const { identifier } = ident;
+TYPE_NAME = !keyword ident:IDENTIFIER { return ident; } 
+// {
+//   const { identifier } = ident;
 
-  // We do scope checking and parsing all in one pass. In the case of calling an
-  // undefined function, here, we don't know that we're in a function, so we
-  // can't warn appropriately. If we return false for the missing typename, the
-  // program won't parse, since the function call node won't match since it uses
-  // type_name for the function_identifier. So all we can do here is go on our
-  // merry way if the type isn't known.
+//   // We do scope checking and parsing all in one pass. In the case of calling an
+//   // undefined function, here, we don't know that we're in a function, so we
+//   // can't warn appropriately. If we return false for the missing typename, the
+//   // program won't parse, since the function call node won't match since it uses
+//   // type_name for the function_identifier. So all we can do here is go on our
+//   // merry way if the type isn't known.
 
-  // This only applies to structs. I'm not sure if it's right. Because TYPE_NAME
-  // is used in lots of places, it's easier to put this check here.
-  let found;
-  if(found = findTypeScope(scope, identifier)) {
-    addTypeReference(found, identifier, ident);
-  // I removed this because a type name reference here can't be renamed because
-  // it's just a string and we don't know the parent node. This might apply
-  // to the type reference above as well
-  // } else if(found = findFunctionScope(scope, identifier)) {
-    // addFunctionReference(found, identifier, identifier);
-  }
+//   // This only applies to structs. I'm not sure if it's right. Because TYPE_NAME
+//   // is used in lots of places, it's easier to put this check here.
+//   let found;
+//   if(found = findTypeScope(scope, identifier)) {
+//     addTypeReference(found, identifier, ident);
+//   // I removed this because a type name reference here can't be renamed because
+//   // it's just a string and we don't know the parent node. This might apply
+//   // to the type reference above as well
+//   // } else if(found = findFunctionScope(scope, identifier)) {
+//     // addFunctionReference(found, identifier, identifier);
+//   }
   
-  return ident;
-} */
+//   return ident;
+// }
 
 // Integers
 integer_constant
@@ -775,13 +779,22 @@ ternary_expression
         expression
     }
 
+
+  // lambda int a : a + 10  
+lambda_expression
+    = lambda:LAMBDA lp:LEFT_PAREN params:function_parameters? rp:RIGHT_PAREN
+        colon:COLON expression:expression {
+            return node('lambda_expression', {
+                lambda, lp, params, rp, colon, expression,
+            })
+        }
+
 assignment_expression
   // Note, I switched the order of these because a conditional expression can
   // hijack the production because it can also be a unary_expression
-  = left:unary_expression
-    operator:assignment_operator
-    right:assignment_expression {
-      return node('assignment', { left, operator, right });
+    = lambda_expression
+    / left:unary_expression operator:assignment_operator right:assignment_expression {
+        return node('assignment', { left, operator, right });
     }
     / ternary_expression
 
@@ -919,7 +932,7 @@ function_parameters "function parameters"
 
 // Parameter note: vec4[1] param and vec4 param[1] are equivalent
 parameter_declaration "parameter declaration"
-  = // qualifier:parameter_qualifier*
+  // =  qualifier:parameter_qualifier*
   = declaration:(parameter_declarator / type_specifier) {
       return node(
         'parameter_declaration',
@@ -1009,35 +1022,35 @@ fully_specified_type
   = /* qualifiers:type_qualifiers? */ specifier:type_specifier {
     return node(
       'fully_specified_type',
-      { qualifiers, specifier }
+      { /* qualifiers, */ specifier }
     );
   }
 
-layout_qualifier
-  = layout:LAYOUT
-    lp:LEFT_PAREN
-    qualifiers:(
-      head:layout_qualifier_id
-      tail:(COMMA layout_qualifier_id)* {
-        return partial({
-          qualifiers: [head, ...tail.map(t => t[1])],
-          commas: tail.map(t => t[0])
-        });
-      }
-    )
-    rp:RIGHT_PAREN {
-      return node(
-        'layout_qualifier',
-        { layout, lp, ...(qualifiers.partial), rp }
-      );
-    }
+// layout_qualifier
+//   = layout:LAYOUT
+//     lp:LEFT_PAREN
+//     qualifiers:(
+//       head:layout_qualifier_id
+//       tail:(COMMA layout_qualifier_id)* {
+//         return partial({
+//           qualifiers: [head, ...tail.map(t => t[1])],
+//           commas: tail.map(t => t[0])
+//         });
+//       }
+//     )
+//     rp:RIGHT_PAREN {
+//       return node(
+//         'layout_qualifier',
+//         { layout, lp, ...(qualifiers.partial), rp }
+//       );
+//     }
 
-layout_qualifier_id
-  = identifier:IDENTIFIER tail:(EQUAL constant_expression)? {
-    const [operator, expression] = tail || [];
-    return node('layout_qualifier_id', { identifier, operator, expression });
-  }
-  / SHARED
+// layout_qualifier_id
+//   = identifier:IDENTIFIER tail:(EQUAL constant_expression)? {
+//     const [operator, expression] = tail || [];
+//     return node('layout_qualifier_id', { identifier, operator, expression });
+//   }
+//   / SHARED
 
 // type_qualifiers = single_type_qualifier+
 
@@ -1082,21 +1095,21 @@ layout_qualifier_id
 //       }
 
 type_specifier "type specifier"
-    = function_type_specifier
-    / basic_type_specifier
+    = lambda_type_specifier
+    / simple_type_specifier
 
-basic_type_specifier
+simple_type_specifier
   = specifier:type_specifier_nonarray quantifier:array_specifier? {
-    return node('basic_type_specifier', { specifier, quantifier });
+    return node('simple_type_specifier', { specifier, quantifier });
   }
 
-function_type_specifier
-    = return_type:basic_type_specifier colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
-        return node('function_type_specifier', { return_type, colon, lp, args, rp });
+lambda_type_specifier
+    = return_type:simple_type_specifier colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
+        return node('lambda_type_specifier', { return_type, colon, lp, args, rp });
     }
 
 function_type_args_list 
-    = head:basic_type_specifier tail:(COMMA basic_type_specifier)* {
+    = head:simple_type_specifier tail:(COMMA simple_type_specifier)* {
         return [ head, ...tail.flat() ];
     }
 
@@ -1107,7 +1120,7 @@ type_specifier_nonarray "type specifier"
   / UVEC3 / UVEC4 / MAT2 / MAT3 / MAT4 / MAT2X2 / MAT2X3 / MAT2X4 / MAT3X2
   / MAT3X3 / MAT3X4 / MAT4X2 / MAT4X3 / MAT4X4 / DMAT2 / DMAT3 / DMAT4 
   / DMAT2X2 / DMAT2X3 / DMAT2X4 / DMAT3X2 / DMAT3X3 / DMAT3X4 / DMAT4X2 
-  / DMAT4X3 / DMAT4X4 / ATOMIC_UINT / SAMPLER1D / SAMPLER2D / SAMPLER3D 
+  / DMAT4X3 / DMAT4X4 /* / ATOMIC_UINT / SAMPLER1D / SAMPLER2D / SAMPLER3D 
   / SAMPLERCUBE / SAMPLER1DSHADOW / SAMPLER2DSHADOW / SAMPLERCUBESHADOW
   / SAMPLER1DARRAY / SAMPLER2DARRAY / SAMPLER1DARRAYSHADOW 
   / SAMPLER2DARRAYSHADOW / SAMPLERCUBEARRAY / SAMPLERCUBEARRAYSHADOW 
@@ -1123,7 +1136,7 @@ type_specifier_nonarray "type specifier"
   / IMAGE1DARRAY / IIMAGE1DARRAY / UIMAGE1DARRAY / IMAGE2DARRAY / IIMAGE2DARRAY
   / UIMAGE2DARRAY / IMAGECUBEARRAY / IIMAGECUBEARRAY / UIMAGECUBEARRAY
   / IMAGE2DMS / IIMAGE2DMS / UIMAGE2DMS / IMAGE2DMSARRAY / IIMAGE2DMSARRAY
-  / UIMAGE2DMSARRAY / struct_specifier / TYPE_NAME
+  / UIMAGE2DMSARRAY */ / struct_specifier / TYPE_NAME
 
 array_specifier "array specifier"
   = specifiers:(
@@ -1192,16 +1205,12 @@ initializer
     tail:(COMMA initializer)*
     trailing:COMMA?
     rb:RIGHT_BRACE {
-      // TODO: Scope
-      return node(
-        'initializer_list',
-        {
-          lb,
-          initializers: [head, ...tail.map(t => t[1])],
-          commas: xnil(tail.map(t => t[0]), trailing),
-          rb
-        }
-      );
+        // TODO: Scope
+        return node( 'initializer_list', {
+            lb, rb,
+            initializers: [head, ...tail.map(t => t[1])],
+            commas: xnil(tail.map(t => t[0]), trailing),
+        });
     }
 
 statement
@@ -1248,7 +1257,7 @@ compound_statement_no_new_scope =
 statement_no_new_scope
   = compound_statement_no_new_scope / simple_statement
 
-statement_list = (statement / preprocessor)+
+statement_list = (statement /* / preprocessor */)+
 
 expression_statement = expression:expression? semi:SEMICOLON {
   return node('expression_statement', { expression, semi });
