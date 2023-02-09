@@ -10,6 +10,7 @@ import { selectTemplates } from '../slices/templatesSlice';
 import { getDependencyKey, Layer, LayerProgram, ObjMap } from '../types';
 import { mapDynamicValues } from '../utils/layerPrograms';
 import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
+import { parse as parseMarbleLanguage } from '@marble/language';
 
 const CompilerRoot = () =>
 {

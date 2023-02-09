@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@marble/interactive": "^1.0.0",
+    "@marble/language": "^1.0.0",
     "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^1.8.5",
     "@shaderfrog/glsl-parser": "1.1.0",

@@ -1,4 +1,4 @@
-import { parse } from '../lib/parser';
+import { parse } from '../lib';
 import fs from 'fs';
 import path from 'path';
 
