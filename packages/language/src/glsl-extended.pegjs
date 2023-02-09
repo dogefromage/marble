@@ -1052,39 +1052,53 @@ single_type_qualifier "single type qualifier"
 interpolation_qualifier "interpolation qualifier"
   = SMOOTH / FLAT / NOPERSPECTIVE
 
-storage_qualifier "storage qualifier"
-  = CONST / INOUT / IN / OUT / CENTROID / PATCH / SAMPLE / UNIFORM / BUFFER
-  / SHARED / COHERENT / VOLATILE / RESTRICT / READONLY / WRITEONLY
-  // Note the grammar doesn't allow varying nor attribute. To support GLSL ES
-  // 1.0, I've included it here
-  // TODO: Turn off in GLSL ES 1.00 vs 3.00 parsing
-  / VARYING / ATTRIBUTE
-  / subroutine:SUBROUTINE
-    type_names:(
-      lp:LEFT_PAREN
-      head:TYPE_NAME
-      tail:(COMMA TYPE_NAME)*
-      rp:RIGHT_PAREN {
-        return partial({
-          lp,
-          type_names: [head, ...tail.map(t => t[1])],
-          commas: tail.map(t => t[0]),
-          rp,
-        });
-      })? {
-        return node(
-          'subroutine_qualifier',
-          {
-            subroutine,
-            ...(type_names?.partial),
-          }
-        );
-      }
+// storage_qualifier "storage qualifier"
+//   = CONST / INOUT / IN / OUT / CENTROID / PATCH / SAMPLE / UNIFORM / BUFFER
+//   / SHARED / COHERENT / VOLATILE / RESTRICT / READONLY / WRITEONLY
+//   // Note the grammar doesn't allow varying nor attribute. To support GLSL ES
+//   // 1.0, I've included it here
+//   // TODO: Turn off in GLSL ES 1.00 vs 3.00 parsing
+//   / VARYING / ATTRIBUTE
+//   / subroutine:SUBROUTINE
+//     type_names:(
+//       lp:LEFT_PAREN
+//       head:TYPE_NAME
+//       tail:(COMMA TYPE_NAME)*
+//       rp:RIGHT_PAREN {
+//         return partial({
+//           lp,
+//           type_names: [head, ...tail.map(t => t[1])],
+//           commas: tail.map(t => t[0]),
+//           rp,
+//         });
+//       })? {
+//         return node(
+//           'subroutine_qualifier',
+//           {
+//             subroutine,
+//             ...(type_names?.partial),
+//           }
+//         );
+//       }
 
 type_specifier "type specifier"
+    = function_type_specifier
+    / basic_type_specifier
+
+basic_type_specifier
   = specifier:type_specifier_nonarray quantifier:array_specifier? {
-    return node('type_specifier', { specifier, quantifier });
+    return node('basic_type_specifier', { specifier, quantifier });
   }
+
+function_type_specifier
+    = return_type:basic_type_specifier colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
+        return node('function_type_specifier', { return_type, colon, lp, args, rp });
+    }
+
+function_type_args_list 
+    = head:basic_type_specifier tail:(COMMA basic_type_specifier)* {
+        return [ head, ...tail.flat() ];
+    }
 
 // used by type_specifier only
 type_specifier_nonarray "type specifier"

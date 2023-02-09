@@ -1,0 +1,227 @@
+{
+  "type": "program",
+  "wsStart": "\n\n",
+  "program": [
+    {
+      "type": "function",
+      "prototype": {
+        "type": "function_prototype",
+        "header": {
+          "type": "function_header",
+          "returnType": {
+            "type": "fully_specified_type",
+            "qualifiers": null,
+            "specifier": {
+              "type": "function_type_specifier",
+              "return_type": {
+                "type": "basic_type_specifier",
+                "specifier": {
+                  "type": "keyword",
+                  "token": "vec3"
+                },
+                "quantifier": null
+              },
+              "colon": {
+                "type": "literal",
+                "literal": ":"
+              },
+              "lp": {
+                "type": "literal",
+                "literal": "("
+              },
+              "args": [
+                {
+                  "type": "basic_type_specifier",
+                  "specifier": {
+                    "type": "keyword",
+                    "token": "int"
+                  },
+                  "quantifier": null
+                },
+                {
+                  "type": "literal",
+                  "literal": ","
+                },
+                {
+                  "type": "basic_type_specifier",
+                  "specifier": {
+                    "type": "keyword",
+                    "token": "int"
+                  },
+                  "quantifier": null
+                }
+              ],
+              "rp": {
+                "type": "literal",
+                "literal": ")",
+                "whitespace": " "
+              }
+            }
+          },
+          "name": {
+            "type": "identifier",
+            "identifier": "test"
+          },
+          "lp": {
+            "type": "literal",
+            "literal": "("
+          }
+        },
+        "parameters": [
+          {
+            "type": "parameter_declaration",
+            "qualifier": [],
+            "declaration": {
+              "type": "parameter_declarator",
+              "specifier": {
+                "type": "function_type_specifier",
+                "return_type": {
+                  "type": "basic_type_specifier",
+                  "specifier": {
+                    "type": "keyword",
+                    "token": "int"
+                  },
+                  "quantifier": null
+                },
+                "colon": {
+                  "type": "literal",
+                  "literal": ":"
+                },
+                "lp": {
+                  "type": "literal",
+                  "literal": "("
+                },
+                "args": null,
+                "rp": {
+                  "type": "literal",
+                  "literal": ")",
+                  "whitespace": " "
+                }
+              },
+              "identifier": {
+                "type": "identifier",
+                "identifier": "a"
+              },
+              "quantifier": null
+            }
+          },
+          {
+            "type": "parameter_declaration",
+            "qualifier": [],
+            "declaration": {
+              "type": "parameter_declarator",
+              "specifier": {
+                "type": "basic_type_specifier",
+                "specifier": {
+                  "type": "keyword",
+                  "token": "float",
+                  "whitespace": " "
+                },
+                "quantifier": null
+              },
+              "identifier": {
+                "type": "identifier",
+                "identifier": "b"
+              },
+              "quantifier": null
+            }
+          }
+        ],
+        "commas": [
+          {
+            "type": "literal",
+            "literal": ",",
+            "whitespace": " "
+          }
+        ],
+        "rp": {
+          "type": "literal",
+          "literal": ")",
+          "whitespace": " "
+        }
+      },
+      "body": {
+        "type": "compound_statement",
+        "lb": {
+          "type": "literal",
+          "literal": "{",
+          "whitespace": "\n    "
+        },
+        "statements": [
+          {
+            "type": "return_statement",
+            "return": {
+              "type": "keyword",
+              "token": "return",
+              "whitespace": " "
+            },
+            "expression": {
+              "type": "function_call",
+              "lp": {
+                "type": "literal",
+                "literal": "("
+              },
+              "identifier": {
+                "type": "basic_type_specifier",
+                "specifier": {
+                  "type": "keyword",
+                  "token": "vec3"
+                },
+                "quantifier": null
+              },
+              "args": null,
+              "rp": {
+                "type": "literal",
+                "literal": ")"
+              }
+            },
+            "semi": {
+              "type": "literal",
+              "literal": ";",
+              "whitespace": "\n"
+            }
+          }
+        ],
+        "rb": {
+          "type": "literal",
+          "literal": "}",
+          "whitespace": "\n"
+        }
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "name": "global",
+      "bindings": {},
+      "types": {},
+      "functions": {
+        "test": {
+          "references": [
+            "[CIRCULAR]"
+          ]
+        }
+      }
+    },
+    {
+      "name": "test",
+      "parent": "[CIRCULAR]",
+      "bindings": {
+        "a": {
+          "references": [
+            "[CIRCULAR]"
+          ],
+          "initializer": "[CIRCULAR]"
+        },
+        "b": {
+          "references": [
+            "[CIRCULAR]"
+          ],
+          "initializer": "[CIRCULAR]"
+        }
+      },
+      "types": {},
+      "functions": {}
+    }
+  ]
+}
