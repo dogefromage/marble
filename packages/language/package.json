@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "peg": "sh build.sh",
-    "test": "jest"
+    "test": "jest",
+    "peg&test": "npm run peg && npm run test"
   },
   "author": "dogefromage",
   "license": "MIT",

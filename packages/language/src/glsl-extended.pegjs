@@ -51,7 +51,7 @@
     // to the scope first.
     const foundScope = findBindingScope(scope, name);
     if(foundScope) {
-      foundScope.bindings[name].references.push(reference);
+      foundScope.bindings[name].references.pimage.pngush(reference);
     } else {
       createBindings(scope, [name, reference]);
     }
