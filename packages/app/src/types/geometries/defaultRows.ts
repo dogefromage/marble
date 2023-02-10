@@ -1,5 +1,5 @@
 import { ObjMap } from "../UtilityTypes";
-import { GeometryTemplate } from "./Geometry";
+import { GeometrySignature } from "./Geometry";
 import { InputRowT, OutputRowT } from "./Rows";
 
 const positionInput: InputRowT<'vec3'> = {
@@ -26,7 +26,7 @@ export const defaultOutputRows = {
     solid: solidOutput
 } as const;
 
-export const rootGeometryTemplate: GeometryTemplate = {
+export const rootGeometryTemplate: GeometrySignature = {
     isRoot: true,
     inputs: [defaultInputRows.position ],
     outputs: [ defaultOutputRows.solid ],

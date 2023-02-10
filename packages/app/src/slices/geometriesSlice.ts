@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { allowedInputRows, allowedOutputRows, BaseRowS, decomposeRowDataTypeCombination, defaultDataTypeValue, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometryTemplate, GNodeState, InputRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, SpecificRowT, UndoAction } from "../types";
+import { allowedInputRows, allowedOutputRows, BaseRowS, decomposeRowDataTypeCombination, defaultDataTypeValue, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometrySignature, GNodeState, InputRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, SpecificRowT, UndoAction } from "../types";
 import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
@@ -84,7 +84,7 @@ export const geometriesSlice = createSlice({
     reducers: {
         create: (s, a: UndoAction<{
             geometryId?: string,
-            geometryTemplate: GeometryTemplate,
+            geometryTemplate: GeometrySignature,
         }>) => {
             const id = a.payload.geometryId || generateCodeSafeUUID();
             if (!/^\w+$/.test(id)) {

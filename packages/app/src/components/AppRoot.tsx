@@ -42,7 +42,7 @@ const AppRoot = ({ projectId }: Props) => {
             <Provider store={store}>
                 {/* APP STATE */}
                 <DependencyManager />
-                <TemplateManager staticOnly={true} />
+                <TemplateManager staticOnly={false} />
                 <GeometryDataManager />
                 {/* COMPILATION */}
                 <ServiceErrorBoundary serviceName='Program Compiler'>

@@ -99,10 +99,14 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
     }
     const [ output ] = geometry.outputs;
     
+    if (output.dataType !== 'Solid') {
+        throw new Error(`TODO`);
+    }
+
     // TODO: make less stupid
     const instructions = parseTemplateInstructions(`
-        ${output.dataType} ${geometry.id}_output(${output.dataType} ${output.id}) {
-            return ${output.id};
+        float ${geometry.id}_output(Solid ${output.id}) {
+            return ${output.id}(position);
         }
     `);
 

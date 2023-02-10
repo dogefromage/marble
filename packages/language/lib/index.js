@@ -673,19 +673,19 @@ function peg$parse(input, options) {
 
         const n = node('function_call', { ...identifierPartial, args, rp });
 
-        // struct constructors are stored in scope types, not scope functions,
-        // skip them (the isDeclaredType check)
-        const isDeclared = isDeclaredFunction(scope, fnName);
-        if(
-          fnName && !isDeclaredType(scope, fnName) &&
-          // GLSL has built in functions that users can override
-          (isDeclared || !builtIns.has(fnName))
-        ) {
-          if(!isDeclared) {
-            warn(`Warning: Function "${fnName}" has not been declared`);
-          }
-          addFunctionReference(scope, fnName, n);
-        }
+      //   // struct constructors are stored in scope types, not scope functions,
+      //   // skip them (the isDeclaredType check)
+      //   const isDeclared = isDeclaredFunction(scope, fnName);
+      //   if(
+      //     fnName && !isDeclaredType(scope, fnName) &&
+      //     // GLSL has built in functions that users can override
+      //     (isDeclared || !builtIns.has(fnName))
+      //   ) {
+      //     if(!isDeclared) {
+      //       warn(`Warning: Function "${fnName}" has not been declared`);
+      //     }
+      //     addFunctionReference(scope, fnName, n);
+      //   }
 
         return n;
       };
@@ -731,7 +731,7 @@ function peg$parse(input, options) {
       };
   var peg$f25 = function(lambda, lp, params, rp, colon, expression) {
               return node('lambda_expression', {
-                  lambda, lp, params, rp, colon, expression,
+                  lambda, lp, ...params, rp, colon, expression,
               })
           };
   var peg$f26 = function(left, operator, right) {
@@ -831,7 +831,7 @@ function peg$parse(input, options) {
     };
   var peg$f38 = function(specifier) {
       return node(
-        'fully_specified_type',
+        '.',
         { /* qualifiers, */ specifier }
       );
     };
@@ -842,7 +842,10 @@ function peg$parse(input, options) {
           return node('lambda_type_specifier', { return_type, colon, lp, args, rp });
       };
   var peg$f41 = function(head, tail) {
-          return [ head, ...tail.flat() ];
+          const tailTypes = tail
+              .flat()
+              .filter(node => node.type === 'simple_type_specifier');
+          return [ head, ...tailTypes ];
       };
   var peg$f42 = function(lb, expression, rb) {
           return node('array_specifier', { lb, expression, rb });
@@ -892,7 +895,7 @@ function peg$parse(input, options) {
       return sym;
     };
   var peg$f50 = function(lb, statements, rb) {
-      scope = popScope(scope);
+      // scope = popScope(scope);
       return node(
         'compound_statement',
         { lb, statements: (statements || []).flat(), rb }
@@ -10234,7 +10237,7 @@ function peg$parse(input, options) {
   }
 
 
-    const warn = (...args) => !options.quiet && console.warn(...args);
+  //   const warn = (...args) => !options.quiet && console.warn(...args);
 
     let scope = makeScope('global');
     let scopes = [scope];

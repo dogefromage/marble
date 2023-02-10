@@ -1,25 +1,13 @@
-import { generate, parser } from '@shaderfrog/glsl-parser';
-import { AstNode, CompoundStatementNode, FunctionNode, FunctionPrototypeNode, LiteralNode, NodeVisitors, Program, visit } from "@shaderfrog/glsl-parser/ast";
+import { generate } from '@shaderfrog/glsl-parser';
+import { AstNode, CompoundStatementNode, FunctionNode, LiteralNode, Program, visit } from "@shaderfrog/glsl-parser/ast";
 import { parse } from '@shaderfrog/glsl-parser/parser/parser';
-import { mapDynamicValues, prefixGeometryFunction, preprocessSource, setBlockIndent } from '.';
-import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
-import { rootGeometryTemplate } from '../../types/geometries/defaultRows';
+import produce from 'immer';
+import { prefixGeometryFunction } from '.';
+import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS, GeometrySignature, getDependencyKey, Layer, LayerProgram, ObjMapUndef, ProgramInclude, splitDependencyKey } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
-import { findClosingBracket, splitBracketSafe } from '../codeStrings';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
-import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
-import { createReturntypePlaceholder, generateStackedExpression, generateStructureDefinition, generateStructureIdentifier } from './generateCodeStatements';
-import IdentifierRenamer from "./IdentifierRenamer";
-import StatementsGenerator from './StatementsGenerator';
-
-function generateLiteral(literal: string): LiteralNode {
-    return {
-        type: 'literal',
-        literal,
-        whitespace: '',
-    }
-}
+import FunctionNodeGenerator from "./FunctionNodeGenerator";
 
 export default class ProgramCompiler {
     public compileErrorMessages = new Map<string, string>();
@@ -239,15 +227,9 @@ export default class ProgramCompiler {
             }
         }
 
-    private generateRootPrototypeNode(name: string) {
-        const code = `Solid ${name}(vec3 position) {}`;
-        const funcNode = parse(code).program[0] as FunctionNode;
-        return funcNode.prototype;
-        
-    }
-
     private generateGeometryFunction(
-            geometry: GeometryS, connectionData: GeometryConnectionData
+            geometry: GeometryS, 
+            connectionData: GeometryConnectionData,
         ): FunctionNode | null {
 
         if (geometry.outputs.length === 0) {
@@ -280,28 +262,30 @@ export default class ProgramCompiler {
         const usedOrderedNodeIndices = topologicalSorting
             .filter(nodeIndex => components[ nodeIndex ] == outputComponent);
 
-        if (!usedOrderedNodeIndices.every(nodeIndex => !!connectionData.nodeDatas[nodeIndex])) {
-            throw new Error(`A required template is missing.`);
+        const signature: GeometrySignature = {
+            name: geometry.name,
+            inputs: geometry.inputs,
+            outputs: geometry.outputs,
+            isRoot: geometry.isRoot,
+        };
+        const generator = new FunctionNodeGenerator(geometry, connectionData, signature);
+
+        for (const nodeIndex of usedOrderedNodeIndices) {
+            const nodeState = geometry.nodes[nodeIndex];
+            const nodeData = connectionData.nodeDatas[nodeIndex];
+            if (!nodeData) {
+                throw new Error(`A required template is missing.`);
+            }
+            const nodeTemplate = nodeData.template;
+            generator.processNode({ 
+                index: nodeIndex,
+                state: nodeState, 
+                template: nodeTemplate 
+            });
         }
 
-        const statement: AstNode[] = [];
-
-        // const statementsGenerator = new StatementsGenerator();
-        // const statements = statementsGenerator.loadStatements();
-
-        const compoundFunctionBody: CompoundStatementNode = {
-            type: 'compound_statement',
-            lb: generateLiteral('{'),
-            rb: generateLiteral('}'),
-            statements,
-        };
-
-        const funcProto = this.generateRootPrototypeNode('layer');
-        const functionNode: FunctionNode = {
-            type: 'function',
-            prototype: funcProto,
-            body: compoundFunctionBody,
-        };
+        const functionName = prefixGeometryFunction(geometry.id);
+        const functionNode = generator.generateFunctionNode();
 
         return functionNode;
 

@@ -172,7 +172,7 @@
 
 // Per-parse initializations
 {
-  const warn = (...args) => !options.quiet && console.warn(...args);
+//   const warn = (...args) => !options.quiet && console.warn(...args);
 
   let scope = makeScope('global');
   let scopes = [scope];
@@ -580,19 +580,19 @@ function_call
 
       const n = node('function_call', { ...identifierPartial, args, rp });
 
-      // struct constructors are stored in scope types, not scope functions,
-      // skip them (the isDeclaredType check)
-      const isDeclared = isDeclaredFunction(scope, fnName);
-      if(
-        fnName && !isDeclaredType(scope, fnName) &&
-        // GLSL has built in functions that users can override
-        (isDeclared || !builtIns.has(fnName))
-      ) {
-        if(!isDeclared) {
-          warn(`Warning: Function "${fnName}" has not been declared`);
-        }
-        addFunctionReference(scope, fnName, n);
-      }
+    //   // struct constructors are stored in scope types, not scope functions,
+    //   // skip them (the isDeclaredType check)
+    //   const isDeclared = isDeclaredFunction(scope, fnName);
+    //   if(
+    //     fnName && !isDeclaredType(scope, fnName) &&
+    //     // GLSL has built in functions that users can override
+    //     (isDeclared || !builtIns.has(fnName))
+    //   ) {
+    //     if(!isDeclared) {
+    //       warn(`Warning: Function "${fnName}" has not been declared`);
+    //     }
+    //     addFunctionReference(scope, fnName, n);
+    //   }
 
       return n;
     }
@@ -785,14 +785,14 @@ lambda_expression
     = lambda:LAMBDA lp:LEFT_PAREN params:function_parameters? rp:RIGHT_PAREN
         colon:COLON expression:expression {
             return node('lambda_expression', {
-                lambda, lp, params, rp, colon, expression,
+                lambda, lp, ...params, rp, colon, expression,
             })
         }
 
 assignment_expression
+    = lambda_expression
   // Note, I switched the order of these because a conditional expression can
   // hijack the production because it can also be a unary_expression
-    = lambda_expression
     / left:unary_expression operator:assignment_operator right:assignment_expression {
         return node('assignment', { left, operator, right });
     }
@@ -932,7 +932,7 @@ function_parameters "function parameters"
 
 // Parameter note: vec4[1] param and vec4 param[1] are equivalent
 parameter_declaration "parameter declaration"
-  // =  qualifier:parameter_qualifier*
+  /* =  qualifier:parameter_qualifier* */
   = declaration:(parameter_declarator / type_specifier) {
       return node(
         'parameter_declaration',
@@ -1021,7 +1021,7 @@ fully_specified_type
   // qualifier is like const, specifier is like float, and float[1]
   = /* qualifiers:type_qualifiers? */ specifier:type_specifier {
     return node(
-      'fully_specified_type',
+      '.',
       { /* qualifiers, */ specifier }
     );
   }
@@ -1110,7 +1110,10 @@ lambda_type_specifier
 
 function_type_args_list 
     = head:simple_type_specifier tail:(COMMA simple_type_specifier)* {
-        return [ head, ...tail.flat() ];
+        const tailTypes = tail
+            .flat()
+            .filter(node => node.type === 'simple_type_specifier');
+        return [ head, ...tailTypes ];
     }
 
 // used by type_specifier only
@@ -1235,7 +1238,7 @@ compound_statement =
   })
   statements:statement_list?
   rb:RIGHT_BRACE {
-    scope = popScope(scope);
+    // scope = popScope(scope);
     return node(
       'compound_statement',
       { lb, statements: (statements || []).flat(), rb }

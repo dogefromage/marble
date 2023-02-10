@@ -31,5 +31,6 @@ export default defineConfig({
     },
     optimizeDeps: {
         include: [ '@marble/language' ], // must be added because commonjs in parser
+        // force: true,
     }
 });

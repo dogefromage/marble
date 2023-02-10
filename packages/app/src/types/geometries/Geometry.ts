@@ -1,12 +1,11 @@
 import { Dependable } from "../dependencyGraph";
-import { DataTypes } from "../layerPrograms";
-import { ObjMap, ObjMapUndef } from "../UtilityTypes";
+import { ObjMapUndef } from "../UtilityTypes";
 import { GNodeState } from "./GNode";
-import { InputRowT, BaseInputRowT, OutputRowT, SpecificRowT } from "./Rows";
+import { InputRowT, OutputRowT } from "./Rows";
 
-export interface GeometryTemplate {
+export interface GeometrySignature {
     isRoot: boolean;
-    name?: string;
+    name: string;
     inputs: InputRowT[];
     outputs: OutputRowT[];
 }
