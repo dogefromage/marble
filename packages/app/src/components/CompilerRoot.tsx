@@ -29,16 +29,16 @@ const CompilerRoot = () => {
             reference: layers,
             lastImage: layerPrograms,
             map: (layer) => {
-                // try {
+                try {
                     return compiler.compileProgram({ 
                         layer, geometries, includes,
                         geometryDatas, dependencyGraph,  
                         textureVarRowIndex: layer.index,
                     });
-                // } catch (e: any) {
-                //     console.warn(e.message);
-                // }
-                // return null;
+                } catch (e: any) {
+                    console.error(e);
+                }
+                return null;
             },
             hasChanged: (layer, program) => {
                 const layerKey = getDependencyKey(layer.id, 'layer');

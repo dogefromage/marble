@@ -1,6 +1,6 @@
 import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionStatementNode, FullySpecifiedTypeNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, LiteralNode, NodeVisitor, NodeVisitors, Path, TypeSpecifierNode, visit } from "@shaderfrog/glsl-parser/ast";
 import _, { isArray } from "lodash";
-import { BaseInputRowT, DataTypes, GeometryConnectionData, GeometryEdge, GeometryS, GeometrySignature, GNodeState, GNodeTemplate, ObjMap, OutputRowT, RowS, RowTypes } from "../../types";
+import { BaseInputRowT, DataTypes, GeometryConnectionData, GeometryEdge, GeometryS, GeometrySignature, GNodeState, GNodeTemplate, ObjMap, RowS, RowTypes } from "../../types";
 import { formatLiteral } from "./generateCodeStatements";
 
 class AstNodeFactory {
@@ -44,6 +44,23 @@ class AstNodeFactory {
 }
 const factory = new AstNodeFactory();
 
+function getIdentifierFromParameters(params: any /* TODO */): string[] {
+    const identifiers = params
+        .map((param: any /* TODO */) => param.declaration.identifier.identifier);
+    if (!isArray(identifiers)) {
+        throw new Error(`Params not array, maybe no params`);
+    }
+    return identifiers;
+}
+
+function getNodeOutputIdentifier(nodeId: string) {
+    return `o_${nodeId}`;
+}
+
+function notImplemented() {
+    throw new Error(`Not Implemented`);
+}
+
 // enum Prefixes {
 //     Local = 'l',
 //     Dynamic = 'd',
@@ -57,9 +74,9 @@ const factory = new AstNodeFactory();
 
 interface LambdaTypeSpecifierNode {
     type: 'lambda_type_specifier',
-    return_type: TypeSpecifierNode 
-    colon: IdentifierNode; 
-    lp: IdentifierNode; 
+    return_type: TypeSpecifierNode
+    colon: IdentifierNode;
+    lp: IdentifierNode;
     args: TypeSpecifierNode[];
     rp: IdentifierNode;
 }
@@ -69,12 +86,12 @@ interface LambdaDefinition {
     parameters: FunctionPrototypeNode['parameters'];
     bodyExpression: AstNode;
 }
-
 interface VariableDefinition {
     type: 'variable_definition';
-    dataType: DataTypes;
+    typeSpecifier: DataTypes;
     identifier: string;
 }
+type Definition = LambdaDefinition | VariableDefinition;
 
 interface LambdaExpressionNode {
     lambda: IdentifierNode;
@@ -89,43 +106,36 @@ type ExtendedNodeVisitors = NodeVisitors & {
     lambda_expression?: NodeVisitor<LambdaExpressionNode>;
 }
 
-type OutputJointIdenfifier = `o_${string}_${string}`;
-
 interface NodeInfo {
     index: number;
     state: GNodeState;
     template: GNodeTemplate;
 }
 
-interface EdgeVariableMapping {
+interface EdgeRule {
     type: 'edge';
     outputIdentifier: string;
 }
-interface ConstantMapping {
+interface ConstantRule {
     type: 'constant';
     literal: string;
 }
-interface IgnoreVariableMapping {
+interface IgnoreRule {
     type: 'ignore';
 }
-
-type VariableMapping = EdgeVariableMapping | ConstantMapping | IgnoreVariableMapping;
-type VariableMap = ObjMap<VariableMapping>; // false=skip
+type MappingRule = EdgeRule | ConstantRule | IgnoreRule;
+type VariableMappingScope = Map<string, MappingRule>;
+type VariableMappingScopeStack = VariableMappingScope[];
 
 export default class FunctionNodeGenerator {
 
-    // private nodeIndex = -1;
-    // private definedLocals = new Set<string>();
-    // private additionalStatements: Array<{
-    //     location: StatementLocation;
-    //     node: LiteralNode;
-    // }> = [];
     // private textureCoordinateCounter;
     // private textureVarMappings: ProgramTextureVarMapping[] = [];
 
-    private definedVariables = new Map<OutputJointIdenfifier, VariableDefinition>();
-    private definedLambdas = new Map<OutputJointIdenfifier, LambdaDefinition>();
+    // private definedVariables = new Map<OutputJointIdenfifier, VariableDefinition>();
+    // private definedLambdas = new Map<OutputJointIdenfifier, LambdaDefinition>();
     private functionStatements: AstNode[] = [];
+    private definitions = new Map<string, Definition>();
 
     constructor(
         private geometry: GeometryS,
@@ -137,202 +147,101 @@ export default class FunctionNodeGenerator {
         // this.textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH, counterOffset);
     }
 
-    private appendStatements(astNodes: AstNode[]) {
-        this.functionStatements.push(...astNodes);
-    }
-
-    private getOutputJointIdentifier(nodeId: string, rowId: string): OutputJointIdenfifier {
-        return `o_${nodeId}_${rowId}`;
-    }
-
-    private getOutputJointFromEdge(edge: GeometryEdge) {
-        const [ nodeIndex, rowIndex ] = edge.fromIndices;
-        const node = this.geometry.nodes[nodeIndex];
-        const row = this.connectionData.nodeDatas[nodeIndex]!.template.rows[rowIndex];
-        return this.getOutputJointIdentifier(node.id, row.id);
-    }
-
     public processNode(info: NodeInfo): void {
-        const { state, template } = info;
+        const { index, state, template } = info;
 
-        const outputRow = template.rows.find(row => row.type === 'output') as OutputRowT;
-        if (!outputRow) {
-            // node is output
-            this.processOutputNode(info);
-            return;
-        }
-        const outputJointKey = this.getOutputJointIdentifier(state.id, outputRow.id);
+        const nodeTranspiler = new NodeTranspiler(
+            this.geometry, this.connectionData,
+            index, state, template, 
+            this.definitions,
+        );
 
-        const visitors: ExtendedNodeVisitors = {
-            declaration_statement: {
-                enter: path => {
-                    throw new Error(`Implement`);
-                },
-            },
-            return_statement: {
-                enter: path => {
-                    throw new Error(`Implement`);
-                },
-            },
-            expression_statement: {
-                exit: path => {
-                    const varDef: VariableDefinition = {
-                        type: 'variable_definition',
-                        dataType: outputRow.dataType,
-                        identifier: outputJointKey,
-                    };
-                    if (this.definedVariables.has(outputJointKey)) {
-                        throw new Error(`Var already defined`);
-                    }
-                    this.definedVariables.set(outputJointKey, varDef);
-                    const returnType = factory.fullySpecifiedType(outputRow.dataType);
-                    const declaration = factory.declaration(returnType, outputJointKey, path.node.expression);
-                    Object.assign(path.node, declaration);
-                },
-            },
-            lambda_expression: {
-                enter: path => {
-                    const parentExpression = path.parent as ExpressionStatementNode;
-                    if (parentExpression.type !== "expression_statement") {
-                        throw new Error(`Implement`);
-                    }
-                    const compoundStatement = path.parentPath?.parentPath?.node as AstNode;
-                    if (compoundStatement?.type !== 'compound_statement') {
-                        throw new Error(`Parentparent is ${compoundStatement.type}`);
-                    }
-                    // remove statement
-                    compoundStatement.statements = 
-                        compoundStatement.statements.filter(s => s !== parentExpression);
+        const statements = nodeTranspiler.transpile();
 
-                    const variableMap = this.getVariableMap(info);
-                    const lambdaParamIdents = this.getIdentifierFromParameters(path.node.parameters);
-                    for (const param of lambdaParamIdents) {
-                        variableMap[param] = { type: 'ignore' };
-                    }
-                    // instantiate lambdas expression body
-                    const instantiated = this.instantiateExpression(path.node.expression, variableMap);
+        const functionBody = template.instructions.body;
+        const bodyStatements = this.transpileBody(info, functionBody);
 
-                    if (this.definedLambdas.has(outputJointKey)) {
-                        throw new Error(`Lambda already defined`);
-                    }
-                    this.definedLambdas.set(outputJointKey, {
-                        type: 'lambda_definition',
-                        parameters: path.node.parameters,
-                        bodyExpression: instantiated,
-                    });
-                }
-            }
-        };
+        // const outputRow = template.rows.find(row => row.type === 'output') as OutputRowT;
+        // const outputIdentifier = this.getOutputJointIdentifier(state.id);
 
-        // REPLACE WITH PRODUCE
-        const clonedCompoundNode = _.cloneDeep(template.instructions.body);
-        visit(clonedCompoundNode, visitors);
-        // const originalCompoundNode = nodeTemplate.instructions.body;
-        // const processedCompoundNode = produce(originalCompoundNode, draftNode => {
-        //     visit(draftNode, visitors);
-        // });
-        this.appendStatements(clonedCompoundNode.statements);
+        // const visitors: ExtendedNodeVisitors = {
+        //     declaration_statement: {
+        //         enter: path => {
+        //             throw new Error(`Implement`);
+        //         },
+        //     },
+        //     return_statement: {
+        //         enter: path => {
+        //             throw new Error(`Implement`);
+        //         },
+        //     },
+        //     expression_statement: {
+        //         exit: path => {
+        //             const varDef: VariableDefinition = {
+        //                 type: 'variable_definition',
+        //                 dataType: outputRow.dataType,
+        //                 identifier: outputIdentifier,
+        //             };
+        //             if (this.definedVariables.has(outputIdentifier)) {
+        //                 throw new Error(`Var already defined`);
+        //             }
+        //             this.definedVariables.set(outputIdentifier, varDef);
+        //             const returnType = factory.fullySpecifiedType(outputRow.dataType);
+        //             const declaration = factory.declaration(returnType, outputIdentifier, path.node.expression);
+        //             Object.assign(path.node, declaration);
+        //         },
+        //     },
+        //     lambda_expression: {
+        //         enter: path => {
+        //             const parentExpression = path.parent as ExpressionStatementNode;
+        //             if (parentExpression.type !== "expression_statement") {
+        //                 throw new Error(`Implement`);
+        //             }
+        //             const compoundStatement = path.parentPath?.parentPath?.node as AstNode;
+        //             if (compoundStatement?.type !== 'compound_statement') {
+        //                 throw new Error(`Parentparent is ${compoundStatement.type}`);
+        //             }
+        //             // remove statement
+        //             compoundStatement.statements =
+        //                 compoundStatement.statements.filter(s => s !== parentExpression);
 
+        //             const variableMap = this.getVariableMap(info);
+        //             const lambdaParamIdents = this.getIdentifierFromParameters(path.node.parameters);
+        //             for (const param of lambdaParamIdents) {
+        //                 variableMap[param] = { type: 'ignore' };
+        //             }
+        //             // instantiate lambdas expression body
+        //             const instantiated = this.instantiateExpression(path.node.expression, variableMap);
+
+        //             if (this.definedLambdas.has(outputIdentifier)) {
+        //                 throw new Error(`Lambda already defined`);
+        //             }
+        //             this.definedLambdas.set(outputIdentifier, {
+        //                 type: 'lambda_definition',
+        //                 parameters: path.node.parameters,
+        //                 bodyExpression: instantiated,
+        //             });
+        //         }
+        //     }
+        // };
 
         
-            // identifier: {
-            //     enter: (path) => {
-            //         const parentType = path.parent!.type;
-            //         const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
-            //         const isOtherReference = [ 'binary', 'function_call', 'postfix', 'return_statement' ].includes(parentType);
-            //         if (isDirectInitializer || isOtherReference) {
-            //             this.visitReferenceIdentifier(path, nodeState, nodeTemplate);
-            //         }
-            //     }
-            // },
+
+        // // REPLACE WITH PRODUCE
+        // const clonedCompoundNode = _.cloneDeep(template.instructions.body);
+        // visit(clonedCompoundNode, visitors);
+        // // const originalCompoundNode = nodeTemplate.instructions.body;
+        // // const processedCompoundNode = produce(originalCompoundNode, draftNode => {
+        // //     visit(draftNode, visitors);
+        // // });
+        // this.functionStatements.push(...clonedCompoundNode.statements)
+        
+        // const { type: templateType } = decomposeTemplateId(template.id);
+        // const isOutputNode = templateType === 'output';
     }
-
-    private processOutputNode(info: NodeInfo) {
-
-    }
-
-    private instantiateExpression(expression: AstNode, variableMap: VariableMap) {
-
-        // REPLACE WITH PRODUCE
-        const clonedExpression = _.cloneDeep(expression);
-        visit(clonedExpression, {
-            identifier: {
-                enter: (path) => {
-                    const parentType = path.parent!.type;
-                    const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
-                    const isOtherReference = [ 'binary', 'function_call', 'postfix', 'return_statement' ].includes(parentType);
-                    if (isDirectInitializer || isOtherReference) {
-                        if (Object.hasOwn(variableMap, path.node.identifier)) {
-                            const mapping = variableMap[path.node.identifier];
-                            if (mapping.type == 'edge') {
-                                path.node.identifier = mapping.outputIdentifier;
-                            } else if (mapping.type === 'constant') {
-                                path.node.identifier = mapping.literal;
-                            } else if (mapping.type !== 'ignore') {
-                                throw new Error(`Implement`)
-                            }
-                        } else {
-                            throw new Error(`Identifier ${path.node.identifier} is not available nor defined`);
-                        }
-                    }
-                }
-            },
-        });
-        return clonedExpression;
-    }
-
-    private getIdentifierFromParameters(params: any /* TODO */): string[] {
-        const identifiers = params
-            .map((param: any /* TODO */) => param.declaration.identifier.identifier);
-
-        if (!isArray(identifiers)) {
-            throw new Error(`Params not array, maybe no params`);
-        }
-
-        return identifiers;
-    }
-
-    private getVariableMap(info: NodeInfo): VariableMap {
-
-        const map: VariableMap = {};
-        const parameters = info.template.instructions.prototype.parameters;
-        const paramIdentifiers = this.getIdentifierFromParameters(parameters);
-
-        for (const paramId of paramIdentifiers) {
-            map[paramId] = this.getRowMapping(paramId, info);
-        }
-        return map;
-    }
-
-    // private processLambdaNode(nodeState: GNodeState, nodeTemplate: GNodeTemplate): void {
-
-    //     const { instructions: functionNode } = nodeTemplate;
-
-    //     const header = functionNode.prototype.header;
-
-    //     // @ts-ignore TODO
-    //     const lambdaTypeSpecifier: LambdaTypeSpecifierNode = header.returnType.specifier;
-
-    //     const lambdaExpression =
-
-
-    //     const lambda: LambdaDefinition = {
-    //         typeSpecifier: lambdaTypeSpecifier,
-    //         bodyExpression,
-    //     }
-
-
-    //     if (this.definedLambdas.has(hashKey)) {
-    //         throw new Error(`Lambda already defined`);
-    //     }
-    //     this.definedLambdas.set(hashKey, lambda);
-    // }
 
     public generateFunctionNode(): FunctionNode {
 
-        
-        console.log(this.definedLambdas);
-        console.log(this.functionStatements);
 
         throw new Error(`TODO`);
 
@@ -353,52 +262,6 @@ export default class FunctionNodeGenerator {
         // return functionNode;
     }
 
-    // public setGeometryScope(geometry: GeometryS, connectionData: GeometryConnectionData) {
-    //     this.geometry = geometry;
-    //     this.connectionData = connectionData;
-    //     this.definedLocals.clear();
-    // }
-
-    // public setNodeScope(nodeIndex: number) {
-    //     this.nodeIndex = nodeIndex;
-    // }
-
-    public getGeometry() {
-        return { geometry: this.geometry, connectionData: this.connectionData };
-    }
-
-    // public getNode() {
-    //     const { geometry, connectionData } = this.getGeometry();
-    //     const node = geometry.nodes[this.nodeIndex];
-    //     const nodeData = connectionData.nodeDatas[this.nodeIndex];
-    //     if (!node || !nodeData) {
-    //         throw new Error(`Node not set in Renamer`);
-    //     }
-    //     return { node, nodeData };
-    // }
-
-    // public addAdditionalStatements(astRoot: Program) {
-
-    //     while (this.additionalStatements.length) {
-    //         // loop over statements in reverse over by popping
-    //         const { location, node } = this.additionalStatements.pop()!;
-
-    //         const functionNode = astRoot.program[location.functionIndex];
-    //         if (functionNode.type !== 'function') {
-    //             throw new Error(`Not a function`);
-    //         }
-
-    //         const compound: CompoundStatementNode = functionNode.body;
-
-    //         // insert into array before index
-    //         compound.statements = [
-    //             ...compound.statements.slice(0, location.statementIndex),
-    //             node,
-    //             ...compound.statements.slice(location.statementIndex),
-    //         ]
-    //     }
-    // }
-
     // public getTextureVarMappings() {
     //     return this.textureVarMappings;
     // }
@@ -407,9 +270,6 @@ export default class FunctionNodeGenerator {
     //     return [prefix, ...data].join('_');
     // }
 
-    private getIncomingEdge(nodeIndex: number, rowIndex: number) {
-        return this.connectionData.backwardEdges[nodeIndex]?.[rowIndex] || [];
-    }
 
     // private getStatementLocation(path: Path<AstNode>): StatementLocation {
 
@@ -441,21 +301,152 @@ export default class FunctionNodeGenerator {
     //     });
     // }
 
-    private getRowMapping(rowId: string, info: NodeInfo): VariableMapping {
-        const { index: nodeIndex, state: nodeState, template: nodeTemplate } = info;
+    private visitDeclaration(path: Path<DeclarationNode>, nodeState: GNodeState, nodeTemplate: GNodeTemplate) {
+        //     const { node, nodeData } = this.getNode();
+        //     const token = path.node.identifier.identifier;
+        //     const rowIndex = nodeData.template.rows.findIndex(row => row.id === token);
+        //     const idntNode = path.node.identifier;
 
-        const rowIndex = nodeTemplate.rows.findIndex(row => row.id === rowId);
+        //     if (rowIndex < 0) // no row, declare local 
+        //     {
+        //         const newId = this.getIdentifierName(Prefixes.Local, this.nodeIndex, token);
+        //         if (this.definedLocals.has(newId)) {
+        //             throw new Error(`Variable "${newId}" (originaly "${token}") has already been defined.`);
+        //         }
+        //         this.definedLocals.add(newId);
+        //         idntNode.identifier = newId;
+        //         return;
+        //     }
+
+        //     // generate name for edge
+        //     idntNode.identifier = this.getIdentifierName(Prefixes.Edge, this.nodeIndex, rowIndex);
+    }
+}
+
+class NodeTranspiler {
+    private baseMappingScope: VariableMappingScope = new Map();
+
+    constructor(
+        private geometry: GeometryS,
+        private connectionData: GeometryConnectionData,
+        private nodeIndex: number,
+        private nodeState: GNodeState,
+        private nodeTemplate: GNodeTemplate,
+        private definitions: Map<string, Definition>,
+    ) {
+        const parameters = nodeTemplate.instructions.prototype.parameters;
+        const paramIdentifiers = getIdentifierFromParameters(parameters);
+        for (const paramId of paramIdentifiers) {
+            this.baseMappingScope.set(paramId, this.getRowInstantiationRule(paramId))
+        }
+    }
+    
+    public transpile(body: CompoundStatementNode): AstNode[] {
+        if (body.statements.length === 0) { return []; }
+        if (body.statements.length > 1) { notImplemented(); }
+
+        const statement = body.statements[0] as ExpressionStatementNode;
+        if (statement.type !== 'expression_statement') {
+            notImplemented();
+        }
+        return this.transpileExpression(statement.expression);
+    }
+
+    private transpileExpression(expressionNode: ExpressionStatementNode['expression'] | LambdaExpressionNode): AstNode[] {
+        if (expressionNode.type === 'lambda_expression') {
+            return this.transpileLambdaExpression(expressionNode as LambdaExpressionNode);
+        } else {
+            return this.transpileNormalExpression(expressionNode);
+        }
+    }
+
+    private transpileLambdaExpression(lambdaExpression: LambdaExpressionNode): AstNode[] {
+        const lambdaParamIdents = getIdentifierFromParameters(lambdaExpression);
+        const ignoreInstructions: VariableMappingScope = new Map();
+        for (const paramId of lambdaParamIdents) {
+            ignoreInstructions.set(paramId, { type: 'ignore' });
+        }
+        const instructionStack = [ this.baseMappingScope, ignoreInstructions ];
+
+        // instantiate lambdas expression body
+        const instantiated = this.instantiateExpression(lambdaExpression.expression, instructionStack);
+
+        const key = this.nodeState.id; // maybe replace with more specific key
+
+        if (this.definitions.has(key)) {
+            throw new Error(`Lambda already defined`);
+        }
+        this.definitions.set(key, {
+            type: 'lambda_definition',
+            parameters: lambdaExpression.parameters,
+            bodyExpression: instantiated,
+        });
+
+        return []; // lambda is not written as statement, it is *remembered*
+    }
+
+    private transpileNormalExpression(expressionNode: any): AstNode[] {
+
+    }
+
+    private instantiateExpression(expression: AstNode, scopeStack: VariableMappingScopeStack) {
+        // REPLACE WITH PRODUCE
+        const clonedExpression = _.cloneDeep(expression);
+        visit(clonedExpression, {
+            identifier: {
+                enter: (path) => {
+                    const parentType = path.parent!.type;
+                    const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
+                    const isOtherReference = ['binary', 'function_call', 'postfix', 'return_statement'].includes(parentType);
+                    if (isDirectInitializer || isOtherReference) {
+                        this.instantiateIdentifier(path.node, scopeStack);
+                    }
+                }
+            },
+        });
+        return clonedExpression;
+    }
+
+    private instantiateIdentifier(node: IdentifierNode, scopeStack: VariableMappingScopeStack) {
+
+        let instruction: MappingRule | undefined;
+        for (const scope of scopeStack.slice().reverse()) {
+            if (scope.has(node.identifier)) {
+                instruction = scope.get(node.identifier);
+                break;
+            }
+        }
+        if (!instruction) {
+            throw new Error(`Identifier "${node.identifier}" does not have an instruction.`);
+        }
+        
+        switch (instruction.type) {
+            case 'edge':
+                node.identifier = instruction.outputIdentifier;
+                return;
+            case 'constant':
+                node.identifier = instruction.literal;
+                return;
+            case 'ignore':
+                return;
+        }
+        throw new Error(`Unknown instruction found`);
+    }
+
+    private getRowInstantiationRule(rowId: string): MappingRule {
+
+        const rowIndex = this.nodeTemplate.rows.findIndex(row => row.id === rowId);
         if (rowIndex < 0) {
             throw new Error(`Row "${rowId}" does not exists on template`);
         }
-        const rowTemp = nodeTemplate.rows[rowIndex] as BaseInputRowT<DataTypes, RowTypes>;
+        const rowTemp = this.nodeTemplate.rows[rowIndex] as BaseInputRowT<DataTypes, RowTypes>;
         if (!rowTemp.dataType) {
             throw new Error(`Must be input row`);
         }
-        const rowState = nodeState.rows[rowTemp.id];
-        
+        const rowState = this.nodeState.rows[rowTemp.id];
+
         // case 1: connection
-        const incomingEdges = this.getIncomingEdge(nodeIndex, rowIndex);
+        const incomingEdges = this.connectionData.backwardEdges[this.nodeIndex]?.[rowIndex] || []
 
         // // 1.1 stacked input
         // if (rowTemp.type === 'input_stacked') {
@@ -504,55 +495,54 @@ export default class FunctionNodeGenerator {
         // 1.2 single incoming edge
         if (incomingEdges[0] != null) {
             const jointEdge = incomingEdges[0];
-            const outputIdentifier = this.getOutputJointFromEdge(jointEdge);
-            return {
-                type: 'edge',
-                outputIdentifier,
-            }
+            const [ fromNodeIndex ] = jointEdge.fromIndices;
+            const fromNode = this.geometry.nodes[fromNodeIndex];
+            const outputIdentifier = getNodeOutputIdentifier(fromNode.id);
+            return { type: 'edge', outputIdentifier }
         }
 
-    //     // case 2.1: argument connected
-    //     const incomingArg = rowState?.incomingElements?.[0];
-    //     if (incomingArg?.type === 'argument') {
-    //         path.node.identifier = incomingArg.argument;
-    //         return;
-    //     }
+        //     // case 2.1: argument connected
+        //     const incomingArg = rowState?.incomingElements?.[0];
+        //     if (incomingArg?.type === 'argument') {
+        //         path.node.identifier = incomingArg.argument;
+        //         return;
+        //     }
 
-    //     // case 2.2 argument fallback
-    //     if (rowTemp.defaultArgumentToken != null) {
-    //         path.node.identifier = rowTemp.defaultArgumentToken;
-    //         return;
-    //     }
+        //     // case 2.2 argument fallback
+        //     if (rowTemp.defaultArgumentToken != null) {
+        //         path.node.identifier = rowTemp.defaultArgumentToken;
+        //         return;
+        //     }
 
-    //     const rowMetadata = getRowMetadata({
-    //         state: rowState,
-    //         template: rowTemp as BaseInputRowT,
-    //         numConnectedJoints: 0
-    //     });
+        //     const rowMetadata = getRowMetadata({
+        //         state: rowState,
+        //         template: rowTemp as BaseInputRowT,
+        //         numConnectedJoints: 0
+        //     });
 
-    //     // case 3: parameter texture lookup
-    //     if (rowMetadata.dynamicValue) {
-    //         const dynamicId = this.getIdentifierName(Prefixes.Dynamic, this.nodeIndex, rowIndex);
-    //         path.node.identifier = dynamicId;
-    //         if (!this.definedLocals.has(dynamicId)) {
-    //             this.definedLocals.add(dynamicId);
-    //             // DECLARATION
-    //             const size = textureVarDatatypeSize[rowTemp.dataType];
-    //             const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
-    //             const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTemp.dataType);
-    //             this.addDeclarationInfront(path, textureLookupCode);
-    //             // VAR MAPPING
-    //             this.textureVarMappings.push({
-    //                 dataType: rowTemp.dataType,
-    //                 textureCoordinate,
-    //                 geometryId: geometry.id,
-    //                 geometryVersion: geometry.version,
-    //                 nodeIndex: this.nodeIndex,
-    //                 rowIndex,
-    //             });
-    //         }
-    //         return;
-    //     }
+        //     // case 3: parameter texture lookup
+        //     if (rowMetadata.dynamicValue) {
+        //         const dynamicId = this.getIdentifierName(Prefixes.Dynamic, this.nodeIndex, rowIndex);
+        //         path.node.identifier = dynamicId;
+        //         if (!this.definedLocals.has(dynamicId)) {
+        //             this.definedLocals.add(dynamicId);
+        //             // DECLARATION
+        //             const size = textureVarDatatypeSize[rowTemp.dataType];
+        //             const textureCoordinate = this.textureCoordinateCounter.nextInts(size);
+        //             const textureLookupCode = formatTextureLookupStatement(dynamicId, textureCoordinate, rowTemp.dataType);
+        //             this.addDeclarationInfront(path, textureLookupCode);
+        //             // VAR MAPPING
+        //             this.textureVarMappings.push({
+        //                 dataType: rowTemp.dataType,
+        //                 textureCoordinate,
+        //                 geometryId: geometry.id,
+        //                 geometryVersion: geometry.version,
+        //                 nodeIndex: this.nodeIndex,
+        //                 rowIndex,
+        //             });
+        //         }
+        //         return;
+        //     }
 
         // case 4: fixed constant
         const value = (rowState as RowS<BaseInputRowT>)?.value ?? rowTemp.value;
@@ -561,26 +551,5 @@ export default class FunctionNodeGenerator {
             type: 'constant',
             literal: valueLiteral,
         }
-    }
-
-    private visitDeclaration(path: Path<DeclarationNode>, nodeState: GNodeState, nodeTemplate: GNodeTemplate) {
-    //     const { node, nodeData } = this.getNode();
-    //     const token = path.node.identifier.identifier;
-    //     const rowIndex = nodeData.template.rows.findIndex(row => row.id === token);
-    //     const idntNode = path.node.identifier;
-
-    //     if (rowIndex < 0) // no row, declare local 
-    //     {
-    //         const newId = this.getIdentifierName(Prefixes.Local, this.nodeIndex, token);
-    //         if (this.definedLocals.has(newId)) {
-    //             throw new Error(`Variable "${newId}" (originaly "${token}") has already been defined.`);
-    //         }
-    //         this.definedLocals.add(newId);
-    //         idntNode.identifier = newId;
-    //         return;
-    //     }
-
-    //     // generate name for edge
-    //     idntNode.identifier = this.getIdentifierName(Prefixes.Edge, this.nodeIndex, rowIndex);
     }
 }
