@@ -997,10 +997,11 @@ subsequent_declaration
 // declaration > init_declarator_list > single_declaration
 initial_declaration
   // Apparently "float;" is a legal statement. I have no idea why.
+//   NOT ANYMORE
   = specified_type:fully_specified_type
     suffix:(
       IDENTIFIER array_specifier? (EQUAL initializer)?
-    )? {
+    ) {
       // No gaurantee of a suffix because fully_specified_type contains a
       // type_specifier which includes structs and type_names (IDENTIFIERs)
       const [identifier, quantifier, suffix_tail] = suffix || [];
@@ -1022,7 +1023,7 @@ fully_specified_type
   = /* qualifiers:type_qualifiers? */ specifier:type_specifier {
     return node(
       '.',
-      { /* qualifiers, */ specifier }
+      { qualifiers: [], specifier }
     );
   }
 

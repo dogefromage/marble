@@ -7,7 +7,7 @@ import { decomposeTemplateId, DependencyGraph, GeometryConnectionData, GeometryS
 import analyzeGraph from '../analyzeBasicGraph';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
-import FunctionNodeGenerator from "./FunctionNodeGenerator";
+import GeometryFunctionGenerator from "./FunctionNodeGenerator";
 
 export default class ProgramCompiler {
     public compileErrorMessages = new Map<string, string>();
@@ -268,7 +268,7 @@ export default class ProgramCompiler {
             outputs: geometry.outputs,
             isRoot: geometry.isRoot,
         };
-        const generator = new FunctionNodeGenerator(geometry, connectionData, signature);
+        const generator = new GeometryFunctionGenerator(geometry, connectionData, signature);
 
         for (const nodeIndex of usedOrderedNodeIndices) {
             const nodeState = geometry.nodes[nodeIndex];

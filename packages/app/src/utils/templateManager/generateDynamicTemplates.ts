@@ -105,8 +105,8 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
 
     // TODO: make less stupid
     const instructions = parseTemplateInstructions(`
-        float ${geometry.id}_output(Solid ${output.id}) {
-            return ${output.id}(position);
+        Solid:(vec3) ${geometry.id}_output(Solid:(vec3) ${output.id}) {
+            ${output.id}(p);
         }
     `);
 

@@ -832,7 +832,7 @@ function peg$parse(input, options) {
   var peg$f38 = function(specifier) {
       return node(
         '.',
-        { /* qualifiers, */ specifier }
+        { qualifiers: [], specifier }
       );
     };
   var peg$f39 = function(specifier, quantifier) {
@@ -8227,11 +8227,13 @@ function peg$parse(input, options) {
         peg$currPos = s2;
         s2 = peg$FAILED;
       }
-      if (s2 === peg$FAILED) {
-        s2 = null;
+      if (s2 !== peg$FAILED) {
+        peg$savedPos = s0;
+        s0 = peg$f37(s1, s2);
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
       }
-      peg$savedPos = s0;
-      s0 = peg$f37(s1, s2);
     } else {
       peg$currPos = s0;
       s0 = peg$FAILED;

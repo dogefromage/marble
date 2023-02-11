@@ -1,6 +1,7 @@
 import { parse } from '../lib';
 import fs from 'fs';
 import path from 'path';
+import { visit } from '@shaderfrog/glsl-parser/ast';
 
 function safeStringify(obj: any, indent = 2) {
     const seen = new WeakSet();
@@ -31,7 +32,7 @@ describe('Parser', () => {
 
 
     test('Parses lambda program', () => {
-        try {
+        // try {
             const ast = parse(`
                 vec3:(int,int) test(int:() a, float b) {
                     lambda (int a) : a * 5;
@@ -42,16 +43,39 @@ describe('Parser', () => {
                 }
             `);
 
-            const json = safeStringify(ast);
-            fs.writeFileSync(path.resolve('./ast.json'), json);
+        //     const json = safeStringify(ast);
+        //     fs.writeFileSync(path.resolve('./ast.json'), json);
 
-        } catch (e) {
-            console.log(e);
+        // } catch (e) {
+        //     console.log(e);
             
-            const json = safeStringify(e);
-            fs.writeFileSync(path.resolve('./ast.json'), json);
-            throw e;
-        }
+        //     const json = safeStringify(e);
+        //     fs.writeFileSync(path.resolve('./ast.json'), json);
+        //     throw e;
+        // }
+    })
 
+
+    test('Parses lambda program', () => {
+        const ast = parse(`
+            void test() {
+                gagifudi;
+            }
+        `);
+
+        let expressionStmts = 0;
+
+        visit(ast, {
+            expression_statement: { 
+                enter: path => {
+                    expressionStmts++;
+                }
+            }
+        })
+
+        expect(expressionStmts).toEqual(1);
+
+        // const json = safeStringify(ast);
+        // fs.writeFileSync(path.resolve('./ast.json'), json);
     })
 })

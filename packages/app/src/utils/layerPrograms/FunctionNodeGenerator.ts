@@ -1,6 +1,7 @@
-import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionStatementNode, FullySpecifiedTypeNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, LiteralNode, NodeVisitor, NodeVisitors, Path, TypeSpecifierNode, visit } from "@shaderfrog/glsl-parser/ast";
+import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionStatementNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, NodeVisitor, NodeVisitors, Path, ReturnStatementNode, TypeSpecifierNode, visit } from "@shaderfrog/glsl-parser/ast";
 import _, { isArray } from "lodash";
 import { BaseInputRowT, DataTypes, GeometryConnectionData, GeometryEdge, GeometryS, GeometrySignature, GNodeState, GNodeTemplate, ObjMap, RowS, RowTypes } from "../../types";
+import { findRight } from "../arrays";
 import { formatLiteral } from "./generateCodeStatements";
 
 class AstNodeFactory {
@@ -10,7 +11,10 @@ class AstNodeFactory {
     public identifier(identifier: string, whitespace = ' '): IdentifierNode {
         return { type: 'identifier', identifier, whitespace }
     }
-    public declaration(typeSpec: FullySpecifiedTypeNode, identifier: string, expression: any): DeclarationStatementNode {
+    public keyword(keyword: string, whitespace = ' '): KeywordNode {
+        return { type: 'keyword', token: keyword, whitespace };
+    }
+    public declarationStatement(typeSpec: FullySpecifiedTypeNode, identifier: string, expression: any): DeclarationStatementNode {
         return {
             type: 'declaration_statement',
             declaration: {
@@ -30,6 +34,14 @@ class AstNodeFactory {
             semi: this.literal(';', '\n'),
         }
     }
+    public returnStatement(expression: any): ReturnStatementNode {
+        return {
+            type: 'return_statement',
+            return: this.keyword('return'),
+            expression,
+            semi: this.literal(';', '\n'),
+        };
+    }
     public fullySpecifiedType(typeName: string): FullySpecifiedTypeNode {
         return {
             type: 'fully_specified_type',
@@ -44,7 +56,7 @@ class AstNodeFactory {
 }
 const factory = new AstNodeFactory();
 
-function getIdentifierFromParameters(params: any /* TODO */): string[] {
+function getIdentifierFromParameters(params: any[] /* TODO */): string[] {
     const identifiers = params
         .map((param: any /* TODO */) => param.declaration.identifier.identifier);
     if (!isArray(identifiers)) {
@@ -81,18 +93,6 @@ interface LambdaTypeSpecifierNode {
     rp: IdentifierNode;
 }
 
-interface LambdaDefinition {
-    type: 'lambda_definition';
-    parameters: FunctionPrototypeNode['parameters'];
-    bodyExpression: AstNode;
-}
-interface VariableDefinition {
-    type: 'variable_definition';
-    typeSpecifier: DataTypes;
-    identifier: string;
-}
-type Definition = LambdaDefinition | VariableDefinition;
-
 interface LambdaExpressionNode {
     lambda: IdentifierNode;
     lp: IdentifierNode;
@@ -112,22 +112,7 @@ interface NodeInfo {
     template: GNodeTemplate;
 }
 
-interface EdgeRule {
-    type: 'edge';
-    outputIdentifier: string;
-}
-interface ConstantRule {
-    type: 'constant';
-    literal: string;
-}
-interface IgnoreRule {
-    type: 'ignore';
-}
-type MappingRule = EdgeRule | ConstantRule | IgnoreRule;
-type VariableMappingScope = Map<string, MappingRule>;
-type VariableMappingScopeStack = VariableMappingScope[];
-
-export default class FunctionNodeGenerator {
+export default class GeometryFunctionGenerator {
 
     // private textureCoordinateCounter;
     // private textureVarMappings: ProgramTextureVarMapping[] = [];
@@ -135,7 +120,7 @@ export default class FunctionNodeGenerator {
     // private definedVariables = new Map<OutputJointIdenfifier, VariableDefinition>();
     // private definedLambdas = new Map<OutputJointIdenfifier, LambdaDefinition>();
     private functionStatements: AstNode[] = [];
-    private definitions = new Map<string, Definition>();
+    private definitions = new Map<string, TranspilerObject>();
 
     constructor(
         private geometry: GeometryS,
@@ -147,19 +132,17 @@ export default class FunctionNodeGenerator {
         // this.textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH, counterOffset);
     }
 
-    public processNode(info: NodeInfo): void {
+    public processNode(info: NodeInfo) {
         const { index, state, template } = info;
 
         const nodeTranspiler = new NodeTranspiler(
             this.geometry, this.connectionData,
-            index, state, template, 
+            index, state, template,
             this.definitions,
         );
-
-        const statements = nodeTranspiler.transpile();
-
-        const functionBody = template.instructions.body;
-        const bodyStatements = this.transpileBody(info, functionBody);
+        nodeTranspiler.transpile();
+        const statements = nodeTranspiler.getTranspiledStatements();
+        this.functionStatements.push(...statements);
 
         // const outputRow = template.rows.find(row => row.type === 'output') as OutputRowT;
         // const outputIdentifier = this.getOutputJointIdentifier(state.id);
@@ -225,8 +208,6 @@ export default class FunctionNodeGenerator {
         //     }
         // };
 
-        
-
         // // REPLACE WITH PRODUCE
         // const clonedCompoundNode = _.cloneDeep(template.instructions.body);
         // visit(clonedCompoundNode, visitors);
@@ -235,12 +216,21 @@ export default class FunctionNodeGenerator {
         // //     visit(draftNode, visitors);
         // // });
         // this.functionStatements.push(...clonedCompoundNode.statements)
-        
+
         // const { type: templateType } = decomposeTemplateId(template.id);
         // const isOutputNode = templateType === 'output';
     }
 
+    public processOutput(nodeId: string) {
+        const varKey = getNodeOutputIdentifier(nodeId);
+        const returnStatement = factory.returnStatement(factory.literal(varKey));
+        this.functionStatements.push(returnStatement);
+    }
+
     public generateFunctionNode(): FunctionNode {
+
+        console.log(this.definitions);
+        console.log(this.functionStatements);
 
 
         throw new Error(`TODO`);
@@ -269,7 +259,6 @@ export default class FunctionNodeGenerator {
     // private getIdentifierName(prefix: string, ...data: (number | string)[]) {
     //     return [prefix, ...data].join('_');
     // }
-
 
     // private getStatementLocation(path: Path<AstNode>): StatementLocation {
 
@@ -323,8 +312,58 @@ export default class FunctionNodeGenerator {
     }
 }
 
+
+
+interface LambdaObject {
+    type: 'lambda';
+    parameters: FunctionPrototypeNode['parameters'];
+    bodyExpression: AstNode;
+}
+interface VariableObject {
+    type: 'variable';
+    typeSpecifier: FullySpecifiedTypeNode;
+    identifier: string;
+}
+type TranspilerObject = LambdaObject | VariableObject;
+
+
+
+interface EdgeRule {
+    type: 'edge';
+    identifier: string;
+    reference: TranspilerObject;
+}
+interface ConstantRule {
+    type: 'constant';
+    identifier: string;
+    literal: string;
+}
+interface IgnoreRule {
+    type: 'ignore';
+    identifier: string;
+}
+type MappingRule = EdgeRule | ConstantRule | IgnoreRule;
+type VariableMappingScope = readonly MappingRule[];
+type VariableMappingScopeStack = VariableMappingScope[];
+
+const defaultScopeKeys = [
+    [ // NATIVE GLSL taken from @shaderfrog/glsl-parser .pegjs
+        // TODO remove unnecessary
+        'abs', 'acos', 'acosh', 'all', 'any', 'asin', 'asinh', 'atan', 'atanh', 'atomicAdd', 'atomicAnd', 'atomicCompSwap', 'atomicCounter', 'atomicCounterDecrement', 'atomicCounterIncrement', 'atomicExchange', 'atomicMax', 'atomicMin', 'atomicOr', 'atomicXor', 'barrier', 'bitCount', 'bitfieldExtract', 'bitfieldInsert', 'bitfieldReverse', 'ceil', 'clamp', 'cos', 'cosh', 'cross', 'degrees', 'determinant', 'dFdx', 'dFdxCoarse', 'dFdxFine', 'dFdy', 'dFdyCoarse', 'dFdyFine', 'distance', 'dot', 'EmitStreamVertex', 'EmitVertex', 'EndPrimitive', 'EndStreamPrimitive', 'equal', 'exp', 'exp2', 'faceforward', 'findLSB', 'findMSB', 'floatBitsToInt', 'floatBitsToUint', 'floor', 'fma', 'fract', 'frexp', 'fwidth', 'fwidthCoarse', 'fwidthFine', 'greaterThan', 'greaterThanEqual', 'groupMemoryBarrier', 'imageAtomicAdd', 'imageAtomicAnd', 'imageAtomicCompSwap', 'imageAtomicExchange', 'imageAtomicMax', 'imageAtomicMin', 'imageAtomicOr', 'imageAtomicXor', 'imageLoad', 'imageSamples', 'imageSize', 'imageStore', 'imulExtended', 'intBitsToFloat', 'interpolateAtCentroid', 'interpolateAtOffset', 'interpolateAtSample', 'inverse', 'inversesqrt', 'isinf', 'isnan', 'ldexp', 'length', 'lessThan', 'lessThanEqual', 'log', 'log2', 'matrixCompMult', 'max', 'memoryBarrier', 'memoryBarrierAtomicCounter', 'memoryBarrierBuffer', 'memoryBarrierImage', 'memoryBarrierShared', 'min', 'mix', 'mod', 'modf', 'noise', 'noise1', 'noise2', 'noise3', 'noise4', 'normalize', 'not', 'notEqual', 'outerProduct', 'packDouble2x32', 'packHalf2x16', 'packSnorm2x16', 'packSnorm4x8', 'packUnorm', 'packUnorm2x16', 'packUnorm4x8', 'pow', 'radians', 'reflect', 'refract', 'round', 'roundEven', 'sign', 'sin', 'sinh', 'smoothstep', 'sqrt', 'step', 'tan', 'tanh', 'texelFetch', 'texelFetchOffset', 'texture', 'textureGather', 'textureGatherOffset', 'textureGatherOffsets', 'textureGrad', 'textureGradOffset', 'textureLod', 'textureLodOffset', 'textureOffset', 'textureProj', 'textureProjGrad', 'textureProjGradOffset', 'textureProjLod', 'textureProjLodOffset', 'textureProjOffset', 'textureQueryLevels', 'textureQueryLod', 'textureSamples', 'textureSize', 'transpose', 'trunc', 'uaddCarry', 'uintBitsToFloat', 'umulExtended', 'unpackDouble2x32', 'unpackHalf2x16', 'unpackSnorm2x16', 'unpackSnorm4x8', 'unpackUnorm', 'unpackUnorm2x16', 'unpackUnorm4x8', 'usubBorrow', // GLSL ES 1.00 'texture2D', 'textureCube'
+    ],
+    [ // MARBLE
+        'Solid',
+    ],
+];
+
+const defaultScopeStack: VariableMappingScopeStack = defaultScopeKeys.map(scope => 
+    scope.map(identifier => ({ type: 'ignore', identifier })));
+
 class NodeTranspiler {
-    private baseMappingScope: VariableMappingScope = new Map();
+    private scopes: VariableMappingScopeStack = [ ...defaultScopeStack ];
+    private transpiledStatements: AstNode[] = [];
+
+    private outputKey: string;
 
     constructor(
         private geometry: GeometryS,
@@ -332,105 +371,152 @@ class NodeTranspiler {
         private nodeIndex: number,
         private nodeState: GNodeState,
         private nodeTemplate: GNodeTemplate,
-        private definitions: Map<string, Definition>,
+        private definitions: Map<string, TranspilerObject>,
     ) {
-        const parameters = nodeTemplate.instructions.prototype.parameters;
+        const parameters = nodeTemplate.instructions.prototype.parameters || [];
         const paramIdentifiers = getIdentifierFromParameters(parameters);
-        for (const paramId of paramIdentifiers) {
-            this.baseMappingScope.set(paramId, this.getRowInstantiationRule(paramId))
-        }
-    }
-    
-    public transpile(body: CompoundStatementNode): AstNode[] {
-        if (body.statements.length === 0) { return []; }
-        if (body.statements.length > 1) { notImplemented(); }
+        const parameterScope: VariableMappingScope = paramIdentifiers
+            .map(paramId => this.getRowInstantiationRule(paramId));
+        this.scopes.push(parameterScope);
 
-        const statement = body.statements[0] as ExpressionStatementNode;
+        this.outputKey = getNodeOutputIdentifier(nodeState.id); // replace with better if neccessary
+    }
+
+    public transpile() {
+        const body = this.nodeTemplate.instructions.body;
+        if (body.statements.length === 0) { return; }
+        if (body.statements.length > 1) { notImplemented(); }
+        const statement = body.statements[0];
         if (statement.type !== 'expression_statement') {
+            debugger
             notImplemented();
         }
-        return this.transpileExpression(statement.expression);
+        this.transpileExpression(statement.expression);
     }
 
-    private transpileExpression(expressionNode: ExpressionStatementNode['expression'] | LambdaExpressionNode): AstNode[] {
+    public getTranspiledStatements() {
+        return this.transpiledStatements;
+    }
+
+    private defineOutput(obj: TranspilerObject) {
+        if (this.definitions.has(this.outputKey)) {
+            throw new Error(`Already defined output`);
+        }
+        this.definitions.set(this.outputKey, obj);
+    }
+
+    private transpileExpression(expressionNode: ExpressionStatementNode['expression'] | LambdaExpressionNode) {
         if (expressionNode.type === 'lambda_expression') {
-            return this.transpileLambdaExpression(expressionNode as LambdaExpressionNode);
+            this.transpileLambdaExpression(expressionNode as LambdaExpressionNode);
         } else {
-            return this.transpileNormalExpression(expressionNode);
+            this.transpileNormalExpression(expressionNode);
         }
     }
 
-    private transpileLambdaExpression(lambdaExpression: LambdaExpressionNode): AstNode[] {
-        const lambdaParamIdents = getIdentifierFromParameters(lambdaExpression);
-        const ignoreInstructions: VariableMappingScope = new Map();
-        for (const paramId of lambdaParamIdents) {
-            ignoreInstructions.set(paramId, { type: 'ignore' });
-        }
-        const instructionStack = [ this.baseMappingScope, ignoreInstructions ];
-
+    private transpileLambdaExpression(lambdaExpression: LambdaExpressionNode) {
+        const lambdaParamIdents = getIdentifierFromParameters(lambdaExpression.parameters);
+        const ignoreInstructions: VariableMappingScope = lambdaParamIdents
+            .map(paramId => ({ type: 'ignore', identifier: paramId }));
+        // push ignore list for params of lambda
+        this.scopes.push(ignoreInstructions);
         // instantiate lambdas expression body
-        const instantiated = this.instantiateExpression(lambdaExpression.expression, instructionStack);
+        const instantiated = this.instantiateExpression(lambdaExpression.expression);
+        this.scopes.pop(); // ignoreInstructions
 
-        const key = this.nodeState.id; // maybe replace with more specific key
-
-        if (this.definitions.has(key)) {
-            throw new Error(`Lambda already defined`);
-        }
-        this.definitions.set(key, {
-            type: 'lambda_definition',
+        this.defineOutput({
+            type: 'lambda',
             parameters: lambdaExpression.parameters,
             bodyExpression: instantiated,
         });
-
-        return []; // lambda is not written as statement, it is *remembered*
     }
 
-    private transpileNormalExpression(expressionNode: any): AstNode[] {
+    private transpileNormalExpression(expressionNode: any) {
+        const instantiatedExpression =
+            this.instantiateExpression(expressionNode);
+        const typeSpec = this.nodeTemplate.instructions.prototype.header.returnType;
 
+        this.defineOutput({
+            type: 'variable',
+            typeSpecifier: typeSpec,
+            identifier: this.outputKey,
+        });
+
+        const outputStatement = factory
+            .declarationStatement(typeSpec, this.outputKey, instantiatedExpression);
+
+        this.transpiledStatements.push(outputStatement);
     }
 
-    private instantiateExpression(expression: AstNode, scopeStack: VariableMappingScopeStack) {
+    private instantiateExpression(expression: AstNode) {
         // REPLACE WITH PRODUCE
         const clonedExpression = _.cloneDeep(expression);
         visit(clonedExpression, {
             identifier: {
                 enter: (path) => {
-                    const parentType = path.parent!.type;
-                    const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
-                    const isOtherReference = ['binary', 'function_call', 'postfix', 'return_statement'].includes(parentType);
-                    if (isDirectInitializer || isOtherReference) {
-                        this.instantiateIdentifier(path.node, scopeStack);
-                    }
+                    // const parentType = path.parent?.type;
+                    // const isExpression = path.parent == null;
+                    // const isDirectInitializer = parentType === 'declaration' && path.key === 'initializer';
+                    // const isOtherReference = parentType && ['binary', 'function_call', 'postfix', 'return_statement'].includes(parentType);
+                    // if (isExpression || isDirectInitializer || isOtherReference) {
+                    this.instantiateIdentifier(path);
+                    // }
                 }
             },
         });
         return clonedExpression;
     }
 
-    private instantiateIdentifier(node: IdentifierNode, scopeStack: VariableMappingScopeStack) {
-
-        let instruction: MappingRule | undefined;
-        for (const scope of scopeStack.slice().reverse()) {
-            if (scope.has(node.identifier)) {
-                instruction = scope.get(node.identifier);
-                break;
-            }
+    private instantiateIdentifier(path: Path<IdentifierNode>) {
+        const allRules = this.scopes.flat();
+        const rule = findRight(allRules, rule => rule.identifier === path.node.identifier);
+        if (!rule) {
+            throw new Error(`Identifier "${path.node.identifier}" does not have an instruction.`);
         }
-        if (!instruction) {
-            throw new Error(`Identifier "${node.identifier}" does not have an instruction.`);
-        }
-        
-        switch (instruction.type) {
+        switch (rule.type) {
             case 'edge':
-                node.identifier = instruction.outputIdentifier;
+                this.instantiateEdgeIdentifier(path, rule);
                 return;
             case 'constant':
-                node.identifier = instruction.literal;
+                path.node.identifier = rule.literal;
                 return;
             case 'ignore':
                 return;
         }
         throw new Error(`Unknown instruction found`);
+    }
+
+    private instantiateEdgeIdentifier(path: Path<IdentifierNode>, rule: EdgeRule) {
+        const { reference } = rule;
+        if (reference.type === 'variable') {
+            // TODO: maybe add typechecking here 
+            path.node.identifier = reference.identifier;
+            return;
+        }
+        if (reference.type === 'lambda') {
+            /**
+             * 1. check if reference is function call or reference
+             * 2. generate statement for calculating arguments
+             * 3. take lambda expression and instantiate with arguments
+             * 4. replace function call with lambda return value
+             */
+            const isFunctionCall = this.isFunctionCallIdentifier(path);
+            if (!isFunctionCall) {
+                throw new Error(`Cannot reference variable containing lambda`);
+            }
+            // handle function call
+            const functionCall = path.parentPath?.parent as FunctionCallNode;
+
+            const argumentExpressions = functionCall.args
+                .filter(arg => arg.type !== 'literal'); // filters commas
+            
+            // must create statements for all expressions with argument name
+        }
+    }
+
+    private isFunctionCallIdentifier(path: Path<IdentifierNode>) {
+        // @ts-ignore
+        return (path.parent?.type === 'simple_type_specifier' && 
+                path.parentPath?.parent?.type === 'function_call');
     }
 
     private getRowInstantiationRule(rowId: string): MappingRule {
@@ -495,10 +581,14 @@ class NodeTranspiler {
         // 1.2 single incoming edge
         if (incomingEdges[0] != null) {
             const jointEdge = incomingEdges[0];
-            const [ fromNodeIndex ] = jointEdge.fromIndices;
+            const [fromNodeIndex] = jointEdge.fromIndices;
             const fromNode = this.geometry.nodes[fromNodeIndex];
             const outputIdentifier = getNodeOutputIdentifier(fromNode.id);
-            return { type: 'edge', outputIdentifier }
+            const reference = this.definitions.get(outputIdentifier);
+            if (!reference) {
+                throw new Error(`Cannot reference "${outputIdentifier}"`);
+            }
+            return { type: 'edge', identifier: rowId, reference }
         }
 
         //     // case 2.1: argument connected
@@ -549,6 +639,7 @@ class NodeTranspiler {
         const valueLiteral = formatLiteral(value, rowTemp.dataType);
         return {
             type: 'constant',
+            identifier: rowId,
             literal: valueLiteral,
         }
     }
