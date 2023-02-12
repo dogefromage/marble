@@ -1,4 +1,4 @@
-import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionStatementNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, NodeVisitor, NodeVisitors, Path, ReturnStatementNode, TypeSpecifierNode, visit } from "@shaderfrog/glsl-parser/ast";
+import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionStatementNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, NodeVisitor, NodeVisitors, ParameterDeclarationNode, Path, ReturnStatementNode, TypeSpecifierNode, visit } from "@shaderfrog/glsl-parser/ast";
 import _, { isArray } from "lodash";
 import { BaseInputRowT, DataTypes, GeometryConnectionData, GeometryEdge, GeometryS, GeometrySignature, GNodeState, GNodeTemplate, ObjMap, RowS, RowTypes } from "../../types";
 import { findRight } from "../arrays";
@@ -330,19 +330,24 @@ type TranspilerObject = LambdaObject | VariableObject;
 
 interface EdgeRule {
     type: 'edge';
-    identifier: string;
+    targetIdentifier: string;
     reference: TranspilerObject;
 }
 interface ConstantRule {
     type: 'constant';
-    identifier: string;
+    targetIdentifier: string;
     literal: string;
+}
+interface LocalRule {
+    type: 'local';
+    targetIdentifier: string;
+    replacerIdentifier: string;
 }
 interface IgnoreRule {
     type: 'ignore';
-    identifier: string;
+    targetIdentifier: string;
 }
-type MappingRule = EdgeRule | ConstantRule | IgnoreRule;
+type MappingRule = EdgeRule | ConstantRule | LocalRule |IgnoreRule;
 type VariableMappingScope = readonly MappingRule[];
 type VariableMappingScopeStack = VariableMappingScope[];
 
@@ -353,11 +358,12 @@ const defaultScopeKeys = [
     ],
     [ // MARBLE
         'Solid',
+        'p', // testing
     ],
 ];
 
 const defaultScopeStack: VariableMappingScopeStack = defaultScopeKeys.map(scope => 
-    scope.map(identifier => ({ type: 'ignore', identifier })));
+    scope.map(identifier => ({ type: 'ignore', targetIdentifier: identifier })));
 
 class NodeTranspiler {
     private scopes: VariableMappingScopeStack = [ ...defaultScopeStack ];
@@ -416,7 +422,7 @@ class NodeTranspiler {
     private transpileLambdaExpression(lambdaExpression: LambdaExpressionNode) {
         const lambdaParamIdents = getIdentifierFromParameters(lambdaExpression.parameters);
         const ignoreInstructions: VariableMappingScope = lambdaParamIdents
-            .map(paramId => ({ type: 'ignore', identifier: paramId }));
+            .map(paramId => ({ type: 'ignore', targetIdentifier: paramId }));
         // push ignore list for params of lambda
         this.scopes.push(ignoreInstructions);
         // instantiate lambdas expression body
@@ -468,7 +474,7 @@ class NodeTranspiler {
 
     private instantiateIdentifier(path: Path<IdentifierNode>) {
         const allRules = this.scopes.flat();
-        const rule = findRight(allRules, rule => rule.identifier === path.node.identifier);
+        const rule = findRight(allRules, rule => rule.targetIdentifier === path.node.identifier);
         if (!rule) {
             throw new Error(`Identifier "${path.node.identifier}" does not have an instruction.`);
         }
@@ -493,6 +499,7 @@ class NodeTranspiler {
             return;
         }
         if (reference.type === 'lambda') {
+            const lambdaObj = reference;
             /**
              * 1. check if reference is function call or reference
              * 2. generate statement for calculating arguments
@@ -506,10 +513,40 @@ class NodeTranspiler {
             // handle function call
             const functionCall = path.parentPath?.parent as FunctionCallNode;
 
-            const argumentExpressions = functionCall.args
-                .filter(arg => arg.type !== 'literal'); // filters commas
-            
             // must create statements for all expressions with argument name
+            const argExpressions = functionCall.args
+                .filter(arg => arg.type !== 'literal'); // filters commas
+            if (argExpressions.length !== lambdaObj.parameters.length) {
+                throw new Error(`Lambda requires ${lambdaObj} arguments, ${argExpressions.length} were provided.`);
+            }
+
+            const argumentScopeRules: Array<VariableMappingScope[0]> = []; // make writable
+
+            for (let paramIndex = 0; paramIndex < lambdaObj.parameters.length; paramIndex++) {
+                const lambdaParam = lambdaObj.parameters[paramIndex] as ParameterDeclarationNode;
+                const argExpr = argExpressions[paramIndex];
+                const instantiatedExpr = this.instantiateExpression(argExpr);
+                // TODO: match returntype of expression to lambda typespec (must add typechecker)
+                const simpleTypeSpec = lambdaParam.declaration.specifier;
+                const fullTypeSpec = factory.fullySpecifiedType('');
+                fullTypeSpec.specifier = simpleTypeSpec; // just overwrite
+                const argLocalIdentifier = `arg_${paramIndex}`; // TODO CHANGE
+                // add declaration statement
+                const declarationStmt = factory.declarationStatement(fullTypeSpec, argLocalIdentifier, instantiatedExpr);
+                this.transpiledStatements.push(declarationStmt);
+                // add replacer rule
+                // @ts-ignore TODO 
+                const targetIdentifier = lambdaParam.declaration.identifier;
+                argumentScopeRules.push({ type: 
+                    'local', 
+                    targetIdentifier,
+                    replacerIdentifier: argLocalIdentifier,
+                });
+            }
+
+            this.scopes.push(argumentScopeRules);
+            const instantiatedLambdaExpr = this.instantiateExpression(lambdaObj.bodyExpression);
+            this.scopes.pop();
         }
     }
 
@@ -588,7 +625,7 @@ class NodeTranspiler {
             if (!reference) {
                 throw new Error(`Cannot reference "${outputIdentifier}"`);
             }
-            return { type: 'edge', identifier: rowId, reference }
+            return { type: 'edge', targetIdentifier: rowId, reference }
         }
 
         //     // case 2.1: argument connected
@@ -639,7 +676,7 @@ class NodeTranspiler {
         const valueLiteral = formatLiteral(value, rowTemp.dataType);
         return {
             type: 'constant',
-            identifier: rowId,
+            targetIdentifier: rowId,
             literal: valueLiteral,
         }
     }
