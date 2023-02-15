@@ -44,7 +44,7 @@ export interface GNodeTemplate extends Dependable {
     id: NodeTemplateId;
     rows: Array<SpecificRowT>;
     category: GNodeTemplateCategories;
-    instructions: TemplateInstructions;
+    instructions: string;
 }
 
 export interface GNodeState {

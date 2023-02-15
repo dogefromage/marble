@@ -51,7 +51,7 @@
     // to the scope first.
     const foundScope = findBindingScope(scope, name);
     if(foundScope) {
-      foundScope.bindings[name].references.pimage.pngush(reference);
+      foundScope.bindings[name].references.push(reference);
     } else {
       createBindings(scope, [name, reference]);
     }
@@ -166,13 +166,14 @@
 
   // From https://www.khronos.org/registry/OpenGL-Refpages/gl4/index.php
   // excluding gl_ prefixed builtins, which don't appear to be functions
-  const builtIns = new Set([ 'abs', 'acos', 'acosh', 'all', 'any', 'asin', 'asinh', 'atan', 'atanh', 'atomicAdd', 'atomicAnd', 'atomicCompSwap', 'atomicCounter', 'atomicCounterDecrement', 'atomicCounterIncrement', 'atomicExchange', 'atomicMax', 'atomicMin', 'atomicOr', 'atomicXor', 'barrier', 'bitCount', 'bitfieldExtract', 'bitfieldInsert', 'bitfieldReverse', 'ceil', 'clamp', 'cos', 'cosh', 'cross', 'degrees', 'determinant', 'dFdx', 'dFdxCoarse', 'dFdxFine', 'dFdy', 'dFdyCoarse', 'dFdyFine', 'distance', 'dot', 'EmitStreamVertex', 'EmitVertex', 'EndPrimitive', 'EndStreamPrimitive', 'equal', 'exp', 'exp2', 'faceforward', 'findLSB', 'findMSB', 'floatBitsToInt', 'floatBitsToUint', 'floor', 'fma', 'fract', 'frexp', 'fwidth', 'fwidthCoarse', 'fwidthFine', 'greaterThan', 'greaterThanEqual', 'groupMemoryBarrier', 'imageAtomicAdd', 'imageAtomicAnd', 'imageAtomicCompSwap', 'imageAtomicExchange', 'imageAtomicMax', 'imageAtomicMin', 'imageAtomicOr', 'imageAtomicXor', 'imageLoad', 'imageSamples', 'imageSize', 'imageStore', 'imulExtended', 'intBitsToFloat', 'interpolateAtCentroid', 'interpolateAtOffset', 'interpolateAtSample', 'inverse', 'inversesqrt', 'isinf', 'isnan', 'ldexp', 'length', 'lessThan', 'lessThanEqual', 'log', 'log2', 'matrixCompMult', 'max', 'memoryBarrier', 'memoryBarrierAtomicCounter', 'memoryBarrierBuffer', 'memoryBarrierImage', 'memoryBarrierShared', 'min', 'mix', 'mod', 'modf', 'noise', 'noise1', 'noise2', 'noise3', 'noise4', 'normalize', 'not', 'notEqual', 'outerProduct', 'packDouble2x32', 'packHalf2x16', 'packSnorm2x16', 'packSnorm4x8', 'packUnorm', 'packUnorm2x16', 'packUnorm4x8', 'pow', 'radians', 'reflect', 'refract', 'round', 'roundEven', 'sign', 'sin', 'sinh', 'smoothstep', 'sqrt', 'step', 'tan', 'tanh', 'texelFetch', 'texelFetchOffset', 'texture', 'textureGather', 'textureGatherOffset', 'textureGatherOffsets', 'textureGrad', 'textureGradOffset', 'textureLod', 'textureLodOffset', 'textureOffset', 'textureProj', 'textureProjGrad', 'textureProjGradOffset', 'textureProjLod', 'textureProjLodOffset', 'textureProjOffset', 'textureQueryLevels', 'textureQueryLod', 'textureSamples', 'textureSize', 'transpose', 'trunc', 'uaddCarry', 'uintBitsToFloat', 'umulExtended', 'unpackDouble2x32', 'unpackHalf2x16', 'unpackSnorm2x16', 'unpackSnorm4x8', 'unpackUnorm', 'unpackUnorm2x16', 'unpackUnorm4x8', 'usubBorrow', // GLSL ES 1.00 'texture2D', 'textureCube'
+  const builtIns = new Set([ 
+    'abs', 'acos', 'acosh', 'all', 'any', 'asin', 'asinh', 'atan', 'atanh', 'atomicAdd', 'atomicAnd', 'atomicCompSwap', 'atomicCounter', 'atomicCounterDecrement', 'atomicCounterIncrement', 'atomicExchange', 'atomicMax', 'atomicMin', 'atomicOr', 'atomicXor', 'barrier', 'bitCount', 'bitfieldExtract', 'bitfieldInsert', 'bitfieldReverse', 'ceil', 'clamp', 'cos', 'cosh', 'cross', 'degrees', 'determinant', 'dFdx', 'dFdxCoarse', 'dFdxFine', 'dFdy', 'dFdyCoarse', 'dFdyFine', 'distance', 'dot', 'EmitStreamVertex', 'EmitVertex', 'EndPrimitive', 'EndStreamPrimitive', 'equal', 'exp', 'exp2', 'faceforward', 'findLSB', 'findMSB', 'floatBitsToInt', 'floatBitsToUint', 'floor', 'fma', 'fract', 'frexp', 'fwidth', 'fwidthCoarse', 'fwidthFine', 'greaterThan', 'greaterThanEqual', 'groupMemoryBarrier', 'imageAtomicAdd', 'imageAtomicAnd', 'imageAtomicCompSwap', 'imageAtomicExchange', 'imageAtomicMax', 'imageAtomicMin', 'imageAtomicOr', 'imageAtomicXor', 'imageLoad', 'imageSamples', 'imageSize', 'imageStore', 'imulExtended', 'intBitsToFloat', 'interpolateAtCentroid', 'interpolateAtOffset', 'interpolateAtSample', 'inverse', 'inversesqrt', 'isinf', 'isnan', 'ldexp', 'length', 'lessThan', 'lessThanEqual', 'log', 'log2', 'matrixCompMult', 'max', 'memoryBarrier', 'memoryBarrierAtomicCounter', 'memoryBarrierBuffer', 'memoryBarrierImage', 'memoryBarrierShared', 'min', 'mix', 'mod', 'modf', 'noise', 'noise1', 'noise2', 'noise3', 'noise4', 'normalize', 'not', 'notEqual', 'outerProduct', 'packDouble2x32', 'packHalf2x16', 'packSnorm2x16', 'packSnorm4x8', 'packUnorm', 'packUnorm2x16', 'packUnorm4x8', 'pow', 'radians', 'reflect', 'refract', 'round', 'roundEven', 'sign', 'sin', 'sinh', 'smoothstep', 'sqrt', 'step', 'tan', 'tanh', 'texelFetch', 'texelFetchOffset', 'texture', 'textureGather', 'textureGatherOffset', 'textureGatherOffsets', 'textureGrad', 'textureGradOffset', 'textureLod', 'textureLodOffset', 'textureOffset', 'textureProj', 'textureProjGrad', 'textureProjGradOffset', 'textureProjLod', 'textureProjLodOffset', 'textureProjOffset', 'textureQueryLevels', 'textureQueryLod', 'textureSamples', 'textureSize', 'transpose', 'trunc', 'uaddCarry', 'uintBitsToFloat', 'umulExtended', 'unpackDouble2x32', 'unpackHalf2x16', 'unpackSnorm2x16', 'unpackSnorm4x8', 'unpackUnorm', 'unpackUnorm2x16', 'unpackUnorm4x8', 'usubBorrow', // GLSL ES 1.00 'texture2D', 'textureCube'
   ]);
 }}
 
 // Per-parse initializations
 {
-//   const warn = (...args) => !options.quiet && console.warn(...args);
+  const warn = (...args) => !options.quiet && console.warn(...args);
 
   let scope = makeScope('global');
   let scopes = [scope];
@@ -451,31 +452,29 @@ AMPERSAND = token:"&" _:_? { return node('literal', { literal: token, whitespace
 QUESTION = token:"?" _:_? { return node('literal', { literal: token, whitespace: _ }); }
 
 IDENTIFIER = !keyword identifier:$([A-Za-z_] [A-Za-z_0-9]*) _:_? { return node('identifier', { identifier, whitespace: _ }); }
-TYPE_NAME = !keyword ident:IDENTIFIER { return ident; } 
-// {
-//   const { identifier } = ident;
+TYPE_NAME = !keyword ident:IDENTIFIER {
+  const { identifier } = ident;
 
-//   // We do scope checking and parsing all in one pass. In the case of calling an
-//   // undefined function, here, we don't know that we're in a function, so we
-//   // can't warn appropriately. If we return false for the missing typename, the
-//   // program won't parse, since the function call node won't match since it uses
-//   // type_name for the function_identifier. So all we can do here is go on our
-//   // merry way if the type isn't known.
+  // We do scope checking and parsing all in one pass. In the case of calling an
+  // undefined function, here, we don't know that we're in a function, so we
+  // can't warn appropriately. If we return false for the missing typename, the
+  // program won't parse, since the function call node won't match since it uses
+  // type_name for the function_identifier. So all we can do here is go on our
+  // merry way if the type isn't known.
 
-//   // This only applies to structs. I'm not sure if it's right. Because TYPE_NAME
-//   // is used in lots of places, it's easier to put this check here.
-//   let found;
-//   if(found = findTypeScope(scope, identifier)) {
-//     addTypeReference(found, identifier, ident);
-//   // I removed this because a type name reference here can't be renamed because
-//   // it's just a string and we don't know the parent node. This might apply
-//   // to the type reference above as well
-//   // } else if(found = findFunctionScope(scope, identifier)) {
-//     // addFunctionReference(found, identifier, identifier);
-//   }
-  
-//   return ident;
-// }
+  // This only applies to structs. I'm not sure if it's right. Because TYPE_NAME
+  // is used in lots of places, it's easier to put this check here.
+  let found;
+  if(found = findTypeScope(scope, identifier)) {
+    addTypeReference(found, identifier, ident);
+  // I removed this because a type name reference here can't be renamed because
+  // it's just a string and we don't know the parent node. This might apply
+  // to the type reference above as well
+  // } else if(found = findFunctionScope(scope, identifier)) {
+    // addFunctionReference(found, identifier, identifier);
+  }
+  return ident;
+}
 
 // Integers
 integer_constant
@@ -580,19 +579,19 @@ function_call
 
       const n = node('function_call', { ...identifierPartial, args, rp });
 
-    //   // struct constructors are stored in scope types, not scope functions,
-    //   // skip them (the isDeclaredType check)
-    //   const isDeclared = isDeclaredFunction(scope, fnName);
-    //   if(
-    //     fnName && !isDeclaredType(scope, fnName) &&
-    //     // GLSL has built in functions that users can override
-    //     (isDeclared || !builtIns.has(fnName))
-    //   ) {
-    //     if(!isDeclared) {
-    //       warn(`Warning: Function "${fnName}" has not been declared`);
-    //     }
-    //     addFunctionReference(scope, fnName, n);
-    //   }
+      // struct constructors are stored in scope types, not scope functions,
+      // skip them (the isDeclaredType check)
+      const isDeclared = isDeclaredFunction(scope, fnName);
+      if(
+        fnName && !isDeclaredType(scope, fnName) &&
+        // GLSL has built in functions that users can override
+        (isDeclared || !builtIns.has(fnName))
+      ) {
+        if(!isDeclared) {
+          warn(`Warning: Function "${fnName}" has not been declared`);
+        }
+        addFunctionReference(scope, fnName, n);
+      }
 
       return n;
     }
@@ -781,13 +780,31 @@ ternary_expression
 
 
   // lambda int a : a + 10  
-lambda_expression
+lambda_expression_header
     = lambda:LAMBDA lp:LEFT_PAREN params:function_parameters? rp:RIGHT_PAREN
-        colon:COLON expression:expression {
-            return node('lambda_expression', {
-                lambda, lp, ...params, rp, colon, expression,
-            })
+        colon:COLON {
+            scope = pushScope(makeScope('lambda', scope));
+
+            // Taken from function_declaration
+            const bindings = (params.parameters || [])
+                .filter(p => !!p.declaration.identifier)
+                .map(p => [p.declaration.identifier.identifier, p]);
+            createBindings(scope, ...bindings)
+
+            return node('lambda_expression_header', {
+                lambda, lp, ...params, rp, colon,
+            });
         }
+
+lambda_expression  
+    = header:lambda_expression_header 
+      body:expression {
+        scope = popScope(scope);
+        return node('lambda_expression', {
+            header,
+            body,
+        });
+    }
 
 assignment_expression
     = lambda_expression
@@ -874,7 +891,7 @@ interface_declarator
     identifier:quantified_identifier? {
       const n = node(
         'interface_declarator',
-        { qualifiers, interface_type, lp, declarations, rp, identifier }
+        { qualifiers: [], interface_type, lp, declarations, rp, identifier }
       );
       createBindings(scope, [interface_type.identifier, n]);
       return n;
@@ -888,6 +905,9 @@ interface_declarator
 
 function_prototype_new_scope "function prototype"
   = header:function_header_new_scope params:function_parameters? rp:RIGHT_PAREN {
+
+
+
     return node('function_prototype', { header, ...params, rp });
   }
 
@@ -997,7 +1017,7 @@ subsequent_declaration
 // declaration > init_declarator_list > single_declaration
 initial_declaration
   // Apparently "float;" is a legal statement. I have no idea why.
-//   NOT ANYMORE
+  // - Removed this to make single identifier be expression statement. 
   = specified_type:fully_specified_type
     suffix:(
       IDENTIFIER array_specifier? (EQUAL initializer)?
@@ -1095,25 +1115,22 @@ fully_specified_type
 //         );
 //       }
 
-type_specifier "type specifier"
-    = lambda_type_specifier
-    / simple_type_specifier
-
-simple_type_specifier
-  = specifier:type_specifier_nonarray quantifier:array_specifier? {
-    return node('simple_type_specifier', { specifier, quantifier });
+type_specifier
+  = lambda:lambda_type_specifier { return lambda; }
+  / specifier:type_specifier_nonarray quantifier:array_specifier? {
+    return node('type_specifier', { specifier, quantifier });
   }
 
 lambda_type_specifier
-    = return_type:simple_type_specifier colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
+    = return_type:type_specifier_nonarray colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
         return node('lambda_type_specifier', { return_type, colon, lp, args, rp });
     }
 
 function_type_args_list 
-    = head:simple_type_specifier tail:(COMMA simple_type_specifier)* {
+    = head:type_specifier tail:(COMMA type_specifier)* {
         const tailTypes = tail
             .flat()
-            .filter(node => node.type === 'simple_type_specifier');
+            .filter(node => node.type === 'type_specifier');
         return [ head, ...tailTypes ];
     }
 
@@ -1168,7 +1185,7 @@ struct_specifier "struct specifier"
         // Struct names also become constructors for functions. Needing to track
         // this as both a type and a function makes me think my scope data model
         // is probably wrong
-        // addFunctionReference(scope, typeName.identifier, n);
+        addFunctionReference(scope, typeName.identifier, n);
       }
       return n;
     }
@@ -1239,7 +1256,7 @@ compound_statement =
   })
   statements:statement_list?
   rb:RIGHT_BRACE {
-    // scope = popScope(scope);
+    scope = popScope(scope);
     return node(
       'compound_statement',
       { lb, statements: (statements || []).flat(), rb }

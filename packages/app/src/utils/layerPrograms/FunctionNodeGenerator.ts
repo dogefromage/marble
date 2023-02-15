@@ -367,7 +367,7 @@ const defaultScopeStack: VariableMappingScopeStack = defaultScopeKeys.map(scope 
 
 class NodeTranspiler {
     private scopes: VariableMappingScopeStack = [ ...defaultScopeStack ];
-    private transpiledStatements: AstNode[] = [];
+    private statements: AstNode[] = [];
 
     private outputKey: string;
 
@@ -401,7 +401,7 @@ class NodeTranspiler {
     }
 
     public getTranspiledStatements() {
-        return this.transpiledStatements;
+        return this.statements;
     }
 
     private defineOutput(obj: TranspilerObject) {
@@ -450,7 +450,7 @@ class NodeTranspiler {
         const outputStatement = factory
             .declarationStatement(typeSpec, this.outputKey, instantiatedExpression);
 
-        this.transpiledStatements.push(outputStatement);
+        this.statements.push(outputStatement);
     }
 
     private instantiateExpression(expression: AstNode) {
@@ -474,6 +474,10 @@ class NodeTranspiler {
 
     private instantiateIdentifier(path: Path<IdentifierNode>) {
         const allRules = this.scopes.flat();
+        const identifier = path.node.identifier;
+        if (this.definitions.has(identifier)) {
+            return;
+        }
         const rule = findRight(allRules, rule => rule.targetIdentifier === path.node.identifier);
         if (!rule) {
             throw new Error(`Identifier "${path.node.identifier}" does not have an instruction.`);
@@ -483,7 +487,7 @@ class NodeTranspiler {
                 this.instantiateEdgeIdentifier(path, rule);
                 return;
             case 'constant':
-                path.node.identifier = rule.literal;
+                this.replacePathNode(path, factory.literal(rule.literal));
                 return;
             case 'ignore':
                 return;
@@ -533,7 +537,7 @@ class NodeTranspiler {
                 const argLocalIdentifier = `arg_${paramIndex}`; // TODO CHANGE
                 // add declaration statement
                 const declarationStmt = factory.declarationStatement(fullTypeSpec, argLocalIdentifier, instantiatedExpr);
-                this.transpiledStatements.push(declarationStmt);
+                this.statements.push(declarationStmt);
                 // add replacer rule
                 // @ts-ignore TODO 
                 const targetIdentifier = lambdaParam.declaration.identifier;
@@ -547,7 +551,30 @@ class NodeTranspiler {
             this.scopes.push(argumentScopeRules);
             const instantiatedLambdaExpr = this.instantiateExpression(lambdaObj.bodyExpression);
             this.scopes.pop();
+
+            const inferedReturnType = factory.fullySpecifiedType('float'); // TODO
+            const lambdaIdentifier = `lambda_0`;
+            const lambdaDeclarationStmt = factory
+                .declarationStatement(inferedReturnType, lambdaIdentifier, instantiatedLambdaExpr)
+            this.statements.push(lambdaDeclarationStmt);
+
+            // replace path
+            const functionCallPath = path.parentPath?.parentPath;
+            // this.replacePathNode(functionCallPath, factory.identifier(lambdaIdentifier));
         }
+    }
+
+    private replacePathNode(path: Path<AstNode> | undefined, newNode: AstNode) {
+        const parent = path?.parent as any;
+        if (!path || !parent) {
+            throw new Error(`Cannot replace child`);
+        }
+        const parentKeys = Object.keys(parent);
+        const childKey = parentKeys.find(key => parent[key] == path.node);
+        if (!childKey) {
+            throw new Error(`Cannot find child key`);
+        }
+        parent[childKey] = newNode;
     }
 
     private isFunctionCallIdentifier(path: Path<IdentifierNode>) {

@@ -9,16 +9,15 @@ import defaultTheme from '../content/defaultTheme';
 import { initStore, RootState } from '../redux/store';
 import CompilerRoot from './CompilerRoot';
 import ContextMenu from './ContextMenu';
-import { MenuPortalMount } from './MenuPortalMount';
-import TemplateManager from './TemplateManager';
+import DependencyManager from './DependencyManager';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
+import GeometryDataManager from './GeometryDataManager';
 import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
-import ServiceErrorBoundary from './ServiceErrorBoundary';
+import { MenuPortalMount } from './MenuPortalMount';
 import StartAnouncer from './StartAnouncer';
-import DependencyManager from './DependencyManager';
-import GeometryDataManager from './GeometryDataManager';
+import TemplateManager from './TemplateManager';
 
 glMatrix.setMatrixArrayType(Array);
 

@@ -103,13 +103,6 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
         throw new Error(`TODO`);
     }
 
-    // TODO: make less stupid
-    const instructions = parseTemplateInstructions(`
-        Solid:(vec3) ${geometry.id}_output(Solid:(vec3) ${output.id}) {
-            ${output.id}(p);
-        }
-    `);
-
     // /**
     //  * calls and returns a constructor function of a 
     //  * placeholder datatype which will be overwritten during compilation.
@@ -136,7 +129,7 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
             },
             ...inputRows as SpecificRowT[],
         ],
-        instructions,
+        instructions: '',
     }
     return outputTemplate;
 }
