@@ -1,4 +1,4 @@
-import { DataTypes, defaultDataTypeValue } from "../../types";
+import { DataTypes, initialDataTypeValue } from "../../types";
 import { getTemplateId, GNodeTemplate, SpecificRowT } from "../../types/geometries";
 import { defaultInputRows } from "../../types/geometries/defaultRows";
 import { formatVariable, glsl } from "../../utils/codeStrings";
@@ -137,7 +137,7 @@ const transform: GNodeTemplate = {
         inputField('translation', 'Translation', 'vec3'), {
             id: 'rotation', type: 'rotation',
             dataType: 'mat3', rotationModel: 'xyz',
-            name: 'Rotation', value: defaultDataTypeValue['mat3'],
+            name: 'Rotation', value: initialDataTypeValue['mat3'],
         },
         inputField('scale', 'Scale', 'float', 1),
     ],

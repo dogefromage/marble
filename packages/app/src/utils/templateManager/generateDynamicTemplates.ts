@@ -1,7 +1,8 @@
 import { rowMeta } from "../../components/GeometryRowRoot";
-import { BaseInputRowT, decomposeTemplateId, defaultDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, NameRowT, ObjMapUndef, PassthroughRowT, SpecificRowT } from "../../types";
+import { BaseInputRowT, decomposeTemplateId, initialDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, NameRowT, ObjMapUndef, PassthroughRowT, SpecificRowT } from "../../types";
+import { glsl } from "../codeStrings";
 import { prefixGeometryFunction } from "../layerPrograms";
-import { createReturntypePlaceholder, getStructurePropertyKey } from "../layerPrograms/generateCodeStatements";
+import { createReturntypePlaceholder, formatDataTypeText, getStructurePropertyKey } from "../layerPrograms/generateCodeStatements";
 import { parseTemplateInstructions } from "../layerPrograms/parsing";
 
 // function generateCompositeInstructions(geometry: GeometryS) {
@@ -90,19 +91,22 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
             type: 'input',
             name: output.name,
             dataType: output.dataType,
-            value: defaultDataTypeValue[output.dataType],
+            value: initialDataTypeValue[output.dataType],
         }
     });
 
     if (geometry.outputs.length > 1) {
         throw new Error(`TODO`);
     }
-    const [ output ] = geometry.outputs;
-    
-    if (output.dataType !== 'Solid') {
-        throw new Error(`TODO`);
-    }
+    const [ outputInput ] = geometry.outputs;
+    const typeName = formatDataTypeText(outputInput.dataType);
 
+    const instructions = glsl`
+        ${typeName} output(${typeName} ${outputInput.id}) {
+            return ${outputInput.id};
+        }
+    `
+    
     // /**
     //  * calls and returns a constructor function of a 
     //  * placeholder datatype which will be overwritten during compilation.
@@ -129,7 +133,7 @@ function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
             },
             ...inputRows as SpecificRowT[],
         ],
-        instructions: '',
+        instructions,
     }
     return outputTemplate;
 }

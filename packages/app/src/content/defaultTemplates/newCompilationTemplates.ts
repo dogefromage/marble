@@ -1,3 +1,5 @@
+import { parse } from "@shaderfrog/glsl-parser/parser/parser"
+import { parse as marbleParse } from "@marble/language"
 import { getTemplateId, GNodeTemplate } from "../../types"
 import { defaultOutputRows } from "../../types/geometries/defaultRows"
 import { glsl } from "../../utils/codeStrings"
@@ -10,13 +12,13 @@ const sphere: GNodeTemplate = {
     category: 'solids',
     rows: [
         nameRow('Sphere', TemplateColors.Primitives),
-        defaultOutputRows['solid'],
+        defaultOutputRows['surface'],
         inputField('radius', 'Radius', 'float', 1),
         inputField('color', 'Color', 'vec3', [1,1,1]),
     ],
     instructions: glsl`
-        Solid:(vec3) sphere(float radius, vec3 color) {
-            return lambda (vec3 p) : Solid(length(p) - radius, color);
+        SignedDistance:(vec3) sphere(float radius, vec3 color) {
+            return lambda (vec3 p) : SignedDistance(length(p) - radius, color);
         }
     `,
 }
@@ -35,6 +37,19 @@ const colorRed: GNodeTemplate = {
         }
     `,
 }
+
+
+// const testProgram = glsl`
+// float test() {
+//     vec3 a = mix(1, 2);
+// }
+// `
+
+// const program = parse(testProgram);
+// const program2 = marbleParse(testProgram);
+
+// debugger
+
 
 export default [
     colorRed,

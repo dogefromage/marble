@@ -1,13 +1,10 @@
-import { defaultDataTypeValue, FAR_AWAY } from "../../types";
-import { formatLiteral } from "../../utils/layerPrograms/generateCodeStatements";
+import { initialDataTypeValue, FAR_DISTANCE } from "../../types";
 
 export enum TemplateColors {
     Output = '#a3264e',
     SolidOperations = '#123456',
     Primitives = '#999966',
-
     Vectors = '#123456',
 }
 
-export const TEMPLATE_FAR_AWAY_LITERAL = formatLiteral(FAR_AWAY, 'float');
-export const EMPTY_SOLID_LITERAL = formatLiteral(defaultDataTypeValue['Solid'], 'Solid');
+export const EMPTY_SOLID_LITERAL = `SignedDistance(1000.0, vec3(0, 0, 0))`; // TODO replace

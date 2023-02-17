@@ -6,8 +6,8 @@ const outputRow: SpecificRowT =
 {
     id: 'output',
     type: 'output',
-    dataType: 'Solid',
-    name: 'Solid',
+    dataType: 'Surface',
+    name: 'Surface',
 };
 
 const coordinateRow: SpecificRowT =

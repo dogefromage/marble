@@ -17,7 +17,7 @@ const defaultTheme: DefaultTheme = {
             vec3: '#6a40a8',
             vec4: '#5532bf',
             mat3: '#9840ad',
-            Solid: '#d4a63b',
+            Surface: '#d4a63b',
         },
         selectionStatus: {
             [SelectionStatus.Selected]:        '#e7b84a',

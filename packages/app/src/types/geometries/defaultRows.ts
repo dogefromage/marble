@@ -15,19 +15,20 @@ export const defaultInputRows = {
     position: positionInput,
 } as const;
 
-const solidOutput: OutputRowT<'Solid'> = {
+const surfaceOutput: OutputRowT<'Surface'> = {
     id: 'solid',
     type: 'output',
-    name: 'Solid',
-    dataType: 'Solid',
+    name: 'Surface',
+    dataType: 'Surface',
 };
 
 export const defaultOutputRows = {
-    solid: solidOutput
+    surface: surfaceOutput
 } as const;
 
 export const rootGeometryTemplate: GeometrySignature = {
+    name: 'Root Geometry',
     isRoot: true,
     inputs: [defaultInputRows.position ],
-    outputs: [ defaultOutputRows.solid ],
+    outputs: [ defaultOutputRows.surface ],
 }

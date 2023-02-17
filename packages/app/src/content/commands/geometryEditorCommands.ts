@@ -115,7 +115,7 @@ export const geometryEditorCommands: Command[] = [
                                 id: 'basic_output',
                                 type: 'output',
                                 name: 'Output',
-                                dataType: 'Solid',
+                                dataType: 'Surface',
                             }
                         ],
                     },

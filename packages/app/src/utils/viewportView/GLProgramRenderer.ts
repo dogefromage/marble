@@ -1,5 +1,5 @@
-import { defaultViewportUniforms, ObjMap, ProgramUniform } from "../../types";
-import { GLProgram } from "./GLProgram";
+import { defaultViewportUniforms, ObjMap, ProgramUniform } from '../../types';
+import { GLProgram } from './GLProgram';
 
 const quad = new Float32Array([
     -1,  1,  0,

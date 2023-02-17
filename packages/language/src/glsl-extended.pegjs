@@ -169,6 +169,8 @@
   const builtIns = new Set([ 
     'abs', 'acos', 'acosh', 'all', 'any', 'asin', 'asinh', 'atan', 'atanh', 'atomicAdd', 'atomicAnd', 'atomicCompSwap', 'atomicCounter', 'atomicCounterDecrement', 'atomicCounterIncrement', 'atomicExchange', 'atomicMax', 'atomicMin', 'atomicOr', 'atomicXor', 'barrier', 'bitCount', 'bitfieldExtract', 'bitfieldInsert', 'bitfieldReverse', 'ceil', 'clamp', 'cos', 'cosh', 'cross', 'degrees', 'determinant', 'dFdx', 'dFdxCoarse', 'dFdxFine', 'dFdy', 'dFdyCoarse', 'dFdyFine', 'distance', 'dot', 'EmitStreamVertex', 'EmitVertex', 'EndPrimitive', 'EndStreamPrimitive', 'equal', 'exp', 'exp2', 'faceforward', 'findLSB', 'findMSB', 'floatBitsToInt', 'floatBitsToUint', 'floor', 'fma', 'fract', 'frexp', 'fwidth', 'fwidthCoarse', 'fwidthFine', 'greaterThan', 'greaterThanEqual', 'groupMemoryBarrier', 'imageAtomicAdd', 'imageAtomicAnd', 'imageAtomicCompSwap', 'imageAtomicExchange', 'imageAtomicMax', 'imageAtomicMin', 'imageAtomicOr', 'imageAtomicXor', 'imageLoad', 'imageSamples', 'imageSize', 'imageStore', 'imulExtended', 'intBitsToFloat', 'interpolateAtCentroid', 'interpolateAtOffset', 'interpolateAtSample', 'inverse', 'inversesqrt', 'isinf', 'isnan', 'ldexp', 'length', 'lessThan', 'lessThanEqual', 'log', 'log2', 'matrixCompMult', 'max', 'memoryBarrier', 'memoryBarrierAtomicCounter', 'memoryBarrierBuffer', 'memoryBarrierImage', 'memoryBarrierShared', 'min', 'mix', 'mod', 'modf', 'noise', 'noise1', 'noise2', 'noise3', 'noise4', 'normalize', 'not', 'notEqual', 'outerProduct', 'packDouble2x32', 'packHalf2x16', 'packSnorm2x16', 'packSnorm4x8', 'packUnorm', 'packUnorm2x16', 'packUnorm4x8', 'pow', 'radians', 'reflect', 'refract', 'round', 'roundEven', 'sign', 'sin', 'sinh', 'smoothstep', 'sqrt', 'step', 'tan', 'tanh', 'texelFetch', 'texelFetchOffset', 'texture', 'textureGather', 'textureGatherOffset', 'textureGatherOffsets', 'textureGrad', 'textureGradOffset', 'textureLod', 'textureLodOffset', 'textureOffset', 'textureProj', 'textureProjGrad', 'textureProjGradOffset', 'textureProjLod', 'textureProjLodOffset', 'textureProjOffset', 'textureQueryLevels', 'textureQueryLod', 'textureSamples', 'textureSize', 'transpose', 'trunc', 'uaddCarry', 'uintBitsToFloat', 'umulExtended', 'unpackDouble2x32', 'unpackHalf2x16', 'unpackSnorm2x16', 'unpackSnorm4x8', 'unpackUnorm', 'unpackUnorm2x16', 'unpackUnorm4x8', 'usubBorrow', // GLSL ES 1.00 'texture2D', 'textureCube'
   ]);
+
+  const randomId = () => Math.random().toString(36).substr(2, 9);
 }}
 
 // Per-parse initializations
@@ -180,7 +182,7 @@
 
   const pushScope = scope => {
     // console.log('pushing scope at ',text());
-    scopes.push(scope);
+    scopes.push(scope); 
     return scope;
   };
   const popScope = scope => {
@@ -783,16 +785,17 @@ ternary_expression
 lambda_expression_header
     = lambda:LAMBDA lp:LEFT_PAREN params:function_parameters? rp:RIGHT_PAREN
         colon:COLON {
-            scope = pushScope(makeScope('lambda', scope));
+            const name = `lambda_${randomId()}`;
+            scope = pushScope(makeScope(name, scope));
 
-            // Taken from function_declaration
-            const bindings = (params.parameters || [])
+            // Taken from function_definition
+            const bindings = (params?.parameters || [])
                 .filter(p => !!p.declaration.identifier)
                 .map(p => [p.declaration.identifier.identifier, p]);
             createBindings(scope, ...bindings)
 
             return node('lambda_expression_header', {
-                lambda, lp, ...params, rp, colon,
+                lambda, lp, ...params, rp, colon, name,
             });
         }
 
@@ -906,7 +909,11 @@ interface_declarator
 function_prototype_new_scope "function prototype"
   = header:function_header_new_scope params:function_parameters? rp:RIGHT_PAREN {
 
-
+    const bindings = (params?.parameters || [])
+        // Ignore any param without an identifier, aka main(void)
+        .filter(p => !!p.declaration.identifier)
+        .map(p => [p.declaration.identifier.identifier, p]);
+    createBindings(scope, ...bindings)
 
     return node('function_prototype', { header, ...params, rp });
   }
@@ -1042,7 +1049,7 @@ fully_specified_type
   // qualifier is like const, specifier is like float, and float[1]
   = /* qualifiers:type_qualifiers? */ specifier:type_specifier {
     return node(
-      '.',
+      'fully_specified_type',
       { qualifiers: [], specifier }
     );
   }
@@ -1483,12 +1490,6 @@ external_declaration
 
 function_definition = prototype:function_prototype_new_scope body:compound_statement_no_new_scope {
   const n = node('function', { prototype, body });
-
-  const bindings = (prototype.parameters || [])
-    // Ignore any param without an identifier, aka main(void)
-    .filter(p => !!p.declaration.identifier)
-    .map(p => [p.declaration.identifier.identifier, p]);
-  createBindings(scope, ...bindings)
 
   scope = popScope(scope);
   addFunctionReference(scope, prototype.header.name.identifier, n);

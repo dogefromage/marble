@@ -1,4 +1,4 @@
-import { defaultDataTypeValue, getTemplateId, GNodeTemplate } from "../../types"
+import { initialDataTypeValue, getTemplateId, GNodeTemplate } from "../../types"
 import { defaultInputRows } from "../../types/geometries/defaultRows"
 import { glsl } from "../../utils/codeStrings"
 import { inputField, inputRow, nameRow, outputRow } from "./rowShorthands"
@@ -10,13 +10,13 @@ const union: GNodeTemplate = {
     category: 'solid_operators',
     rows: [
         nameRow('Union', TemplateColors.SolidOperations),
-        outputRow('output', 'Union', 'Solid'),
+        outputRow('output', 'Union', 'Surface'),
         {
             id: 'inputs',
             type: 'input_stacked',
-            name: 'Solid',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
+            name: 'Surface',
+            dataType: 'Surface',
+            value: initialDataTypeValue['Surface'],
         },
     ],
     instructions: glsl`
@@ -31,26 +31,26 @@ const difference: GNodeTemplate = {
     category: 'solid_operators',
     rows: [
         nameRow('Difference', TemplateColors.SolidOperations),
-        outputRow('output', 'Difference', 'Solid'),
+        outputRow('output', 'Difference', 'Surface'),
         {
             id: 'positive',
             type: 'input',
-            name: 'Start Solid',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
+            name: 'Surface',
+            dataType: 'Surface',
+            value: initialDataTypeValue['Surface'],
         },
         {
             id: 'negatives',
             type: 'input_stacked',
             name: 'Complement',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
+            dataType: 'Surface',
+            value: initialDataTypeValue['Surface'],
         },
     ],
     instructions: glsl`
-        #INCLUDE inc_union, inc_difference;
-        Solid neg = #REDUCE(inc_union, negatives, ${EMPTY_SOLID_LITERAL});
-        Solid output = inc_difference(positive, neg);
+        // #INCLUDE inc_union, inc_difference;
+        // Solid neg = #REDUCE(inc_union, negatives, ${EMPTY_SOLID_LITERAL});
+        // Solid output = inc_difference(positive, neg);
     `,
 }
 
@@ -65,8 +65,8 @@ const intersection: GNodeTemplate = {
             id: 'inputs',
             type: 'input_stacked',
             name: 'Solid',
-            dataType: 'Solid',
-            value: defaultDataTypeValue['Solid'],
+            dataType: 'Surface',
+            value: initialDataTypeValue['Surface'],
         },
     ],
     instructions: glsl`

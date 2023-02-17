@@ -8,6 +8,7 @@ import { useAppSelector } from '../redux/hooks';
 import { selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { LayerProgram, ViewTypes } from '../types';
 import { CodeTemplate } from '../utils/codeStrings';
+import { logCodeWithLines } from '../utils/debugging';
 import { createCameraWorldToScreen, viewportCameraToNormalCamera } from '../utils/viewportView/cameraMath';
 import { GLProgram } from '../utils/viewportView/GLProgram';
 import GLProgramRenderer from '../utils/viewportView/GLProgramRenderer';
@@ -23,6 +24,7 @@ function generateShaders(sceneProgram: LayerProgram) {
     fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', sceneProgram.rootFunctionName);
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
+    // console.log(logCodeWithLines(fragCode));
 
     return {
         vertCode: VERT_CODE_TEMPLATE,

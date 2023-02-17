@@ -78,4 +78,10 @@ describe('Parser', () => {
         // const json = safeStringify(ast);
         // fs.writeFileSync(path.resolve('./ast.json'), json);
     })
+
+    /**
+     * TODO
+     * - fix this mess
+     * - add more tests, also for scope
+     */
 })

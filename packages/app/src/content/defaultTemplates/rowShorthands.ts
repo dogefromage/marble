@@ -1,4 +1,4 @@
-import { BaseInputRowT, DataTypes, DataTypeValueTypes, defaultDataTypeValue, FieldRowT, OutputRowT, SpecificRowT } from "../../types";
+import { BaseInputRowT, DataTypes, DataTypeValueTypes, initialDataTypeValue, FieldRowT, OutputRowT, SpecificRowT } from "../../types";
 
 export function nameRow(name: string, color?: string): SpecificRowT {
     return {
@@ -15,7 +15,7 @@ export function inputField<T extends DataTypes>(id: string, name: string, dataTy
         name,
         type: 'field',
         dataType,
-        value: value ?? defaultDataTypeValue[dataType],
+        value: value ?? initialDataTypeValue[dataType],
         defaultArgumentToken,
     };
 }
@@ -26,7 +26,7 @@ export function inputRow<T extends DataTypes>(id: string, name: string, dataType
         name,
         type: 'input',
         dataType,
-        value: value ?? defaultDataTypeValue[dataType],
+        value: value ?? initialDataTypeValue[dataType],
         defaultArgumentToken,
     };
 }

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { allowedInputRows, allowedOutputRows, BaseRowS, decomposeRowDataTypeCombination, defaultDataTypeValue, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometrySignature, GNodeState, InputRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, SpecificRowT, UndoAction } from "../types";
+import { allowedInputRows, allowedOutputRows, BaseRowS, decomposeRowDataTypeCombination, initialDataTypeValue, GeometriesSliceState, GeometryConnectionData, GeometryIncomingElement, GeometryJointLocation, GeometryS, GeometrySignature, GNodeState, InputRowT, NodeTemplateId, OutputRowT, Point, RowDataTypeCombination, RowS, RowT, SpecificRowT, UndoAction } from "../types";
 import { generateCodeSafeUUID } from "../utils/codeStrings";
 import { generateAlphabeticalId } from "../utils/generateIds";
 
@@ -52,7 +52,7 @@ function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination): Row
         case 'output':
             return {
                 id, type: rowType, dataType, name: rowName,
-                value: defaultDataTypeValue[dataType],
+                value: initialDataTypeValue[dataType],
             }
         case 'rotation':
             return {
@@ -60,7 +60,7 @@ function createBlankRow(id: string, rowAndDataType: RowDataTypeCombination): Row
                 type: 'rotation', 
                 dataType: 'mat3',
                 name: rowName,
-                value: defaultDataTypeValue['mat3'],
+                value: initialDataTypeValue['mat3'],
                 rotationModel: 'xyz',
             }
         case 'color':
