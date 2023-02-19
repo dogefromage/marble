@@ -30,11 +30,14 @@ const CompilerRoot = () => {
             lastImage: layerPrograms,
             map: (layer) => {
                 try {
-                    return compiler.compileProgram({ 
+                    // console.time("COMPILATION");
+                    const program = compiler.compileProgram({ 
                         layer, geometries, includes,
                         geometryDatas, dependencyGraph,  
                         textureVarRowIndex: layer.index,
                     });
+                    // console.timeEnd("COMPILATION");
+                    return program;
                 } catch (e: any) {
                     console.error(e);
                 }
@@ -59,8 +62,8 @@ const CompilerRoot = () => {
     useEffect(() => {
         const setRows: ObjMap<number[]> = {};
         for (const program of Object.values(layerPrograms) as LayerProgram[]) {
-            const newRow = mapDynamicValues(program.textureVarMappings, program.textureVarRow, geometries, geometryDatas, false);
-            if (newRow != null) {
+            const newRow = mapDynamicValues(program.textureVarMappings, geometries, geometryDatas, program.textureVarRow);
+            if (newRow != program.textureVarRow) {
                 setRows[program.id] = newRow;
             }
         }

@@ -1,10 +1,11 @@
 import { MapEvery, Tuple } from "../UtilityTypes";
 
-export * from './lambda';
- 
-export type BaseDataTypes = 'unknown' | 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3' | 'SignedDistance';
+// super satisfying alignment
+export type UnknownDataType = 'unknown';
+export type SimpleDataTypes = 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3';
+export type StructDataTypes = 'SignedDistance';
 export type LambdaDataTypes = 'Surface';
-export type DataTypes = BaseDataTypes | LambdaDataTypes;
+export type DataTypes = UnknownDataType | SimpleDataTypes | StructDataTypes | LambdaDataTypes;
 
 type SimpleTypeDescriptor<D extends DataTypes> = {
     type: 'simple';

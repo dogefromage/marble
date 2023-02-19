@@ -1,9 +1,6 @@
-import { rowMeta } from "../../components/GeometryRowRoot";
-import { BaseInputRowT, decomposeTemplateId, initialDataTypeValue, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, NameRowT, ObjMapUndef, PassthroughRowT, SpecificRowT } from "../../types";
+import { BaseInputRowT, decomposeTemplateId, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, initialDataTypeValue, ObjMapUndef, SpecificRowT } from "../../types";
 import { glsl } from "../codeStrings";
-import { prefixGeometryFunction } from "../layerPrograms";
-import { createReturntypePlaceholder, formatDataTypeText, getStructurePropertyKey } from "../layerPrograms/generateCodeStatements";
-import { parseTemplateInstructions } from "../layerPrograms/parsing";
+import { formatDataTypeText } from "../layerPrograms/generateCodeStatements";
 
 // function generateCompositeInstructions(geometry: GeometryS) {
 //     const { inputs, outputs } = geometry;

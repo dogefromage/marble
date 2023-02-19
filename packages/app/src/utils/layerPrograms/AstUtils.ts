@@ -1,30 +1,26 @@
-import { parse as parseMarbleLanguage } from "@marble/language";
-import { LiteralNode, IdentifierNode, KeywordNode, DeclarationNode, FullySpecifiedTypeNode, DeclarationStatementNode, ReturnStatementNode, TypeSpecifierNode, StructNode } from "@shaderfrog/glsl-parser/ast";
-import { GeometryS, LambdaExpressionNode } from "../../types";
-import { glsl } from "../codeStrings";
+import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LambdaExpressionNode, LambdaTypeSpecifierNode, LiteralNode, ParameterDeclarationNode, ReturnStatementNode, SimpleTypeSpecifierNode, StatementNode, TypeSpecifierNode } from "@marble/language";
 import produceNoFreeze from "../produceNoFreeze";
-import { formatDataTypeText } from "./generateCodeStatements";
 
-export default class AstUtils {
-    public static createLiteral(literal: string, whitespace = ' '): LiteralNode {
+class AstUtils {
+    public createLiteral(literal: string, whitespace = ''): LiteralNode {
         return { type: 'literal', literal, whitespace }
     }
-    public static createIdentifier(identifier: string, whitespace = ' '): IdentifierNode {
+    public createIdentifier(identifier: string, whitespace = ''): IdentifierNode {
         return { type: 'identifier', identifier, whitespace }
     }
-    public static createKeyword(keyword: string, whitespace = ' '): KeywordNode {
+    public createKeyword(keyword: string, whitespace = ''): KeywordNode {
         return { type: 'keyword', token: keyword, whitespace };
     }
-    public static createDeclaration(identifier: string, expression: any): DeclarationNode {
+    public createDeclaration(identifier: string, expression: any): DeclarationNode {
         return {
             type: 'declaration',
-            identifier: this.createIdentifier(identifier),
+            identifier: this.createIdentifier(identifier, ' '),
             quantifier: null,
-            operator: this.createLiteral('='),
+            operator: this.createLiteral('=', ' '),
             initializer: expression,
         }
     }
-    public static createDeclarationStatement(fullTypeSpec: FullySpecifiedTypeNode, declaration: DeclarationNode)  {
+    public createDeclarationStatement(fullTypeSpec: FullySpecifiedTypeNode, declaration: DeclarationNode, semiWhitespace = '\n    ')  {
         const declarationStmt: DeclarationStatementNode = {
             type: 'declaration_statement',
             declaration: {
@@ -33,16 +29,18 @@ export default class AstUtils {
                 declarations: [ declaration ],
                 commas: [],
             },
-            semi: this.createLiteral(';', '\n    '),
+            semi: this.createLiteral(';', semiWhitespace),
         }
         return produceNoFreeze(declarationStmt, d => {
-            const identifier = d.declaration.specified_type.specifier.specifier;
-            if (identifier) {
-                identifier.whitespace = ' ';
+            const specifier = d.declaration.specified_type.specifier;
+            if (specifier.type === 'type_specifier') {
+                specifier.specifier.whitespace = ' ';
+            } else {
+                specifier.rp.whitespace = ' ';
             }
         });
     }
-    public static createReturnStatement(expression: any): ReturnStatementNode {
+    public createReturnStatement(expression: ExpressionNode): ReturnStatementNode {
         return {
             type: 'return_statement',
             return: this.createKeyword('return'),
@@ -50,24 +48,24 @@ export default class AstUtils {
             semi: this.createLiteral(';', '\n'),
         };
     }
-    public static createTypeSpecifierNode(typeNameIdentifier: KeywordNode | IdentifierNode): TypeSpecifierNode {
+    public createTypeSpecifierNode(typeNameIdentifier: KeywordNode | IdentifierNode): TypeSpecifierNode {
         return {
             type: 'type_specifier',
             quantifier: null,
             specifier: typeNameIdentifier,
         };
     }
-    public static createFullySpecifiedType(typeSpecNode: TypeSpecifierNode): FullySpecifiedTypeNode {
+    public createFullySpecifiedType(typeSpecNode: TypeSpecifierNode): FullySpecifiedTypeNode {
         return {
             type: 'fully_specified_type',
             qualifiers: [],
             specifier: typeSpecNode,
         }
     }
-    public static createParameterDeclaration(specifier: TypeSpecifierNode, identifier: IdentifierNode) {
-        const paramDeclarationDraft = {
+    public createParameterDeclaration(specifier: TypeSpecifierNode, identifier: IdentifierNode): ParameterDeclarationNode {
+        const paramDeclarationDraft: ParameterDeclarationNode = {
             type: 'parameter_declaration',
-            qualifiers: [],
+            qualifier: [],
             declaration: {
                 type: 'parameter_declarator',
                 quantifier: null,
@@ -75,35 +73,27 @@ export default class AstUtils {
             }
         };
         return produceNoFreeze(paramDeclarationDraft, d => {
-            d.declaration.identifier.whitespace = '';
-            (d.declaration.specifier.specifier as IdentifierNode).whitespace = ' ';
-        }) as any /* TODO */;
+            if (d.declaration.type === 'parameter_declarator') {
+                const declarator = d.declaration;
+                declarator.identifier.whitespace = '';
+                if (declarator.specifier.type === 'type_specifier') {
+                    declarator.specifier.specifier.whitespace = ' ';
+                } else {
+                    declarator.specifier.rp.whitespace = ' ';
+                }
+            }
+        });
     }
-    public static createFunctionCall(typeSpecifier: TypeSpecifierNode, argExpressions: any[]) {
+    public createFunctionCall(identifier: FunctionCallNode['identifier'], args: ExpressionNode[]): FunctionCallNode {
         return {
             type: 'function_call',
-            identifier: typeSpecifier,
+            identifier,
             lp: this.createLiteral('(', ''),
             rp: this.createLiteral(')', ''),
-            args: argExpressions,
-        } as any /* TODO */
+            args: this.placeCommas(args),
+        }
     }
-
-    public static getParameterIdentifiers(parameterDeclarationList?: any[]): [ TypeSpecifierNode, string ][] {
-        if (!parameterDeclarationList) return [];
-        return parameterDeclarationList.map(node => [ 
-            node.declaration.specifier, 
-            node.declaration.identifier.identifier 
-        ]);
-    }
-    public static createBlankGeometryProgram(geometry: GeometryS, methodName: string) {
-        const [ outputRow ] = geometry.outputs;
-        const returnType = formatDataTypeText(outputRow.dataType);
-        const code = glsl`${returnType} ${methodName}() {\n}\n`; /* TODO args */
-        const program = parseMarbleLanguage(code);
-        return program;
-    }
-    public static createLambdaExpression(name: string, parameters: any[], body: any): LambdaExpressionNode {
+    public createLambdaExpression(name: string, parameters: ParameterDeclarationNode[], body: ExpressionNode): LambdaExpressionNode {
         return {
             type: 'lambda_expression',
             header: {
@@ -118,7 +108,72 @@ export default class AstUtils {
             body,
         }
     }
-    public static placeCommas(list: any[]) {
+    public createLambdaTypeSpecifier(return_type: SimpleTypeSpecifierNode, args: SimpleTypeSpecifierNode[]): LambdaTypeSpecifierNode {
+        // float:(vec3,vec4)
+        return {
+            type: 'lambda_type_specifier',
+            return_type,
+            colon: this.createLiteral(':', ''),
+            lp: this.createLiteral('(', ''),
+            args,
+            rp: this.createLiteral(')', ''),
+        }
+    }
+    public createCompoundStatement(statements: StatementNode[]): CompoundStatementNode {
+        return {
+            type: 'compound_statement',
+            lb: this.createLiteral('{', '\n'),
+            rb: this.createLiteral('}', '\n'),
+            statements,
+        }
+    }
+    public createFunctionHeader(returnType: FullySpecifiedTypeNode, name: IdentifierNode): FunctionHeaderNode {
+        return {
+            type: 'function_header',
+            returnType,
+            name,
+            lp: this.createLiteral('('),
+        }
+    }
+    public createFunctionPrototype(header: FunctionHeaderNode, parameters: ParameterDeclarationNode[]): FunctionPrototypeNode {
+        const commas = this
+            .placeCommas(parameters)
+            .filter(item => item.type === 'literal') as LiteralNode[];
+        return {
+            type: 'function_prototype',
+            header,
+            commas,
+            parameters,
+            rp: this.createLiteral(')', ' '),
+        }
+    }
+    public createFunction(prototype: FunctionPrototypeNode, body: CompoundStatementNode): FunctionNode {
+        return {
+            type: 'function',
+            prototype,
+            body,
+        }
+    }
+
+    public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [ TypeSpecifierNode, string | undefined ][] {
+        if (!parameterDeclarationList) return [];
+        return parameterDeclarationList
+            .map(declaration => {
+                const declarator = declaration.declaration;
+                if (declarator.type === 'parameter_declarator') {
+                    return [ 
+                        declarator.specifier, 
+                        declarator.identifier.identifier 
+                    ];
+                } else {
+                    return [
+                        declarator,
+                        undefined,
+                    ];
+                }
+            });
+    }
+    public placeCommas<T extends any>(list: T[]): (T | LiteralNode)[] {
         const newList: any[] = [];
         for (let i = 0; i < list.length; i++) {
             if (i > 0) {
@@ -129,3 +184,6 @@ export default class AstUtils {
         return newList;
     }
 }
+
+const ast = new AstUtils();
+export default ast;

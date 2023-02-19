@@ -1,7 +1,5 @@
-import { parse } from '../lib';
-import fs from 'fs';
-import path from 'path';
 import { visit } from '@shaderfrog/glsl-parser/ast';
+import { parse } from '../lib';
 
 function safeStringify(obj: any, indent = 2) {
     const seen = new WeakSet();
@@ -15,9 +13,6 @@ function safeStringify(obj: any, indent = 2) {
         return value;
     }, indent);
 }
-
-
-
 
 describe('Parser', () => {
 

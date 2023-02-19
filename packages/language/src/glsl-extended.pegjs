@@ -180,6 +180,9 @@
   let scope = makeScope('global');
   let scopes = [scope];
 
+// TODO REPLACE WITH BETTER
+  addTypes(scope, [ 'SignedDistance', null ]);
+
   const pushScope = scope => {
     // console.log('pushing scope at ',text());
     scopes.push(scope); 
@@ -1123,15 +1126,18 @@ fully_specified_type
 //       }
 
 type_specifier
-  = lambda:lambda_type_specifier { return lambda; }
-  / specifier:type_specifier_nonarray quantifier:array_specifier? {
-    return node('type_specifier', { specifier, quantifier });
-  }
+  = lambda_type_specifier
+  / type_specifier_no_lambda
 
 lambda_type_specifier
-    = return_type:type_specifier_nonarray colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
-        return node('lambda_type_specifier', { return_type, colon, lp, args, rp });
-    }
+  = return_type:type_specifier_no_lambda colon:COLON lp:LEFT_PAREN args:function_type_args_list? rp:RIGHT_PAREN {
+      return node('lambda_type_specifier', { return_type, colon, lp, args, rp });
+  }
+
+type_specifier_no_lambda 
+  = specifier:type_specifier_nonarray quantifier:array_specifier? {
+    return node('type_specifier', { specifier, quantifier });
+  }
 
 function_type_args_list 
     = head:type_specifier tail:(COMMA type_specifier)* {

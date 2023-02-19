@@ -1,52 +1,53 @@
-import { GeometryConnectionData, GeometryS, BaseInputRowT, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, textureVarDatatypeSize } from "../../types";
+import { BaseInputRowT, dataTypeDescriptors, DataTypeValueTypes, GeometryConnectionData, GeometryS, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, SimpleDataTypes, textureVarDatatypeSize } from "../../types";
+import { LOOKUP_TEXTURE_WIDTH } from "../viewportView/GLProgramRenderer";
 
-function removeIndent(s: string, indent: number) {
-    for (let i = 0; i < indent; i++) {
-        const c = s.charAt(0);
-        if (c != ' ') {
-            break;
-        }
-        s = s.substring(1);
-    }
-    return s;
-}
+// function removeIndent(s: string, indent: number) {
+//     for (let i = 0; i < indent; i++) {
+//         const c = s.charAt(0);
+//         if (c != ' ') {
+//             break;
+//         }
+//         s = s.substring(1);
+//     }
+//     return s;
+// }
 
-function getCurrentIndent(s: string) {
-    const match = s.match(/^\s*/);
-    return match?.[ 0 ].length || 0;
-}
+// function getCurrentIndent(s: string) {
+//     const match = s.match(/^\s*/);
+//     return match?.[ 0 ].length || 0;
+// }
 
-export function setBlockIndent(instructions: string, newIndent: number) {
+// export function setBlockIndent(instructions: string, newIndent: number) {
 
-    const lines = instructions
-        .split('\n')
-        .filter(lines => /^\s*$/.test(lines) === false);
-    if (lines.length === 0) return '';
+//     const lines = instructions
+//         .split('\n')
+//         .filter(lines => /^\s*$/.test(lines) === false);
+//     if (lines.length === 0) return '';
 
-    const startIndent = getCurrentIndent(lines[ 0 ]);
-    const newIndentString = ' '.repeat(newIndent);
+//     const startIndent = getCurrentIndent(lines[ 0 ]);
+//     const newIndentString = ' '.repeat(newIndent);
 
-    const unindentedLines = lines
-        .map(line =>
-            newIndentString + removeIndent(line, startIndent)
-        );
-    return unindentedLines.join('\n');
-}
+//     const unindentedLines = lines
+//         .map(line =>
+//             newIndentString + removeIndent(line, startIndent)
+//         );
+//     return unindentedLines.join('\n');
+// }
 
-export function preprocessSource(
-    source: string, 
-    pattern: RegExp, 
-    callback: (args: { source: string, index: number, length: number }) => string,
-) {
-    let start = 0;
-    while (true) {
-        const match = source.substring(start).match(pattern);
-        if (match == null) break;
-        source = callback({ source, index: start + match.index!, length: match[0].length });
-        start += match.index! + match.length;
-    }
-    return source;
-}
+// export function preprocessSource(
+//     source: string, 
+//     pattern: RegExp, 
+//     callback: (args: { source: string, index: number, length: number }) => string,
+// ) {
+//     let start = 0;
+//     while (true) {
+//         const match = source.substring(start).match(pattern);
+//         if (match == null) break;
+//         source = callback({ source, index: start + match.index!, length: match[0].length });
+//         start += match.index! + match.length;
+//     }
+//     return source;
+// }
 
 export function splitIncludesFromSource(source: string) {
     const matches = [ ...source.matchAll(/#\s*DEFINCLUDE\s+(\w+);/g) ];
@@ -71,23 +72,36 @@ export function splitIncludesFromSource(source: string) {
 
 export function mapDynamicValues(
     textureVarMappings: ProgramTextureVarMapping[],
-    textureVarRow: number[],
     geometries: ObjMapUndef<GeometryS>,
     geometryDatas: ObjMapUndef<GeometryConnectionData>,
-    inPlace: boolean,
+    lastTextureVarRow?: number[],
 ) {
     const textureVarChanges = new Map<number, number>();
+    
+    const isInitial = lastTextureVarRow == null;
+    let textureVarRow = lastTextureVarRow || new Array<number>(LOOKUP_TEXTURE_WIDTH).fill(0);
 
     for (const mapping of textureVarMappings) {
-        const startCoord = mapping.textureCoordinate;
-        const size = textureVarDatatypeSize[ mapping.dataType ];
+        const { 
+            geometryId, 
+            geometryVersion,
+            textureCoordinate, 
+            dataType, 
+            nodeIndex,
+        } = mapping;
 
-        const geometry = geometries[ mapping.geometryId ];
-        const geometryData = geometryDatas[ mapping.geometryId ];
-        if (!geometry || !geometryData || geometry.version !== mapping.geometryVersion) {
+        const size = textureVarDatatypeSize[ dataType ];
+        const descriptor = dataTypeDescriptors[dataType];
+        if (descriptor.type !== 'simple') {
+            throw new Error(`Illegal mapping`);
+        }
+
+        const geometry = geometries[ geometryId ];
+        const geometryData = geometryDatas[ geometryId ];
+        if (!geometry || !geometryData || geometry.version !== geometryVersion) {
             continue;
         }
-        const node = geometry.nodes[ mapping.nodeIndex ];
+        const node = geometry.nodes[ nodeIndex ];
         const nodeTemplate = geometryData?.nodeDatas[ mapping.nodeIndex ]?.template;
         if (!node || !nodeTemplate) {
             continue;
@@ -97,32 +111,27 @@ export function mapDynamicValues(
         if (rowTemplate.dataType !== mapping.dataType) {
             throw new Error(`Datatype mismatch`);
         }
-        const value = row?.value ?? rowTemplate.value;
+        const value = (row?.value ?? rowTemplate.value) as DataTypeValueTypes[SimpleDataTypes]
 
         if (Array.isArray(value)) {
             for (let i = 0; i < size; i++) {
-                const coord = startCoord + i;
+                const coord = textureCoordinate + i;
                 if (textureVarRow[ coord ] !== value[ i ]) {
                     textureVarChanges.set(coord, value[i]);
                 }
             }
         } else if (typeof (value) === 'number') {
-                if (textureVarRow[ startCoord ] !== value) {
-                textureVarChanges.set(startCoord, value);
+                if (textureVarRow[textureCoordinate] !== value) {
+                textureVarChanges.set(textureCoordinate, value);
             }
         }
     }
 
-    const newRow = inPlace ? textureVarRow : textureVarRow.slice();
+    if (textureVarChanges.size > 0 && !isInitial) {
+        textureVarRow = textureVarRow.slice();
+    }
     for (const [ coord, value ] of textureVarChanges) {
-        newRow[coord] = value;
+        textureVarRow[coord] = value;
     }
-
-    if (textureVarChanges.size > 0 || inPlace) {
-        return newRow;
-    }
-}
-
-export function prefixGeometryFunction(geometryId: string) {
-    return `geo_${geometryId}`;
+    return textureVarRow;
 }

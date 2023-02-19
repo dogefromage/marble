@@ -1,28 +1,27 @@
-import { LiteralNode } from "@shaderfrog/glsl-parser/ast";
+import { ExpressionNode, FunctionCallNode, LambdaTypeSpecifierNode, LiteralNode, SimpleTypeSpecifierNode, TypeSpecifierNode } from "@marble/language";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
-import { dataTypeDescriptors, DataTypes, DataTypeValueTypes, initialDataTypeValue, OutputRowT, textureVarDatatypeSize } from "../../types";
-import AstUtils from "./AstUtils";
+import { dataTypeDescriptors, DataTypes, DataTypeValueTypes, initialDataTypeValue, textureVarDatatypeSize } from "../../types";
+import { arrayRange } from "../arrays";
+import ast from "./AstUtils";
 
 function formatGlslFloat(value: number): LiteralNode {
     const str = value.toString();
     const floatLiteral = /\./.test(str) ? str : `${str}.`;
-    return AstUtils.createLiteral(floatLiteral, '');
+    return ast.createLiteral(floatLiteral, '');
 }
 
-export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[ DataTypes ]): any /* TODO type */ {
+export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[DataTypes]): any /* TODO type */ {
     const descriptor = dataTypeDescriptors[dataType];
     if (descriptor.type === 'simple') {
         if (Array.isArray(value)) {
             const numberArray = value as number[];
             const paramList = numberArray.map(num => formatGlslFloat(num));
             return (
-                AstUtils.createFunctionCall(
-                    AstUtils.createTypeSpecifierNode(
-                        AstUtils.createKeyword(descriptor.keyword, '')
+                ast.createFunctionCall(
+                    ast.createTypeSpecifierNode(
+                        ast.createKeyword(descriptor.keyword, '')
                     ),
-                    AstUtils.placeCommas(
-                        paramList
-                    )
+                    paramList
                 )
             );
         } else {
@@ -39,13 +38,11 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[ DataT
         const { identifier, attributes } = descriptor;
         const args = attributes.map((dt, index) => parseValue(dt, value[index]));
         return (
-            AstUtils.createFunctionCall(
-                AstUtils.createTypeSpecifierNode(
-                    AstUtils.createIdentifier(identifier, '')
-                ), 
-                AstUtils.placeCommas(
-                    args
-                )
+            ast.createFunctionCall(
+                ast.createTypeSpecifierNode(
+                    ast.createIdentifier(identifier, '')
+                ),
+                args,
             )
         );
     }
@@ -57,14 +54,14 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[ DataT
         const bodyExpression = parseValue(returnType, initialDataTypeValue[returnType]);
 
         return (
-            AstUtils.createLambdaExpression(
-                'generated', 
+            ast.createLambdaExpression(
+                'generated',
                 parameterTypes.map((keyword, index) =>
-                    AstUtils.createParameterDeclaration(
-                        AstUtils.createTypeSpecifierNode(
-                            AstUtils.createKeyword(keyword)
+                    ast.createParameterDeclaration(
+                        ast.createTypeSpecifierNode(
+                            ast.createKeyword(keyword)
                         ),
-                        AstUtils.createIdentifier(`_${index}`)
+                        ast.createIdentifier(`_${index}`)
                     )
                 ),
                 bodyExpression,
@@ -74,88 +71,151 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[ DataT
     throw new Error(`Cannot convert dataType "${dataType}" to GLSL value`);
 }
 
-function formatTextureLookup(textureCoordinate: number, dataType: DataTypes): string {
-    if (dataType === 'float') {
-        return `${TEXTURE_LOOKUP_METHOD_NAME}(${textureCoordinate})`;
+export function parseDataType(dataType: DataTypes): TypeSpecifierNode | LambdaTypeSpecifierNode {
+    const descriptor = dataTypeDescriptors[dataType];
+    if (descriptor.type === 'simple') {
+        const { keyword } = descriptor;
+        return (
+            ast.createTypeSpecifierNode(
+                ast.createKeyword(
+                    keyword
+                )
+            )
+        );
+    } else if (descriptor.type === 'struct') {
+        const { identifier } = descriptor;
+        return (
+            ast.createTypeSpecifierNode(
+                ast.createIdentifier(
+                    identifier
+                )
+            )
+        );
+    } else if (descriptor.type === 'lambda') {
+        const { returnType, parameterTypes } = descriptor;
+        const returnTypeSpec = parseDataType(returnType) as SimpleTypeSpecifierNode;
+        const argSpecs = parameterTypes.map(param => parseDataType(param)) as SimpleTypeSpecifierNode[];
+        return ast.createLambdaTypeSpecifier(returnTypeSpec, argSpecs);
     }
+    throw new Error(`Unknown datatype "${dataType}"`);
+}
 
-    if (dataType === 'vec2' ||
-        dataType === 'vec3' ||
-        dataType === 'mat3') {
-        const count = textureVarDatatypeSize[ dataType ];
+function generateLookupCall(textureCoordinate: number): FunctionCallNode {
+    return ast.createFunctionCall(
+        ast.createTypeSpecifierNode(
+            ast.createIdentifier(TEXTURE_LOOKUP_METHOD_NAME),
+        ), [
+            ast.createLiteral(Math.floor(textureCoordinate).toString())
+        ]
+    )
+}
 
-        const coords: number[] = [];
-        for (let i = 0; i < count; i++)
-            coords.push(textureCoordinate + i);
-
-        const dataTypeParams = coords
-            .map(c => formatTextureLookup(c, 'float'))
-            .join(', ');
-
-        return `${dataType}(${dataTypeParams})`;
+function generateTextureLookup(textureCoordinate: number, dataType: DataTypes): ExpressionNode {
+    const descriptor = dataTypeDescriptors[dataType];
+    if (descriptor.type === 'simple') {
+        const { keyword } = descriptor;
+        switch (keyword) {
+            case 'float':
+                return generateLookupCall(textureCoordinate);
+            case 'vec2':
+            case 'vec3':
+            case 'vec4':
+            case 'mat3':
+                const size = textureVarDatatypeSize[dataType];
+                const lookups = arrayRange(size)
+                    .map(index => generateLookupCall(textureCoordinate + index));
+                return ast.createFunctionCall(
+                    parseDataType(dataType),
+                    lookups,
+                );
+            default: 
+                throw new Error(`Unknown keyword "${keyword}"`);
+        }
+    } else if (descriptor.type === 'struct') {
+        throw new Error(`Lookup for struct not supported`);
+        // const { attributes } = descriptor;
+        // const args: ExpressionNode[] = [];
+        // for (let i = 0; i < attributes.length; i++) {
+        //     const attributeType = attributes[i];
+        //     args.push(generateTextureLookup(textureCoordinate, attributeType));
+        //     textureCoordinate += textureVarDatatypeSize[attributeType]
+        // }
+        // return ast.createFunctionCall(
+        //     parseDataType(dataType),
+        //     args
+        // );
+    } else if (descriptor.type === 'lambda') {
+        throw new Error(`Lookup for lambda not supported`);
+    } else {
+        throw new Error(`Unknown type category "${(descriptor as any).type}"`);
     }
-
-    if (dataType === 'SignedDistance') {
-        const lookupDist = formatTextureLookup(textureCoordinate, 'float');
-        const lookupCol = formatTextureLookup(textureCoordinate + 1, 'vec3');
-        return `${'SignedDistance'}(${lookupDist}, ${lookupCol})`;
-    }
-
-    throw new Error(`Cannot lookup texture for dataType "${dataType}"`);
 }
 
-export function formatTextureLookupStatement(identifier: string, textureCoordinate: number, dataType: DataTypes) {
-    return `${dataType} ${identifier} = ${formatTextureLookup(textureCoordinate, dataType)};`;
+export function generateTextureLookupStatement(identifier: string, textureCoordinate: number, dataType: DataTypes) {
+    const declaration = ast.createDeclaration(
+        identifier,
+        generateTextureLookup(textureCoordinate, dataType),
+    )
+    const declarationStatement = ast.createDeclarationStatement(
+        ast.createFullySpecifiedType(
+            parseDataType(dataType)
+        ),
+        declaration,
+    );
+    return [ declaration, declarationStatement ] as const;
 }
 
-export function generateStackedExpression(func: string, identifier: string, defaultLiteral: string) {
-    return `${func}(${defaultLiteral}, ${identifier})`;
-}
+// export function generateStackedExpression(func: string, identifier: string, defaultLiteral: string) {
+//     return `${func}(${defaultLiteral}, ${identifier})`;
+// }
 
-export function createReturntypePlaceholder(outputs: OutputRowT[]) {
-    if (outputs.length === 0) return 'void';
-    if (outputs.length === 1) return outputs[0].dataType;
+// export function createReturntypePlaceholder(outputs: OutputRowT[]) {
+//     if (outputs.length === 0) return 'void';
+//     if (outputs.length === 1) return outputs[0].dataType;
 
-    const outputTypesString = outputs
-        .map(out => out.dataType)
-        .join(', ');
+//     const outputTypesString = outputs
+//         .map(out => out.dataType)
+//         .join(', ');
 
-    return `TuplePlaceholder<${outputTypesString}>`
-}
+//     return `TuplePlaceholder<${outputTypesString}>`
+// }
 
-export function generateStructureIdentifier(typeList: string[]) {
-    if (!typeList.length) {
-        throw new Error(`Cannot make emptry structure`);
-    }
-    let struct = '';
-    for (const name of typeList) {
-        const upperCased = name.charAt(0).toUpperCase() + name.slice(1);
-        struct += upperCased;
-    }
-    return struct;
-}
+// export function generateStructureIdentifier(typeList: string[]) {
+//     if (!typeList.length) {
+//         throw new Error(`Cannot make emptry structure`);
+//     }
+//     let struct = '';
+//     for (const name of typeList) {
+//         const upperCased = name.charAt(0).toUpperCase() + name.slice(1);
+//         struct += upperCased;
+//     }
+//     return struct;
+// }
 
-export function getStructurePropertyKey(index: number) {
-    if (index >= 26) {
-        throw new Error(`maximum properties reached`);
-    }
-    const charCodeIndex = 'a'.charCodeAt(0) + index;
-    return String.fromCharCode(charCodeIndex);
-}
+// export function getStructurePropertyKey(index: number) {
+//     if (index >= 26) {
+//         throw new Error(`maximum properties reached`);
+//     }
+//     const charCodeIndex = 'a'.charCodeAt(0) + index;
+//     return String.fromCharCode(charCodeIndex);
+// }
 
-export function generateStructureDefinition(typeList: string[]) {
-    const identifier = generateStructureIdentifier(typeList);
-    const propertyList = typeList.map((typeName, index) => {
-        return `    ${typeName} ${getStructurePropertyKey(index)};\n`;
-    });
-    const block = `struct ${identifier} {\n${propertyList.join('')}};`;
-    return block;
-}
+// export function generateStructureDefinition(typeList: string[]) {
+//     const identifier = generateStructureIdentifier(typeList);
+//     const propertyList = typeList.map((typeName, index) => {
+//         return `    ${typeName} ${getStructurePropertyKey(index)};\n`;
+//     });
+//     const block = `struct ${identifier} {\n${propertyList.join('')}};`;
+//     return block;
+// }
 
 export function formatDataTypeText(dataType: DataTypes): string {
     const descriptor = dataTypeDescriptors[dataType];
     if (descriptor.type === 'simple') {
         return descriptor.keyword;
+    }
+    if (descriptor.type === 'struct') {
+        return descriptor.identifier;
     }
     if (descriptor.type === 'lambda') {
         // Solid:(vec3)
