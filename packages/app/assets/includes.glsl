@@ -3,48 +3,48 @@
 // perlin noise: https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 
 #DEFINCLUDE inc_union;
-Solid inc_union(Solid a, Solid b)
+Distance inc_union(Distance a, Distance b)
 {
-    if (a.sd < b.sd) return a;
+    if (a.d < b.d) return a;
     else             return b;
 }
 
 #DEFINCLUDE inc_intersection;
-Solid inc_intersection(Solid a, Solid b)
+Distance inc_intersection(Distance a, Distance b)
 {
-    if (a.sd > b.sd) return a;
+    if (a.d > b.d) return a;
     else             return b;
 }
 
 #DEFINCLUDE inc_difference;
-Solid inc_difference(Solid a, Solid b)
+Distance inc_difference(Distance a, Distance b)
 {
-    b.sd = -b.sd;
-    if (a.sd > b.sd) return a;
+    b.d = -b.d;
+    if (a.d > b.d) return a;
     else             return b;
 }
 
 #DEFINCLUDE inc_smooth_union;
-Solid inc_smooth_union( Solid a, Solid b, float k ) {
-    float h = clamp( 0.5 + 0.5*(b.sd-a.sd)/k, 0.0, 1.0 );
-    return Solid(mix( b.sd, a.sd, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
+Distance inc_smooth_union( Distance a, Distance b, float k ) {
+    float h = clamp( 0.5 + 0.5*(b.d-a.d)/k, 0.0, 1.0 );
+    return Solid(mix( b.d, a.d, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
 }
 
 #DEFINCLUDE inc_smooth_difference;
-Solid inc_smooth_difference( Solid a, Solid b, float k ) {
-    float h = clamp( 0.5 - 0.5*(a.sd+b.sd)/k, 0.0, 1.0 );
-    return Solid(mix( a.sd, -b.sd, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
+Distance inc_smooth_difference( Distance a, Distance b, float k ) {
+    float h = clamp( 0.5 - 0.5*(a.d+b.d)/k, 0.0, 1.0 );
+    return Solid(mix( a.d, -b.d, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
 }
 
 #DEFINCLUDE inc_smooth_intersection;
-Solid inc_smooth_intersection( Solid a, Solid b, float k ) {
-    float h = clamp( 0.5 - 0.5*(b.sd-a.sd)/k, 0.0, 1.0 );
-    return Solid(mix( b.sd, a.sd, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
+Distance inc_smooth_intersection( Distance a, Distance b, float k ) {
+    float h = clamp( 0.5 - 0.5*(b.d-a.d)/k, 0.0, 1.0 );
+    return Solid(mix( b.d, a.d, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
 }
 
 #DEFINCLUDE inc_extrude_z;
-Solid inc_extrude_z(vec3 p, Solid s, float h) {
-    vec2 w = vec2( s.sd, abs(p.z) - h);
+Distance inc_extrude_z(vec3 p, Distance s, float h) {
+    vec2 w = vec2( s.d, abs(p.z) - h);
     return Solid(min(max(w.x,w.y),0.0) + length(max(w,0.0)), s.color);
 }
 

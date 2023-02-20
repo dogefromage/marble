@@ -9,6 +9,10 @@ export class Counter {
         private offset: number,
     ) { }
 
+    increment() {
+        return this.nextInts(1);
+    }
+
     nextInts(count: number) {
         if (this.current + count < this.maxExcluded) {
             const temp = this.current;

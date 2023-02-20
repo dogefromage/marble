@@ -1,9 +1,9 @@
-import { CompoundStatementNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, Program, ReturnStatementNode, Scope, StatementNode, SymbolNode, SymbolRow } from '@marble/language';
+import { AstNode, CompoundStatementNode, DeclaratorListNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, PreprocessorNode, Program, ReturnStatementNode, Scope, StatementNode, SymbolNode, SymbolRow } from '@marble/language';
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
 import _ from 'lodash';
 import { mapDynamicValues } from '.';
-import { DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, splitDependencyKey } from "../../types";
+import { DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, splitDependencyKey } from "../../types";
 import { Counter } from '../Counter';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
@@ -41,6 +41,7 @@ export default class ProgramCompiler {
         const geometryFunctions = new Array<FunctionNode>();
         const textureCoordinateCounter = new Counter(LOOKUP_TEXTURE_WIDTH, textureVarRowIndex * LOOKUP_TEXTURE_WIDTH);
         const textureVarMappings = new Array<ProgramTextureVarMapping>();
+        const usedIncludes = new Set<string>();
 
         for (const geoId of topologicalGeometrySorting) {
             const geoOrderEl = dependencyGraph.order.get(getDependencyKey(geoId, 'geometry'))!;
@@ -52,13 +53,13 @@ export default class ProgramCompiler {
 
             const context = new GeometryContext(geo, data);
             const geoProgram = this.functionNodeFromGeometry(
-                context, textureCoordinateCounter, textureVarMappings
-            );
+                context, textureCoordinateCounter, textureVarMappings, usedIncludes);
             if (!geoProgram) {
                 continue;
             }
             this.refactorLambdas(geoProgram);
-            const geoFunction = geoProgram.program[0] as FunctionNode;
+            this.removeIdentityDeclarations(geoProgram);
+            const geoFunction = builder.findFirstFunction(geoProgram);
             ast.correctIndent(geoFunction.body, 4);
             geometryFunctions.push(geoFunction);
         }
@@ -71,14 +72,15 @@ export default class ProgramCompiler {
         });
         console.info(generatedCode);
 
-        // const usedIncludes = new Set<string>(); // TODO
-        // const usedIncludesArr = [...usedIncludes].map(incId => {
-        //     const inc = includes[incId];
-        //     if (!inc) {
-        //         throw new Error(`Include ${incId} is missing!`);
-        //     }
-        //     return inc;
-        // });
+        const programIncludeArray = new Array<ProgramInclude>();
+        for (const includeIdentfier of usedIncludes) {
+            const programInclude = includes[includeIdentfier];
+            if (!programInclude) {
+                throw new Error(`Include "${includeIdentfier}" is missing!`);
+            }
+            programIncludeArray.push(programInclude);
+        }
+
         const layerOrderEl = dependencyGraph.order.get(rootLayerKey);
         const layerHash = layerOrderEl!.hash;
 
@@ -93,7 +95,7 @@ export default class ProgramCompiler {
             name: layer.name,
             hash: layerHash,
             mainProgramCode: generatedCode,
-            includes: [], //usedIncludesArr,
+            includes: programIncludeArray,
             rootFunctionName,
             textureVarMappings,
             textureVarRowIndex,
@@ -101,8 +103,36 @@ export default class ProgramCompiler {
         }
     }
 
+    private removeIdentityDeclarations(program: Program) {
+        // @ts-ignore
+        visit(program, {
+            compound_statement: {
+                exit: path => {
+                    const statements = path.node.statements as StatementNode[];
+                    for (let i = statements.length - 1; i >= 0; i--) {
+                        const statement = statements[i];
+                        if (statement.type !== 'declaration_statement') continue;
+                        const declaratorList = statement.declaration as DeclaratorListNode;
+                        if (declaratorList.type !== 'declarator_list') continue;;
+                        if (declaratorList.declarations.length > 1) continue;;
+                        const [ declaration ] = declaratorList.declarations;
+                        if (declaration.initializer.type !== 'identifier') continue;;
+                        // we know now the declaration is an identity declaration
+                        const refIdentifier = declaration.initializer;
+                        const refBinding = builder.findReferenceSymbolRow(program, refIdentifier)!;
+                        const declarationBinding = builder.findReferenceSymbolRow(program, declaration)!;
+                        const referencesWithoutInitializer = declarationBinding.references
+                            .filter(ref => ref !== declarationBinding.initializer);
+                        builder.mergeAndRenameReferences(refBinding, referencesWithoutInitializer);
+                        statements.splice(i, 1);
+                    }
+                }
+            }
+        })
+    }
+
     private refactorLambdas(program: Program) {
-        const func = program.program[0] as FunctionNode;
+        const func = builder.findFirstFunction(program);
         const funcScope = builder.getFunctionScope(program, func);
 
         // TODO: params of geometry function
@@ -113,7 +143,7 @@ export default class ProgramCompiler {
         }
 
         const declaredLambdas = new Map<string, LambdaDeclaration>();
-        let lambdaCounter = 0;
+        const lambdaCounter = new Counter(1e10, 0);
 
         let nextStatement = func.body.statements[0];
         while (nextStatement) {
@@ -128,40 +158,66 @@ export default class ProgramCompiler {
                 if (lambdaExpression.type !== 'lambda_expression') {
                     throw new Error(`Lambda declaration was not initialized by lambda expression`);
                 }
-                const declarationIdentifier = statement.declaration.declarations[0].identifier.identifier;
-                const lambdaScope = program.scopes
+                // scope
+                let lambdaScope = program.scopes
                     .find(scope => scope.name === lambdaExpression.header.name);
+                if (!lambdaScope) {
+                    const dummyNode = ast.createIdentifier('dummy');
+                    lambdaScope = {
+                        name: lambdaExpression.header.name,
+                        bindings: {},
+                        functions: {},
+                        types: {},
+                        parent: funcScope,
+                    }
+                    const params = ast.getParameterIdentifiers(lambdaExpression.header.parameters);
+                    for (const [_, param] of params) {
+                        lambdaScope.bindings[param] = { initializer: dummyNode, references: [] };
+                    }
+                }
+
+                const declarationIdentifier = statement.declaration.declarations[0].identifier.identifier;
                 declaredLambdas.set(declarationIdentifier, {
                     lambdaExpression,
                     lambdaScope,
                     lambdaType: statement.declaration.specified_type.specifier,
+                    // subInvocations: [],
                 });
                 // remove stmt
                 builder.spliceStatement(func.body, statement);
                 continue;
             }
 
-            // check for lambda reference
-            visit(statement, {
-                function_call: {
-                    exit: path => {
-                        const call = path.node as FunctionCallNode;
-                        const callIdentifier = call.identifier as any;
-                        const identifier: string | undefined =
-                            callIdentifier.specifier?.identifier ||
-                            callIdentifier.identifier ||
-                            callIdentifier.keyword;
-                        const lambdaTemplate = declaredLambdas.get(identifier!);
-                        if (!lambdaTemplate) { return; }
-                        this.instantiateLambda(
-                            program, func, funcScope, call, lambdaTemplate, statement, lambdaCounter++
-                        );
-                    }
-                }
-            });
+            const invocations = this.findLambdaInvocations(statement, declaredLambdas);
+
+            for (const invocation of invocations) {
+                const identifier = builder.getFunctionCallIdentifier(invocation)!;
+                const declaration = declaredLambdas.get(identifier)!;
+                this.instantiateLambda(
+                    program, func, funcScope, invocation, declaration, statement, lambdaCounter, declaredLambdas,
+                );
+            }
         }
 
         return builder;
+    }
+
+    private findLambdaInvocations(astNode: AstNode, declaredLambdas: Map<string, LambdaDeclaration>) {
+        const invocations = new Array<FunctionCallNode>();
+        // @ts-ignore
+        visit(astNode, {
+            function_call: {
+                exit: path => {
+                    const call = path.node as FunctionCallNode;
+                    const identifier = builder.getFunctionCallIdentifier(call)!;
+                    const declaration = declaredLambdas.get(identifier)
+                    if (declaration) {
+                        invocations.push(call);
+                    }
+                }
+            }
+        });
+        return invocations;
     }
 
     private refactorLambdaReturn(func: FunctionNode, funcScope: Scope, returnType: LambdaTypeSpecifierNode) {
@@ -206,13 +262,17 @@ export default class ProgramCompiler {
         funcScope: Scope,
         call: FunctionCallNode,
         lambdaDeclaration: LambdaDeclaration,
-        statement: StatementNode,
-        instanceIndex: number
+        beforeStatement: StatementNode,
+        instanceCounter: Counter,
+        declaredLambdas: Map<string, LambdaDeclaration>,
     ) {
+        const lambdaInstance = _.cloneDeep(lambdaDeclaration);
+        const instanceIndex = instanceCounter.increment();
+
         // declare arguments
         const argumentExpressions = call.args
             .filter(arg => arg.type !== 'literal') as ExpressionNode[]; // filter commas
-        const paramList = ast.getParameterIdentifiers(lambdaDeclaration.lambdaExpression.header.parameters);
+        const paramList = ast.getParameterIdentifiers(lambdaInstance.lambdaExpression.header.parameters);
         if (argumentExpressions.length !== paramList.length) {
             throw new Error(`Wrong amount of arguments for lambda`);
         }
@@ -234,55 +294,56 @@ export default class ProgramCompiler {
                 declaration
             );
             const binding: SymbolRow<SymbolNode> = { initializer: declaration, references: [declaration] };
-            builder.addStatementToCompound(func.body, funcScope, declarationStatement, statement, {
+            builder.addStatementToCompound(func.body, funcScope, declarationStatement, beforeStatement, {
                 [replacementIdentifier]: binding,
             });
             paramMapping[paramIdentifier] = { replacementIdentifier };
         }
 
+        const lambdaBody = lambdaInstance.lambdaExpression.body;
+        const lambdaScope = lambdaInstance.lambdaScope;
+
         const outIdentifier = `lambda_${instanceIndex}_out`;
         const lambdaOutput = {
             identifier: outIdentifier,
             specifier: ast.createFullySpecifiedType(
-                lambdaDeclaration.lambdaType.return_type,
+                lambdaInstance.lambdaType.return_type,
             )
         }
-        const lambdaBody = lambdaDeclaration.lambdaExpression.body;
-        let lambdaScope = lambdaDeclaration.lambdaScope;
-        if (!lambdaScope) {
-            const dummyNode = ast.createIdentifier('dummy');
-            lambdaScope = {
-                name: lambdaDeclaration.lambdaExpression.header.name,
-                bindings: {},
-                functions: {},
-                types: {},
-                parent: funcScope,
-            }
-            for (const param of Object.keys(paramMapping)) {
-                lambdaScope.bindings[param] = { initializer: dummyNode, references: [] };
-            }
-        }
 
-        this.instantiateFunction(
-            program, func.body, funcScope, 
+        const newStatements = this.appendFunctionBody(
+            program, func.body, funcScope,
             program, lambdaBody, lambdaScope,
             paramMapping,
             `l${instanceIndex}`,
             lambdaOutput,
-            statement,
+            beforeStatement,
         );
-
         // make call into identifier of lambda value
         builder.removeReferencesOfSubtree(program, call.identifier);
         const lambdaResultRef = call as unknown as IdentifierNode;
         Object.assign(lambdaResultRef, ast.createIdentifier(outIdentifier));
         builder.addNodeReference(funcScope, lambdaResultRef);
+
+        // recurse lambda invocation routine
+        for (const newStatement of newStatements) {
+            const subInvocations = this.findLambdaInvocations(newStatement, declaredLambdas);
+            for (const subInvocation of subInvocations) {
+
+                const identifier = builder.getFunctionCallIdentifier(subInvocation)!;
+                const declaration = declaredLambdas.get(identifier)!;
+                this.instantiateLambda(
+                    program, func, funcScope, subInvocation, declaration, newStatement, instanceCounter, declaredLambdas,
+                );
+            }
+        }
     }
 
     private functionNodeFromGeometry(
         geoCtx: GeometryContext,
         textureCoordinateCounter: Counter,
         textureVarMappings: ProgramTextureVarMapping[],
+        usedIncludes: Set<string>,
     ): Program | null {
         const usedSortedNodeGenerator = geoCtx.sortUsedNodeIndices();
         if (!usedSortedNodeGenerator.length) {
@@ -303,19 +364,18 @@ export default class ProgramCompiler {
             const isOutput = nodeIndex === usedSortedNodeGenerator.at(-1);
             // create template builder
             const templateProgram = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
-            const templateFunction = templateProgram.program[0] as FunctionNode;
+            const templateFunction = builder.findFirstFunction(templateProgram);
             const templateFunctionScope = templateProgram.scopes
                 .find(scope => scope.name === templateFunction.prototype.header.name.identifier);
             if (!templateFunctionScope) {
                 throw new Error(`Couldn't find scope`);
             }
+            // includes
+            this.processIncludes(templateProgram, usedIncludes);
             // params
             const paramMapping: ParamMapping = {};
             const paramDeclarations = ast.getParameterIdentifiers(templateFunction.prototype.parameters);
             for (const [specifier, parameter] of paramDeclarations) {
-                if (!parameter) {
-                    throw new Error(`No unnamed params allowed`);
-                }
                 const linkingRule = geoCtx.getRowLinkingRule(parameter);
 
                 let replacementIdentifier: string;
@@ -375,13 +435,19 @@ export default class ProgramCompiler {
                 specifier: outputFullSpec,
             };
 
-            this.instantiateFunction(
-                geoProgram, 
+            const templateCopy = _.cloneDeep({
+                prog: templateProgram,
+                body: templateFunction.body,
+                scope: templateFunctionScope,
+            });
+
+            this.appendFunctionBody(
+                geoProgram,
                 geoFunction.body,
                 geoScope,
-                templateProgram,
-                templateFunction.body,
-                templateFunctionScope,
+                templateCopy.prog,
+                templateCopy.body,
+                templateCopy.scope,
                 paramMapping,
                 nodeIndex,
                 output,
@@ -390,13 +456,28 @@ export default class ProgramCompiler {
         return geoProgram;
     }
 
-    private instantiateFunction(
-        targetProg: Program, 
+    private processIncludes(program: Program, usedIncludes: Set<string>) {
+        const preprocessors = program.program.filter(node => node.type === 'preprocessor') as PreprocessorNode[];
+        for (const preprocessor of preprocessors) {
+            const { line } = preprocessor;
+            const matchIncludes = line.match(/#\s*include\s+(\w+(?:\s*,\s*\w+)*)\s*;/i);
+            if (matchIncludes != null) {
+                const includesRaw = matchIncludes[ 1 ]!;
+                const includes = includesRaw.split(',').map(s => s.trim());
+                for (const include of includes) {
+                    usedIncludes.add(include);
+                }
+            }
+        }
+    }
+
+    private appendFunctionBody(
+        targetProg: Program,
         targetBody: CompoundStatementNode,
         targetscope: Scope,
-        refProg: Program, 
-        refBody: CompoundStatementNode | ExpressionNode,
-        refScope: Scope,
+        instanceProg: Program,
+        instanceBody: CompoundStatementNode | ExpressionNode,
+        instanceScope: Scope,
         paramMapping: ParamMapping,
         localName: string | number,
         output?: {
@@ -408,9 +489,6 @@ export default class ProgramCompiler {
         const processedBindings = new Set<SymbolRow<SymbolNode>>();
         let outputBinding: SymbolRow<SymbolNode> | undefined;
 
-        const [instanceProg, instanceBody, instanceScope] =
-            _.cloneDeep([refProg, refBody, refScope]);
-        
         let instanceCompound: CompoundStatementNode;
 
         if (instanceBody.type === 'compound_statement') {
@@ -448,7 +526,7 @@ export default class ProgramCompiler {
         }
 
         // params
-        for (const [ param, { replacementIdentifier } ] of Object.entries(paramMapping)) {
+        for (const [param, { replacementIdentifier }] of Object.entries(paramMapping)) {
             const paramSymbolRow = builder.findSymbolOfScopeBranch(instanceScope, param);
             if (!paramSymbolRow) {
                 throw new Error(`Undeclared binding for identifier "${param}"`);
@@ -466,7 +544,7 @@ export default class ProgramCompiler {
         }
 
         // locals
-        for (const [ bindingIdentifier, binding ] of Object.entries(instanceScope.bindings)) {
+        for (const [bindingIdentifier, binding] of Object.entries(instanceScope.bindings)) {
             if (processedBindings.has(binding)) {
                 continue;
             }
@@ -477,27 +555,29 @@ export default class ProgramCompiler {
             builder.declareBinding(targetscope.bindings, binding);
         }
 
+        const newStatementReference: StatementNode[] = [];
+
         // add statements
         for (const statement of instanceCompound.statements) {
             builder.addStatementToCompound(targetBody, targetscope, statement, beforeStatement);
+            newStatementReference.push(statement);
         }
         // remaining scopes
         const descendantScopes = builder.getDescendandScopes(instanceProg, instanceScope);
         targetProg.scopes.push(...descendantScopes);
+
+        return newStatementReference;
     }
 
     private getTemplateProgramInstance(template: GNodeTemplate) {
-        /**
-         * TODO
-         * - memoize result
-         */
-        const program = parseMarbleLanguage(template.instructions);
+        // TODO cache
+        const program = parseMarbleLanguage(template.instructions, { quiet: true });
 
         const globalSymbolCount = Object.keys(program.scopes[0].bindings).length;
         if (globalSymbolCount !== 0) {
             throw new Error(`Template instructions must only contain a single method`);
         }
-        const func = program.program[0] as FunctionNode;
+        const func = builder.findFirstFunction(program);
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
         for (const [typeNode, paramIdentifier] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {
@@ -511,7 +591,7 @@ export default class ProgramCompiler {
 interface LambdaDeclaration {
     lambdaType: LambdaTypeSpecifierNode;
     lambdaExpression: LambdaExpressionNode;
-    lambdaScope?: Scope;
+    lambdaScope: Scope;
 }
 
 type ParamMapping = ObjMap<{

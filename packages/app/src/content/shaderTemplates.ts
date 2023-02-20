@@ -71,7 +71,7 @@ struct Intersection {
     vec3 color;
 };
 
-struct SignedDistance {
+struct Distance {
     float d;
     vec3 color;
 };
@@ -88,7 +88,7 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
 
 %MAIN_PROGRAM%
 
-SignedDistance sdf(vec3 p)
+Distance sdf(vec3 p)
 {
     return %ROOT_FUNCTION_NAME%(p);
 }
@@ -110,7 +110,7 @@ Intersection march(Ray ray) {
         intersection.iterations = i + 1;
 
         vec3 p = rayAt(ray, intersection.t);
-        SignedDistance sd = sdf(p);
+        Distance sd = sdf(p);
         float d = 0.99 * sd.d;
 
         float minAllowedDist = marchParameters.z;

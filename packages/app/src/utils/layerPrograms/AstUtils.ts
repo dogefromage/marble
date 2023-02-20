@@ -155,22 +155,19 @@ class AstUtils {
         }
     }
 
-    public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [ TypeSpecifierNode, string | undefined ][] {
+    public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [ TypeSpecifierNode, string ][] {
         if (!parameterDeclarationList) return [];
         return parameterDeclarationList
             .map(declaration => {
                 const declarator = declaration.declaration;
-                if (declarator.type === 'parameter_declarator') {
-                    return [ 
-                        declarator.specifier, 
-                        declarator.identifier.identifier 
-                    ];
-                } else {
-                    return [
-                        declarator,
-                        undefined,
-                    ];
+                if (declarator.type !== 'parameter_declarator') {
+                    throw new Error(`Unnamed params not allowed`);
                 }
+
+                return [ 
+                    declarator.specifier, 
+                    declarator.identifier.identifier 
+                ];
             });
     }
     public placeCommas<T extends any>(list: T[]): (T | LiteralNode)[] {

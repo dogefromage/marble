@@ -1,4 +1,4 @@
-import { AstNode, CompoundStatementNode, FunctionNode, LambdaTypeSpecifierNode, ParameterDeclarationNode, Program, Scope, StatementNode, SymbolNode, SymbolRow, SymbolTable, TypeSpecifierNode } from "@marble/language";
+import { AstNode, CompoundStatementNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaTypeSpecifierNode, ParameterDeclarationNode, Program, Scope, SimpleTypeSpecifierNode, StatementNode, SymbolNode, SymbolRow, SymbolTable, TypeSpecifierNode } from "@marble/language";
 import { Path, visit } from "@shaderfrog/glsl-parser/ast";
 import ast from "./AstUtils";
 
@@ -150,7 +150,7 @@ class ProgramBuilder {
             identifier.identifier = targetIdentifier;
         }
     }
-    public getSymbolNodeIdentifier(node: SymbolNode) {
+    public getSymbolNodeIdentifier(node: SymbolNode): IdentifierNode {
         switch (node.type) {
             case 'identifier':
                 return node;
@@ -161,8 +161,22 @@ class ProgramBuilder {
                     break;
                 }
                 return node.declaration.identifier;
+            case 'function_call':
+                const typeSpec = node.identifier as SimpleTypeSpecifierNode;
+                if (typeSpec.specifier.type !== 'identifier') {
+                    throw new Error(`Keyword node cannot be referenced`);
+                }
+                return typeSpec.specifier;
         }
         throw new Error(`No identifier found in node of type "${node.type}"`);
+    }
+    public getFunctionCallIdentifier(call: FunctionCallNode) {
+        const callIdentifier = call.identifier as any;
+        const identifier: string | undefined =
+            callIdentifier.specifier?.identifier ||
+            callIdentifier.identifier ||
+            callIdentifier.keyword;
+        return identifier;
     }
 
     public addScope(program: Program, name: string, parent?: Scope) {
@@ -198,15 +212,13 @@ class ProgramBuilder {
         }
         return [ ...descendants ];
     }
-    // public isDescendantScope(descendant: Scope, ancestor: Scope) {
-    //     while (descendant.parent) {
-    //         if (descendant.parent === ancestor) {
-    //             return true;
-    //         }
-    //         descendant = descendant.parent;
-    //     }
-    //     return false;
-    // }
+    public findFirstFunction(program: Program) {
+        const func = program.program.find(node => node.type === 'function') as FunctionNode;
+        if (!func) {
+            throw new Error(`No function in program`);
+        }
+        return func;
+    }
 }
 
 const builder = new ProgramBuilder();

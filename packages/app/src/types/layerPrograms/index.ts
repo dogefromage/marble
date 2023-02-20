@@ -3,7 +3,7 @@ import { MapEvery, Tuple } from "../UtilityTypes";
 // super satisfying alignment
 export type UnknownDataType = 'unknown';
 export type SimpleDataTypes = 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat3';
-export type StructDataTypes = 'SignedDistance';
+export type StructDataTypes = 'Distance';
 export type LambdaDataTypes = 'Surface';
 export type DataTypes = UnknownDataType | SimpleDataTypes | StructDataTypes | LambdaDataTypes;
 
@@ -28,8 +28,8 @@ export type DataTypeDescriptor =
     | SimpleTypeDescriptor<'vec3'>
     | SimpleTypeDescriptor<'vec4'>
     | SimpleTypeDescriptor<'mat3'>
-    | StructTypeDescriptor<'SignedDistance', [ 'float', 'vec3' ]>
-    | LambdaTypeDescriptor<'SignedDistance', [ 'vec3' ]>
+    | StructTypeDescriptor<'Distance', [ 'float', 'vec3' ]>
+    | LambdaTypeDescriptor<'Distance', [ 'vec3' ]>
 
 export const dataTypeDescriptors: { [D in DataTypes]: DataTypeDescriptor } = {
     unknown:        { type: 'simple', keyword: 'unknown' },
@@ -38,8 +38,8 @@ export const dataTypeDescriptors: { [D in DataTypes]: DataTypeDescriptor } = {
     vec3:           { type: 'simple', keyword: 'vec3' },
     vec4:           { type: 'simple', keyword: 'vec4' },
     mat3:           { type: 'simple', keyword: 'mat3' },
-    SignedDistance: { type: 'struct', identifier: 'SignedDistance', attributes: [ 'float', 'vec3' ] },
-    Surface:        { type: 'lambda', returnType: 'SignedDistance', parameterTypes: [ 'vec3' ] },
+    Distance: { type: 'struct', identifier: 'Distance', attributes: [ 'float', 'vec3' ] },
+    Surface:        { type: 'lambda', returnType: 'Distance', parameterTypes: [ 'vec3' ] },
 }
 
 export interface DataTypeValueTypes {
@@ -49,7 +49,7 @@ export interface DataTypeValueTypes {
     vec3:             Tuple<number, 3>;
     vec4:             Tuple<number, 4>;
     mat3:             Tuple<number, 9>;
-    SignedDistance: [ number, Tuple<number, 3> ];
+    Distance: [ number, Tuple<number, 3> ];
     Surface:          null;
 }
 
@@ -62,7 +62,7 @@ export const initialDataTypeValue: { [D in DataTypes]: DataTypeValueTypes[D] } =
     vec3:           [ 0, 0, 0 ],
     vec4:           [ 0, 0, 0, 0 ],
     mat3:           [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ],
-    SignedDistance: [ FAR_DISTANCE, [ 0, 0, 0 ] ],
+    Distance: [ FAR_DISTANCE, [ 0, 0, 0 ] ],
     Surface:          null,
 }
 
@@ -73,7 +73,7 @@ export const textureVarDatatypeSize: MapEvery<DataTypes, number> = {
     vec4:            4,
     mat3:            9,
     // not dynamic
-    SignedDistance: -1,
+    Distance: -1,
     unknown:        -1,
     Surface:        -1,
 }

@@ -7,4 +7,4 @@ export enum TemplateColors {
     Vectors = '#123456',
 }
 
-export const EMPTY_SOLID_LITERAL = `SignedDistance(1000.0, vec3(0, 0, 0))`; // TODO replace
+export const EMPTY_SOLID_LITERAL = `Distance(1000.0, vec3(0, 0, 0))`; // TODO replace

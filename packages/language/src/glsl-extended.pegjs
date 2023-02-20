@@ -180,9 +180,6 @@
   let scope = makeScope('global');
   let scopes = [scope];
 
-// TODO REPLACE WITH BETTER
-  addTypes(scope, [ 'SignedDistance', null ]);
-
   const pushScope = scope => {
     // console.log('pushing scope at ',text());
     scopes.push(scope); 
@@ -598,7 +595,13 @@ function_call
         addFunctionReference(scope, fnName, n);
       }
 
-      return n;
+        // for lambdas
+        const foundScope = findBindingScope(scope, fnName);
+        if (foundScope) {
+            foundScope.bindings[fnName].references.push(n);
+        }
+
+        return n;
     }
 
 function_arguments =
@@ -1454,14 +1457,10 @@ jump_statement "jump statement"
     return node('discard_statement', { discard: jump, semi });
   }
 
-// // TODO: This allows shaders with preprocessors to be parsed, and puts the
-// // preprocessor line in the AST. Do I want to do this, or do I want to
-// // always preprocess shaders before parsing? Not preprocessing will likely
-// // break the ability to parse if there is wacky define using
-// preprocessor "prepocessor" = line:$('#' [^\n]*) _:_? { return node('preprocessor', { line, _ }); }
+preprocessor "prepocessor" = line:$('#' [^\n]*) _:_? { return node('preprocessor', { line, _ }); }
 
 // Translation unit is start of grammar
-translation_unit = (external_declaration /* / preprocessor */)+
+translation_unit = (external_declaration / preprocessor )+
 
 function_prototype_statement = 
   declaration:function_prototype_no_new_scope semi:SEMICOLON {

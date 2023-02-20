@@ -1,6 +1,6 @@
-import { AstNode, IdentifierNode, DeclarationNode, ParameterDeclarationNode, FunctionNode } from './node';
+import { AstNode, IdentifierNode, DeclarationNode, ParameterDeclarationNode, FunctionNode, FunctionCallNode } from './node';
 
-type SymbolNode = IdentifierNode | DeclarationNode | ParameterDeclarationNode; // add more if needed
+type SymbolNode = IdentifierNode | DeclarationNode | ParameterDeclarationNode | FunctionCallNode; // add more if needed
 
 export interface SymbolRow<N extends SymbolNode | FunctionNode> {
     initializer: N;

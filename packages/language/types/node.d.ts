@@ -352,7 +352,7 @@ export interface LambdaExpressionNode {
         colon: LiteralNode;
         name: string;
     }
-    body: any; // TODO expression type
+    body: ExpressionNode | CompoundStatementNode;
 }
 export interface LambdaTypeSpecifierNode {
     type: 'lambda_type_specifier',
