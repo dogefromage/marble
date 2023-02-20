@@ -7497,7 +7497,10 @@ function peg$parse(input, options) {
     s0 = peg$currPos;
     s1 = peg$parselambda_expression_header();
     if (s1 !== peg$FAILED) {
-      s2 = peg$parseexpression();
+      s2 = peg$parsecompound_statement_no_new_scope();
+      if (s2 === peg$FAILED) {
+        s2 = peg$parseexpression();
+      }
       if (s2 !== peg$FAILED) {
         peg$savedPos = s0;
         s0 = peg$f26(s1, s2);

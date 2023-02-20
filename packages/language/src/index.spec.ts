@@ -30,7 +30,7 @@ describe('Parser', () => {
         // try {
             const ast = parse(`
                 vec3:(int,int) test(int:() a, float b) {
-                    lambda (int a) : a * 5;
+                    return lambda (int a) : { return a * 5; };
                 }
     
                 float:() test(int a, float b) {

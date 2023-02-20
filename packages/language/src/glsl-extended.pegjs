@@ -803,8 +803,7 @@ lambda_expression_header
         }
 
 lambda_expression  
-    = header:lambda_expression_header 
-      body:expression {
+    = header:lambda_expression_header body:(compound_statement_no_new_scope / expression) {
         scope = popScope(scope);
         return node('lambda_expression', {
             header,

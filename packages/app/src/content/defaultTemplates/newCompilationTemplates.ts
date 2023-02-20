@@ -23,6 +23,26 @@ const sphere: GNodeTemplate = {
     `,
 }
 
+const box: GNodeTemplate = {
+    id: getTemplateId('static', 'box'),
+    version: 0,
+    category: 'solids',
+    rows: [
+        nameRow('Box', TemplateColors.Primitives),
+        defaultOutputRows['surface'],
+        inputField('size', 'Size', 'vec3', [1,1,1]),
+        inputField('color', 'Color', 'vec3', [1,1,1]),
+    ],
+    instructions: glsl`
+        SignedDistance:(vec3) sphere(float size, vec3 color) {
+            return lambda (vec3 p) : {
+                vec3 q = abs(p) - size;
+                return SignedDistance(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
+            }
+        }
+    `,
+}
+
 const colorRed: GNodeTemplate = {
     id: getTemplateId('static', 'color_red'),
     version: 0,
@@ -54,4 +74,5 @@ const colorRed: GNodeTemplate = {
 export default [
     colorRed,
     sphere,
+    box,
 ];
