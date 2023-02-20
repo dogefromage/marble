@@ -1,16 +1,16 @@
-import { ExpressionNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, ReturnStatementNode, Scope, StatementNode, SymbolNode, SymbolRow } from '@marble/language';
+import { CompoundStatementNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, Program, ReturnStatementNode, Scope, StatementNode, SymbolNode, SymbolRow } from '@marble/language';
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
 import _ from 'lodash';
 import { mapDynamicValues } from '.';
-import { DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, splitDependencyKey } from "../../types";
+import { DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, splitDependencyKey } from "../../types";
 import { Counter } from '../Counter';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
 import ast from './AstUtils';
 import { generateTextureLookupStatement, parseDataType } from './generateCodeStatements';
 import { GeometryContext } from './GeometryContext';
-import ProgramBuilder from './ProgramBuilder';
+import builder from './ProgramBuilder';
 
 export default class ProgramCompiler {
 
@@ -51,14 +51,15 @@ export default class ProgramCompiler {
             }
 
             const context = new GeometryContext(geo, data);
-            const geoProgramBuilder = this.functionNodeFromGeometry(
+            const geoProgram = this.functionNodeFromGeometry(
                 context, textureCoordinateCounter, textureVarMappings
             );
-            if (!geoProgramBuilder) {
+            if (!geoProgram) {
                 continue;
             }
-            this.refactorLambdas(geoProgramBuilder);
-            const geoFunction = geoProgramBuilder.program.program[0] as FunctionNode;
+            this.refactorLambdas(geoProgram);
+            const geoFunction = geoProgram.program[0] as FunctionNode;
+            ast.correctIndent(geoFunction.body, 4);
             geometryFunctions.push(geoFunction);
         }
 
@@ -100,17 +101,17 @@ export default class ProgramCompiler {
         }
     }
 
-    private refactorLambdas(builder: ProgramBuilder) {
-        const func = builder.program.program[0] as FunctionNode;
-        const funcScope = builder.getFunctionScope(func);
+    private refactorLambdas(program: Program) {
+        const func = program.program[0] as FunctionNode;
+        const funcScope = builder.getFunctionScope(program, func);
 
         // TODO: params of geometry function
 
         const returnType = func.prototype.header.returnType.specifier;
         if (returnType.type === 'lambda_type_specifier') {
-            this.refactorLambdaReturn(builder, func, funcScope, returnType);
+            this.refactorLambdaReturn(func, funcScope, returnType);
         }
-        
+
         const declaredLambdas = new Map<string, LambdaDeclaration>();
         let lambdaCounter = 0;
 
@@ -128,31 +129,32 @@ export default class ProgramCompiler {
                     throw new Error(`Lambda declaration was not initialized by lambda expression`);
                 }
                 const declarationIdentifier = statement.declaration.declarations[0].identifier.identifier;
-                const lambdaScope = builder.findScopeByName(lambdaExpression.header.name);
+                const lambdaScope = program.scopes
+                    .find(scope => scope.name === lambdaExpression.header.name);
                 declaredLambdas.set(declarationIdentifier, {
-                    lambdaExpression, 
+                    lambdaExpression,
                     lambdaScope,
                     lambdaType: statement.declaration.specified_type.specifier,
                 });
                 // remove stmt
-                builder.spliceFunctionStatement(func, statement);
+                builder.spliceStatement(func.body, statement);
                 continue;
             }
-        
+
             // check for lambda reference
             visit(statement, {
                 function_call: {
                     exit: path => {
                         const call = path.node as FunctionCallNode;
                         const callIdentifier = call.identifier as any;
-                        const identifier: string | undefined = 
-                            callIdentifier.specifier?.identifier || 
-                            callIdentifier.identifier || 
+                        const identifier: string | undefined =
+                            callIdentifier.specifier?.identifier ||
+                            callIdentifier.identifier ||
                             callIdentifier.keyword;
                         const lambdaTemplate = declaredLambdas.get(identifier!);
                         if (!lambdaTemplate) { return; }
                         this.instantiateLambda(
-                            builder, func, call, lambdaTemplate, statement, lambdaCounter++
+                            program, func, funcScope, call, lambdaTemplate, statement, lambdaCounter++
                         );
                     }
                 }
@@ -162,17 +164,17 @@ export default class ProgramCompiler {
         return builder;
     }
 
-    private refactorLambdaReturn(builder: ProgramBuilder, func: FunctionNode, funcScope: Scope, returnType: LambdaTypeSpecifierNode) {
+    private refactorLambdaReturn(func: FunctionNode, funcScope: Scope, returnType: LambdaTypeSpecifierNode) {
         const callArgs: string[] = [];
         // add lambda args to function prototype
         for (let argIndex = 0; argIndex < returnType.args.length; argIndex++) {
             const arg = GeometryContext.getIdentifierName('lambda_arg', argIndex);
             callArgs.push(arg);
             const paramDeclaration = ast.createParameterDeclaration(
-                returnType.args[argIndex], 
+                returnType.args[argIndex],
                 ast.createIdentifier(arg)
             );
-            builder.addFunctionParameter(func, paramDeclaration, arg);
+            builder.addFunctionParameter(func, funcScope, paramDeclaration, arg);
         }
         // change function return type
         returnType.return_type.specifier.whitespace = ' ';
@@ -199,165 +201,154 @@ export default class ProgramCompiler {
     }
 
     private instantiateLambda(
-        builder: ProgramBuilder, 
-        func: FunctionNode, 
-        call: FunctionCallNode, 
-        lambdaDeclaration: LambdaDeclaration, 
+        program: Program,
+        func: FunctionNode,
+        funcScope: Scope,
+        call: FunctionCallNode,
+        lambdaDeclaration: LambdaDeclaration,
         statement: StatementNode,
         instanceIndex: number
     ) {
-        const lambdaInstance = _.cloneDeep(lambdaDeclaration);
-        const { lambdaExpression, lambdaScope, lambdaType } = lambdaInstance;
-        
         // declare arguments
         const argumentExpressions = call.args
             .filter(arg => arg.type !== 'literal') as ExpressionNode[]; // filter commas
-        const paramList = ast.getParameterIdentifiers(lambdaExpression.header.parameters);
+        const paramList = ast.getParameterIdentifiers(lambdaDeclaration.lambdaExpression.header.parameters);
         if (argumentExpressions.length !== paramList.length) {
             throw new Error(`Wrong amount of arguments for lambda`);
         }
+        const paramMapping: ParamMapping = {};
+
         for (let paramIndex = 0; paramIndex < paramList.length; paramIndex++) {
             // declaration statement
-            const [ typeSpec, paramIdentifier ] = paramList[paramIndex];
+            const [typeSpec, paramIdentifier] = paramList[paramIndex];
             if (!paramIdentifier) {
                 throw new Error(`Lambda parameters must be named`);
             }
-            const argIdentifier = `_lambda_${instanceIndex}_arg_${paramIndex}`;
+            const replacementIdentifier = `lambda_${instanceIndex}_arg_${paramIndex}`;
             const declaration = ast.createDeclaration(
-                argIdentifier, 
+                replacementIdentifier,
                 argumentExpressions[paramIndex]
             );
             const declarationStatement = ast.createDeclarationStatement(
-                ast.createFullySpecifiedType(typeSpec), 
+                ast.createFullySpecifiedType(typeSpec),
                 declaration
             );
-            const binding: SymbolRow<SymbolNode> = { initializer: declaration, references: [ declaration ] };
-            builder.addFunctionStatement(func, declarationStatement, statement, {
-                [argIdentifier]: binding,
+            const binding: SymbolRow<SymbolNode> = { initializer: declaration, references: [declaration] };
+            builder.addStatementToCompound(func.body, funcScope, declarationStatement, statement, {
+                [replacementIdentifier]: binding,
             });
-            // rename 
-            if (lambdaScope) {
-                const referencesOnly = lambdaScope.bindings[paramIdentifier]!.references
-                    .filter(reference => reference.type !== 'parameter_declaration');
-                builder.mergeAndRenameReferences(binding, referencesOnly);
+            paramMapping[paramIdentifier] = { replacementIdentifier };
+        }
+
+        const outIdentifier = `lambda_${instanceIndex}_out`;
+        const lambdaOutput = {
+            identifier: outIdentifier,
+            specifier: ast.createFullySpecifiedType(
+                lambdaDeclaration.lambdaType.return_type,
+            )
+        }
+        const lambdaBody = lambdaDeclaration.lambdaExpression.body;
+        let lambdaScope = lambdaDeclaration.lambdaScope;
+        if (!lambdaScope) {
+            const dummyNode = ast.createIdentifier('dummy');
+            lambdaScope = {
+                name: lambdaDeclaration.lambdaExpression.header.name,
+                bindings: {},
+                functions: {},
+                types: {},
+                parent: funcScope,
+            }
+            for (const param of Object.keys(paramMapping)) {
+                lambdaScope.bindings[param] = { initializer: dummyNode, references: [] };
             }
         }
-        // declare lambda output value
-        const outIdentifier = `lambda_${instanceIndex}_out`;
-        const outDeclaration = ast.createDeclaration(outIdentifier, lambdaExpression.body);
-        const outDeclarationStatement = ast.createDeclarationStatement(
-            ast.createFullySpecifiedType(
-                lambdaType.return_type
-            ), 
-            outDeclaration,
+
+        this.instantiateFunction(
+            program, func.body, funcScope, 
+            program, lambdaBody, lambdaScope,
+            paramMapping,
+            `l${instanceIndex}`,
+            lambdaOutput,
+            statement,
         );
-        const outBinding: SymbolRow<SymbolNode> = { initializer: outDeclaration, references: [ outDeclaration ] };
-        builder.addFunctionStatement(func, outDeclarationStatement, statement, {
-            [ outIdentifier ]: outBinding,
-        });
-        // make call into identifier
-        builder.removeReferencesOfSubtree(call.identifier); // cleanup
-        const outIdentifierNode = call as unknown as IdentifierNode;
-        Object.assign(outIdentifierNode, ast.createIdentifier(outIdentifier));
-        outBinding.references.push(outIdentifierNode);
+
+        // make call into identifier of lambda value
+        builder.removeReferencesOfSubtree(program, call.identifier);
+        const lambdaResultRef = call as unknown as IdentifierNode;
+        Object.assign(lambdaResultRef, ast.createIdentifier(outIdentifier));
+        builder.addNodeReference(funcScope, lambdaResultRef);
     }
 
     private functionNodeFromGeometry(
         geoCtx: GeometryContext,
-        textureCoordinateCounter: Counter, 
+        textureCoordinateCounter: Counter,
         textureVarMappings: ProgramTextureVarMapping[],
-    ): ProgramBuilder | null {
+    ): Program | null {
         const usedSortedNodeGenerator = geoCtx.sortUsedNodeIndices();
         if (!usedSortedNodeGenerator.length) {
             return null;
         }
-        
+
         const methodName = GeometryContext.getIdentifierName('geometry', geoCtx.geometry.id);
-        const [ outputRow ] = geoCtx.geometry.outputs;
+        const [outputRow] = geoCtx.geometry.outputs;
         const returnType = parseDataType(outputRow.dataType);
-        const geoBuilder = new ProgramBuilder();
+        const geoProgram = builder.createEmptyProgram();
         const {
             functionNode: geoFunction,
-            functionScope: geoFunctionScope,
-        } = geoBuilder.createFunction(returnType, methodName);
+            functionScope: geoScope,
+        } = builder.createFunction(geoProgram, returnType, methodName);
 
         for (const nodeIndex of usedSortedNodeGenerator) {
             geoCtx.select(nodeIndex);
             const isOutput = nodeIndex === usedSortedNodeGenerator.at(-1);
             // create template builder
-            const templateProgramInstance = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
-            const templateBuilder = new ProgramBuilder(templateProgramInstance);
-            const templateFunction = templateBuilder.program.program[0] as FunctionNode;
-            const templateFunctionScope = templateBuilder.getFunctionScope(templateFunction);
-
-            const processedBindings = new Set<SymbolRow<SymbolNode>>();
-            let outputBinding: SymbolRow<SymbolNode> | undefined;
-
-            // return statement to declaration
-            const returnStatement = templateFunction.body.statements
-                .find(statement => statement.type === 'return_statement') as ReturnStatementNode | undefined;
-            if (!isOutput && returnStatement) {
-                templateBuilder.spliceFunctionStatement(templateFunction, returnStatement);
-                const nodeOutputIdentifier = GeometryContext.getIdentifierName('output', nodeIndex);
-                const outputFullSpecType = templateFunction.prototype.header.returnType;
-                const declaration = ast.createDeclaration(
-                    nodeOutputIdentifier, 
-                    returnStatement.expression,
-                );
-                const declarationStatement = ast.createDeclarationStatement(outputFullSpecType, declaration);
-                outputBinding = { initializer: declaration, references: [ declaration ] };
-                templateBuilder.addFunctionStatement(templateFunction, declarationStatement, undefined, {
-                    [nodeOutputIdentifier]: outputBinding,
-                });
+            const templateProgram = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
+            const templateFunction = templateProgram.program[0] as FunctionNode;
+            const templateFunctionScope = templateProgram.scopes
+                .find(scope => scope.name === templateFunction.prototype.header.name.identifier);
+            if (!templateFunctionScope) {
+                throw new Error(`Couldn't find scope`);
             }
-
+            // params
+            const paramMapping: ParamMapping = {};
             const paramDeclarations = ast.getParameterIdentifiers(templateFunction.prototype.parameters);
-            for (const [ paramTypeSpecNode, paramIdentifier ] of paramDeclarations) {
-                if (!paramIdentifier) {
+            for (const [specifier, parameter] of paramDeclarations) {
+                if (!parameter) {
                     throw new Error(`No unnamed params allowed`);
                 }
-                const paramSymbolRow = templateBuilder.findSymbolOfScopeBranch(templateFunctionScope, paramIdentifier);
-                if (!paramSymbolRow) {
-                    throw new Error(`Could not find symbol for parameter`);
-                }
-                processedBindings.add(paramSymbolRow);
-                const referencesWithoutDeclaration = paramSymbolRow.references
-                    .filter(astNode => astNode.type !== 'parameter_declaration');
-        
-                const linkingRule = geoCtx.getRowLinkingRule(paramIdentifier);
+                const linkingRule = geoCtx.getRowLinkingRule(parameter);
+
+                let replacementIdentifier: string;
 
                 if (linkingRule.type === 'edge') {
-                    const { identifier } = linkingRule;
-                    const targetBinding = geoBuilder.findSymbolOfScopeBranch(geoFunctionScope, identifier);
-                    if (!targetBinding) {
-                        throw new Error(`Undeclared binding for identifier "${identifier}"`);
-                    }
-                    geoBuilder.mergeAndRenameReferences(targetBinding, referencesWithoutDeclaration);
-                    
+                    replacementIdentifier = linkingRule.identifier;
+
                 } else if (linkingRule.type === 'expression') {
                     const { expression, identifier } = linkingRule;
-                    templateBuilder.renameReferences(referencesWithoutDeclaration, identifier);
                     const declaration = ast.createDeclaration(identifier, expression);
                     const declarationStatement = ast.createDeclarationStatement(
-                        ast.createFullySpecifiedType(paramTypeSpecNode),
+                        ast.createFullySpecifiedType(specifier),
                         declaration,
                     );
-                    const binding = { initializer: declaration, references: [ declaration, ...referencesWithoutDeclaration ]};
-                    geoBuilder.addFunctionStatement(geoFunction, declarationStatement, undefined, { 
-                        [identifier]: binding,
-                    });
-        
+                    const binding = { initializer: declaration, references: [declaration] };
+                    builder.addStatementToCompound(
+                        geoFunction.body, geoScope, declarationStatement,
+                        undefined, { [identifier]: binding }
+                    );
+                    replacementIdentifier = identifier;
+
                 } else if (linkingRule.type === 'lookup') {
                     const { identifier, dataSize, rowDataType, rowIndex } = linkingRule;
-                    let binding = geoBuilder.findSymbolOfScopeBranch(geoFunctionScope, identifier);
+                    let binding = builder.findSymbolOfScopeBranch(geoScope, identifier);
                     if (!binding) {
                         const textureCoordinate = textureCoordinateCounter.nextInts(dataSize);
-                        const [ declaration, declarationStatement ] = generateTextureLookupStatement(
+                        const [declaration, declarationStatement] = generateTextureLookupStatement(
                             identifier, textureCoordinate, rowDataType);
-                        binding = { initializer: declaration, references: [ declaration ] };
-                        geoBuilder.addFunctionStatement(geoFunction, declarationStatement, undefined, {
-                            [identifier]: binding,
-                        })
+                        binding = { initializer: declaration, references: [declaration] };
+                        builder.addStatementToCompound(
+                            geoFunction.body, geoScope, declarationStatement,
+                            undefined, { [identifier]: binding }
+                        );
                         textureVarMappings.push({
                             dataType: rowDataType,
                             textureCoordinate,
@@ -367,30 +358,132 @@ export default class ProgramCompiler {
                             rowIndex,
                         });
                     }
-                    geoBuilder.mergeAndRenameReferences(binding, referencesWithoutDeclaration);
-        
+                    replacementIdentifier = identifier;
+
                 } else {
                     throw new Error(`Cannot find linking rule type "${(linkingRule as any).type}"`);
                 }
+
+                paramMapping[parameter] = { replacementIdentifier };
             }
 
-            // remaining bindings
-            for (const [ bindingIdentifier, binding ] of Object.entries(templateFunctionScope.bindings)){
-                if (processedBindings.has(binding)) {
-                    continue;
-                }
-                if (binding !== outputBinding) {
-                    const replacementIdentifier = GeometryContext.getIdentifierName('local', nodeIndex, bindingIdentifier);
-                    templateBuilder.renameReferences(binding.references, replacementIdentifier);
-                }
-                geoBuilder.declareBinding(geoFunctionScope.bindings, binding);
-            }
-            // add statements
-            geoFunction.body.statements.push(...templateFunction.body.statements);
-            const descendantScopes = templateBuilder.getDescendandScopes(templateFunctionScope);
-            geoBuilder.program.scopes.push(...descendantScopes);
+            // output of node
+            const nodeOutputIdentifier = GeometryContext.getIdentifierName('output', nodeIndex);
+            const outputFullSpec = templateFunction.prototype.header.returnType;
+            const output = isOutput ? undefined : {
+                identifier: nodeOutputIdentifier,
+                specifier: outputFullSpec,
+            };
+
+            this.instantiateFunction(
+                geoProgram, 
+                geoFunction.body,
+                geoScope,
+                templateProgram,
+                templateFunction.body,
+                templateFunctionScope,
+                paramMapping,
+                nodeIndex,
+                output,
+            );
         }
-        return geoBuilder;
+        return geoProgram;
+    }
+
+    private instantiateFunction(
+        targetProg: Program, 
+        targetBody: CompoundStatementNode,
+        targetscope: Scope,
+        refProg: Program, 
+        refBody: CompoundStatementNode | ExpressionNode,
+        refScope: Scope,
+        paramMapping: ParamMapping,
+        localName: string | number,
+        output?: {
+            specifier: FullySpecifiedTypeNode,
+            identifier: string,
+        },
+        beforeStatement?: StatementNode,
+    ) {
+        const processedBindings = new Set<SymbolRow<SymbolNode>>();
+        let outputBinding: SymbolRow<SymbolNode> | undefined;
+
+        const [instanceProg, instanceBody, instanceScope] =
+            _.cloneDeep([refProg, refBody, refScope]);
+        
+        let instanceCompound: CompoundStatementNode;
+
+        if (instanceBody.type === 'compound_statement') {
+            instanceCompound = instanceBody;
+        } else {
+            // make compound from expression for ease of use
+            instanceCompound = ast.createCompoundStatement([
+                ast.createReturnStatement(
+                    instanceBody
+                )
+            ]);
+            if (!output) {
+                throw new Error(`An output must be passed if body is expression`);
+            }
+        }
+
+        if (output) {
+            // return statement to declaration
+            const returnStatement = instanceCompound.statements
+                .find(statement => statement.type === 'return_statement') as ReturnStatementNode | undefined;
+            if (!returnStatement) {
+                throw new Error(`Output identifier passed but no return statement in compound node found`);
+            }
+            builder.spliceStatement(instanceCompound, returnStatement)
+            const declaration = ast.createDeclaration(
+                output.identifier,
+                returnStatement.expression,
+            );
+            const declarationStatement = ast.createDeclarationStatement(
+                output.specifier, declaration);
+            outputBinding = { initializer: declaration, references: [declaration] };
+            builder.addStatementToCompound(instanceCompound, instanceScope, declarationStatement, undefined, {
+                [output.identifier]: outputBinding,
+            });
+        }
+
+        // params
+        for (const [ param, { replacementIdentifier } ] of Object.entries(paramMapping)) {
+            const paramSymbolRow = builder.findSymbolOfScopeBranch(instanceScope, param);
+            if (!paramSymbolRow) {
+                throw new Error(`Undeclared binding for identifier "${param}"`);
+            }
+            processedBindings.add(paramSymbolRow);
+            const referencesWithoutDeclaration = paramSymbolRow.references
+                .filter(astNode => astNode.type !== 'parameter_declaration');
+
+            const targetBinding = builder.findSymbolOfScopeBranch(targetscope, replacementIdentifier);
+            if (!targetBinding) {
+                throw new Error(`Undeclared binding for identifier "${replacementIdentifier}"`);
+            }
+
+            builder.mergeAndRenameReferences(targetBinding, referencesWithoutDeclaration);
+        }
+
+        // locals
+        for (const [ bindingIdentifier, binding ] of Object.entries(instanceScope.bindings)) {
+            if (processedBindings.has(binding)) {
+                continue;
+            }
+            if (binding !== outputBinding) {
+                const localIdentifier = GeometryContext.getIdentifierName('local', localName, bindingIdentifier);
+                builder.renameReferences(binding.references, localIdentifier);
+            }
+            builder.declareBinding(targetscope.bindings, binding);
+        }
+
+        // add statements
+        for (const statement of instanceCompound.statements) {
+            builder.addStatementToCompound(targetBody, targetscope, statement, beforeStatement);
+        }
+        // remaining scopes
+        const descendantScopes = builder.getDescendandScopes(instanceProg, instanceScope);
+        targetProg.scopes.push(...descendantScopes);
     }
 
     private getTemplateProgramInstance(template: GNodeTemplate) {
@@ -406,12 +499,12 @@ export default class ProgramCompiler {
         }
         const func = program.program[0] as FunctionNode;
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
-        for (const [ typeNode, paramIdentifier ] of inputParams) {
+        for (const [typeNode, paramIdentifier] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {
                 throw new Error(`Function parameter "${paramIdentifier}" is not a row on template.`);
             }
         }
-        return _.cloneDeep(program);
+        return program;
     }
 }
 
@@ -421,20 +514,6 @@ interface LambdaDeclaration {
     lambdaScope?: Scope;
 }
 
-interface EdgeLinkingRule {
-    type: 'edge';
-    identifier: string;
-}
-interface ExpressionLinkingRule {
-    type: 'expression';
-    identifier: string;
-    expression: ExpressionNode;
-}
-interface LookupLinkingRule {
-    type: 'lookup';
-    identifier: string;
-    dataSize: number;
-    rowDataType: DataTypes;
-    rowIndex: number;
-}
-export type LinkingRule = EdgeLinkingRule | ExpressionLinkingRule | LookupLinkingRule;
+type ParamMapping = ObjMap<{
+    replacementIdentifier: string;
+}>

@@ -183,6 +183,28 @@ class AstUtils {
         }
         return newList;
     }
+    public correctIndent(compoundNode: CompoundStatementNode, ident: number, depth = 0) {
+        const baseSpaces = ' '.repeat(ident * depth);
+        const indentedSpaces = ' '.repeat(ident * (depth + 1));
+        compoundNode.lb.whitespace = '\n' + indentedSpaces;
+        compoundNode.rb.whitespace = '\n';
+        for (let i = 0; i < compoundNode.statements.length; i++) {
+            const spaces = i === compoundNode.statements.length - 1
+                ? baseSpaces : indentedSpaces;
+            const statement = compoundNode.statements[i];
+            switch (statement.type) {
+                case 'compound_statement':
+                    this.correctIndent(statement, ident, depth + 1);
+                    break;
+                case 'break_statement':
+                case 'continue_statement':
+                case 'declaration_statement':
+                case 'return_statement':
+                    statement.semi.whitespace = '\n' + spaces;
+                    break;
+            }
+        }
+    }
 }
 
 const ast = new AstUtils();

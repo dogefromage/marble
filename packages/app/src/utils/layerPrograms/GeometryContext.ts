@@ -1,9 +1,27 @@
+import { ExpressionNode } from '@marble/language';
 import { getRowMetadata } from '../../components/GeometryRowRoot';
 import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { parseValue } from './generateCodeStatements';
-import { LinkingRule } from './ProgramCompiler';
+
+interface EdgeLinkingRule {
+    type: 'edge';
+    identifier: string;
+}
+interface ExpressionLinkingRule {
+    type: 'expression';
+    identifier: string;
+    expression: ExpressionNode;
+}
+interface LookupLinkingRule {
+    type: 'lookup';
+    identifier: string;
+    dataSize: number;
+    rowDataType: DataTypes;
+    rowIndex: number;
+}
+type LinkingRule = EdgeLinkingRule | ExpressionLinkingRule | LookupLinkingRule;
 
 export class GeometryContext {
 
