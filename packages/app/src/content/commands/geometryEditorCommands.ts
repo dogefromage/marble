@@ -1,6 +1,7 @@
 import { geometriesAddNode, geometriesCreate, geometriesRemoveNodes, geometriesResetUserSelectedNodes } from "../../slices/geometriesSlice";
 import { geometryEditorPanelsOpenTemplateCatalog } from "../../slices/panelGeometryEditorSlice";
 import { Command, CommandParameterMap, getTemplateId, Point, Rect, UndoRecord, ViewTypes } from "../../types";
+import { defaultOutputRows } from "../../types/geometries/defaultRows";
 import { generateCodeSafeUUID } from "../../utils/codeStrings";
 import { pointScreenToWorld } from "../../utils/geometries/planarCameraMath";
 import { p2v, v2p } from "../../utils/linalg";
@@ -93,30 +94,9 @@ export const geometryEditorCommands: Command[] = [
                     geometryTemplate: {
                         name: 'Sub Geometry',
                         isRoot: false,
-                        inputs: [
-                            {
-                                id: 'position',
-                                name: 'Position',
-                                type: 'input',
-                                dataType: 'vec3',
-                                defaultArgumentToken: 'position',
-                                value: [ 0, 0, 0 ],
-                            },
-                            {
-                                id: 'asdasd',
-                                name: 'Test',
-                                type: 'field',
-                                dataType: 'float',
-                                value: 0,
-                            }
-                        ],
+                        inputs: [],
                         outputs: [
-                            {
-                                id: 'basic_output',
-                                type: 'output',
-                                name: 'Output',
-                                dataType: 'Surface',
-                            }
+                            defaultOutputRows['surface'],
                         ],
                     },
                     undo: undoRecord,

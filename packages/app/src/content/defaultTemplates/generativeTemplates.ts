@@ -24,7 +24,7 @@ const generative_perlin_noise: GNodeTemplate = {
             name: 'Position',
             dataType: 'vec3',
             value: [0, 0, 0],
-            defaultArgumentToken: 'position',
+            defaultParameter: 'position',
         }
     ],
     instructions: glsl`
@@ -76,7 +76,7 @@ const generative_voronoi: GNodeTemplate = {
             name: 'Position',
             dataType: 'vec3',
             value: [0, 0, 0],
-            defaultArgumentToken: 'position',
+            defaultParameter: 'position',
         }
     ],
     instructions: glsl`

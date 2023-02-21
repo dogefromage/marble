@@ -3,7 +3,7 @@ import { getRowMetadata } from '../../components/GeometryRowRoot';
 import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
 import analyzeGraph from '../analyzeBasicGraph';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
-import { parseValue } from './generateCodeStatements';
+import { parseDataTypeValue } from './generateCodeStatements';
 
 interface EdgeLinkingRule {
     type: 'edge';
@@ -21,7 +21,11 @@ interface LookupLinkingRule {
     rowDataType: DataTypes;
     rowIndex: number;
 }
-type LinkingRule = EdgeLinkingRule | ExpressionLinkingRule | LookupLinkingRule;
+interface ParameterLinkingRule {
+    type: 'parameter',
+    parameter: string;
+}
+type LinkingRule = EdgeLinkingRule | ExpressionLinkingRule | LookupLinkingRule | ParameterLinkingRule;
 
 export class GeometryContext {
 
@@ -95,7 +99,7 @@ export class GeometryContext {
         }
         const rowState = state.rows[rowTemp.id];
 
-        // case 1: connection
+        // 1. connection
         const incomingEdges = connectionData.backwardEdges[nodeIndex]?.[rowIndex] || [];
 
         // // 1.1 stacked input
@@ -152,24 +156,21 @@ export class GeometryContext {
             };
         }
 
-        // // case 2.1: argument connected
-        // const incomingArg = rowState?.incomingElements?.[0];
-        // if (incomingArg?.type === 'argument') {
-        //     path.node.identifier = incomingArg.argument;
-        //     return;
-        // }
-        // // case 2.2 argument fallback
-        // if (rowTemp.defaultArgumentToken != null) {
-        //     path.node.identifier = rowTemp.defaultArgumentToken;
-        //     return;
-        // }
+        // 2. input parameter
+        if (rowTemp.defaultParameter != null) {
+            return {
+                type: 'parameter',
+                parameter: rowTemp.defaultParameter,
+            }
+        }
+
         const rowMetadata = getRowMetadata({
             state: rowState,
             template: rowTemp as BaseInputRowT,
             numConnectedJoints: 0
         });
 
-        // case 3: parameter texture lookup
+        // 3. parameter texture lookup
         if (rowMetadata.dynamicValue) {
             const dataSize = textureVarDatatypeSize[rowTemp.dataType];
             if (dataSize <= 0) {
@@ -184,10 +185,10 @@ export class GeometryContext {
             };
         }
 
-        // case 4: fixed constant
+        // 4. fixed constant
         const value = (rowState as RowS<BaseInputRowT>)?.value ?? rowTemp.value;
         const identifier = GeometryContext.getIdentifierName('local', nodeIndex, rowId);
-        const expression = parseValue(rowTemp.dataType, value);
+        const expression = parseDataTypeValue(rowTemp.dataType, value);
         return {
             type: 'expression',
             identifier,

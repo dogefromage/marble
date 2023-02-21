@@ -1,4 +1,3 @@
-import { ObjMap } from "../UtilityTypes";
 import { GeometrySignature } from "./Geometry";
 import { InputRowT, OutputRowT } from "./Rows";
 
@@ -8,15 +7,15 @@ const positionInput: InputRowT<'vec3'> = {
     name: 'Position',
     dataType: 'vec3',
     value: [0, 0, 0],
-    defaultArgumentToken: 'position',
+    defaultParameter: 'position',
 };
 
 export const defaultInputRows = {
-    position: positionInput,
+    // position: positionInput,
 } as const;
 
 const surfaceOutput: OutputRowT<'Surface'> = {
-    id: 'solid',
+    id: 'surface',
     type: 'output',
     name: 'Surface',
     dataType: 'Surface',
@@ -29,6 +28,6 @@ export const defaultOutputRows = {
 export const rootGeometryTemplate: GeometrySignature = {
     name: 'Root Geometry',
     isRoot: true,
-    inputs: [defaultInputRows.position ],
+    inputs: [ /* defaultInputRows.position */ ],
     outputs: [ defaultOutputRows.surface ],
 }

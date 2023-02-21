@@ -16,7 +16,7 @@ export function inputField<T extends DataTypes>(id: string, name: string, dataTy
         type: 'field',
         dataType,
         value: value ?? initialDataTypeValue[dataType],
-        defaultArgumentToken,
+        defaultParameter: defaultArgumentToken,
     };
 }
 
@@ -27,7 +27,7 @@ export function inputRow<T extends DataTypes>(id: string, name: string, dataType
         type: 'input',
         dataType,
         value: value ?? initialDataTypeValue[dataType],
-        defaultArgumentToken,
+        defaultParameter: defaultArgumentToken,
     };
 }
 

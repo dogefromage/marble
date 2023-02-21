@@ -1,7 +1,6 @@
 import React from 'react';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
-import MaterialSymbol from '../styles/MaterialSymbol';
 import { PassthroughRowT, RowMetadata } from '../types';
 import GeometryArgumentTag from './GeometryArgumentTag';
 import GeometryJoint from './GeometryJoint';
@@ -15,7 +14,7 @@ export function getRowMetadataPassthrough(props: RowMetaProps<PassthroughRowT>):
 
 const GeometryRowPassthrough = ({ geometryId, panelId, nodeId, row }: RowProps<PassthroughRowT>) => {
 
-    const argumentId = row.defaultArgumentToken;
+    const argumentId = row.defaultParameter;
 
     return (
         <GeometryRowDiv

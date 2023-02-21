@@ -57,6 +57,7 @@ export default class ProgramCompiler {
             if (!geoProgram) {
                 continue;
             }
+
             this.refactorLambdas(geoProgram);
             this.removeIdentityDeclarations(geoProgram);
             const geoFunction = builder.findFirstFunction(geoProgram);
@@ -125,6 +126,7 @@ export default class ProgramCompiler {
                             .filter(ref => ref !== declarationBinding.initializer);
                         builder.mergeAndRenameReferences(refBinding, referencesWithoutInitializer);
                         statements.splice(i, 1);
+                        builder.removeReferencesOfSubtree(program, statement);
                     }
                 }
             }
@@ -230,7 +232,7 @@ export default class ProgramCompiler {
                 returnType.args[argIndex],
                 ast.createIdentifier(arg)
             );
-            builder.addFunctionParameter(func, funcScope, paramDeclaration, arg);
+            builder.addFunctionParameter(func, funcScope, paramDeclaration);
         }
         // change function return type
         returnType.return_type.specifier.whitespace = ' ';
@@ -350,14 +352,24 @@ export default class ProgramCompiler {
             return null;
         }
 
-        const methodName = GeometryContext.getIdentifierName('geometry', geoCtx.geometry.id);
-        const [outputRow] = geoCtx.geometry.outputs;
-        const returnType = parseDataType(outputRow.dataType);
         const geoProgram = builder.createEmptyProgram();
+        const methodName = GeometryContext.getIdentifierName('geometry', geoCtx.geometry.id);
+        const [ outputRow ] = geoCtx.geometry.outputs;
+        const returnType = parseDataType(outputRow.dataType);
         const {
             functionNode: geoFunction,
             functionScope: geoScope,
         } = builder.createFunction(geoProgram, returnType, methodName);
+
+        for (const input of geoCtx.geometry.inputs) {
+            const inputParam = (
+                ast.createParameterDeclaration(
+                    parseDataType(input.dataType),
+                    ast.createIdentifier(input.id),
+                )   
+            ); 
+            builder.addFunctionParameter(geoFunction, geoScope, inputParam);
+        }
 
         for (const nodeIndex of usedSortedNodeGenerator) {
             geoCtx.select(nodeIndex);
@@ -420,6 +432,9 @@ export default class ProgramCompiler {
                     }
                     replacementIdentifier = identifier;
 
+                } else if (linkingRule.type === 'parameter') {
+                    const { parameter } = linkingRule;
+                    replacementIdentifier = parameter;
                 } else {
                     throw new Error(`Cannot find linking rule type "${(linkingRule as any).type}"`);
                 }
@@ -539,7 +554,6 @@ export default class ProgramCompiler {
             if (!targetBinding) {
                 throw new Error(`Undeclared binding for identifier "${replacementIdentifier}"`);
             }
-
             builder.mergeAndRenameReferences(targetBinding, referencesWithoutDeclaration);
         }
 
@@ -579,7 +593,7 @@ export default class ProgramCompiler {
         }
         const func = builder.findFirstFunction(program);
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
-        for (const [typeNode, paramIdentifier] of inputParams) {
+        for (const [ typeNode, paramIdentifier ] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {
                 throw new Error(`Function parameter "${paramIdentifier}" is not a row on template.`);
             }

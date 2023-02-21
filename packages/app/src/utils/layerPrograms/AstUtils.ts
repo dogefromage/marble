@@ -197,8 +197,12 @@ class AstUtils {
                 case 'continue_statement':
                 case 'declaration_statement':
                 case 'return_statement':
+                case 'expression_statement':
                     statement.semi.whitespace = '\n' + spaces;
                     break;
+                // default:
+                //     console.log(statement.type);
+                //     break;
             }
         }
     }

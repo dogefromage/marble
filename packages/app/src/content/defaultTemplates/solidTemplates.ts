@@ -17,7 +17,7 @@ const coordinateRow: SpecificRowT =
     name: 'Position',
     dataType: 'vec3',
     value: [ 0, 0, 0 ],
-    defaultArgumentToken: 'position',
+    defaultParameter: 'position',
 };
 
 const colorRow: SpecificRowT =

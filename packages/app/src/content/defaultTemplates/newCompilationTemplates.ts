@@ -68,13 +68,13 @@ const scale: GNodeTemplate = {
     rows: [
         nameRow('Scale', TemplateColors.SolidOperations),
         defaultOutputRows['surface'],
-        inputRow('surface', 'Surface', 'Surface'),
+        inputRow('input', 'Surface', 'Surface'),
         inputField('scale', 'Scale', 'float', 1),
     ],
     instructions: glsl`
-        Distance:(vec3) union(Distance:(vec3) surface, float scale) {
+        Distance:(vec3) union(Distance:(vec3) input, float scale) {
             return lambda (vec3 p) : {
-                Distance sd = surface((1./scale) * p);
+                Distance sd = input((1./scale) * p);
                 sd.d *= scale;
                 return sd;
             };

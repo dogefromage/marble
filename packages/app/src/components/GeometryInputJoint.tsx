@@ -14,11 +14,11 @@ const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
     let incomingElement = row.incomingElements?.[ jointLocation.subIndex ];
     if (incomingElement == null &&
         jointLocation.subIndex === 0 &&
-        row.defaultArgumentToken != null
+        row.defaultParameter != null
     ) {
         incomingElement = {
             type: 'argument',
-            argument: row.defaultArgumentToken,
+            argument: row.defaultParameter,
         }
     }
 

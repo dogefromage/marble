@@ -35,7 +35,7 @@ export interface BaseInputRowT<D extends DataTypes = DataTypes, T extends RowTyp
     type: T;
     dataType: D;
     value: DataTypeValueTypes[ D ];
-    defaultArgumentToken?: string;
+    defaultParameter?: string;
 }
 
 export type StackedInputRowT <D extends DataTypes = DataTypes> = BaseInputRowT<D, 'input_stacked'>;
@@ -74,7 +74,7 @@ export type SpecificRowT = RowTOverDataTypesMap[DataTypes];
 export type GeometryIncomingElementTypes = 'row_output' | 'argument';
 export type GeometryIncomingElement =
     | { type: 'row_output', location: GeometryRowLocation }
-    | { type: 'argument', argument: string }
+    // | { type: 'argument', argument: string }
 
 export type RowDataTypeCombination = `${RowTypes}:${DataTypes}`;
 export function getRowDataTypeCombination(rowType: RowTypes, dataType: DataTypes): RowDataTypeCombination {
@@ -86,23 +86,23 @@ export function decomposeRowDataTypeCombination(rowDataTypeCombination: RowDataT
 }
 
 export const allowedInputRows: Partial<MapEvery<RowDataTypeCombination, string>> = {
-    'field:float':   'Number Field', 
-    'field:vec2':    '2-Vector Field', 
-    'field:vec3':    '3-Vector Field',
-    'input:Solid':   'Solid Input',
-    'input:float':   'Number Input',
-    'input:vec2':    '2-Vector Input',
-    'input:vec3':    '3-Vector Input',
-    'input:mat3':    '3x3-Matrix Input',
-    'rotation:mat3': 'Rotation',
-    'color:vec3':    'Color',
+    'field:float':    'Number Field',
+    'field:vec2':     '2-Vector Field', 
+    'field:vec3':     '3-Vector Field',
+    'input:Surface':  'Surface Input',
+    'input:float':    'Number Input',
+    'input:vec2':     '2-Vector Input',
+    'input:vec3':     '3-Vector Input',
+    'input:mat3':     '3x3-Matrix Input',
+    'rotation:mat3':  'Rotation',
+    'color:vec3':     'Color',
 };
 export const allowedOutputRows: Partial<MapEvery<RowDataTypeCombination, string>> = {
-    'output:Solid': 'Solid Output',
-    'output:float': 'Number Output',
-    'output:vec2':  '2-Vector Output',
-    'output:vec3':  '3-Vector Output',
-    'output:mat3':  '3x3-Matrix Output',
+    'output:Surface': 'Surface Output',
+    'output:float':   'Number Output',
+    'output:vec2':    '2-Vector Output',
+    'output:vec3':    '3-Vector Output',
+    'output:mat3':    '3x3-Matrix Output',
 }
 export const allowedInputRowKeys = Object.keys(allowedInputRows) as RowDataTypeCombination[];
 export const allowedOutputRowKeys = Object.keys(allowedOutputRows) as RowDataTypeCombination[];

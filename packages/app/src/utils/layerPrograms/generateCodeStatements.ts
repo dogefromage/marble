@@ -1,4 +1,5 @@
 import { ExpressionNode, FunctionCallNode, LambdaTypeSpecifierNode, LiteralNode, SimpleTypeSpecifierNode, TypeSpecifierNode } from "@marble/language";
+import _ from "lodash";
 import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
 import { dataTypeDescriptors, DataTypes, DataTypeValueTypes, initialDataTypeValue, textureVarDatatypeSize } from "../../types";
 import { arrayRange } from "../arrays";
@@ -10,7 +11,7 @@ function formatGlslFloat(value: number): LiteralNode {
     return ast.createLiteral(floatLiteral, '');
 }
 
-export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[DataTypes]): any /* TODO type */ {
+export function parseDataTypeValue(dataType: DataTypes, value: DataTypeValueTypes[DataTypes]): ExpressionNode {
     const descriptor = dataTypeDescriptors[dataType];
     if (descriptor.type === 'simple') {
         if (Array.isArray(value)) {
@@ -36,7 +37,7 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[DataTy
             throw new Error(`Struct value must be array`);
         }
         const { identifier, attributes } = descriptor;
-        const args = attributes.map((dt, index) => parseValue(dt, value[index]));
+        const args = attributes.map((dt, index) => parseDataTypeValue(dt, value[index]));
         return (
             ast.createFunctionCall(
                 ast.createTypeSpecifierNode(
@@ -51,7 +52,7 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[DataTy
             throw new Error(`Lambda values not implemented`);
         }
         const { returnType, parameterTypes } = descriptor;
-        const bodyExpression = parseValue(returnType, initialDataTypeValue[returnType]);
+        const bodyExpression = parseDataTypeValue(returnType, initialDataTypeValue[returnType]);
 
         return (
             ast.createLambdaExpression(
@@ -71,42 +72,61 @@ export function parseValue(dataType: DataTypes, value: DataTypeValueTypes[DataTy
     throw new Error(`Cannot convert dataType "${dataType}" to GLSL value`);
 }
 
-export function parseDataType(dataType: DataTypes): TypeSpecifierNode | LambdaTypeSpecifierNode {
-    const descriptor = dataTypeDescriptors[dataType];
-    if (descriptor.type === 'simple') {
-        const { keyword } = descriptor;
-        return (
-            ast.createTypeSpecifierNode(
-                ast.createKeyword(
-                    keyword
+export const parseDataType = _.memoize(
+    function parseDataType(dataType: DataTypes): TypeSpecifierNode | LambdaTypeSpecifierNode {
+        const descriptor = dataTypeDescriptors[dataType];
+        if (descriptor.type === 'simple') {
+            const { keyword } = descriptor;
+            return (
+                ast.createTypeSpecifierNode(
+                    ast.createKeyword(
+                        keyword
+                    )
                 )
-            )
-        );
-    } else if (descriptor.type === 'struct') {
-        const { identifier } = descriptor;
-        return (
-            ast.createTypeSpecifierNode(
-                ast.createIdentifier(
-                    identifier
+            );
+        } else if (descriptor.type === 'struct') {
+            const { identifier } = descriptor;
+            return (
+                ast.createTypeSpecifierNode(
+                    ast.createIdentifier(
+                        identifier
+                    )
                 )
-            )
-        );
-    } else if (descriptor.type === 'lambda') {
-        const { returnType, parameterTypes } = descriptor;
-        const returnTypeSpec = parseDataType(returnType) as SimpleTypeSpecifierNode;
-        const argSpecs = parameterTypes.map(param => parseDataType(param)) as SimpleTypeSpecifierNode[];
-        return ast.createLambdaTypeSpecifier(returnTypeSpec, argSpecs);
+            );
+        } else if (descriptor.type === 'lambda') {
+            const { returnType, parameterTypes } = descriptor;
+            const returnTypeSpec = parseDataType(returnType) as SimpleTypeSpecifierNode;
+            const argSpecs = parameterTypes.map(param => parseDataType(param)) as SimpleTypeSpecifierNode[];
+            return ast.createLambdaTypeSpecifier(returnTypeSpec, argSpecs);
+        }
+        throw new Error(`Unknown datatype "${dataType}"`);
     }
-    throw new Error(`Unknown datatype "${dataType}"`);
-}
+);
+
+export const generateDataTypeText = _.memoize(
+    function generateDataTypeText(dataType: DataTypes): string {
+        const descriptor = dataTypeDescriptors[dataType];
+        if (descriptor.type === 'simple') {
+            return descriptor.keyword;
+        }
+        if (descriptor.type === 'struct') {
+            return descriptor.identifier;
+        }
+        if (descriptor.type === 'lambda') {
+            // Solid:(vec3)
+            const { returnType, parameterTypes } = descriptor;
+            return `${returnType}:(${parameterTypes.join(',')})`
+        }
+        throw new Error(`Type not found`);
+    }
+);
 
 function generateLookupCall(textureCoordinate: number): FunctionCallNode {
     return ast.createFunctionCall(
         ast.createTypeSpecifierNode(
             ast.createIdentifier(TEXTURE_LOOKUP_METHOD_NAME),
-        ), [
-            ast.createLiteral(Math.floor(textureCoordinate).toString())
-        ]
+        ),
+        [ast.createLiteral(Math.floor(textureCoordinate).toString())]
     )
 }
 
@@ -128,7 +148,7 @@ function generateTextureLookup(textureCoordinate: number, dataType: DataTypes): 
                     parseDataType(dataType),
                     lookups,
                 );
-            default: 
+            default:
                 throw new Error(`Unknown keyword "${keyword}"`);
         }
     } else if (descriptor.type === 'struct') {
@@ -162,7 +182,7 @@ export function generateTextureLookupStatement(identifier: string, textureCoordi
         ),
         declaration,
     );
-    return [ declaration, declarationStatement ] as const;
+    return [declaration, declarationStatement] as const;
 }
 
 // export function generateStackedExpression(func: string, identifier: string, defaultLiteral: string) {
@@ -208,19 +228,3 @@ export function generateTextureLookupStatement(identifier: string, textureCoordi
 //     const block = `struct ${identifier} {\n${propertyList.join('')}};`;
 //     return block;
 // }
-
-export function formatDataTypeText(dataType: DataTypes): string {
-    const descriptor = dataTypeDescriptors[dataType];
-    if (descriptor.type === 'simple') {
-        return descriptor.keyword;
-    }
-    if (descriptor.type === 'struct') {
-        return descriptor.identifier;
-    }
-    if (descriptor.type === 'lambda') {
-        // Solid:(vec3)
-        const { returnType, parameterTypes } = descriptor;
-        return `${returnType}:(${parameterTypes.join(',')})`
-    }
-    throw new Error(`Type not found`);
-}

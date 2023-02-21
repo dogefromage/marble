@@ -70,7 +70,8 @@ class ProgramBuilder {
                         ast.createIdentifier(
                             name
                         )
-                    ), []
+                    ), 
+                    [], // add using builder
                 ),
                 ast.createCompoundStatement([])
             )
@@ -84,8 +85,11 @@ class ProgramBuilder {
         const functionScope = this.addScope(program, name, globalScope);
         return { functionNode, functionScope };
     }
-    public addFunctionParameter(func: FunctionNode, funcScope: Scope, paramDecl: ParameterDeclarationNode, identifier: string) {
+    public addFunctionParameter(func: FunctionNode, funcScope: Scope, paramDecl: ParameterDeclarationNode) {
         const params = func.prototype.parameters || (func.prototype.parameters = [])
+        if (params.length) {
+            func.prototype.commas.push(ast.createLiteral(',', ' '));
+        }
         params.push(paramDecl);
         this.declareBinding(funcScope.bindings, { initializer: paramDecl, references: [ paramDecl ] })
     }
@@ -109,14 +113,16 @@ class ProgramBuilder {
         symbol.references.push(reference);
     }
     public removeNodeReference(program: Program, reference: SymbolNode) {
-        const row = this.findReferenceSymbolRow(program, reference);
-        if (!row) {
+        const binding = this.findReferenceSymbolRow(program, reference);
+        if (!binding) {
             return false;
         }
-        if (row.initializer === reference) {
-            throw new Error(`Cannot remove initializer from binding`);
+        if (binding.initializer === reference) {
+            // this.removeBinding(program, binding); TODO
+        } else {
+            binding.references = binding.references.filter(node => node !== reference);
         }
-        row.references = row.references.filter(node => node !== reference);
+        return true;
     }
     public findSymbolOfScopeBranch(scope: Scope, identifier: string): SymbolRow<SymbolNode> | null {
         if (scope.bindings[identifier]) {

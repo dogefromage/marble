@@ -49,9 +49,14 @@ const FormSelectOption = ({ className, icon, value, onChange, options, mapName, 
     }>();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    const menuShape: FloatingMenuShape = useMemo(() => ({
-        type: 'floating',
-        list: options.map((option, index) => {
+    const menuShape: FloatingMenuShape = useMemo(() => {
+        const noOptionButton: ButtonMenuElement = {
+            type: 'button',
+            key: 'no-option',
+            name: 'No options',
+            onClick: () => {},
+        }
+        const optionButtons = options.map((option, index) => {
             const button: ButtonMenuElement = {
                 type: 'button',
                 name: mapName?.[ option ] || option,
@@ -64,8 +69,13 @@ const FormSelectOption = ({ className, icon, value, onChange, options, mapName, 
                 }
             };
             return button;
-        }),
-    }), [ options, onChange, mapName ]);
+        });
+
+        return {
+            type: 'floating',
+            list: optionButtons.length ? optionButtons : [ noOptionButton ],
+        }
+    }, [ options, onChange, mapName ]);
 
     return (
         <SelectOptionDiv
