@@ -2,6 +2,7 @@ import { AstNode, CompoundStatementNode, DeclaratorListNode, ExpressionNode, Ful
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
 import _ from 'lodash';
+import objectPath from 'object-path';
 import { mapDynamicValues } from '.';
 import { DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, splitDependencyKey } from "../../types";
 import { Counter } from '../Counter';
@@ -183,7 +184,6 @@ export default class ProgramCompiler {
                     lambdaExpression,
                     lambdaScope,
                     lambdaType: statement.declaration.specified_type.specifier,
-                    // subInvocations: [],
                 });
                 // remove stmt
                 builder.spliceStatement(func.body, statement);
@@ -268,13 +268,12 @@ export default class ProgramCompiler {
         instanceCounter: Counter,
         declaredLambdas: Map<string, LambdaDeclaration>,
     ) {
-        const lambdaInstance = _.cloneDeep(lambdaDeclaration);
         const instanceIndex = instanceCounter.increment();
 
         // declare arguments
         const argumentExpressions = call.args
             .filter(arg => arg.type !== 'literal') as ExpressionNode[]; // filter commas
-        const paramList = ast.getParameterIdentifiers(lambdaInstance.lambdaExpression.header.parameters);
+        const paramList = ast.getParameterIdentifiers(lambdaDeclaration.lambdaExpression.header.parameters);
         if (argumentExpressions.length !== paramList.length) {
             throw new Error(`Wrong amount of arguments for lambda`);
         }
@@ -302,14 +301,14 @@ export default class ProgramCompiler {
             paramMapping[paramIdentifier] = { replacementIdentifier };
         }
 
-        const lambdaBody = lambdaInstance.lambdaExpression.body;
-        const lambdaScope = lambdaInstance.lambdaScope;
+        const lambdaBody = lambdaDeclaration.lambdaExpression.body;
+        const lambdaScope = lambdaDeclaration.lambdaScope;
 
         const outIdentifier = `lambda_${instanceIndex}_out`;
         const lambdaOutput = {
             identifier: outIdentifier,
             specifier: ast.createFullySpecifiedType(
-                lambdaInstance.lambdaType.return_type,
+                lambdaDeclaration.lambdaType.return_type,
             )
         }
 
@@ -489,10 +488,10 @@ export default class ProgramCompiler {
     private appendFunctionBody(
         targetProg: Program,
         targetBody: CompoundStatementNode,
-        targetscope: Scope,
-        instanceProg: Program,
-        instanceBody: CompoundStatementNode | ExpressionNode,
-        instanceScope: Scope,
+        targetScope: Scope,
+        refProg: Program,
+        refBody: CompoundStatementNode | ExpressionNode,
+        refScope: Scope,
         paramMapping: ParamMapping,
         localName: string | number,
         output?: {
@@ -501,6 +500,38 @@ export default class ProgramCompiler {
         },
         beforeStatement?: StatementNode,
     ) {
+        type ExternalPair = [ (string|number)[], SymbolRow<SymbolNode> ];
+        const externalReferences = new Array<ExternalPair>();
+
+        builder.visitSymbolNodes(
+            refProg, refBody, 
+            (path, binding, scope) => {
+                if (builder.isDescendantScope(scope, refScope)) {
+                    const pathToNode = new Array<string|number>();
+                    while (path.parentPath) {
+                        if (path.index != null) pathToNode.unshift(path.index);
+                        if (path.key   != null) pathToNode.unshift(path.key);
+                        path = path.parentPath!;
+                    }
+                    externalReferences.push([ pathToNode, binding ]);
+                }
+            }
+        );
+
+        // object must be combined to maintain circular references
+        const refTriple = [ refProg, refBody, refScope ] as const;
+        const [ instanceProg, instanceBody, instanceScope ] = 
+            _.cloneDeep(refTriple);
+
+        // reference externals in copied body
+        for (const [ path, externalBinding ] of externalReferences) {
+            const ref = objectPath.get(instanceBody, path);
+            if (!builder.isSymbolNode(ref)) {
+                throw new Error(`Not symbol`);
+            }
+            externalBinding.references.push(ref);
+        }
+
         const processedBindings = new Set<SymbolRow<SymbolNode>>();
         let outputBinding: SymbolRow<SymbolNode> | undefined;
 
@@ -550,7 +581,7 @@ export default class ProgramCompiler {
             const referencesWithoutDeclaration = paramSymbolRow.references
                 .filter(astNode => astNode.type !== 'parameter_declaration');
 
-            const targetBinding = builder.findSymbolOfScopeBranch(targetscope, replacementIdentifier);
+            const targetBinding = builder.findSymbolOfScopeBranch(targetScope, replacementIdentifier);
             if (!targetBinding) {
                 throw new Error(`Undeclared binding for identifier "${replacementIdentifier}"`);
             }
@@ -566,19 +597,18 @@ export default class ProgramCompiler {
                 const localIdentifier = GeometryContext.getIdentifierName('local', localName, bindingIdentifier);
                 builder.renameReferences(binding.references, localIdentifier);
             }
-            builder.declareBinding(targetscope.bindings, binding);
+            builder.declareBinding(targetScope.bindings, binding);
         }
 
         const newStatementReference: StatementNode[] = [];
 
         // add statements
         for (const statement of instanceCompound.statements) {
-            builder.addStatementToCompound(targetBody, targetscope, statement, beforeStatement);
+            builder.addStatementToCompound(targetBody, targetScope, statement, beforeStatement);
             newStatementReference.push(statement);
         }
         // remaining scopes
-        const descendantScopes = builder.getDescendandScopes(instanceProg, instanceScope);
-        targetProg.scopes.push(...descendantScopes);
+        builder.moveDescendants(instanceProg, instanceScope, targetProg, targetScope);
 
         return newStatementReference;
     }

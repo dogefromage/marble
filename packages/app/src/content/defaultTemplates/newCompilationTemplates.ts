@@ -1,5 +1,3 @@
-import { parse } from "@shaderfrog/glsl-parser/parser/parser"
-import { parse as marbleParse } from "@marble/language"
 import { getTemplateId, GNodeTemplate } from "../../types"
 import { defaultOutputRows } from "../../types/geometries/defaultRows"
 import { glsl } from "../../utils/codeStrings"
@@ -96,6 +94,22 @@ const colorRed: GNodeTemplate = {
     `,
 }
 
+const vectorPassthrough: GNodeTemplate = {
+    id: getTemplateId('static', 'passthrough_vector'),
+    version: 0,
+    category: 'solids',
+    rows: [
+        nameRow('Passthrough vector', TemplateColors.Vectors),
+        outputRow('output', 'Output', 'vec3'),
+        inputRow('input', 'Input', 'vec3'),
+    ],
+    instructions: glsl`
+        vec3 passthrough_vector(vec3 input) { 
+            return input;
+        }
+    `,
+}
+
 // const testProgram = glsl`
 // float test() {
 //     vec3 a = mix(1, 2);
@@ -114,4 +128,5 @@ export default [
     box,
     union,
     scale,
+    vectorPassthrough,
 ];

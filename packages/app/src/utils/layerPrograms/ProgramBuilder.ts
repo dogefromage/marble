@@ -56,6 +56,37 @@ class ProgramBuilder {
             identifier:            enterReferenceNode,
             declaration:           enterReferenceNode,
             parameter_declaration: enterReferenceNode,
+            function_call:         enterReferenceNode,
+        });
+    }
+
+    public visitSymbolNodes(
+        program: Program, 
+        subtree: AstNode, 
+        callback: (path: Path<SymbolNode>, symbol: SymbolRow<SymbolNode>, scope: Scope) => void,
+    ) {
+        const enterReferenceNode = { 
+            enter: (path: Path<AstNode>) => {
+                const node = path.node as AstNode;
+                if (!this.isSymbolNode(node)) {
+                    return
+                }
+                const { identifier } = this.getSymbolNodeIdentifier(node);
+                for (const scope of program.scopes) {
+                    const table = scope.bindings[identifier];
+                    if (table?.references.includes(node)) {
+                        callback(path as Path<SymbolNode>, table, scope);
+                        return;
+                    }
+                }
+            }
+        }
+        // @ts-ignore
+        visit(subtree, {
+            identifier:            enterReferenceNode,
+            declaration:           enterReferenceNode,
+            parameter_declaration: enterReferenceNode,
+            function_call:         enterReferenceNode,
         });
     }
 
@@ -176,6 +207,19 @@ class ProgramBuilder {
         }
         throw new Error(`No identifier found in node of type "${node.type}"`);
     }
+    public isSymbolNode(node: AstNode): node is SymbolNode {
+        switch (node.type) {
+            case 'identifier':
+            case 'declaration':
+                return true;
+            case 'parameter_declaration':
+                return node.declaration.type == 'parameter_declarator';
+            case 'function_call':
+                const typeSpec = node.identifier as SimpleTypeSpecifierNode;
+                return typeSpec.specifier.type === 'identifier';
+        }
+        return false;
+    }
     public getFunctionCallIdentifier(call: FunctionCallNode) {
         const callIdentifier = call.identifier as any;
         const identifier: string | undefined =
@@ -206,7 +250,18 @@ class ProgramBuilder {
         }
         return scope;
     }
-    public getDescendandScopes(program: Program, ancestor: Scope) {
+    public moveDescendants(fromProg: Program, fromScope: Scope, toProg: Program, toScope: Scope) {
+        const descendants = this.getDescendantScopes(fromProg, fromScope);
+        // move prog
+        fromProg.scopes = fromProg.scopes.filter(scope => !descendants.includes(scope));
+        toProg.scopes.push(...descendants);
+        // change parent of direct children
+        const children = descendants.filter(d => d.parent === fromScope);
+        for (const child of children) {
+            child.parent = toScope;
+        }
+    }
+    public getDescendantScopes(program: Program, ancestor: Scope) {
         const descendants = new Set<Scope>();
         for (const scope of program.scopes) {
             for (let s = scope; s != null; s = s.parent!) {
@@ -217,6 +272,15 @@ class ProgramBuilder {
             }
         }
         return [ ...descendants ];
+    }
+    public isDescendantScope(ancestor: Scope, descendant: Scope) {
+        while (descendant.parent) {
+            if (descendant.parent === ancestor) {
+                return true;
+            }
+            descendant = descendant.parent;
+        }
+        return false;
     }
     public findFirstFunction(program: Program) {
         const func = program.program.find(node => node.type === 'function') as FunctionNode;
