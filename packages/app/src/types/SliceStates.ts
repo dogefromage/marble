@@ -20,6 +20,7 @@ export type TemplatesSliceState = {
 
 export interface PanelManagerSliceState {
     activePanelId: string;
+    rootClientRect: Rect;
     clientRects: Map<string, Rect>;
 }
 

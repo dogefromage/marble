@@ -152,7 +152,7 @@ const RowListItemDiv = styled.div.attrs<RowListItemDivProps>(({ selected }) => (
 
 const AddSplitDiv = styled.div`
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr /* 1fr */;
     gap: 1rem;
 
     .add-dropdown {
@@ -175,8 +175,7 @@ interface RowListProps {
 }
 
 const fullDirection = {
-    'in': 'input',
-    'out': 'output',
+    'in': 'input', 'out': 'output',
 }
 
 const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
@@ -186,14 +185,14 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
     const mapName = direction === 'in' ? allowedInputRows    : allowedOutputRows   ;
     const [ selectedId, setSelectedId ] = useState('');
 
-    // default rows
-    const defaultRows = (direction === 'in' ?
-        defaultInputRows : defaultOutputRows) as ObjMap<InputRowT> | ObjMap<OutputRowT>;
-    const defaultRowKeys = Object.keys(defaultRows);
-    const defaultRowNameMap = defaultRowKeys.reduce((nameMap, key) => {
-        nameMap[key] = defaultRows[key].name;
-        return nameMap;
-    }, {} as ObjMap<string>);
+    // // default rows
+    // const defaultRows = (direction === 'in' ?
+    //     defaultInputRows : defaultOutputRows) as ObjMap<InputRowT> | ObjMap<OutputRowT>;
+    // const defaultRowKeys = Object.keys(defaultRows);
+    // const defaultRowNameMap = defaultRowKeys.reduce((nameMap, key) => {
+    //     nameMap[key] = defaultRows[key].name;
+    //     return nameMap;
+    // }, {} as ObjMap<string>);
 
     const addCustomRow = (rowAndDataType: RowDataTypeCombination) => {
         if (!editable) return;
@@ -201,20 +200,20 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
             geometryId,
             direction,
             rowAndDataType,
-            undo: { desc: `Added custom ${fullDirection[direction]} row to active geometry.`},
+            undo: { desc: `Added ${fullDirection[direction]} row to active geometry.`},
         }));
     }
 
-    const addDefaultRow = (defaultRowKey: string) => {
-        const defaultRow = defaultRows[defaultRowKey];
-        if (!editable || !defaultRow) return;
-        dispatch(geometriesAddDefaultRow({
-            geometryId,
-            direction,
-            defaultRow,
-            undo: { desc: `Added default ${fullDirection[direction]} row to active geometry.`},
-        }));
-    }
+    // const addDefaultRow = (defaultRowKey: string) => {
+    //     const defaultRow = defaultRows[defaultRowKey];
+    //     if (!editable || !defaultRow) return;
+    //     dispatch(geometriesAddDefaultRow({
+    //         geometryId,
+    //         direction,
+    //         defaultRow,
+    //         undo: { desc: `Added default ${fullDirection[direction]} row to active geometry.`},
+    //     }));
+    // }
 
     const removeRow = (rowId: string) => {
         if (!editable) return;
@@ -319,14 +318,14 @@ const RowList = ({ geometryId, rows, editable, direction }: RowListProps) => {
                         icon='add'
                         value='Add Custom'
                     />
-                    <FormSelectOption 
+                    {/* <FormSelectOption 
                         className='add-dropdown' 
                         onChange={addDefaultRow} 
                         mapName={defaultRowNameMap} 
                         options={defaultRowKeys}
                         icon='add'
                         value='Add default'
-                    />
+                    /> */}
                 </AddSplitDiv>
             }
         </RowListDiv>

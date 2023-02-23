@@ -1,5 +1,8 @@
-import React from 'react';
+import useResizeObserver from '@react-hook/resize-observer';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
+import { useAppDispatch } from '../redux/hooks';
+import { Rect } from '../types';
 import LayoutToolbar from './LayoutToolbar';
 import LayoutViewRoot from './LayoutViewRoot';
 
@@ -15,11 +18,21 @@ const Wrapper = styled.div`
     }
 `;
 
-const LayoutRoot = () =>
-{
+const LayoutRoot = () => {
+    const dispatch = useAppDispatch();
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useResizeObserver(wrapperRef, observer => {
+        const rect: Rect = {
+            x: observer.contentRect.x,
+            y: observer.contentRect.y,
+        }
+    });
+
     return (
         <Wrapper
             onContextMenu={e => e.preventDefault()}
+            ref={wrapperRef}
         >
             <LayoutToolbar />
             <LayoutViewRoot />

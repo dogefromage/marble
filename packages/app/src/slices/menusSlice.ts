@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WritableDraft } from "immer/dist/internal";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { MenusSliceState, MenuStackNode, MenuState } from "../types";
+import { MenusSliceState, MenuStackNode, MenuState, Rect } from "../types";
 
 const initialState: MenusSliceState = {};
 
@@ -46,6 +46,11 @@ export const menusSlice = createSlice({
             if (!menu) return;
             menu.state.set(a.payload.key, a.payload.value);
         },
+        setAvailableSpace: (s, a: PayloadAction<{ menuId: string, space: Rect }>) => {
+            const menu = getMenu(s, a);
+            if (!menu) return;
+            menu.availableSpace = a.payload.space;
+        },
     }
 });
 
@@ -55,6 +60,7 @@ export const {
     setClosed: menusSetClosed,
     setNode: menusSetNode,
     setState: menusSetState,
+    setAvailableSpace: menusSetAvailableSpace,
 } = menusSlice.actions;
 
 export const selectMenus = (state: RootState) => state.menus;

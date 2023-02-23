@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { castImmutable } from "immer";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
 import { PanelManagerSliceState, Rect } from "../types";
 
 const initialState: PanelManagerSliceState = {
     activePanelId: '',
+    rootClientRect: { x: 0, y: 0, w: 0, h: 0 },
     clientRects: new Map(),
 };
 
@@ -19,12 +19,16 @@ export const PanelManagerSlice = createSlice({
         setClientRect: (s, a: PayloadAction<{ panelId: string, rect: Rect }>) => {
             s.clientRects.set(a.payload.panelId, a.payload.rect);
         },
+        setRootClientRect: (s, a: PayloadAction<{ rect: Rect }>) => {
+            s.rootClientRect = a.payload.rect;
+        },
     }
 });
 
 export const {
     setActive: panelManagerSetActive,
     setClientRect: panelManagerSetClientRect,
+    setRootClientRect: panelManagerSetRootClientRect,
 } = PanelManagerSlice.actions;
 
 export const selectPanelManager = (state: RootState) => state.editor.panelManager;

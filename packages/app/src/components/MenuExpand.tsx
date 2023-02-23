@@ -39,8 +39,7 @@ const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuEleme
                     menuId={menuId}
                     depth={depth + 1}
                     shape={element.sublist}
-                    left={`${currentStackEl.position.x}px`}
-                    top={`${currentStackEl.position.y}px`}
+                    anchor={currentStackEl.position}
                 />
             }
         </MenuExpandDiv>

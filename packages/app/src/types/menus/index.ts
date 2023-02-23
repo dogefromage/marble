@@ -1,5 +1,5 @@
 import React from "react";
-import { ColorTuple, Point } from "../UtilityTypes";
+import { ColorTuple, Point, Rect } from "../UtilityTypes";
 
 export type MenuElementTypes = 'expand' | 'command' | 'button' | 'search' | 'title' | 'color';
 
@@ -66,4 +66,5 @@ export interface MenuState {
     nodeStack: MenuStackNode[];
     isClosed: boolean;
     state: Map<string, any>;
+    availableSpace: Rect;
 }

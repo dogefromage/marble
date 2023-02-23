@@ -1,5 +1,4 @@
 import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LambdaExpressionNode, LambdaTypeSpecifierNode, LiteralNode, ParameterDeclarationNode, ReturnStatementNode, SimpleTypeSpecifierNode, StatementNode, TypeSpecifierNode } from "@marble/language";
-import produceNoFreeze from "../produceNoFreeze";
 
 class AstUtils {
     public createLiteral(literal: string, whitespace = ''): LiteralNode {
@@ -31,14 +30,8 @@ class AstUtils {
             },
             semi: this.createLiteral(';', semiWhitespace),
         }
-        return produceNoFreeze(declarationStmt, d => {
-            const specifier = d.declaration.specified_type.specifier;
-            if (specifier.type === 'type_specifier') {
-                specifier.specifier.whitespace = ' ';
-            } else {
-                specifier.rp.whitespace = ' ';
-            }
-        });
+        this.addTypeSpecWhitespace(declarationStmt.declaration.specified_type.specifier);
+        return declarationStmt;
     }
     public createReturnStatement(expression: ExpressionNode): ReturnStatementNode {
         return {
@@ -63,7 +56,7 @@ class AstUtils {
         }
     }
     public createParameterDeclaration(specifier: TypeSpecifierNode, identifier: IdentifierNode): ParameterDeclarationNode {
-        const paramDeclarationDraft: ParameterDeclarationNode = {
+        const paramDec: ParameterDeclarationNode = {
             type: 'parameter_declaration',
             qualifier: [],
             declaration: {
@@ -72,17 +65,10 @@ class AstUtils {
                 identifier, specifier,
             }
         };
-        return produceNoFreeze(paramDeclarationDraft, d => {
-            if (d.declaration.type === 'parameter_declarator') {
-                const declarator = d.declaration;
-                declarator.identifier.whitespace = '';
-                if (declarator.specifier.type === 'type_specifier') {
-                    declarator.specifier.specifier.whitespace = ' ';
-                } else {
-                    declarator.specifier.rp.whitespace = ' ';
-                }
-            }
-        });
+        if (paramDec.declaration.type === 'parameter_declarator') {
+            this.addTypeSpecWhitespace(paramDec.declaration.specifier);
+        }
+        return paramDec;
     }
     public createFunctionCall(identifier: FunctionCallNode['identifier'], args: ExpressionNode[]): FunctionCallNode {
         return {
@@ -155,6 +141,13 @@ class AstUtils {
         }
     }
 
+    public addTypeSpecWhitespace(specifier: TypeSpecifierNode) {
+        if (specifier.type === 'type_specifier') {
+            specifier.specifier.whitespace = ' ';
+        } else {
+            specifier.rp.whitespace = ' ';
+        }
+    }
     public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [ TypeSpecifierNode, string ][] {
         if (!parameterDeclarationList) return [];
         return parameterDeclarationList

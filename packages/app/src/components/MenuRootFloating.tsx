@@ -2,11 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import useClickedOutside from '../hooks/useClickedOutside';
-import { useEventListener } from '../hooks/useEventListener';
 import useStopMouseEvents from '../hooks/useStopMouseEvents';
 import { useAppDispatch } from '../redux/hooks';
 import { menusSetClosed } from '../slices/menusSlice';
-import { VERTICAL_MENU_WIDTH } from '../styles/MenuFloatingDiv';
 import { FloatingMenuShape, MenuTypes, Point } from '../types';
 import { useBindMenuState } from '../utils/menus';
 import MenuFloating from './MenuFloating';
@@ -25,11 +23,11 @@ interface Props {
     shape: FloatingMenuShape
     onClose: () => void;
     anchor: Point;
-    center?: boolean;
 }
 
-const MenuRootFloating = ({ menuId, menuType, anchor, shape, onClose, center }: Props) => {
-    const { menuState } = useBindMenuState(menuId, menuType);
+const MenuRootFloating = ({ menuId, menuType, shape, onClose, anchor }: Props) => {
+
+    const { menuState } = useBindMenuState(menuId, menuType, fullClientRect);
     const wrapperDivRef = useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
 
@@ -44,12 +42,6 @@ const MenuRootFloating = ({ menuId, menuType, anchor, shape, onClose, center }: 
     }
     useClickedOutside(wrapperDivRef, close);
 
-    let x = anchor.x;
-    let y = anchor.y;
-    if (center) {
-        x -= 0.5 * VERTICAL_MENU_WIDTH;
-    }
-
     const stopMouseHandlers = useStopMouseEvents();
 
     return ReactDOM.createPortal(
@@ -61,8 +53,7 @@ const MenuRootFloating = ({ menuId, menuType, anchor, shape, onClose, center }: 
                 menuId={menuId}
                 depth={0}
                 shape={shape as FloatingMenuShape}
-                left={`${x}px`}
-                top={`${y}px`}
+                anchor={anchor}
             />
         </FixedFullscreenDiv>,
         document.querySelector(`#${MENU_PORTAL_MOUNT_ID}`)!

@@ -1,23 +1,22 @@
 import styled from 'styled-components';
+import { Point } from '../types';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const VERTICAL_MENU_WIDTH = 240;
 
-export interface MenuVerticalDivProps
-{
-    left?: string;
-    top?: string;
-    bottom?: string;
-    right?: string;
+export interface MenuVerticalDivProps {
+    anchor: Point;
     width?: string;
 }
 
 const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({ 
-    left, top, bottom, right, width,
+    anchor, width,
 }) => {
     return {
         style: {
-            left, top, bottom, right, width,
+            width,
+            left: anchor.x,
+            top: anchor.y,
         },
     };
 })<MenuVerticalDivProps>`

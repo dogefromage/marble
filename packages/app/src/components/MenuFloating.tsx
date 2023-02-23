@@ -1,6 +1,9 @@
-import React from 'react';
+import useResizeObserver from '@react-hook/resize-observer';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useAppSelector } from '../redux/hooks';
+import { selectSingleMenu } from '../slices/menusSlice';
 import MenuFloatingDiv from '../styles/MenuFloatingDiv';
-import { ButtonMenuElement, ColorMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, SearchMenuElement, TitleMenuElement } from '../types';
+import { ButtonMenuElement, ColorMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, Point, Rect, SearchMenuElement, Size, TitleMenuElement } from '../types';
 import MenuButton from './MenuButton';
 import MenuColor from './MenuColor';
 import MenuCommand from './MenuCommand';
@@ -37,15 +40,39 @@ interface Props {
     menuId: string;
     depth: number;
     shape: FloatingMenuShape;
-    left?: string;
-    top?: string;
-    bottom?: string;
-    right?: string;
+    anchor: Point;
+    // anchorDir: 'left' | 'right';
 }
 
-const MenuFloating = ({ menuId, depth, shape, left, top, bottom, right }: Props) => {
+function adjustAnchorVertically(availableSpace: Rect, preferredAnchor: Point, menuSize: Size) {
+    return preferredAnchor;
+}
+
+const MenuFloating = ({ menuId, depth, shape, anchor, /* anchorDir */ }: Props) => {
+    const menu = useAppSelector(selectSingleMenu(menuId));
+    if (!menu) return null;
+    const { availableSpace } = menu;
+
+    const difRev = useRef<HTMLDivElement>(null);
+    const [ menuSize, setMenuSize ] = useState<Size>({ w: 0, h: 0 });
+
+    const adjustedAnchor = useMemo(() => 
+        adjustAnchorVertically(availableSpace, anchor, menuSize), 
+        [ availableSpace, anchor, /* menuSize */ ],
+    );
+    useEffect(() => {
+        console.log({ menuSize });
+    }, [ menuSize ]);
+
+    useResizeObserver(difRev, observer => {
+        setMenuSize({
+            w: observer.contentRect.width,
+            h: observer.contentRect.height,
+        });
+    });
+
     return (
-        <MenuFloatingDiv left={left} top={top} bottom={bottom} right={right}> {
+        <MenuFloatingDiv ref={difRev} anchor={adjustedAnchor}> {
             shape.list.map(element =>
                 <MenuElementSwitch
                     menuId={menuId}

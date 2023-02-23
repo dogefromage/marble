@@ -1,11 +1,11 @@
 import React from 'react';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
+import { useAppDispatch } from '../redux/hooks';
 import ConsoleView from './ConsoleView';
 import GeometryEditorView from './GeometryEditorView';
 import ViewportView from './ViewportView';
 
-const LayoutViewRoot = () =>
-{
+const LayoutViewRoot = () => {
     return (
         <ReflexContainer
             orientation='horizontal'
