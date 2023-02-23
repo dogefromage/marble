@@ -3,11 +3,11 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectSingleGeometry, geometriesCreate } from '../slices/geometriesSlice';
+import { geometriesCreate, selectSingleGeometry } from '../slices/geometriesSlice';
 import { layersCreate } from '../slices/layersSlice';
-import { geometryEditorPanelsOpenTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { UndoRecord, ViewTypes } from '../types';
 import { rootGeometryTemplate } from '../types/geometries/defaultRows';
+import useDispatchCommand from '../utils/commands/useDispatchCommand';
 import useContextMenu from '../utils/menus/useContextMenu';
 import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from '../utils/testSetup';
 import GeometryEditorBreadCrumbs from './GeometryEditorBreadCrumbs';
@@ -38,36 +38,28 @@ const GeometryEditorViewport = ({ panelId }: Props) => {
     const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
     const geometryId = panelState?.geometryStack[0];
     const geometry = useAppSelector(selectSingleGeometry(geometryId));
-
-    const getOffsetPos = (e: React.MouseEvent) => {
-        const boundingRect = e.currentTarget.getBoundingClientRect();
-        const offsetPos = {
-            x: e.clientX - boundingRect.left,
-            y: e.clientY - boundingRect.top,
-        };
-
-        return offsetPos;
-    }
+    const dispatchCommand = useDispatchCommand();
 
     const contextMenu = useContextMenu(
-        panelId, 'Geometry Nodes', [
+        panelId, 
+        'Geometry Nodes', 
+        [
             'geometryEditor.openTemplateCatalog',
             'geometryEditor.deleteSelected',
             'geometryEditor.resetSelected',
             'geometryEditor.createSubgeometry'
-        ], 
-        e => ({ offsetPos: getOffsetPos(e) })
+        ]
     );
 
 
     return (
         <EditorWrapper
             onDoubleClick={e => {
-                dispatch(geometryEditorPanelsOpenTemplateCatalog({
-                    panelId: panelId,
-                    center: false,
-                    offsetPos: getOffsetPos(e),
-                }));
+                dispatchCommand(
+                    'geometryEditor.openTemplateCatalog', 
+                    { clientCursor: { x: e.clientX, y: e.clientY } },
+                    'view',
+                );
             }}
             onContextMenu={contextMenu}
         >

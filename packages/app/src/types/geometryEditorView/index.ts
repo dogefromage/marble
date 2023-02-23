@@ -9,9 +9,8 @@ export interface PlanarCamera {
 }
 
 interface TemplateCatalogState {
-    offsetPosition: Point;
+    menuAnchor: Point;
     worldPosition: Point;
-    center: boolean,
 }
 
 export interface GeometryNewLink {

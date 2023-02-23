@@ -9,7 +9,7 @@ export * from './viewportView';
 export * from './layer';
 export * from './dependencyGraph';
 export * from './geometryEditorView';
-export * from './sliceStates';
+export * from './SliceStates';
 export * from './contextMenu';
 export * from './layer';
 export * from './console';

@@ -1,6 +1,6 @@
 import { AnyAction } from '@reduxjs/toolkit';
 import { PanelStateMap, ViewTypes } from '../panelManager/views';
-import { Rect } from '../UtilityTypes';
+import { Point, Rect } from '../UtilityTypes';
 
 export interface KeyCombination {
     key: string;
@@ -11,7 +11,7 @@ export interface KeyCombination {
 }
 
 export type CommandScope = 'global' | 'view';
-export type CommandCallTypes = 'toolbar' | 'contextmenu' | 'keycombination';
+export type CommandCallTypes = 'toolbar' | 'contextmenu' | 'keycombination' | 'view';
 
 export interface CommandBaseArgs {
     callType: CommandCallTypes;
@@ -23,6 +23,10 @@ export interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends Comman
     activePanelId: string;
     panelClientRect: Rect;
     panelState: PanelStateMap[ V ];
+    offsetCenter: Point;
+    clientCenter: Point;
+    offsetCursor?: Point;
+    clientCursor?: Point;
 }
 
 interface BaseCommand {
@@ -31,10 +35,12 @@ interface BaseCommand {
     keyCombinations?: KeyCombination[];
 }
 
-export type CommandParameterMap =
-    {
-        [ key: string ]: any;
-    };
+interface BaseCommandParameters {
+    clientCursor: Point;
+}
+export type CommandParameterMap = 
+    Partial<BaseCommandParameters> 
+    & { [ key: string ]: any }
 
 type CommandActionCreator<A extends {}> =
     (scopedArgs: A, parameters: CommandParameterMap) => AnyAction[] | AnyAction | void;

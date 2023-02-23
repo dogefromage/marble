@@ -27,7 +27,13 @@ export default function useContextMenu(
             name: menuName,
             position,
             commandIds,
-            paramMap,
+            paramMap: {
+                ...paramMap,
+                clientCursor: {
+                    x: e.clientX,
+                    y: e.clientY,
+                }
+            },
         }}));
     }
 

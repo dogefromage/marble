@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAddNode } from '../slices/geometriesSlice';
@@ -7,7 +7,6 @@ import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometr
 import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
-import { offsetToClientPos } from '../utils/panelManager';
 import MenuRootFloating from './MenuRootFloating';
 
 type GroupedTemplatesMap = {
@@ -135,8 +134,6 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
 
     if (!templateCatalog || !currentPanelRect) return null;
 
-    const clientPos = offsetToClientPos(currentPanelRect, templateCatalog.offsetPosition);
-
     return (
         <MenuRootFloating
             menuId={menuId}
@@ -145,8 +142,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             onClose={() => {
                 dispatch(geometryEditorPanelsCloseTemplateCatalog({ panelId }))
             }}
-            anchor={clientPos}
-            center={templateCatalog.center}
+            anchor={templateCatalog.menuAnchor}
         />
     );
 }

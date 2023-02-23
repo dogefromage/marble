@@ -1,7 +1,7 @@
-import { current } from 'immer';
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { menusSetNode, selectSingleMenu } from '../slices/menusSlice';
+import { selectPanelManager } from '../slices/panelManagerSlice';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import { MenuExpandDiv } from '../styles/MenuElementDiv';
 import { ExpandMenuElement, MenuStackNode, Point } from '../types';
@@ -9,6 +9,8 @@ import MenuFloating, { MenuElementProps } from './MenuFloating';
 
 const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuElement>) => {
     const dispatch = useAppDispatch();
+    const panelManagerState = useAppSelector(selectPanelManager);
+    const { rootClientRect } = panelManagerState;
     const menu = useAppSelector(selectSingleMenu(menuId));
     if (!menu) return null;
     
@@ -20,14 +22,19 @@ const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuEleme
                 const div = e.currentTarget as HTMLDivElement;
                 if (!div) return;
                 const rect = div.getBoundingClientRect();
-                const position: Point = {
-                    x: rect.width,
-                    y: 0,
-                }; // relative position
+                const leftAnchor: Point = {
+                    x: rect.left,
+                    y: rect.top,
+                };
+
                 dispatch(menusSetNode({
                     menuId,
                     depth,
-                    node: { key: element.key, position }
+                    node: { 
+                        key: element.key, 
+                        leftAnchor,
+                        parentWidth: rect.width,
+                    }
                 }));
             }}
             tabIndex={element.tabIndex}
@@ -39,7 +46,8 @@ const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuEleme
                     menuId={menuId}
                     depth={depth + 1}
                     shape={element.sublist}
-                    anchor={currentStackEl.position}
+                    leftAnchor={currentStackEl.leftAnchor}
+                    parentWidth={currentStackEl.parentWidth}
                 />
             }
         </MenuExpandDiv>

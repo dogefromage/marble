@@ -27,7 +27,7 @@ interface Props {
 
 const MenuRootFloating = ({ menuId, menuType, shape, onClose, anchor }: Props) => {
 
-    const { menuState } = useBindMenuState(menuId, menuType, fullClientRect);
+    const { menuState } = useBindMenuState(menuId, menuType);
     const wrapperDivRef = useRef<HTMLDivElement>(null);
     const dispatch = useAppDispatch();
 
@@ -53,7 +53,8 @@ const MenuRootFloating = ({ menuId, menuType, shape, onClose, anchor }: Props) =
                 menuId={menuId}
                 depth={0}
                 shape={shape as FloatingMenuShape}
-                anchor={anchor}
+                leftAnchor={anchor}
+                parentWidth={0}
             />
         </FixedFullscreenDiv>,
         document.querySelector(`#${MENU_PORTAL_MOUNT_ID}`)!

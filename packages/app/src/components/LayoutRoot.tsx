@@ -1,8 +1,8 @@
 import useResizeObserver from '@react-hook/resize-observer';
-import React, { useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
-import { Rect } from '../types';
+import { panelManagerSetRootClientRect } from '../slices/panelManagerSlice';
 import LayoutToolbar from './LayoutToolbar';
 import LayoutViewRoot from './LayoutViewRoot';
 
@@ -19,15 +19,30 @@ const Wrapper = styled.div`
 `;
 
 const LayoutRoot = () => {
-    const dispatch = useAppDispatch();
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const dispatch = useAppDispatch();
+
+    const setSize = (w: number, h: number) => {
+        requestAnimationFrame(() => {
+            dispatch(panelManagerSetRootClientRect({
+                rect: {
+                    x: 0,
+                    y: 0,
+                    w,
+                    h,
+                }
+            }));
+        })
+    }
 
     useResizeObserver(wrapperRef, observer => {
-        const rect: Rect = {
-            x: observer.contentRect.x,
-            y: observer.contentRect.y,
-        }
+        setSize(observer.contentRect.width, observer.contentRect.height)
     });
+
+    useEffect(() => {
+        const clientRect = wrapperRef.current?.getBoundingClientRect();
+        clientRect && setSize(clientRect.width, clientRect.height);
+    }, []);
 
     return (
         <Wrapper

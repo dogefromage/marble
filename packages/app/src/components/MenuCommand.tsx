@@ -34,10 +34,10 @@ const MenuCommand = ({ menuId, element }: MenuElementProps<CommandMenuElement>) 
 
         if (menuState.type === 'context') {
             if (!contextMenu) return;
-            dispatchCommand(command, contextMenu.paramMap, 'contextmenu');
+            dispatchCommand(command.id, contextMenu.paramMap, 'contextmenu');
         }
         else if (menuState.type === 'toolbar') {
-            dispatchCommand(command, {}, 'toolbar');
+            dispatchCommand(command.id, {}, 'toolbar');
         }
         else {
             console.error(`Command not dispatched, menutype not found`);

@@ -28,14 +28,14 @@ const MenuInline = ({ menuId, depth, shape }: Props) => {
                         const div = e.currentTarget as HTMLDivElement;
                         if (!div) return;
                         const rect = div.getBoundingClientRect();
-                        const position: Point = {
-                            x: 0,
-                            y: rect.height,
-                        }; // relative position
+                        const leftAnchor: Point = {
+                            x: rect.left,
+                            y: rect.bottom,
+                        };
                         dispatch(menusSetNode({
                             menuId,
                             depth,
-                            node: { key: expandElement.key, position }
+                            node: { key: expandElement.key, leftAnchor, parentWidth: 0, },
                         }));
                     }}
                 >
@@ -45,8 +45,7 @@ const MenuInline = ({ menuId, depth, shape }: Props) => {
                             menuId={menuId}
                             depth={depth + 1}
                             shape={expandElement.sublist}
-                            left={`${currentStackEl.position.x}px`}
-                            top={`${currentStackEl.position.y}px`}
+                            {...currentStackEl}
                         />
                     }
                 </MenuInlineExpandDiv>

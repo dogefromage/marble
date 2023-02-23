@@ -55,7 +55,8 @@ export type MenuShape = InlineMenuShape | FloatingMenuShape
 
 export interface MenuStackNode {
     key: string;
-    position: Point;
+    leftAnchor: Point;
+    parentWidth: number;
 }
 
 export type MenuTypes = 'toolbar' | 'context' | 'misc';
@@ -66,5 +67,4 @@ export interface MenuState {
     nodeStack: MenuStackNode[];
     isClosed: boolean;
     state: Map<string, any>;
-    availableSpace: Rect;
 }

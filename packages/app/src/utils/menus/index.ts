@@ -1,26 +1,25 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import useTrigger from "../../hooks/useTrigger";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { menusAdd, menusRemove, menusSetAvailableSpace, selectSingleMenu } from "../../slices/menusSlice";
-import { MenuState, MenuTypes, Rect } from "../../types";
+import { menusAdd, menusRemove, selectSingleMenu } from "../../slices/menusSlice";
+import { MenuState, MenuTypes } from "../../types";
 
-function createMenuState(id: string, type: MenuTypes, availableSpace: Rect): MenuState {
+function createMenuState(id: string, type: MenuTypes): MenuState {
     return {
         id,
         type,
         isClosed: false,
         nodeStack: [],
         state: new Map(),
-        availableSpace,
     }
 }
 
-export function useBindMenuState(menuId: string, menuType: MenuTypes, availableSpace: Rect) {
+export function useBindMenuState(menuId: string, menuType: MenuTypes) {
     const dispatch = useAppDispatch();
     const [ resetTrigger, triggerReset ] = useTrigger();
 
     useEffect(() => {
-        const menuState = createMenuState(menuId, menuType, availableSpace);
+        const menuState = createMenuState(menuId, menuType);
         dispatch(menusAdd({ menuId, menuState }));
         return () => {
             dispatch(menusRemove({ menuId }))

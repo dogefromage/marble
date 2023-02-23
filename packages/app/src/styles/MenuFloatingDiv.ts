@@ -15,14 +15,14 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     return {
         style: {
             width,
-            left: anchor.x,
-            top: anchor.y,
+            left: anchor.x + 'px',
+            top: anchor.y + 'px',
         },
     };
 })<MenuVerticalDivProps>`
-    position: absolute;
+    position: fixed;
 
-    padding: 0 0.25rem 0.25rem;
+    padding: 0 4px 4px;
     display: flex;
     flex-direction: column;
 

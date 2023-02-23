@@ -52,17 +52,16 @@ export const geometryEditorPanelsSlice = createSlice({
 
             ps.camera.zoom = clamp(ps.camera.zoom, CAMERA_MIN_ZOOM, CAMERA_MAX_ZOOM);
         },
-        openTemplateCatalog: (s, a: PayloadAction<{ panelId: string, offsetPos: Point, center: boolean }>) =>
+        openTemplateCatalog: (s, a: PayloadAction<{ panelId: string, menuAnchor: Point, offsetPosition: Point }>) =>
         {
             const ps = getPanelState(s, a);
             if (!ps) return;
 
-            const worldPosition = pointScreenToWorld(ps.camera, p2v(a.payload.offsetPos));
+            const worldPosition = pointScreenToWorld(ps.camera, p2v(a.payload.offsetPosition));
 
             ps.templateCatalog = {
-                offsetPosition: a.payload.offsetPos,
+                menuAnchor: a.payload.menuAnchor,
                 worldPosition: v2p(worldPosition),
-                center: a.payload.center,
             };
         },
         closeTemplateCatalog: (s, a: PayloadAction<{ panelId: string }>) =>
