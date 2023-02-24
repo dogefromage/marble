@@ -1,4 +1,4 @@
-import { BaseInputRowT, dataTypeDescriptors, DataTypeValueTypes, GeometryConnectionData, GeometryS, ObjMapUndef, ProgramInclude, ProgramTextureVarMapping, RowS, SimpleDataTypes, textureVarDatatypeSize } from "../../types";
+import { BaseInputRowT, dataTypeDescriptors, DataTypeValueTypes, GeometryConnectionData, GeometryS, ObjMapUndef, ProgramInclude, ProgramDynamicLookupMapping, RowS, SimpleDataTypes, textureVarDatatypeSize } from "../../types";
 import { LOOKUP_TEXTURE_WIDTH } from "../viewportView/GLProgramRenderer";
 
 // function removeIndent(s: string, indent: number) {
@@ -71,7 +71,7 @@ export function splitIncludesFromSource(source: string) {
 }
 
 export function mapDynamicValues(
-    textureVarMappings: ProgramTextureVarMapping[],
+    textureVarMappings: ProgramDynamicLookupMapping[],
     geometries: ObjMapUndef<GeometryS>,
     geometryDatas: ObjMapUndef<GeometryConnectionData>,
     lastTextureVarRow?: number[],

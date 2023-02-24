@@ -66,7 +66,7 @@ export interface ContinueStatementNode {
 }
 export interface DeclarationStatementNode {
     type: 'declaration_statement';
-    declaration: DeclaratorListNode;
+    declaration: DeclaratorListNode | StructNode;
     semi: LiteralNode;
 }
 export interface DeclarationNode {
@@ -271,7 +271,7 @@ export interface StructNode {
     declarations: any[];
     rb: LiteralNode;
     struct: KeywordNode;
-    typeName: IdentifierNode;
+    typeName?: IdentifierNode;
 }
 export interface StructDeclarationNode {
     type: 'struct_declaration';

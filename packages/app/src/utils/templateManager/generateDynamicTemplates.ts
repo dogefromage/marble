@@ -1,15 +1,27 @@
-import { BaseInputRowT, dataTypeDescriptors, decomposeTemplateId, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, initialDataTypeValue, NameRowT, ObjMapUndef, PassthroughRowT, SpecificRowT } from "../../types";
+import { BaseInputRowT, DataTypeDescriptor, dataTypeDescriptors, decomposeTemplateId, GeometryS, getTemplateId, GNodeTemplate, GNodeTemplateTypes, initialDataTypeValue, NameRowT, ObjMapUndef, OutputRowT, PassthroughRowT, SpecificRowT } from "../../types";
 import { glsl } from "../codeStrings";
 import { generateDataTypeText } from "../layerPrograms/generateCodeStatements";
 import { GeometryContext } from "../layerPrograms/GeometryContext";
 
+export function generateTupleOutputType(outputs: OutputRowT[]) {
+    if (outputs.length === 1) {
+        return generateDataTypeText(outputs[0].dataType);
+    }
+    if (outputs.find(output => dataTypeDescriptors[output.dataType].type === 'lambda')) {
+        throw new Error(`Lambda must be a single output`);
+    }
+
+    const outputTypes = outputs.map(output => generateDataTypeText(output.dataType));
+    const tempStruct = GeometryContext.getIdentifierName('tuple_struct', ...outputTypes);
+    return tempStruct;
+}
+
 function generateCompositeInstructions(geometry: GeometryS) {
     const { inputs, outputs } = geometry;
-    if (outputs.length !== 1) {
+    if (outputs.length === 0) {
         return '';
     }
-    const [ output ] = outputs;
-
+    // inputs
     const templateInputParams = new Array<string>();
     const templateInputArgs = new Array<string>();
     for (const input of inputs) {
@@ -17,42 +29,40 @@ function generateCompositeInstructions(geometry: GeometryS) {
         templateInputParams.push(`${type} ${input.id}`);
         templateInputArgs.push(input.id);
     }
+    // outputs
 
-    const functionName = GeometryContext.getIdentifierName('geometry', geometry.id);
-    const returnType = generateDataTypeText(output.dataType);
-    const dataTypeDescriptor = dataTypeDescriptors[output.dataType];
+    if (outputs.length > 1 &&
+        outputs.find(output => dataTypeDescriptors[output.dataType].type === 'lambda')) {
+            throw new Error(`Lambda must be a single output`);
+        }
+    const geoFunctionName = GeometryContext.getIdentifierName('geometry', geometry.id);
 
-    let expression: string;
-    if (dataTypeDescriptor.type === 'lambda') {
+    let returnExpression: string;
+    const firstDescriptor = dataTypeDescriptors[outputs[0].dataType];
+    if (firstDescriptor.type === 'lambda') {
+        // lambda return
         const lambdaArgs = new Array<string>();
         const lambdaParams = new Array<string>();
-        for (let i = 0; i < dataTypeDescriptor.parameterTypes.length; i++) {
+        for (let i = 0; i < firstDescriptor.parameterTypes.length; i++) {
             const arg = `arg_${i}`;
-            const param = `${dataTypeDescriptor.parameterTypes[i]} ${arg}`;
+            const param = `${firstDescriptor.parameterTypes[i]} ${arg}`;
             lambdaArgs.push(arg);
             lambdaParams.push(param);
         }
-        const allArgs = [ ...templateInputArgs, ...lambdaArgs ];
-        expression = `lambda (${lambdaParams.join(', ')}) : ${functionName}(${allArgs.join(', ')})`;
+        const allArgs = [...templateInputArgs, ...lambdaArgs];
+        returnExpression = `lambda (${lambdaParams.join(', ')}) : ${geoFunctionName}(${allArgs.join(', ')})`;
     } else {
-        expression = `${functionName}(${templateInputArgs.join(', ')})`;
+        returnExpression = `${geoFunctionName}(${templateInputArgs.join(', ')})`;
     }
 
+    const returnType = generateTupleOutputType(outputs);
+    
     const instructions = glsl`
         ${returnType} dynamic_composite(${templateInputParams.join(', ')}) {
-            return ${expression};
+            return ${returnExpression};
         }
     `;
     return instructions;
-
-    // if (outputs.length === 1) {
-    // } else {
-    //     const invocStatement = `${returnType} res = ${functionInvoc};`;
-    //     const destructuringStatements = outputs.map((output, index) => 
-    //         `${output.dataType} ${output.id} = res.${getStructurePropertyKey(index)};`
-    //     );
-    //     return [ invocStatement, ...destructuringStatements ].join('\n');
-    // }
 }
 
 function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
@@ -69,7 +79,7 @@ function generateCompositeTemplate(geometry: GeometryS): GNodeTemplate {
         version: geometry.version,
         category: 'composite',
         instructions,
-        rows: [ 
+        rows: [
             nameRow,
             ...geometry.outputs as SpecificRowT[],
             ...geometry.inputs as SpecificRowT[],
@@ -96,7 +106,7 @@ function generateInputTemplate(geometry: GeometryS, inputId: string) {
         throw new Error(`Row should exist`);
     }
 
-    const templateIdentifier = [ geometry.id, input.id ].join(':');
+    const templateIdentifier = [geometry.id, input.id].join(':');
     const templateId = getTemplateId('input', templateIdentifier);
     const row: PassthroughRowT = {
         id: input.id,
@@ -106,43 +116,38 @@ function generateInputTemplate(geometry: GeometryS, inputId: string) {
         defaultParameter: input.id,
         value: initialDataTypeValue[input.dataType],
     }
-    
+
     const template: GNodeTemplate = {
         id: templateId,
         category: 'input',
         version: geometry.version,
-        rows: [ row as SpecificRowT ],
+        rows: [row as SpecificRowT],
         instructions: generateInputInstructions(geometry, inputId),
     }
     return template;
 }
 
 function generateOutputInstructions(geometry: GeometryS) {
-    if (geometry.outputs.length !== 1) {
-        console.error(`Implement != 1 output`);
-        return '';
+    const parameters = new Array<string>();
+    const args = new Array<string>();
+    for (const output of geometry.outputs) {
+        const typeExpr = generateDataTypeText(output.dataType);
+        parameters.push(`${typeExpr} ${output.id}`);
+        args.push(output.id);
     }
 
-    const [ outputInput ] = geometry.outputs;
-    const typeName = generateDataTypeText(outputInput.dataType);
+    const returnType = generateTupleOutputType(geometry.outputs);
+
+    let returnExpr = args[0];
+    if (geometry.outputs.length > 1) {
+        returnExpr = `${returnType}(${args.join(', ')})`;
+    }
 
     return glsl`
-        ${typeName} output(${typeName} ${outputInput.id}) {
-            return ${outputInput.id};
+        ${returnType} output(${parameters.join(', ')}) {
+            return ${returnExpr};
         }
     `;
-    // /**
-    //  * calls and returns a constructor function of a 
-    //  * placeholder datatype which will be overwritten during compilation.
-    //  */    
-    // const outputIdentifierList = geometry.outputs.map(output => output.id).join(', ');
-    // const returnType = createReturntypePlaceholder(geometry.outputs);
-    // let instructions = '';
-    // if (geometry.outputs.length === 1) {
-    //     instructions = `return ${outputIdentifierList};`;
-    // } else if (geometry.outputs.length > 1) {
-    //     instructions = `return ${returnType}(${outputIdentifierList});`;
-    // }
 }
 
 function generateOutputTemplate(geometry: GeometryS): GNodeTemplate {
@@ -185,7 +190,7 @@ export default function generateDynamicTemplates(
 
     for (const template of Object.values(templates) as GNodeTemplate[]) {
         const { type: templateType } = decomposeTemplateId(template.id);
-        const dynamicTemplateTypes: GNodeTemplateTypes[] = [ 'composite', 'output', 'input' ];
+        const dynamicTemplateTypes: GNodeTemplateTypes[] = ['composite', 'output', 'input'];
         if (dynamicTemplateTypes.includes(templateType)) {
             lastTemplates.set(template.id, template);
         }
@@ -195,7 +200,7 @@ export default function generateDynamicTemplates(
 
     for (const geometry of Object.values(geometries) as GeometryS[]) {
         const inputPassthroughIds = geometry.inputs.map(input =>
-            getTemplateId('input', [ geometry.id, input.id ].join(':'))
+            getTemplateId('input', [geometry.id, input.id].join(':'))
         );
         const geometryTemplateIds = [
             getTemplateId('output', geometry.id),
@@ -228,7 +233,7 @@ export default function generateDynamicTemplates(
     }
 
     // keys that remain must be removed since their geometry does not exist anymore
-    const removeTemplateIds: string[] = [ ...lastTemplates.keys() ];
+    const removeTemplateIds: string[] = [...lastTemplates.keys()];
 
     return {
         addTemplates,

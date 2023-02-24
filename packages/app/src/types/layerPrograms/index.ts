@@ -78,7 +78,7 @@ export const textureVarDatatypeSize: MapEvery<DataTypes, number> = {
     Surface:        -1,
 }
 
-export interface ProgramTextureVarMapping {
+export interface ProgramDynamicLookupMapping {
     dataType: DataTypes;
     textureCoordinate: number;
     geometryId: string;
@@ -100,7 +100,7 @@ export interface LayerProgram {
     includes: ProgramInclude[];
     mainProgramCode: string;
     rootFunctionName: string;
-    textureVarMappings: ProgramTextureVarMapping[];
+    textureVarMappings: ProgramDynamicLookupMapping[];
     textureVarRowIndex: number;
     textureVarRow: number[];
 }

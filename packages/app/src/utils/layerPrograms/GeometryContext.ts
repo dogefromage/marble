@@ -148,8 +148,8 @@ export class GeometryContext {
         // 1.2 single incoming edge
         if (incomingEdges[0] != null) {
             const jointEdge = incomingEdges[0];
-            const outputIndex = jointEdge.fromIndices[0];
-            const identifier = GeometryContext.getIdentifierName('output', outputIndex);
+            const [ outputNodeIndex, outputRowIndex ] = jointEdge.fromIndices;
+            const identifier = GeometryContext.getIdentifierName('output', outputNodeIndex, outputRowIndex);
             return {
                 type: 'edge',
                 identifier,
@@ -196,8 +196,9 @@ export class GeometryContext {
         };
     }
 
+    public static readonly tupleStructKey = '_tuple_';
     public static getIdentifierName(
-        prefixTypes: 'geometry' | 'output' | 'local' | 'lambda_arg',
+        prefixTypes: 'geometry' | 'output' | 'local' | 'lambda_arg' | 'tuple_struct' | 'struct_arg',
         ...descriptors: (string | number)[]
     ) {
         const prefixes = {
@@ -205,6 +206,8 @@ export class GeometryContext {
             'output': 'out_',
             'local': '_',
             'lambda_arg': 'arg_',
+            'tuple_struct': this.tupleStructKey,
+            'struct_arg': 'arg_'
         };
         return prefixes[prefixTypes] + descriptors.join('_');
     }

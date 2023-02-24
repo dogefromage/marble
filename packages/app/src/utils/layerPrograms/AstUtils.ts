@@ -1,4 +1,4 @@
-import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LambdaExpressionNode, LambdaTypeSpecifierNode, LiteralNode, ParameterDeclarationNode, ReturnStatementNode, SimpleTypeSpecifierNode, StatementNode, TypeSpecifierNode } from "@marble/language";
+import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LambdaExpressionNode, LambdaTypeSpecifierNode, LiteralNode, ParameterDeclarationNode, PostfixNode, ReturnStatementNode, SimpleTypeSpecifierNode, StatementNode, StructDeclarationNode, StructNode, TypeSpecifierNode } from "@marble/language";
 
 class AstUtils {
     public createLiteral(literal: string, whitespace = ''): LiteralNode {
@@ -19,18 +19,20 @@ class AstUtils {
             initializer: expression,
         }
     }
-    public createDeclarationStatement(fullTypeSpec: FullySpecifiedTypeNode, declaration: DeclarationNode, semiWhitespace = '\n    ')  {
+    public createDeclarationStatement(fullTypeSpec: FullySpecifiedTypeNode, declaration: DeclarationNode, semiWhitespace = '\n    ') {
         const declarationStmt: DeclarationStatementNode = {
             type: 'declaration_statement',
             declaration: {
                 type: 'declarator_list',
                 specified_type: fullTypeSpec,
-                declarations: [ declaration ],
+                declarations: [declaration],
                 commas: [],
             },
             semi: this.createLiteral(';', semiWhitespace),
         }
-        this.addTypeSpecWhitespace(declarationStmt.declaration.specified_type.specifier);
+        if (declarationStmt.declaration.type === 'declarator_list') {
+            this.addTypeSpecWhitespace(declarationStmt.declaration.specified_type.specifier);
+        }
         return declarationStmt;
     }
     public createReturnStatement(expression: ExpressionNode): ReturnStatementNode {
@@ -140,6 +142,58 @@ class AstUtils {
             body,
         }
     }
+    public createStruct(typeName: IdentifierNode, declarations: StructDeclarationNode[]): StructNode {
+        return {
+            type: 'struct',
+            declarations,
+            typeName,
+            struct: this.createKeyword('struct', ' '),
+            lb: this.createLiteral('{', '\n    '),
+            rb: this.createLiteral('}'),
+        }
+    }
+    public createStructDefinition(struct: StructNode): DeclarationStatementNode {
+        return {
+            type: 'declaration_statement',
+            declaration: struct,
+            semi: this.createLiteral(';', '\n'),
+        }
+    }
+    public createStructDeclaration(specifier: TypeSpecifierNode, identifier: IdentifierNode): StructDeclarationNode {
+        return {
+            type: 'struct_declaration',
+            semi: this.createLiteral(';', '\n    '),
+            declaration: {
+                type: 'struct_declarator',
+                declarations: [{
+                    type: 'quantified_identifier',
+                    quantifier: [],
+                    identifier,
+                }],
+                commas: [],
+                specified_type: {
+                    type: 'fully_specified_type',
+                    specifier,
+                    qualifiers: [],
+                },
+            }
+        }
+    }
+    public createPostfix(expression: ExpressionNode, postfix: FieldSelectionNode): PostfixNode {
+        return {
+            type: 'postfix',
+            expression,
+            postfix,
+        }
+    }
+    public createFieldSelection(selection: LiteralNode): FieldSelectionNode {
+        return {
+            type: 'field_selection',
+            dot: this.createLiteral('.'),
+            selection,
+        }
+    }
+
 
     public addTypeSpecWhitespace(specifier: TypeSpecifierNode) {
         if (specifier.type === 'type_specifier') {
@@ -148,7 +202,7 @@ class AstUtils {
             specifier.rp.whitespace = ' ';
         }
     }
-    public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [ TypeSpecifierNode, string ][] {
+    public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [TypeSpecifierNode, string][] {
         if (!parameterDeclarationList) return [];
         return parameterDeclarationList
             .map(declaration => {
@@ -157,9 +211,9 @@ class AstUtils {
                     throw new Error(`Unnamed params not allowed`);
                 }
 
-                return [ 
-                    declarator.specifier, 
-                    declarator.identifier.identifier 
+                return [
+                    declarator.specifier,
+                    declarator.identifier.identifier
                 ];
             });
     }
