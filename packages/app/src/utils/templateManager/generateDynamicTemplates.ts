@@ -8,7 +8,8 @@ export function generateTupleOutputType(outputs: OutputRowT[]) {
         return generateDataTypeText(outputs[0].dataType);
     }
     if (outputs.find(output => dataTypeDescriptors[output.dataType].type === 'lambda')) {
-        throw new Error(`Lambda must be a single output`);
+        console.error(`Lambda must be a single output`);
+        return '';
     }
 
     const outputTypes = outputs.map(output => generateDataTypeText(output.dataType));
@@ -33,7 +34,8 @@ function generateCompositeInstructions(geometry: GeometryS) {
 
     if (outputs.length > 1 &&
         outputs.find(output => dataTypeDescriptors[output.dataType].type === 'lambda')) {
-            throw new Error(`Lambda must be a single output`);
+            console.error(`Lambda must be a single output`);
+            return '';
         }
     const geoFunctionName = GeometryContext.getIdentifierName('geometry', geometry.id);
 

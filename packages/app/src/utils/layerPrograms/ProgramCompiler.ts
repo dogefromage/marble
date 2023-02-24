@@ -1,7 +1,7 @@
 import { AstNode, CompoundStatementNode, DeclaratorListNode, ExpressionNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, PreprocessorNode, Program, ReturnStatementNode, Scope, SimpleTypeSpecifierNode, StatementNode, StructNode, SymbolNode, SymbolRow, TypeSpecifierNode } from '@marble/language';
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
-import _ from 'lodash';
+import _, { forEach } from 'lodash';
 import objectPath from 'object-path';
 import { mapDynamicValues } from '.';
 import { DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramDynamicLookupMapping, splitDependencyKey, dataTypeDescriptors, OutputRowT } from "../../types";
@@ -372,18 +372,17 @@ export default class ProgramCompiler {
         const lambdaScope = lambdaDeclaration.lambdaScope;
 
         const outIdentifier = `lambda_${instanceIndex}_out`;
-        const lambdaOutput = {
-            identifier: outIdentifier,
-            specifier: lambdaDeclaration.lambdaType.return_type,
-            destructure: false,
-        }
 
         const newStatements = this.appendFunctionBody(
             program, func.body, funcScope,
             program, lambdaBody, lambdaScope,
             paramMapping,
             `l${instanceIndex}`,
-            lambdaOutput,
+            {
+                baseIdentifier: outIdentifier,
+                typeSpecifier: lambdaDeclaration.lambdaType.return_type,
+                destructure: false,
+            },
             beforeStatement,
         );
         // make call into identifier of lambda value
@@ -400,7 +399,9 @@ export default class ProgramCompiler {
                 const identifier = builder.getFunctionCallIdentifier(subInvocation)!;
                 const declaration = declaredLambdas.get(identifier)!;
                 this.instantiateLambda(
-                    program, func, funcScope, subInvocation, declaration, newStatement, instanceCounter, declaredLambdas,
+                    program, func, funcScope, 
+                    subInvocation, declaration, newStatement, 
+                    instanceCounter, declaredLambdas,
                 );
             }
         }
@@ -504,24 +505,15 @@ export default class ProgramCompiler {
                 } else {
                     throw new Error(`Cannot find linking rule type "${(linkingRule as any).type}"`);
                 }
-
                 paramMapping[parameter] = { replacementIdentifier };
             }
-
-            // output of node
-            const nodeOutputIdentifier = GeometryContext.getIdentifierName('output', nodeIndex);
-            const outputFullSpec = templateFunction.prototype.header.returnType;
-            const output = isOutput ? undefined : {
-                identifier: nodeOutputIdentifier,
-                specifier: outputFullSpec.specifier,
-                destructure: true,
-            };
 
             const templateCopy = _.cloneDeep({
                 prog: templateProgram,
                 body: templateFunction.body,
                 scope: templateFunctionScope,
             });
+            const baseOutputIdentifier = GeometryContext.getIdentifierName('output', nodeIndex);
 
             this.appendFunctionBody(
                 geoProgram,
@@ -532,13 +524,17 @@ export default class ProgramCompiler {
                 templateCopy.scope,
                 paramMapping,
                 nodeIndex,
-                output,
+                isOutput ? undefined : {
+                    baseIdentifier: baseOutputIdentifier,
+                    typeSpecifier: templateFunction.prototype.header.returnType.specifier,
+                    destructure: true,
+                },
             );
         }
         return geoProgram;
     }
 
-    getGeometryReturnTypeSpec(outputs: OutputRowT<DataTypes>[]) {
+    private getGeometryReturnTypeSpec(outputs: OutputRowT<DataTypes>[]) {
 
         const firstOutputDescriptor = dataTypeDescriptors[outputs[0].dataType];
         let spec: TypeSpecifierNode;
@@ -576,7 +572,7 @@ export default class ProgramCompiler {
         targetBody: CompoundStatementNode,
         targetScope: Scope,
         refProg: Program,
-        refBody: CompoundStatementNode | ExpressionNode,
+        refExprOrComp: CompoundStatementNode | ExpressionNode,
         refScope: Scope,
         paramMapping: ParamMapping,
         localName: string | number,
@@ -587,7 +583,7 @@ export default class ProgramCompiler {
         const externalReferences = new Array<ExternalPair>();
 
         builder.visitSymbolNodes(
-            refProg, refBody,
+            refProg, refExprOrComp,
             (path, binding, scope) => {
                 if (builder.isDescendantScope(scope, refScope)) {
                     const pathToNode = new Array<string | number>();
@@ -602,13 +598,13 @@ export default class ProgramCompiler {
         );
 
         // object must be combined to maintain circular references
-        const refTriple = [refProg, refBody, refScope] as const;
-        const [instanceProg, instanceBody, instanceScope] =
+        const refTriple = [refProg, refExprOrComp, refScope] as const;
+        const [instanceProg, instanceExprOrComp, instanceScope] =
             _.cloneDeep(refTriple);
 
         // reference externals in copied body
         for (const [path, externalBinding] of externalReferences) {
-            const ref = objectPath.get(instanceBody, path);
+            const ref = objectPath.get(instanceExprOrComp, path);
             if (!builder.isSymbolNode(ref)) {
                 throw new Error(`Not symbol`);
             }
@@ -616,23 +612,28 @@ export default class ProgramCompiler {
         }
 
         const processedBindings = new Set<SymbolRow<SymbolNode>>();
-        let outputBinding: SymbolRow<SymbolNode> | undefined;
+        const finalBindings = new Set<SymbolRow<SymbolNode>>();
 
         let instanceCompound: CompoundStatementNode;
 
-        if (instanceBody.type === 'compound_statement') {
-            instanceCompound = instanceBody;
+        if (instanceExprOrComp.type === 'compound_statement') {
+            instanceCompound = instanceExprOrComp;
         } else {
             // make compound from expression for ease of use
             instanceCompound = ast.createCompoundStatement([
                 ast.createReturnStatement(
-                    instanceBody
+                    instanceExprOrComp
                 )
             ]);
         }
 
         if (output) {
-            outputBinding = this.refactorBodyOutput(instanceBody as CompoundStatementNode, instanceScope, output);
+            if (instanceCompound.type !== 'compound_statement') {
+                throw new Error(`Is not compound statement`);
+            }
+            const outputBindings = this.refactorBodyOutput(
+                instanceCompound as CompoundStatementNode, instanceScope, output);
+            outputBindings.forEach(binding => finalBindings.add(binding));
         }
 
         // params
@@ -657,7 +658,7 @@ export default class ProgramCompiler {
             if (processedBindings.has(binding)) {
                 continue;
             }
-            if (binding !== outputBinding) {
+            if (!finalBindings.has(binding)) {
                 const localIdentifier = GeometryContext.getIdentifierName('local', localName, bindingIdentifier);
                 builder.renameReferences(binding.references, localIdentifier);
             }
@@ -689,65 +690,70 @@ export default class ProgramCompiler {
             throw new Error(`Output identifier passed but no return statement in compound node found`);
         }
         builder.spliceStatement(compound, returnStatement)
+        // determine name
+        const outputSpec = output.typeSpecifier;
+        let structTypeName: string | undefined;
+        if (
+            outputSpec != null &&
+            outputSpec.type === 'type_specifier' &&
+            outputSpec.specifier.type === 'identifier' &&
+            outputSpec.specifier.identifier.startsWith(GeometryContext.tupleStructKey)
+        ) {
+            structTypeName = outputSpec.specifier.identifier;
+        }
+
+        // default name first element _0 if not destructured
+        let baseDeclarationIdentifier = output.baseIdentifier;
+        if (output.destructure && !structTypeName?.length) {
+            baseDeclarationIdentifier += '_0'
+        }
         const declaration = ast.createDeclaration(
-            output.identifier,
+            baseDeclarationIdentifier,
             returnStatement.expression,
         );
         const declarationStatement = ast.createDeclarationStatement(
-            ast.createFullySpecifiedType(output.specifier),
+            ast.createFullySpecifiedType(output.typeSpecifier),
             declaration
         );
         const outputBinding = { initializer: declaration, references: [declaration] };
         builder.addStatementToCompound(compound, scope, declarationStatement, undefined, {
-            [output.identifier]: outputBinding,
+            [baseDeclarationIdentifier]: outputBinding,
         });
+        const bindings = [ outputBinding ];
         // destructure output
-        if (output.destructure) {
-            /**
-             * all declarations must have "_[rowIndex]" as postfix 
-             */
-            const outputSpec = output.specifier;
-            if (outputSpec.type === 'type_specifier' &&
-                outputSpec.specifier.type === 'identifier' &&
-                outputSpec.specifier.identifier.startsWith(GeometryContext.tupleStructKey)
-            ) {
-                // is tuple
-                const prefixLength = GeometryContext.tupleStructKey.length;
-                const typeName = outputSpec.specifier.identifier;
-                const attrTypes = typeName.slice(prefixLength).split('_') as DataTypes[];
-                attrTypes.forEach((attr, attributeIndex) => {
-                    const attrTypeSpec = parseDataType(attr);
-                    const fieldSelection = ast.createFieldSelection(
-                        ast.createLiteral(
-                            GeometryContext.getIdentifierName('struct_arg', attributeIndex),
-                        )
-                    );
-                    // create postfix statement
-                    const outputReference = ast.createIdentifier(output.identifier);
-                    const destructuringIdentifier =
-                        [output.identifier, attributeIndex].join('_');
-                    const postfix = ast.createPostfix(
+        if (output.destructure && structTypeName?.length) {
+            const prefixLength = GeometryContext.tupleStructKey.length;
+            const attrTypes = structTypeName!.slice(prefixLength).split('_') as DataTypes[];
+            attrTypes.forEach((attr, attributeIndex) => {
+                const attrTypeSpec = parseDataType(attr);
+                const fieldSelection = ast.createFieldSelection(
+                    ast.createLiteral(
+                        GeometryContext.getIdentifierName('struct_arg', attributeIndex),
+                    )
+                );
+                // create postfix statement
+                const outputReference = ast.createIdentifier(output.baseIdentifier);
+                const destructuringIdentifier =
+                    [output.baseIdentifier, attributeIndex].join('_');
+                const declaration = ast.createDeclaration(
+                    destructuringIdentifier, 
+                    ast.createPostfix(
                         outputReference,
                         fieldSelection,
-                    );
-                    const declaration = ast.createDeclaration(
-                        destructuringIdentifier, fieldSelection,
-                    );
-                    const declarationStatement = ast.createDeclarationStatement(
-                        ast.createFullySpecifiedType(attrTypeSpec),
-                        declaration
-                    );
-                    builder.addStatementToCompound(compound, scope, declarationStatement, undefined, {
-                        [destructuringIdentifier]: { initializer: declaration, references: [declaration] },
-                    });
+                    ),
+                );
+                const declarationStatement = ast.createDeclarationStatement(
+                    ast.createFullySpecifiedType(attrTypeSpec),
+                    declaration
+                );
+                const destructureBinding = { initializer: declaration, references: [declaration] };
+                builder.addStatementToCompound(compound, scope, declarationStatement, undefined, {
+                    [destructuringIdentifier]: destructureBinding,
                 });
-            } else {
-                const destructuringIdentifier = output.identifier + '_0';
-                builder.renameReferences(outputBinding.references, destructuringIdentifier);
-            }
+                bindings.push(destructureBinding);
+            });
         }
-
-        return outputBinding;
+        return bindings;
     }
 
     private getTemplateProgramInstance(template: GNodeTemplate) {
@@ -780,7 +786,7 @@ type ParamMapping = ObjMap<{
 }>
 
 interface OutputInstantiationOptions {
-    specifier: TypeSpecifierNode,
-    identifier: string,
+    typeSpecifier: TypeSpecifierNode,
+    baseIdentifier: string,
     destructure: boolean,
 }

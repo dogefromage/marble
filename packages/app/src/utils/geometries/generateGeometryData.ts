@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, GNodeTemplateTypes, InputRowT, NullArr, ObjMap, ObjMapUndef } from "../../types";
-import { readNodeSizes } from "./geometryUtils";
+import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, GNodeTemplateTypes, InputRowT, NullArr, ObjMap, ObjMapUndef, OutputRowT } from "../../types";
+import { calculateNodeSizes as calculateNodeSize } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
     if (_.isArray(objValue)) {
@@ -21,7 +21,7 @@ function genAdjList(
     const forwardEdges: GeometryAdjacencyList = {};
     const backwardEdges: GeometryAdjacencyList = {};
 
-    type RowCoordinates = { nodeIndex: number, rowIndex: number, dataType?: DataTypes };
+    type RowCoordinates = { nodeIndex: number, rowIndex: number, dataType: DataTypes, outputRowIndex: number, };
     const outputIndicesMap = new Map<string, RowCoordinates>();
     // if a template is missing, we add it to this set for making sure to ignore it later
     const noUpToDateTemplate = new Set<string>();
@@ -36,14 +36,19 @@ function genAdjList(
             // initialize connection count
             const nodesConnections: ObjMap<number> = {};
             rowConnectedJoints[nodeIndex] = nodesConnections;
+            let outputCounter = 0;
             for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {
-                const row = template.rows[rowIndex] as InputRowT;
+                const row = template.rows[rowIndex] as OutputRowT; // note: not all are outputs, outputs will not be matched
                 const key = outputKey(node.id, row.id);
                 outputIndicesMap.set(key, {
                     nodeIndex, rowIndex,
-                    dataType: row.dataType
+                    dataType: row.dataType,
+                    outputRowIndex: outputCounter,
                 });
                 nodesConnections[row.id] = 0;
+                if (row.type === 'output') {
+                    outputCounter++;
+                }
             }
         } else {
             noUpToDateTemplate.add(node.id);
@@ -65,10 +70,11 @@ function genAdjList(
 
             for (let subIndex = 0; subIndex < row.incomingElements.length; subIndex++) {
                 const incoming = row.incomingElements[subIndex];
-                if (incoming.type === 'argument') {
-                    // is not a connection
-                    continue;
-                }
+                // DEPRECATED
+                // if (incoming.type === 'argument') {
+                //     // is not a connection
+                //     continue;
+                // }
 
                 const outputLocation = incoming.location;
                 if (noUpToDateTemplate.has(outputLocation.nodeId)) {
@@ -106,6 +112,7 @@ function genAdjList(
                 const edge: GeometryEdge = {
                     id: ['edge', ...fromIndices, ...toIndices].join('-'),
                     fromIndices, toIndices,
+                    outputRowIndex: fromRowCoordinates.outputRowIndex,
                     dataType: templateRow.dataType,
                 };
 
@@ -170,7 +177,7 @@ export default function generateGeometryData(geometry: GeometryS, templates: Obj
         }
 
         const rowConnections = rowConnectedJoints[nodeIndex]!;
-        const { widthPixels, rowHeights } = readNodeSizes(node, template, rowConnections);
+        const { widthPixels, rowHeights } = calculateNodeSize(node, template, rowConnections);
 
         const nodeData: GNodeData = {
             template,

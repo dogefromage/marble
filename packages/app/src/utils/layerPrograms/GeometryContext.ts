@@ -148,8 +148,9 @@ export class GeometryContext {
         // 1.2 single incoming edge
         if (incomingEdges[0] != null) {
             const jointEdge = incomingEdges[0];
-            const [ outputNodeIndex, outputRowIndex ] = jointEdge.fromIndices;
-            const identifier = GeometryContext.getIdentifierName('output', outputNodeIndex, outputRowIndex);
+            const [ outputNodeIndex ] = jointEdge.fromIndices;
+            const outputRow = jointEdge.outputRowIndex;
+            const identifier = GeometryContext.getIdentifierName('output', outputNodeIndex, outputRow);
             return {
                 type: 'edge',
                 identifier,

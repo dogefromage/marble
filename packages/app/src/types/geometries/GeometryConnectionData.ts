@@ -9,6 +9,7 @@ export interface GeometryEdge {
     id: string;
     fromIndices: GeometryFromIndices;
     toIndices: GeometryToIndices;
+    outputRowIndex: number;
     dataType: DataTypes;
 }
 
