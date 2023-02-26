@@ -1,195 +1,125 @@
 import { getTemplateId, GNodeTemplate, SpecificRowT } from "../../types";
+import { defaultOutputRows } from "../../types/geometries/defaultRows";
 import { glsl } from "../../utils/codeStrings";
-import { TemplateColors } from "./templateConstants";
+import { nameRow, inputField } from "./rowShorthands";
+import { templateColors } from "./templateConstants";
 
-const outputRow: SpecificRowT =
-{
-    id: 'output',
-    type: 'output',
-    dataType: 'Surface',
-    name: 'Surface',
-};
-
-const coordinateRow: SpecificRowT =
-{
-    id: 'position',
-    type: 'input',
-    name: 'Position',
-    dataType: 'vec3',
-    value: [ 0, 0, 0 ],
-    defaultParameter: 'position',
-};
-
-const colorRow: SpecificRowT =
-{
+const outputRow = defaultOutputRows['surface'];
+const colorRow: SpecificRowT = {
     id: 'color',
     type: 'color',
-    name: 'Color',
     dataType: 'vec3',
+    name: 'Color',
     value: [ 1, 1, 1 ],
-};
+}
 
-const solid_sphere: GNodeTemplate =
-{
+const solid_sphere: GNodeTemplate = {
     id: getTemplateId('static', 'sphere'),
     version: 0,
     category: 'solids',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Sphere',
-            color: TemplateColors.Primitives,
-        },
+        nameRow('Sphere', templateColors['solids']),
         outputRow,
-        coordinateRow,
-        {
-            id: 'radius',
-            type: 'field',
-            dataType: 'float',
-            name: 'Radius',
-            value: 1,
-        },
+        inputField('radius', 'Radius', 'float', 1),
         colorRow,
     ],
     instructions: glsl`
-        Solid output = Solid(length(position) - radius, color);
+        Distance:(vec3) sphere(float radius, vec3 color) {
+            return lambda (vec3 p) : Distance(length(p) - radius, color);
+        }
     `,
 }
 
-const solid_torus: GNodeTemplate =
-{
+const solid_torus: GNodeTemplate = {
     id: getTemplateId('static', 'torus'),
     version: 0,
     category: 'solids',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Torus',
-            color: TemplateColors.Primitives,
-        },
+        nameRow('Torus', templateColors['solids']),
         outputRow,
-        coordinateRow,
-        {
-            id: 'large_r',
-            type: 'field',
-            dataType: 'float',
-            name: 'R',
-            value: 1,
-        },
-        {
-            id: 'small_r',
-            type: 'field',
-            dataType: 'float',
-            name: 'r',
-            value: 0.5,
-        },
+        inputField('large_r', 'R', 'float', 1),
+        inputField('small_r', 'r', 'float', 0.5),
         colorRow,
     ],
     instructions: glsl`
-        vec2 q = vec2(length(position.xz) - large_r, position.y);
-        Solid output = Solid(length(q) - small_r, color);
+        Distance:(vec3) torus(float large_r, float small_r, vec3 color) {
+            return lambda (vec3 p) : {
+                vec2 q = vec2(length(p.xz) - large_r, p.y);
+                return Distance(length(q) - small_r, color);
+            };
+        }
+        // vec2 q = vec2(length(position.xz) - large_r, position.y);
+        // Solid output = Solid(length(q) - small_r, color);
     `,
 }
 
-const solid_box: GNodeTemplate =
-{
+const solid_box: GNodeTemplate = {
     id: getTemplateId('static', 'box'),
     version: 0,
     category: 'solids',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Box',
-            color: TemplateColors.Primitives,
-        },
+        nameRow('Box', templateColors['solids']),
         outputRow,
-        coordinateRow,
-        {
-            id: 'size',
-            type: 'field',
-            dataType: 'vec3',
-            name: 'Size',
-            value: [ 1, 1, 1 ],
-        },
+        inputField('size', 'Size', 'vec3', [1,1,1]),
         colorRow,
     ],
     instructions: glsl`
-        vec3 q = abs(position) - size;
-        Solid output = Solid(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
+        Distance:(vec3) box(vec3 size, vec3 color) {
+            return lambda (vec3 p) : {
+                vec3 q = abs(p) - size;
+                return Distance(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
+            };
+        }
+        // vec3 q = abs(position) - size;
+        // Solid output = Solid(length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0), color);
     `,
 }
 
-const solid_plane: GNodeTemplate =
-{
-    id: getTemplateId('static', 'plane'),
-    version: 0,
-    category: 'solids',
-    rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'z-Plane',
-            color: TemplateColors.Primitives,
-        },
-        outputRow,
-        coordinateRow,
-        {
-            id: 'height',
-            type: 'field',
-            dataType: 'float',
-            name: 'Height',
-            value: 0,
-        },
-        colorRow,
-    ],
-    instructions: glsl`
-        Solid output = Solid(position.z - height, color);
-    `,
-}
-
-const solid_cylinder: GNodeTemplate =
-{
+const solid_cylinder: GNodeTemplate = {
     id: getTemplateId('static', 'cylinder'),
     version: 0,
     category: 'solids',
     rows: [
-        {
-            id: 'name',
-            type: 'name',
-            name: 'Cylinder',
-            color: TemplateColors.Primitives,
-        },
+        nameRow('Cylinder', templateColors['solids']),
         outputRow,
-        coordinateRow,
-        {
-            id: 'height',
-            type: 'field',
-            dataType: 'float',
-            name: 'Height',
-            value: 1,
-        },
-        {
-            id: 'radius',
-            type: 'field',
-            dataType: 'float',
-            name: 'Radius',
-            value: 1,
-        },
+        inputField('radius', 'Height', 'float', 1),
+        inputField('height', 'Radius', 'float', 1),
         colorRow,
     ],
     instructions: glsl`
-        vec2 d = abs(vec2(length(position.xz), position.y)) - vec2(radius, height);
-        Solid output = Solid(min(max(d.x,d.y),0.0) + length(max(d,0.0)), color);
+        Distance:(vec3) cylinder(float radius, float height, vec3 color) {
+            return lambda (vec3 p) : {
+                vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(radius, height);
+                return Distance(min(max(d.x,d.y),0.0) + length(max(d,0.0)), color);
+            };
+        }
+        // vec2 d = abs(vec2(length(position.xz), position.y)) - vec2(radius, height);
+        // Solid output = Solid(min(max(d.x,d.y),0.0) + length(max(d,0.0)), color);
+    `,
+}
+
+const solid_plane: GNodeTemplate = {
+    id: getTemplateId('static', 'plane'),
+    version: 0,
+    category: 'solids',
+    rows: [
+        nameRow('z-Plane', templateColors['solids']),
+        outputRow,
+        inputField('height', 'Height', 'float', 0),
+        colorRow,
+    ],
+    instructions: glsl`
+        Distance:(vec3) plane(float height, vec3 color) {
+            return lambda (vec3 p) : Distance(p.z - height, color);
+        }
+        // Solid output = Solid(position.z - height, color);
     `,
 }
 
 export default [
     solid_sphere,
-    solid_torus,
     solid_box,
-    solid_plane,
+    solid_torus,
     solid_cylinder,
+    solid_plane,
 ];

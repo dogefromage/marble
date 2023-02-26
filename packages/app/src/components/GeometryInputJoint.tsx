@@ -10,19 +10,8 @@ interface Props {
 }
 
 const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
-    
     let incomingElement = row.incomingElements?.[ jointLocation.subIndex ];
-    if (incomingElement == null &&
-        jointLocation.subIndex === 0 &&
-        row.defaultParameter != null
-    ) {
-        incomingElement = {
-            type: 'argument',
-            argument: row.defaultParameter,
-        }
-    }
-
-    const argumentId = incomingElement?.type === 'argument' && incomingElement.argument;
+    const argumentId = incomingElement == null && row.defaultParameter || undefined;
 
     return (<>
         {

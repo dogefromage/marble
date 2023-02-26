@@ -4,7 +4,7 @@ import { Dependable } from "../dependencyGraph";
 import { Point } from "../UtilityTypes";
 import { RowS, SpecificRowT } from "./Rows";
 
-export type GNodeTemplateCategories = 
+export type GNodeTemplateCategory = 
     | 'solids'
     | 'solid_operators'
     | 'numbers'
@@ -15,7 +15,7 @@ export type GNodeTemplateCategories =
     | 'math'
     | 'composite'
 
-export const templateCategoryNames: { [ C in GNodeTemplateCategories ]: string } = {
+export const templateCategoryNames: { [ C in GNodeTemplateCategory ]: string } = {
     'solids':          'Solids',
     'solid_operators': 'Solid Operators',
     'numbers':         'Numbers',
@@ -43,7 +43,7 @@ type TemplateInstructions = FunctionNode;
 export interface GNodeTemplate extends Dependable {
     id: NodeTemplateId;
     rows: Array<SpecificRowT>;
-    category: GNodeTemplateCategories;
+    category: GNodeTemplateCategory;
     instructions: string;
 }
 

@@ -1,14 +1,15 @@
-import { AstNode, CompoundStatementNode, DeclaratorListNode, ExpressionNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, PreprocessorNode, Program, ReturnStatementNode, Scope, SimpleTypeSpecifierNode, StatementNode, StructNode, SymbolNode, SymbolRow, TypeSpecifierNode } from '@marble/language';
+import { AstNode, CompoundStatementNode, DeclaratorListNode, ExpressionNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, LambdaTypeSpecifierNode, parse as parseMarbleLanguage, PreprocessorNode, Program, ReturnStatementNode, Scope, StatementNode, SymbolNode, SymbolRow, TypeSpecifierNode } from '@marble/language';
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
-import _, { forEach } from 'lodash';
+import _ from 'lodash';
 import objectPath from 'object-path';
 import { mapDynamicValues } from '.';
-import { DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, ProgramInclude, ProgramDynamicLookupMapping, splitDependencyKey, dataTypeDescriptors, OutputRowT } from "../../types";
+import { dataTypeDescriptors, DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, ObjMap, ObjMapUndef, OutputRowT, ProgramDynamicLookupMapping, ProgramInclude, splitDependencyKey } from "../../types";
 import { Counter } from '../Counter';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import { generateTupleOutputType } from '../templateManager/generateDynamicTemplates';
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
+import { AstSubtree } from './AstSubtree';
 import ast from './AstUtils';
 import { generateTextureLookupStatement, parseDataType } from './generateCodeStatements';
 import { GeometryContext } from './GeometryContext';
@@ -138,7 +139,7 @@ export default class ProgramCompiler {
             return null;
         }
         this.refactorLambdas(geoProgram);
-        this.removeIdentityDeclarations(geoProgram);
+        // this.removeIdentityDeclarations(geoProgram);
         const structs = this.findTupleStructs(geoProgram);
 
         const geoFunction = builder.findFirstFunction(geoProgram);
@@ -191,6 +192,9 @@ export default class ProgramCompiler {
                         const declarationBinding = builder.findReferenceSymbolRow(program, declaration)!;
                         const referencesWithoutInitializer = declarationBinding.references
                             .filter(ref => ref !== declarationBinding.initializer);
+                        if (!refBinding) {
+                            debugger
+                        }
                         builder.mergeAndRenameReferences(refBinding, referencesWithoutInitializer);
                         statements.splice(i, 1);
                         builder.removeReferencesOfSubtree(program, statement);
@@ -231,7 +235,14 @@ export default class ProgramCompiler {
                 // scope
                 let lambdaScope = program.scopes
                     .find(scope => scope.name === lambdaExpression.header.name);
-                if (!lambdaScope) {
+                if (lambdaScope) {
+                    // remove lambda scope and descendants
+                    const scopeAndDescendants = [
+                        lambdaScope,
+                        ...builder.getDescendantScopes(program, lambdaScope),
+                    ];
+                    program.scopes = program.scopes.filter(scope => !scopeAndDescendants.includes(scope));
+                } else {
                     const dummyNode = ast.createIdentifier('dummy');
                     lambdaScope = {
                         name: lambdaExpression.header.name,
@@ -353,18 +364,13 @@ export default class ProgramCompiler {
                 throw new Error(`Lambda parameters must be named`);
             }
             const replacementIdentifier = `lambda_${instanceIndex}_arg_${paramIndex}`;
-            const declaration = ast.createDeclaration(
-                replacementIdentifier,
-                argumentExpressions[paramIndex]
-            );
             const declarationStatement = ast.createDeclarationStatement(
                 ast.createFullySpecifiedType(typeSpec),
-                declaration
+                ast.createDeclaration(
+                    replacementIdentifier, argumentExpressions[paramIndex]
+                )
             );
-            const binding: SymbolRow<SymbolNode> = { initializer: declaration, references: [declaration] };
-            builder.addStatementToCompound(func.body, funcScope, declarationStatement, beforeStatement, {
-                [replacementIdentifier]: binding,
-            });
+            builder.addStatementToCompoundNoNested(func.body, funcScope, declarationStatement, beforeStatement);
             paramMapping[paramIdentifier] = { replacementIdentifier };
         }
 
@@ -464,16 +470,12 @@ export default class ProgramCompiler {
 
                 } else if (linkingRule.type === 'expression') {
                     const { expression, identifier } = linkingRule;
-                    const declaration = ast.createDeclaration(identifier, expression);
                     const declarationStatement = ast.createDeclarationStatement(
                         ast.createFullySpecifiedType(specifier),
-                        declaration,
+                        ast.createDeclaration(identifier, expression),
                     );
-                    const binding = { initializer: declaration, references: [declaration] };
-                    builder.addStatementToCompound(
-                        geoFunction.body, geoScope, declarationStatement,
-                        undefined, { [identifier]: binding }
-                    );
+                    builder.addStatementToCompoundNoNested(
+                        geoFunction.body, geoScope, declarationStatement);
                     replacementIdentifier = identifier;
 
                 } else if (linkingRule.type === 'lookup') {
@@ -481,13 +483,10 @@ export default class ProgramCompiler {
                     let binding = builder.findSymbolOfScopeBranch(geoScope, identifier);
                     if (!binding) {
                         const textureCoordinate = dynamicCoordCounter.nextInts(dataSize);
-                        const [declaration, declarationStatement] = generateTextureLookupStatement(
+                        const [ _, declarationStatement ] = generateTextureLookupStatement(
                             identifier, textureCoordinate, rowDataType);
-                        binding = { initializer: declaration, references: [declaration] };
-                        builder.addStatementToCompound(
-                            geoFunction.body, geoScope, declarationStatement,
-                            undefined, { [identifier]: binding }
-                        );
+                        builder.addStatementToCompoundNoNested(
+                            geoFunction.body, geoScope, declarationStatement);
                         lookupMappings.push({
                             dataType: rowDataType,
                             textureCoordinate,
@@ -582,7 +581,7 @@ export default class ProgramCompiler {
         type ExternalPair = [(string | number)[], SymbolRow<SymbolNode>];
         const externalReferences = new Array<ExternalPair>();
 
-        builder.visitSymbolNodes(
+        builder.visitSymbolNodesOld(
             refProg, refExprOrComp,
             (path, binding, scope) => {
                 if (builder.isDescendantScope(scope, refScope)) {
@@ -669,7 +668,7 @@ export default class ProgramCompiler {
 
         // add statements
         for (const statement of instanceCompound.statements) {
-            builder.addStatementToCompound(targetBody, targetScope, statement, beforeStatement);
+            builder.addStatementToCompoundCustomBindings(targetBody, targetScope, statement, beforeStatement, {});
             newStatementReference.push(statement);
         }
         // remaining scopes
@@ -707,50 +706,42 @@ export default class ProgramCompiler {
         if (output.destructure && !structTypeName?.length) {
             baseDeclarationIdentifier += '_0'
         }
-        const declaration = ast.createDeclaration(
-            baseDeclarationIdentifier,
-            returnStatement.expression,
-        );
         const declarationStatement = ast.createDeclarationStatement(
             ast.createFullySpecifiedType(output.typeSpecifier),
-            declaration
+            ast.createDeclaration(
+                baseDeclarationIdentifier,
+                returnStatement.expression,
+            )
         );
-        const outputBinding = { initializer: declaration, references: [declaration] };
-        builder.addStatementToCompound(compound, scope, declarationStatement, undefined, {
-            [baseDeclarationIdentifier]: outputBinding,
-        });
-        const bindings = [ outputBinding ];
+        const outputBinding = builder.addStatementToCompoundNoNested(
+            compound, scope, declarationStatement);
+        const bindings = [ outputBinding! ];
         // destructure output
         if (output.destructure && structTypeName?.length) {
             const prefixLength = GeometryContext.tupleStructKey.length;
             const attrTypes = structTypeName!.slice(prefixLength).split('_') as DataTypes[];
             attrTypes.forEach((attr, attributeIndex) => {
                 const attrTypeSpec = parseDataType(attr);
-                const fieldSelection = ast.createFieldSelection(
-                    ast.createLiteral(
-                        GeometryContext.getIdentifierName('struct_arg', attributeIndex),
-                    )
-                );
                 // create postfix statement
-                const outputReference = ast.createIdentifier(output.baseIdentifier);
                 const destructuringIdentifier =
                     [output.baseIdentifier, attributeIndex].join('_');
-                const declaration = ast.createDeclaration(
-                    destructuringIdentifier, 
-                    ast.createPostfix(
-                        outputReference,
-                        fieldSelection,
-                    ),
-                );
                 const declarationStatement = ast.createDeclarationStatement(
                     ast.createFullySpecifiedType(attrTypeSpec),
-                    declaration
+                    ast.createDeclaration(
+                        destructuringIdentifier, 
+                        ast.createPostfix(
+                            ast.createIdentifier(output.baseIdentifier),
+                            ast.createFieldSelection(
+                                ast.createLiteral(
+                                    GeometryContext.getIdentifierName('struct_arg', attributeIndex),
+                                )
+                            )
+                        )
+                    )
                 );
-                const destructureBinding = { initializer: declaration, references: [declaration] };
-                builder.addStatementToCompound(compound, scope, declarationStatement, undefined, {
-                    [destructuringIdentifier]: destructureBinding,
-                });
-                bindings.push(destructureBinding);
+                const destructureBinding = builder.addStatementToCompoundNoNested(
+                    compound, scope, declarationStatement);
+                destructureBinding && bindings.push(destructureBinding);
             });
         }
         return bindings;
@@ -765,6 +756,11 @@ export default class ProgramCompiler {
             throw new Error(`Template instructions must only contain a single method`);
         }
         const func = builder.findFirstFunction(program);
+
+
+        const testSub = new AstSubtree(func);
+
+
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
         for (const [typeNode, paramIdentifier] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {

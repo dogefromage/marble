@@ -1,12 +1,10 @@
-import { arrayRange } from "./arrays";
 
-interface GraphInfo {
+interface TopSortResult {
     cycles: number[][];
     topologicalSorting: number[];
-    components: number[];
 }
 
-export default function analyzeBasicGraph(n: number, Adj: number[][]): GraphInfo {
+export function sortTopologically(n: number, Adj: number[][]): TopSortResult {
 
     const { post, cyclicVerts } = generatePrePostOrder(n, Adj);
 
@@ -15,7 +13,6 @@ export default function analyzeBasicGraph(n: number, Adj: number[][]): GraphInfo
         return {
             cycles,
             topologicalSorting: [],
-            components: [],
         }
     }
 
@@ -24,12 +21,9 @@ export default function analyzeBasicGraph(n: number, Adj: number[][]): GraphInfo
         .sort(([ p1 ], [ p2 ]) => p2 - p1)  // sort by postorder
         .map(([ p, index ]) => index);      // map to index
 
-    const components = findComponents(n, Adj);
-    
     return {
         cycles: [],
-        topologicalSorting,
-        components,
+        topologicalSorting: topologicalSorting,
     };
 }
 
@@ -97,116 +91,34 @@ function findCycleTroughVertices(n: number, Adj: number[][], cyclicVerts: number
     return cycles;
 }
 
-/**
- * use DFS to find connected components in graph
- */
-function findComponents(n: number, Adj: number[][]) {
-    const components = new Array<number>(n).fill(-1);
+export function findDependencies(n: number, Adj: number[][], targetIndex: number) {
     const visited = new Array<boolean>(n).fill(false);
-
-    function componentDFS(v: number, component: number): number {
+    const isDependant = new Array<boolean>(n).fill(false);
+    // base case
+    isDependant[targetIndex] = true;
+    // dfs
+    function markDependants(v: number) {
         visited[v] = true;
         for (const u of Adj[v]) {
-            if (visited[u]) {
-                component = components[u];
-            } else {
-                component = componentDFS(u, component);
+            if (!visited[u]) {
+                markDependants(u);
             }
+            isDependant[v] ||= isDependant[u];
         }
-        components[v] = component;
-        return component;
     }
+    // initial calls
     for (let i = 0; i < n; i++) {
         if (!visited[i]) {
-            componentDFS(i, i);
+            markDependants(i);
         }
     }
-    return components;
+
+    const visitedIndices = visited.reduce((indices, visited, index) => {
+        if (visited) {
+            indices.add(index);
+        }
+        return indices;
+    }, new Set<number>());
+
+    return visitedIndices;
 }
-
-// export default function analyzeBasicGraph(n: number, Adj: number[][]) {
-    
-//     const pre = new Array(n).fill(0);
-//     const post = new Array(n).fill(0);
-//     const visited = new Array<boolean>(n).fill(false);
-//     const cycles: number[][] = [];
-
-//     const dfsStack: number[] = [];
-//     let intervalCounter = 1;
-//     for (let u0 = 0; u0 < n; u0++) {
-//         if (!visited[u0]) {
-//             dfsStack.push(u0);
-//         }
-
-//         while (dfsStack.length > 0) {
-//             const u = dfsStack.pop()!; // u hasn't been visited
-//             if (u >= 0) {
-//                 dfsStack.push(-u-1); // closes scope
-//                 visited[u] = true;
-//                 pre[u] = intervalCounter; intervalCounter++;
-    
-//                 for (const v of Adj[u]) {
-//                     if (visited[v]) {
-//                         if (pre[v] > 0 && post[v] === 0) { // cycle found through v
-//                             const cycle = traceCycle(dfsStack, v);
-//                             cycles.push(cycle);
-//                         }
-//                     }
-//                     else {
-//                         dfsStack.push(v);
-//                     }
-//                 }
-//             } else {
-//                 let u_end = -u-1;
-//                 post[u_end] = intervalCounter; intervalCounter++;
-//             }
-//         }
-//     }
-    
-//     const sorted = post.slice().sort((a, b) => b - a);
-//     const topOrder = sorted.map(x => post.indexOf(x));
-
-//     const components = new Array(n).fill(-1);
-//     visited.fill(false); // reset
-
-//     let currendComponent = 0;
-//     for (let v0 = 0; v0 < n; v0++) {
-//         if (!visited[v0]) {
-//             currendComponent = 1 + markComponent(n, v0, Adj, components, visited, currendComponent);
-//         }
-//     }
-
-//     return {
-//         cycles,
-//         topOrder,
-//         components,
-//     }
-// }
-
-// function traceCycle(stack: number[], v: number) {
-//     // follow stack downwards
-//     const cycle = [];
-//     for (let i = stack.length - 1; i >= 0; i--) {
-//         if (stack[i] < 0) {
-//             const w = -stack[i]-1;
-//             cycle.push(w);
-//             if (w === v) {
-//                 break;
-//             }
-//         }
-//     }
-//     return cycle;
-// }
-
-// function markComponent(n: number, v: number, Adj: number[][], components: number[], visited: boolean[], currentComponent: number): number {
-//     visited[v] = true;
-//     for (const u of Adj[v]) {
-//         if (visited[u]) {
-//             currentComponent = components[u];
-//         } else {
-//             currentComponent = markComponent(n, u, Adj, components, visited, currentComponent);
-//         }
-//     }
-//     components[v] = currentComponent;
-//     return currentComponent;
-// }

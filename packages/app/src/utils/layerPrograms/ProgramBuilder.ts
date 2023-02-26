@@ -14,7 +14,44 @@ class ProgramBuilder {
         return program;
     }
 
-    public addStatementToCompound(
+    public addStatementToCompoundNoNested(
+        compound: CompoundStatementNode, enclosingScope: Scope, statement: StatementNode,
+        addBefore?: StatementNode,
+    ) {
+        let statementIndex = compound.statements.length;
+        if (addBefore) {
+            statementIndex = compound.statements.indexOf(addBefore);
+            if (statementIndex < 0) {
+                throw new Error(`Add before statement is not a statement of function`);
+            }
+        }
+        compound.statements = [
+            ...compound.statements.slice(0, statementIndex),
+            statement,
+            ...compound.statements.slice(statementIndex),
+        ];
+
+        let declarationBinding: SymbolRow<SymbolNode> | undefined;
+        
+        this.visitSymbolNodes(statement, path => {
+            const node = path.node;            
+            const declarations: SymbolNode['type'][] = [ 'declaration', 'parameter_declaration' ];
+            const isDeclaration = declarations.includes(node.type);
+            if (isDeclaration) {
+                const binding = {
+                    initializer: node, references: [ node ],
+                }
+                this.declareBinding(enclosingScope.bindings, binding);
+                declarationBinding = binding;
+            } else {
+                this.addNodeReference(enclosingScope, node);
+            }
+        });
+        
+        return declarationBinding;
+    }
+
+    public addStatementToCompoundCustomBindings(
         compound: CompoundStatementNode, nearestScope: Scope, statement: StatementNode, 
         addBefore?: StatementNode, declarations?: SymbolTable<SymbolNode>
     ) {
@@ -60,7 +97,26 @@ class ProgramBuilder {
         });
     }
 
-    public visitSymbolNodes(
+    public visitSymbolNodes(subtree: AstNode, callback: (path: Path<SymbolNode>) => void) {
+        const enterReferenceNode = { 
+            enter: (path: Path<AstNode>) => {
+                const node = path.node as AstNode;
+                if (!this.isSymbolNode(node)) {
+                    return
+                }
+                callback(path as Path<SymbolNode>);
+            }
+        }
+        // @ts-ignore
+        visit(subtree, {
+            identifier:            enterReferenceNode,
+            declaration:           enterReferenceNode,
+            parameter_declaration: enterReferenceNode,
+            function_call:         enterReferenceNode,
+        });
+    }
+
+    public visitSymbolNodesOld(
         program: Program, 
         subtree: AstNode, 
         callback: (path: Path<SymbolNode>, symbol: SymbolRow<SymbolNode>, scope: Scope) => void,
@@ -137,14 +193,14 @@ class ProgramBuilder {
     }
     public addNodeReference(scope: Scope, reference: SymbolNode) {
         const { identifier } = this.getSymbolNodeIdentifier(reference);
-        const symbol = this.findSymbolOfScopeBranch(scope, identifier);
-        if (!symbol) {
+        const binding = this.findSymbolOfScopeBranch(scope, identifier);
+        if (!binding) {
             throw new Error(`Symbol for "${identifier}" was not found in scope "${scope.name}" or its descendants`);
         }
-        if (symbol.references.includes(reference)) {
-            return;
+        if (!binding.references.includes(reference)) {
+            binding.references.push(reference);
         }
-        symbol.references.push(reference);
+        return binding;
     }
     public removeNodeReference(program: Program, reference: SymbolNode) {
         const binding = this.findReferenceSymbolRow(program, reference);

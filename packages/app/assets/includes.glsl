@@ -27,25 +27,25 @@ Distance inc_difference(Distance a, Distance b)
 #DEFINCLUDE inc_smooth_union;
 Distance inc_smooth_union( Distance a, Distance b, float k ) {
     float h = clamp( 0.5 + 0.5*(b.d-a.d)/k, 0.0, 1.0 );
-    return Solid(mix( b.d, a.d, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
+    return Distance(mix( b.d, a.d, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
 }
 
 #DEFINCLUDE inc_smooth_difference;
 Distance inc_smooth_difference( Distance a, Distance b, float k ) {
     float h = clamp( 0.5 - 0.5*(a.d+b.d)/k, 0.0, 1.0 );
-    return Solid(mix( a.d, -b.d, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
+    return Distance(mix( a.d, -b.d, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
 }
 
 #DEFINCLUDE inc_smooth_intersection;
 Distance inc_smooth_intersection( Distance a, Distance b, float k ) {
     float h = clamp( 0.5 - 0.5*(b.d-a.d)/k, 0.0, 1.0 );
-    return Solid(mix( b.d, a.d, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
+    return Distance(mix( b.d, a.d, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
 }
 
 #DEFINCLUDE inc_extrude_z;
 Distance inc_extrude_z(vec3 p, Distance s, float h) {
     vec2 w = vec2( s.d, abs(p.z) - h);
-    return Solid(min(max(w.x,w.y),0.0) + length(max(w,0.0)), s.color);
+    return Distance(min(max(w.x,w.y),0.0) + length(max(w,0.0)), s.color);
 }
 
 // float opRevolution( in vec3 p, in sdf2d primitive, float o )

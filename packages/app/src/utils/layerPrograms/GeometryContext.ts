@@ -1,7 +1,7 @@
 import { ExpressionNode } from '@marble/language';
 import { getRowMetadata } from '../../components/GeometryRowRoot';
-import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
-import analyzeGraph from '../analyzeBasicGraph';
+import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, ObjMap, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
+import { findDependencies, sortTopologically } from '../analyzeBasicGraph';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { parseDataTypeValue } from './generateCodeStatements';
 
@@ -58,14 +58,6 @@ export class GeometryContext {
 
     public sortUsedNodeIndices() {
         const { geometry, connectionData } = this;
-        const n = geometry.nodes.length;
-        const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
-        const graphAnalysis = analyzeGraph(n, nodeAdjacency);
-        const { topologicalSorting, cycles, components } = graphAnalysis;
-
-        if (cycles.length) {
-            throw new Error(`Cyclic nodes found while compiling geometry.`);
-        }
 
         // find lowest index where a node is output
         let outputIndex = -1;
@@ -79,9 +71,20 @@ export class GeometryContext {
         if (outputIndex < 0) {
             return []; // no output
         }
-        const outputComponent = components[outputIndex];
+
+        const n = geometry.nodes.length;
+        const nodeAdjacency = geometryNodesToGraphAdjacency(n, connectionData.forwardEdges);
+        const graphAnalysis = sortTopologically(n, nodeAdjacency);
+        const { topologicalSorting, cycles } = graphAnalysis;
+
+        if (cycles.length) {
+            throw new Error(`Cyclic nodes found while compiling geometry.`);
+        }
+
+        const usedNodes = findDependencies(n, nodeAdjacency, outputIndex);
+
         const usedOrderedNodeIndices = topologicalSorting
-            .filter(nodeIndex => components[nodeIndex] == outputComponent);
+            .filter(nodeIndex => usedNodes.has(nodeIndex));
         return usedOrderedNodeIndices;
     }
 
@@ -197,7 +200,7 @@ export class GeometryContext {
         };
     }
 
-    public static readonly tupleStructKey = '_tuple_';
+    public static readonly tupleStructKey = 'Tuple_';
     public static getIdentifierName(
         prefixTypes: 'geometry' | 'output' | 'local' | 'lambda_arg' | 'tuple_struct' | 'struct_arg',
         ...descriptors: (string | number)[]

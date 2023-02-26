@@ -6,11 +6,11 @@ import { selectSingleMenu } from '../slices/menusSlice';
 import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
 import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategories, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
+import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategory, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
 import MenuRootFloating from './MenuRootFloating';
 
 type GroupedTemplatesMap = {
-    [C in GNodeTemplateCategories]: GNodeTemplate[];
+    [C in GNodeTemplateCategory]: GNodeTemplate[];
 }
 
 interface Props {
@@ -61,6 +61,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             type: 'title',
             key: 'title',
             name: 'Add Template',
+            color: 'black',
         }
         const searchBar: SearchMenuElement = {
             key: SEARCH_ELEMENT_KEY,
@@ -108,7 +109,7 @@ const GeometryTemplateCatalog = ({ panelId, geometryId }: Props) => {
             const groupedList: MenuElement[] = sortedGroupes.map(([ category, tempOfGroup ]) => ({
                 type: 'expand',
                 key: category,
-                name: templateCategoryNames[category as GNodeTemplateCategories],
+                name: templateCategoryNames[category as GNodeTemplateCategory],
                 sublist: {
                     type: 'floating',
                     list: tempOfGroup.map(template => ({
