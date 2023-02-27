@@ -424,39 +424,59 @@ export default class ProgramCompiler {
             return null;
         }
 
-        const geoProgram = builder.createEmptyProgram();
+        // const geoProgram = builder.createEmptyProgram();
         const methodName = GeometryContext.getIdentifierName('geometry', geoCtx.geometry.id);
-
         const returnTypeSpec = this.getGeometryReturnTypeSpec(geoCtx.geometry.outputs);
+        const geoFunction = (
+            ast.createFunction(
+                ast.createFunctionPrototype(
+                    ast.createFunctionHeader(
+                        ast.createFullySpecifiedType(returnTypeSpec),
+                        ast.createIdentifier(methodName)
+                    ), 
+                    // params
+                    geoCtx.geometry.inputs.map(input => 
+                        ast.createParameterDeclaration(
+                            parseDataType(input.dataType),
+                            ast.createIdentifier(input.id),
+                        )
+                    )
+                ),
+                ast.createCompoundStatement([])
+            )
+        );
+        const geoSubtree = new AstSubtree(geoFunction);
 
-        const {
-            functionNode: geoFunction,
-            functionScope: geoScope,
-        } = builder.createFunction(geoProgram, returnTypeSpec, methodName);
+        // const {
+        //     functionNode: geoFunction,
+        //     functionScope: geoScope,
+        // } = builder.createFunction(geoProgram, returnTypeSpec, methodName);
 
-        for (const input of geoCtx.geometry.inputs) {
-            const inputParam = (
-                ast.createParameterDeclaration(
-                    parseDataType(input.dataType),
-                    ast.createIdentifier(input.id),
-                )
-            );
-            builder.addFunctionParameter(geoFunction, geoScope, inputParam);
-        }
+        // for (const input of geoCtx.geometry.inputs) {
+        //     const inputParam = (
+        //         ast.createParameterDeclaration(
+        //             parseDataType(input.dataType),
+        //             ast.createIdentifier(input.id),
+        //         )
+        //     );
+        //     builder.addFunctionParameter(geoFunction, geoScope, inputParam);
+        // }
 
         for (const nodeIndex of usedSortedNodeGenerator) {
             geoCtx.select(nodeIndex);
             const isOutput = nodeIndex === usedSortedNodeGenerator.at(-1);
             // create template builder
-            const templateProgram = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
-            const templateFunction = builder.findFirstFunction(templateProgram);
-            const templateFunctionScope = templateProgram.scopes
-                .find(scope => scope.name === templateFunction.prototype.header.name.identifier);
-            if (!templateFunctionScope) {
-                throw new Error(`Couldn't find scope`);
-            }
+            const { func: templateFunction, includes: templateIncludes } = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
+            templateIncludes.forEach(inc => usedIncludes.add(inc));
+
+            const templateSubtree = new AstSubtree(templateFunction);
+
+            // const templateFunctionScope = templateProgram.scopes
+            //     .find(scope => scope.name === templateFunction.prototype.header.name.identifier);
+            // if (!templateFunctionScope) {
+            //     throw new Error(`Couldn't find scope`);
+            // }
             // includes
-            this.processIncludes(templateProgram, usedIncludes);
             // params
             const paramMapping: ParamMapping = {};
             const paramDeclarations = ast.getParameterIdentifiers(templateFunction.prototype.parameters);
@@ -551,7 +571,8 @@ export default class ProgramCompiler {
         return spec;
     }
 
-    private processIncludes(program: Program, usedIncludes: Set<string>) {
+    private processIncludes(program: Program) {
+        const usedIncludes = new Set<string>();
         const preprocessors = program.program.filter(node => node.type === 'preprocessor') as PreprocessorNode[];
         for (const preprocessor of preprocessors) {
             const { line } = preprocessor;
@@ -564,6 +585,7 @@ export default class ProgramCompiler {
                 }
             }
         }
+        return Array.from(usedIncludes);
     }
 
     private appendFunctionBody(
@@ -750,24 +772,21 @@ export default class ProgramCompiler {
     private getTemplateProgramInstance(template: GNodeTemplate) {
         // TODO cache
         const program = parseMarbleLanguage(template.instructions, { quiet: true });
-
-        const globalSymbolCount = Object.keys(program.scopes[0].bindings).length;
-        if (globalSymbolCount !== 0) {
-            throw new Error(`Template instructions must only contain a single method`);
+        
+        const func = program.program.find(node => node.type === 'function') as FunctionNode;
+        if (!func) {
+            throw new Error(`No function found on template instructions`);
         }
-        const func = builder.findFirstFunction(program);
-
-
-        const testSub = new AstSubtree(func);
-
+        const includes = this.processIncludes(program);
 
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
-        for (const [typeNode, paramIdentifier] of inputParams) {
+        for (const [ typeNode, paramIdentifier ] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {
                 throw new Error(`Function parameter "${paramIdentifier}" is not a row on template.`);
             }
         }
-        return program;
+
+        return { func, includes };
     }
 }
 

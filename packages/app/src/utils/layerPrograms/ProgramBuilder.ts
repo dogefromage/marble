@@ -164,8 +164,6 @@ class ProgramBuilder {
             )
         );
         
-        functionNode.prototype.header.returnType.specifier.type
-
         program.program.push(functionNode);
         const globalScope = this.getGlobalScope(program.scopes[0]);
         if (globalScope.functions[name]) {

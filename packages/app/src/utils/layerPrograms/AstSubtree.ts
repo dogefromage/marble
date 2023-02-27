@@ -1,11 +1,6 @@
-import { AstNode, CompoundStatementNode, DeclarationNode, FunctionCallNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, LambdaExpressionNode, ParameterDeclarationNode, SimpleTypeSpecifierNode } from "@marble/language";
+import { AstNode, CompoundStatementNode, DeclarationNode, FunctionCallNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, LambdaExpressionNode, ParameterDeclarationNode, SimpleTypeSpecifierNode, StatementNode } from "@marble/language";
 import { NodeVisitor, visit } from "@shaderfrog/glsl-parser/ast";
-
-// type SymbolType = 'function' | 'atomic';
-
-type SymbolNode = IdentifierNode | DeclarationNode | ParameterDeclarationNode | FunctionCallNode | FunctionPrototypeNode;
-
-type ScopeNode = FunctionNode | CompoundStatementNode | LambdaExpressionNode /* add more */;
+import objectPath from "object-path";
 
 const glslBuiltIns = new Set([
     'abs', 'acos', 'acosh', 'all', 'any', 'asin', 'asinh', 'atan', 'atanh', 'atomicAdd', 'atomicAnd', 'atomicCompSwap', 'atomicCounter', 'atomicCounterDecrement', 'atomicCounterIncrement', 'atomicExchange', 'atomicMax', 'atomicMin', 'atomicOr', 'atomicXor', 'barrier', 'bitCount', 'bitfieldExtract', 'bitfieldInsert', 'bitfieldReverse', 'ceil', 'clamp', 'cos', 'cosh', 'cross', 'degrees', 'determinant', 'dFdx', 'dFdxCoarse', 'dFdxFine', 'dFdy', 'dFdyCoarse', 'dFdyFine', 'distance', 'dot', 'EmitStreamVertex', 'EmitVertex', 'EndPrimitive', 'EndStreamPrimitive', 'equal', 'exp', 'exp2', 'faceforward', 'findLSB', 'findMSB', 'floatBitsToInt', 'floatBitsToUint', 'floor', 'fma', 'fract', 'frexp', 'fwidth', 'fwidthCoarse', 'fwidthFine', 'greaterThan', 'greaterThanEqual', 'groupMemoryBarrier', 'imageAtomicAdd', 'imageAtomicAnd', 'imageAtomicCompSwap', 'imageAtomicExchange', 'imageAtomicMax', 'imageAtomicMin', 'imageAtomicOr', 'imageAtomicXor', 'imageLoad', 'imageSamples', 'imageSize', 'imageStore', 'imulExtended', 'intBitsToFloat', 'interpolateAtCentroid', 'interpolateAtOffset', 'interpolateAtSample', 'inverse', 'inversesqrt', 'isinf', 'isnan', 'ldexp', 'length', 'lessThan', 'lessThanEqual', 'log', 'log2', 'matrixCompMult', 'max', 'memoryBarrier', 'memoryBarrierAtomicCounter', 'memoryBarrierBuffer', 'memoryBarrierImage', 'memoryBarrierShared', 'min', 'mix', 'mod', 'modf', 'noise', 'noise1', 'noise2', 'noise3', 'noise4', 'normalize', 'not', 'notEqual', 'outerProduct', 'packDouble2x32', 'packHalf2x16', 'packSnorm2x16', 'packSnorm4x8', 'packUnorm', 'packUnorm2x16', 'packUnorm4x8', 'pow', 'radians', 'reflect', 'refract', 'round', 'roundEven', 'sign', 'sin', 'sinh', 'smoothstep', 'sqrt', 'step', 'tan', 'tanh', 'texelFetch', 'texelFetchOffset', 'texture', 'textureGather', 'textureGatherOffset', 'textureGatherOffsets', 'textureGrad', 'textureGradOffset', 'textureLod', 'textureLodOffset', 'textureOffset', 'textureProj', 'textureProjGrad', 'textureProjGradOffset', 'textureProjLod', 'textureProjLodOffset', 'textureProjOffset', 'textureQueryLevels', 'textureQueryLod', 'textureSamples', 'textureSize', 'transpose', 'trunc', 'uaddCarry', 'uintBitsToFloat', 'umulExtended', 'unpackDouble2x32', 'unpackHalf2x16', 'unpackSnorm2x16', 'unpackSnorm4x8', 'unpackUnorm', 'unpackUnorm2x16', 'unpackUnorm4x8', 'usubBorrow', // GLSL ES 1.00 'texture2D', 'textureCube'
@@ -13,6 +8,10 @@ const glslBuiltIns = new Set([
 const marbleBuildIns = new Set([
     'Distance',
 ]);
+
+// type SymbolType = 'function' | 'var';
+type SymbolNode = IdentifierNode | DeclarationNode | ParameterDeclarationNode | FunctionCallNode | FunctionPrototypeNode;
+type ScopeNode = FunctionNode | CompoundStatementNode | LambdaExpressionNode /* add more */;
 
 interface Symbol {
     // type: SymbolType;
@@ -30,105 +29,91 @@ interface Scope {
 export class AstSubtree {
 
     private scopes = new Set<Scope>();
-    private activeScope: Scope;
+    private localScope: Scope;
 
     constructor(
         private subtree: AstNode
     ) {
-        this.activeScope = {
+        this.localScope = {
             name: 'local',
             symbols: new Map(),
             parent: null,
             initializer: null,
-        }
-        this.scopes.add(this.activeScope);
-        this.scopify(subtree);
+        };
+        this.scopes.add(this.localScope);
+        this.linkSubtree(subtree, this.localScope);
     }
 
-    private scopify(astNode: AstNode) {
-        // const visitReferences: NodeVisitor<SymbolNode> = {
-        //     enter: path => {
-        //         const node = path.node as AstNode;
-        //         if (!this.isSymbolNode(node)) {
-        //             return;
-        //         }
-        //         const { identifier } = this.getSymbolNodeIdentifier(node);
-        //         if (glslBuiltIns.has(identifier) || marbleBuildIns.has(identifier)) {
-        //             return;
-        //         }
-        //         // is symbol node
-        //         const declarations: SymbolNode['type'][] = ['declaration', 'parameter_declaration', 'function_prototype'];
-        //         const isDeclaration = declarations.includes(node.type);
-        //         if (isDeclaration) {
-        //             this.declareSymbol(this.activeScope, node, identifier);
-        //             console.log('declared ' + identifier);
-        //         } else {
-        //             this.addReference(this.activeScope, node, identifier);
-        //             console.log('referenced ' + identifier);
-        //         }
+    public addStatements(path: string[], statement: StatementNode) {
+        if (!objectPath.has(this.subtree, path)) {
+            throw new Error(`Provided path is not on subtree`);
+        }
 
-        //     }
-        // }
+        let currObj: any = this.subtree;
+        let currScope = this.localScope;
 
-        const visitScopeStack: AstNode[] = [];
+        const pathCp = path.slice();
+        while (pathCp.length) {
+            let key = pathCp.shift()!;
+            currObj = currObj[key];
+            
+            for (const scope of this.scopes) {
+                if (scope.initializer === currObj) {
+                    currScope = scope.initializer;
+                }
+            }
+        }
+    }
 
-        const visitScopes: NodeVisitor<CompoundStatementNode | LambdaExpressionNode> = {
+    private linkSubtree(treeRoot: AstNode, currentScope: Scope) {
+        const nestedCompounds = new Set<CompoundStatementNode>();
+        const visitScopes: NodeVisitor<ScopeNode> = {
             enter: path => {
                 const node = path.node;
                 let name: string | undefined;
-                let initializer: ScopeNode | undefined;
                 if (node.type === 'compound_statement') {
-                    const parentType = path.parent?.type;
-                    if (parentType == null) {
-                        name = 'Anonymous Compound';
-                        initializer = node;
-                    } else if (parentType === 'function') {
-                        name = path.parent.prototype.header.name.identifier;
-                        initializer = path.parent as FunctionNode;
-                    } else if ((parentType as any) === 'lambda_expression') {
-                        return; // handle case when hitting lambda_expression itself
-                    } else {
-                        debugger;
-                        // what
+                    if (nestedCompounds.has(node)) {
+                        return;
                     }
+                    name = 'COMPOUND';
+                    nestedCompounds.add(node);
                 } else if (node.type === 'lambda_expression') {
-                    name = 'Anonymous lambda';
-                    initializer = node;
+                    name = 'LAMBDA';
+                    if (node.body.type === 'compound_statement') {
+                        nestedCompounds.add(node.body);
+                    }
+                } else if (node.type === 'function') {
+                    name = node.prototype.header.name.identifier;
+                    nestedCompounds.add(node.body);
                 } else {
                     debugger;
                     // what
                 }
-
-                if (name && initializer) {
-                    this.pushNewScope(name, node);
-                    visitScopeStack.push(node);
-                } 
+                if (!name) {
+                    throw new Error(`No name`);
+                }
+                currentScope = this.pushNewScope(currentScope, name, node);
+                // console.log('Pushed scope ' + name);
             },
             exit: path => {
-                const stackHead = visitScopeStack.at(-1);
-                if (stackHead === path.node) {
-                    visitScopeStack.pop();
-                    if (!this.activeScope.parent) {
+                if (currentScope.initializer === path.node) {
+                    // console.log('Popped scope ' + currentScope.name);
+                    if (!currentScope.parent) {
                         throw new Error(`Cannot pop scope`);
                     }
-                    console.log('Popped scope ' + this.activeScope.name);
-                    this.activeScope = this.activeScope.parent;
+                    currentScope = currentScope.parent;
                 }
             }
         }
 
         const visitIdentifiers: NodeVisitor<IdentifierNode> = {
             enter: path => {
-                const node = path.node;
-                let isDeclaration: boolean;
-                let symbolNode: SymbolNode;
+                let isDeclaration = false;
+                let symbolNode: SymbolNode = path.node;
+                let targetScope = currentScope;
 
                 const parentType = path.parent?.type;
-                if (parentType === null) {
-                    // identifier reference
-                    symbolNode = node;
-                    isDeclaration = false;
-                } else if (parentType === 'declaration') {
+                if (parentType === 'declaration') {
                     symbolNode = path.parent;
                     isDeclaration = true;
                 } else if (parentType === 'parameter_declarator') {
@@ -137,62 +122,55 @@ export class AstSubtree {
                 } else if (parentType === 'type_specifier'
                     && path.parentPath?.parent?.type === 'function_call') {
                     symbolNode = path.parentPath.parent as FunctionCallNode;
-                    isDeclaration = false;
                 } else if (parentType === 'function_header') {
                     symbolNode = path.parentPath!.parent as FunctionPrototypeNode;
                     isDeclaration = true;
+                    targetScope = currentScope.parent!; // necessary since order of nodes
+                } else if (parentType === 'field_selection') {
+                    return; // ignore
                 } else {
-                    // console.log('unknown identifier', node);
-                    return;
+                    // identifier reference
                 }
 
-                const identifier = node.identifier;
+                const identifier = path.node.identifier;
                 if (glslBuiltIns.has(identifier) || marbleBuildIns.has(identifier)) {
                     return;
                 }
                 // is symbol node
                 if (isDeclaration) {
-                    this.declareSymbol(this.activeScope, node, identifier);
-                    console.log('declared ' + identifier);
+                    this.declareSymbol(targetScope, symbolNode, identifier);
+                    // console.log('declared ' + identifier);
                 } else {
-                    this.addReference(this.activeScope, node, identifier);
-                    console.log('referenced ' + identifier);
+                    this.addReference(targetScope, symbolNode, identifier);
+                    // console.log('referenced ' + identifier);
                 }
             }
         }
 
-        const startingScope = this.activeScope;
-
+        const startingScope = currentScope;
         // @ts-ignore
-        visit(astNode, {
+        visit(treeRoot, {
             // references
-            // identifier: visitReferences,
-            // declaration: visitReferences,
-            // parameter_declaration: visitReferences,
-            // function_call: visitReferences,
-            // function_prototype: visitReferences,
             identifier: visitIdentifiers,
             // scopes
             compound_statement: visitScopes,
+            lambda_expression: visitScopes,
+            function: visitScopes,
         });
-
-        if (startingScope !== this.activeScope) {
+        if (startingScope !== currentScope) {
             throw new Error(`Scope not back to starting depth`);
         }
     }
 
-    private pushNewScope(name: string, initializer: ScopeNode) {
-        
-        console.log('Pushed scope ' + name);
-
+    private pushNewScope(currentScope: Scope, name: string, initializer: ScopeNode) {
         const scope: Scope = {
             name,
-            parent: this.activeScope,
+            parent: currentScope,
             symbols: new Map(),
             initializer,
         }
         this.scopes.add(scope);
-        this.activeScope = scope;
+        return scope;
     }
 
     private findScopedSymbolByName(scope: Scope, identifier: string): Symbol | undefined {
