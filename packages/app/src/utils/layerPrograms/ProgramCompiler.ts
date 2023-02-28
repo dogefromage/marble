@@ -9,7 +9,7 @@ import { Counter } from '../Counter';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import { generateTupleOutputType } from '../templateManager/generateDynamicTemplates';
 import { LOOKUP_TEXTURE_WIDTH } from '../viewportView/GLProgramRenderer';
-import { AstSubtree } from './AstSubtree';
+import { AstBuilder } from './AstBuilder';
 import ast from './AstUtils';
 import { generateTextureLookupStatement, parseDataType } from './generateCodeStatements';
 import { GeometryContext } from './GeometryContext';
@@ -138,7 +138,7 @@ export default class ProgramCompiler {
         if (!geoProgram) {
             return null;
         }
-        this.refactorLambdas(geoProgram);
+        // this.refactorLambdas(geoProgram);
         // this.removeIdentityDeclarations(geoProgram);
         const structs = this.findTupleStructs(geoProgram);
 
@@ -204,221 +204,221 @@ export default class ProgramCompiler {
         })
     }
 
-    private refactorLambdas(program: Program) {
-        const func = builder.findFirstFunction(program);
-        const funcScope = builder.getFunctionScope(program, func);
+    // private refactorLambdas(program: Program) {
+    //     const func = builder.findFirstFunction(program);
+    //     const funcScope = builder.getFunctionScope(program, func);
 
-        // TODO: params of geometry function
+    //     // TODO: params of geometry function
 
-        const returnType = func.prototype.header.returnType.specifier;
-        if (returnType.type === 'lambda_type_specifier') {
-            this.refactorLambdaReturn(func, funcScope, returnType);
-        }
+    //     const returnType = func.prototype.header.returnType.specifier;
+    //     if (returnType.type === 'lambda_type_specifier') {
+    //         this.refactorLambdaReturn(func, funcScope, returnType);
+    //     }
 
-        const declaredLambdas = new Map<string, LambdaDefinition>();
-        const lambdaCounter = new Counter(1e10, 0);
+    //     const declaredLambdas = new Map<string, LambdaDefinition>();
+    //     const lambdaCounter = new Counter(1e10, 0);
 
-        let nextStatement = func.body.statements[0];
-        while (nextStatement) {
-            const statement = nextStatement;
-            const statementIndex = func.body.statements.indexOf(statement);
-            nextStatement = func.body.statements[statementIndex + 1];
+    //     let nextStatement = func.body.statements[0];
+    //     while (nextStatement) {
+    //         const statement = nextStatement;
+    //         const statementIndex = func.body.statements.indexOf(statement);
+    //         nextStatement = func.body.statements[statementIndex + 1];
 
-            // check if lambda definition
-            if (statement.type === 'declaration_statement' &&
-                statement.declaration.type === 'declarator_list' &&
-                statement.declaration.specified_type.specifier.type === 'lambda_type_specifier') {
-                const lambdaExpression = statement.declaration.declarations[0].initializer as LambdaExpressionNode;
-                if (lambdaExpression.type !== 'lambda_expression') {
-                    throw new Error(`Lambda declaration was not initialized by lambda expression`);
-                }
-                // scope
-                let lambdaScope = program.scopes
-                    .find(scope => scope.name === lambdaExpression.header.name);
-                if (lambdaScope) {
-                    // remove lambda scope and descendants
-                    const scopeAndDescendants = [
-                        lambdaScope,
-                        ...builder.getDescendantScopes(program, lambdaScope),
-                    ];
-                    program.scopes = program.scopes.filter(scope => !scopeAndDescendants.includes(scope));
-                } else {
-                    const dummyNode = ast.createIdentifier('dummy');
-                    lambdaScope = {
-                        name: lambdaExpression.header.name,
-                        bindings: {},
-                        functions: {},
-                        types: {},
-                        parent: funcScope,
-                    }
-                    const params = ast.getParameterIdentifiers(lambdaExpression.header.parameters);
-                    for (const [_, param] of params) {
-                        lambdaScope.bindings[param] = { initializer: dummyNode, references: [] };
-                    }
-                }
+    //         // check if lambda definition
+    //         if (statement.type === 'declaration_statement' &&
+    //             statement.declaration.type === 'declarator_list' &&
+    //             statement.declaration.specified_type.specifier.type === 'lambda_type_specifier') {
+    //             const lambdaExpression = statement.declaration.declarations[0].initializer as LambdaExpressionNode;
+    //             if (lambdaExpression.type !== 'lambda_expression') {
+    //                 throw new Error(`Lambda declaration was not initialized by lambda expression`);
+    //             }
+    //             // scope
+    //             let lambdaScope = program.scopes
+    //                 .find(scope => scope.name === lambdaExpression.header.name);
+    //             if (lambdaScope) {
+    //                 // remove lambda scope and descendants
+    //                 const scopeAndDescendants = [
+    //                     lambdaScope,
+    //                     ...builder.getDescendantScopes(program, lambdaScope),
+    //                 ];
+    //                 program.scopes = program.scopes.filter(scope => !scopeAndDescendants.includes(scope));
+    //             } else {
+    //                 const dummyNode = ast.createIdentifier('dummy');
+    //                 lambdaScope = {
+    //                     name: lambdaExpression.header.name,
+    //                     bindings: {},
+    //                     functions: {},
+    //                     types: {},
+    //                     parent: funcScope,
+    //                 }
+    //                 const params = ast.getParameterIdentifiers(lambdaExpression.header.parameters);
+    //                 for (const [_, param] of params) {
+    //                     lambdaScope.bindings[param] = { initializer: dummyNode, references: [] };
+    //                 }
+    //             }
 
-                const declarationIdentifier = statement.declaration.declarations[0].identifier.identifier;
-                declaredLambdas.set(declarationIdentifier, {
-                    lambdaExpression,
-                    lambdaScope,
-                    lambdaType: statement.declaration.specified_type.specifier,
-                });
-                // remove stmt
-                builder.spliceStatement(func.body, statement);
-                continue;
-            }
+    //             const declarationIdentifier = statement.declaration.declarations[0].identifier.identifier;
+    //             declaredLambdas.set(declarationIdentifier, {
+    //                 lambdaExpression,
+    //                 lambdaScope,
+    //                 lambdaType: statement.declaration.specified_type.specifier,
+    //             });
+    //             // remove stmt
+    //             builder.spliceStatement(func.body, statement);
+    //             continue;
+    //         }
 
-            const invocations = this.findLambdaInvocations(statement, declaredLambdas);
+    //         const invocations = this.findLambdaInvocations(statement, declaredLambdas);
 
-            for (const invocation of invocations) {
-                const identifier = builder.getFunctionCallIdentifier(invocation)!;
-                const declaration = declaredLambdas.get(identifier)!;
-                this.instantiateLambda(
-                    program, func, funcScope, invocation, declaration, statement, lambdaCounter, declaredLambdas,
-                );
-            }
-        }
+    //         for (const invocation of invocations) {
+    //             const identifier = builder.getFunctionCallIdentifier(invocation)!;
+    //             const declaration = declaredLambdas.get(identifier)!;
+    //             this.instantiateLambda(
+    //                 program, func, funcScope, invocation, declaration, statement, lambdaCounter, declaredLambdas,
+    //             );
+    //         }
+    //     }
 
-        return builder;
-    }
+    //     return builder;
+    // }
 
-    private findLambdaInvocations(astNode: AstNode, declaredLambdas: Map<string, LambdaDefinition>) {
-        const invocations = new Array<FunctionCallNode>();
-        // @ts-ignore
-        visit(astNode, {
-            function_call: {
-                exit: path => {
-                    const call = path.node as FunctionCallNode;
-                    const identifier = builder.getFunctionCallIdentifier(call)!;
-                    const declaration = declaredLambdas.get(identifier)
-                    if (declaration) {
-                        invocations.push(call);
-                    }
-                }
-            }
-        });
-        return invocations;
-    }
+    // private findLambdaInvocations(astNode: AstNode, declaredLambdas: Map<string, LambdaDefinition>) {
+    //     const invocations = new Array<FunctionCallNode>();
+    //     // @ts-ignore
+    //     visit(astNode, {
+    //         function_call: {
+    //             exit: path => {
+    //                 const call = path.node as FunctionCallNode;
+    //                 const identifier = builder.getFunctionCallIdentifier(call)!;
+    //                 const declaration = declaredLambdas.get(identifier)
+    //                 if (declaration) {
+    //                     invocations.push(call);
+    //                 }
+    //             }
+    //         }
+    //     });
+    //     return invocations;
+    // }
 
-    private refactorLambdaReturn(func: FunctionNode, funcScope: Scope, returnType: LambdaTypeSpecifierNode) {
-        const callArgs: string[] = [];
-        // add lambda args to function prototype
-        for (let argIndex = 0; argIndex < returnType.args.length; argIndex++) {
-            const arg = GeometryContext.getIdentifierName('lambda_arg', argIndex);
-            callArgs.push(arg);
-            const paramDeclaration = ast.createParameterDeclaration(
-                returnType.args[argIndex],
-                ast.createIdentifier(arg)
-            );
-            builder.addFunctionParameter(func, funcScope, paramDeclaration);
-        }
-        // change function return type
-        returnType.return_type.specifier.whitespace = ' ';
-        func.prototype.header.returnType.specifier = returnType.return_type;
+    // private refactorLambdaReturn(func: FunctionNode, funcScope: Scope, returnType: LambdaTypeSpecifierNode) {
+    //     const callArgs: string[] = [];
+    //     // add lambda args to function prototype
+    //     for (let argIndex = 0; argIndex < returnType.args.length; argIndex++) {
+    //         const arg = GeometryContext.getIdentifierName('lambda_arg', argIndex);
+    //         callArgs.push(arg);
+    //         const paramDeclaration = ast.createParameterDeclaration(
+    //             returnType.args[argIndex],
+    //             ast.createIdentifier(arg)
+    //         );
+    //         builder.addFunctionParameter(func, funcScope, paramDeclaration);
+    //     }
+    //     // change function return type
+    //     returnType.return_type.specifier.whitespace = ' ';
+    //     func.prototype.header.returnType.specifier = returnType.return_type;
 
-        // find lambda return statement
-        const returnStatement = func.body.statements
-            .find(s => s.type === 'return_statement') as ReturnStatementNode | undefined;
-        if (!returnStatement) {
-            throw new Error(`A return statement must be placed in the main function scope`);
-        }
+    //     // find lambda return statement
+    //     const returnStatement = func.body.statements
+    //         .find(s => s.type === 'return_statement') as ReturnStatementNode | undefined;
+    //     if (!returnStatement) {
+    //         throw new Error(`A return statement must be placed in the main function scope`);
+    //     }
 
-        // sandwich function call
-        const argIdentifiers = callArgs.map(arg => {
-            const idNode = ast.createIdentifier(arg);
-            builder.addNodeReference(funcScope, idNode);
-            return idNode;
-        })
-        const functionCallNode = ast.createFunctionCall(
-            returnStatement.expression,
-            argIdentifiers,
-        );
-        returnStatement.expression = functionCallNode;
-    }
+    //     // sandwich function call
+    //     const argIdentifiers = callArgs.map(arg => {
+    //         const idNode = ast.createIdentifier(arg);
+    //         builder.addNodeReference(funcScope, idNode);
+    //         return idNode;
+    //     })
+    //     const functionCallNode = ast.createFunctionCall(
+    //         returnStatement.expression,
+    //         argIdentifiers,
+    //     );
+    //     returnStatement.expression = functionCallNode;
+    // }
 
-    private instantiateLambda(
-        program: Program,
-        func: FunctionNode,
-        funcScope: Scope,
-        call: FunctionCallNode,
-        lambdaDeclaration: LambdaDefinition,
-        beforeStatement: StatementNode,
-        instanceCounter: Counter,
-        declaredLambdas: Map<string, LambdaDefinition>,
-    ) {
-        const instanceIndex = instanceCounter.increment();
+    // private instantiateLambda(
+    //     program: Program,
+    //     func: FunctionNode,
+    //     funcScope: Scope,
+    //     call: FunctionCallNode,
+    //     lambdaDeclaration: LambdaDefinition,
+    //     beforeStatement: StatementNode,
+    //     instanceCounter: Counter,
+    //     declaredLambdas: Map<string, LambdaDefinition>,
+    // ) {
+    //     const instanceIndex = instanceCounter.increment();
 
-        // declare arguments
-        const argumentExpressions = call.args
-            .filter(arg => arg.type !== 'literal') as ExpressionNode[]; // filter commas
-        const paramList = ast.getParameterIdentifiers(lambdaDeclaration.lambdaExpression.header.parameters);
-        if (argumentExpressions.length !== paramList.length) {
-            throw new Error(`Wrong amount of arguments for lambda`);
-        }
-        const paramMapping: ParamMapping = {};
+    //     // declare arguments
+    //     const argumentExpressions = call.args
+    //         .filter(arg => arg.type !== 'literal') as ExpressionNode[]; // filter commas
+    //     const paramList = ast.getParameterIdentifiers(lambdaDeclaration.lambdaExpression.header.parameters);
+    //     if (argumentExpressions.length !== paramList.length) {
+    //         throw new Error(`Wrong amount of arguments for lambda`);
+    //     }
+    //     const paramMapping: ParamMapping = {};
 
-        for (let paramIndex = 0; paramIndex < paramList.length; paramIndex++) {
-            // declaration statement
-            const [typeSpec, paramIdentifier] = paramList[paramIndex];
-            if (!paramIdentifier) {
-                throw new Error(`Lambda parameters must be named`);
-            }
-            const replacementIdentifier = `lambda_${instanceIndex}_arg_${paramIndex}`;
-            const declarationStatement = ast.createDeclarationStatement(
-                ast.createFullySpecifiedType(typeSpec),
-                ast.createDeclaration(
-                    replacementIdentifier, argumentExpressions[paramIndex]
-                )
-            );
-            builder.addStatementToCompoundNoNested(func.body, funcScope, declarationStatement, beforeStatement);
-            paramMapping[paramIdentifier] = { replacementIdentifier };
-        }
+    //     for (let paramIndex = 0; paramIndex < paramList.length; paramIndex++) {
+    //         // declaration statement
+    //         const [typeSpec, paramIdentifier] = paramList[paramIndex];
+    //         if (!paramIdentifier) {
+    //             throw new Error(`Lambda parameters must be named`);
+    //         }
+    //         const replacementIdentifier = `lambda_${instanceIndex}_arg_${paramIndex}`;
+    //         const declarationStatement = ast.createDeclarationStatement(
+    //             ast.createFullySpecifiedType(typeSpec),
+    //             ast.createDeclaration(
+    //                 replacementIdentifier, argumentExpressions[paramIndex]
+    //             )
+    //         );
+    //         builder.addStatementToCompoundNoNested(func.body, funcScope, declarationStatement, beforeStatement);
+    //         paramMapping[paramIdentifier] = { replacementIdentifier };
+    //     }
 
-        const lambdaBody = lambdaDeclaration.lambdaExpression.body;
-        const lambdaScope = lambdaDeclaration.lambdaScope;
+    //     const lambdaBody = lambdaDeclaration.lambdaExpression.body;
+    //     const lambdaScope = lambdaDeclaration.lambdaScope;
 
-        const outIdentifier = `lambda_${instanceIndex}_out`;
+    //     const outIdentifier = `lambda_${instanceIndex}_out`;
 
-        const newStatements = this.appendFunctionBody(
-            program, func.body, funcScope,
-            program, lambdaBody, lambdaScope,
-            paramMapping,
-            `l${instanceIndex}`,
-            {
-                baseIdentifier: outIdentifier,
-                typeSpecifier: lambdaDeclaration.lambdaType.return_type,
-                destructure: false,
-            },
-            beforeStatement,
-        );
-        // make call into identifier of lambda value
-        builder.removeReferencesOfSubtree(program, call.identifier);
-        const lambdaResultRef = call as unknown as IdentifierNode;
-        Object.assign(lambdaResultRef, ast.createIdentifier(outIdentifier));
-        builder.addNodeReference(funcScope, lambdaResultRef);
+    //     const newStatements = this.appendFunctionBody(
+    //         program, func.body, funcScope,
+    //         program, lambdaBody, lambdaScope,
+    //         paramMapping,
+    //         `l${instanceIndex}`,
+    //         {
+    //             baseIdentifier: outIdentifier,
+    //             typeSpecifier: lambdaDeclaration.lambdaType.return_type,
+    //             destructure: false,
+    //         },
+    //         beforeStatement,
+    //     );
+    //     // make call into identifier of lambda value
+    //     builder.removeReferencesOfSubtree(program, call.identifier);
+    //     const lambdaResultRef = call as unknown as IdentifierNode;
+    //     Object.assign(lambdaResultRef, ast.createIdentifier(outIdentifier));
+    //     builder.addNodeReference(funcScope, lambdaResultRef);
 
-        // recurse lambda invocation routine
-        for (const newStatement of newStatements) {
-            const subInvocations = this.findLambdaInvocations(newStatement, declaredLambdas);
-            for (const subInvocation of subInvocations) {
+    //     // recurse lambda invocation routine
+    //     for (const newStatement of newStatements) {
+    //         const subInvocations = this.findLambdaInvocations(newStatement, declaredLambdas);
+    //         for (const subInvocation of subInvocations) {
 
-                const identifier = builder.getFunctionCallIdentifier(subInvocation)!;
-                const declaration = declaredLambdas.get(identifier)!;
-                this.instantiateLambda(
-                    program, func, funcScope, 
-                    subInvocation, declaration, newStatement, 
-                    instanceCounter, declaredLambdas,
-                );
-            }
-        }
-    }
+    //             const identifier = builder.getFunctionCallIdentifier(subInvocation)!;
+    //             const declaration = declaredLambdas.get(identifier)!;
+    //             this.instantiateLambda(
+    //                 program, func, funcScope, 
+    //                 subInvocation, declaration, newStatement, 
+    //                 instanceCounter, declaredLambdas,
+    //             );
+    //         }
+    //     }
+    // }
 
     private joinTemplatesTopologically(
         geoCtx: GeometryContext,
         dynamicCoordCounter: Counter,
         lookupMappings: ProgramDynamicLookupMapping[],
         usedIncludes: Set<string>,
-    ): Program | null {
+    ): AstBuilder<FunctionNode> | null {
         const usedSortedNodeGenerator = geoCtx.sortUsedNodeIndices();
         if (!usedSortedNodeGenerator.length) {
             return null;
@@ -445,22 +445,7 @@ export default class ProgramCompiler {
                 ast.createCompoundStatement([])
             )
         );
-        const geoSubtree = new AstSubtree(geoFunction);
-
-        // const {
-        //     functionNode: geoFunction,
-        //     functionScope: geoScope,
-        // } = builder.createFunction(geoProgram, returnTypeSpec, methodName);
-
-        // for (const input of geoCtx.geometry.inputs) {
-        //     const inputParam = (
-        //         ast.createParameterDeclaration(
-        //             parseDataType(input.dataType),
-        //             ast.createIdentifier(input.id),
-        //         )
-        //     );
-        //     builder.addFunctionParameter(geoFunction, geoScope, inputParam);
-        // }
+        const geoBuilder = new AstBuilder(geoFunction);
 
         for (const nodeIndex of usedSortedNodeGenerator) {
             geoCtx.select(nodeIndex);
@@ -468,15 +453,11 @@ export default class ProgramCompiler {
             // create template builder
             const { func: templateFunction, includes: templateIncludes } = this.getTemplateProgramInstance(geoCtx.activeNodeData.template);
             templateIncludes.forEach(inc => usedIncludes.add(inc));
+            const templateBuilder = new AstBuilder(templateFunction);
 
-            const templateSubtree = new AstSubtree(templateFunction);
+            const declaredLookups = new Set<string>();
 
-            // const templateFunctionScope = templateProgram.scopes
-            //     .find(scope => scope.name === templateFunction.prototype.header.name.identifier);
-            // if (!templateFunctionScope) {
-            //     throw new Error(`Couldn't find scope`);
-            // }
-            // includes
+            const nodeParamStatements = new Array<StatementNode>();
             // params
             const paramMapping: ParamMapping = {};
             const paramDeclarations = ast.getParameterIdentifiers(templateFunction.prototype.parameters);
@@ -494,19 +475,17 @@ export default class ProgramCompiler {
                         ast.createFullySpecifiedType(specifier),
                         ast.createDeclaration(identifier, expression),
                     );
-                    builder.addStatementToCompoundNoNested(
-                        geoFunction.body, geoScope, declarationStatement);
+                    nodeParamStatements.push(declarationStatement)
                     replacementIdentifier = identifier;
 
                 } else if (linkingRule.type === 'lookup') {
                     const { identifier, dataSize, rowDataType, rowIndex } = linkingRule;
-                    let binding = builder.findSymbolOfScopeBranch(geoScope, identifier);
-                    if (!binding) {
+                    if (!declaredLookups.has(identifier)) {
+                        declaredLookups.add(identifier);
                         const textureCoordinate = dynamicCoordCounter.nextInts(dataSize);
                         const [ _, declarationStatement ] = generateTextureLookupStatement(
                             identifier, textureCoordinate, rowDataType);
-                        builder.addStatementToCompoundNoNested(
-                            geoFunction.body, geoScope, declarationStatement);
+                        nodeParamStatements.push(declarationStatement)
                         lookupMappings.push({
                             dataType: rowDataType,
                             textureCoordinate,
@@ -524,23 +503,24 @@ export default class ProgramCompiler {
                 } else {
                     throw new Error(`Cannot find linking rule type "${(linkingRule as any).type}"`);
                 }
+                
                 paramMapping[parameter] = { replacementIdentifier };
             }
 
-            const templateCopy = _.cloneDeep({
-                prog: templateProgram,
-                body: templateFunction.body,
-                scope: templateFunctionScope,
+            // add lookup statements
+            geoBuilder.edit(node => {
+                const statements = node.body.statements;
+                const len = statements.length;
+                for (let i = 0; i < nodeParamStatements.length; i++) {
+                    node.body.statements[len + i] = nodeParamStatements[i];
+                }
             });
+
             const baseOutputIdentifier = GeometryContext.getIdentifierName('output', nodeIndex);
 
             this.appendFunctionBody(
-                geoProgram,
-                geoFunction.body,
-                geoScope,
-                templateCopy.prog,
-                templateCopy.body,
-                templateCopy.scope,
+                geoBuilder,
+                templateBuilder,
                 paramMapping,
                 nodeIndex,
                 isOutput ? undefined : {
@@ -550,7 +530,8 @@ export default class ProgramCompiler {
                 },
             );
         }
-        return geoProgram;
+
+        return geoBuilder;
     }
 
     private getGeometryReturnTypeSpec(outputs: OutputRowT<DataTypes>[]) {
@@ -589,90 +570,84 @@ export default class ProgramCompiler {
     }
 
     private appendFunctionBody(
-        targetProg: Program,
-        targetBody: CompoundStatementNode,
-        targetScope: Scope,
-        refProg: Program,
-        refExprOrComp: CompoundStatementNode | ExpressionNode,
-        refScope: Scope,
+        geoProgram: AstBuilder<FunctionNode>,
+        instanceProgram: AstBuilder<FunctionNode>,
         paramMapping: ParamMapping,
         localName: string | number,
         output?: OutputInstantiationOptions,
         beforeStatement?: StatementNode,
     ) {
-        type ExternalPair = [(string | number)[], SymbolRow<SymbolNode>];
-        const externalReferences = new Array<ExternalPair>();
+        // type ExternalPair = [(string | number)[], SymbolRow<SymbolNode>];
+        // const externalReferences = new Array<ExternalPair>();
 
-        builder.visitSymbolNodesOld(
-            refProg, refExprOrComp,
-            (path, binding, scope) => {
-                if (builder.isDescendantScope(scope, refScope)) {
-                    const pathToNode = new Array<string | number>();
-                    while (path.parentPath) {
-                        if (path.index != null) pathToNode.unshift(path.index);
-                        if (path.key != null) pathToNode.unshift(path.key);
-                        path = path.parentPath!;
-                    }
-                    externalReferences.push([pathToNode, binding]);
+        // builder.visitSymbolNodesOld(
+        //     refProg, refExprOrComp,
+        //     (path, binding, scope) => {
+        //         if (builder.isDescendantScope(scope, refScope)) {
+        //             const pathToNode = new Array<string | number>();
+        //             while (path.parentPath) {
+        //                 if (path.index != null) pathToNode.unshift(path.index);
+        //                 if (path.key != null) pathToNode.unshift(path.key);
+        //                 path = path.parentPath!;
+        //             }
+        //             externalReferences.push([pathToNode, binding]);
+        //         }
+        //     }
+        // );
+
+        // // object must be combined to maintain circular references
+        // const refTriple = [refProg, refExprOrComp, refScope] as const;
+        // const [instanceProg, instanceExprOrComp, instanceScope] =
+        //     _.cloneDeep(refTriple);
+
+        // // reference externals in copied body
+        // for (const [path, externalBinding] of externalReferences) {
+        //     const ref = objectPath.get(instanceExprOrComp, path);
+        //     if (!builder.isSymbolNode(ref)) {
+        //         throw new Error(`Not symbol`);
+        //     }
+        //     externalBinding.references.push(ref);
+        // }
+
+        // const processedBindings = new Set<SymbolRow<SymbolNode>>();
+        // const finalBindings = new Set<SymbolRow<SymbolNode>>();
+
+        // let instanceCompound: CompoundStatementNode;
+
+        // if (instanceExprOrComp.type === 'compound_statement') {
+        //     instanceCompound = instanceExprOrComp;
+        // } else {
+        //     // make compound from expression for ease of use
+        //     instanceCompound = ast.createCompoundStatement([
+        //         ast.createReturnStatement(
+        //             instanceExprOrComp
+        //         )
+        //     ]);
+        // }
+
+        // if (output) {
+        //     if (instanceCompound.type !== 'compound_statement') {
+        //         throw new Error(`Is not compound statement`);
+        //     }
+        //     const outputBindings = this.refactorBodyOutput(
+        //         instanceCompound as CompoundStatementNode, instanceScope, output);
+        //     outputBindings.forEach(binding => finalBindings.add(binding));
+        // }
+
+        // rename parms
+        instanceProgram.edit((node, clone, rename)=> {
+            const params = node.prototype.parameters;
+            const len = params.length;
+            for (let i = 0; i < len; i++) {
+                const param = params[i];
+                const paramDeclaration = AstBuilder.getSymbolNodeIdentifier(param);
+                const { replacementIdentifier } = paramMapping[paramDeclaration.identifier];
+                if (!replacementIdentifier) {
+                    throw new Error(`No rule added for param "${paramDeclaration.identifier}"`);
                 }
+                rename(paramDeclaration, replacementIdentifier);
             }
-        );
-
-        // object must be combined to maintain circular references
-        const refTriple = [refProg, refExprOrComp, refScope] as const;
-        const [instanceProg, instanceExprOrComp, instanceScope] =
-            _.cloneDeep(refTriple);
-
-        // reference externals in copied body
-        for (const [path, externalBinding] of externalReferences) {
-            const ref = objectPath.get(instanceExprOrComp, path);
-            if (!builder.isSymbolNode(ref)) {
-                throw new Error(`Not symbol`);
-            }
-            externalBinding.references.push(ref);
-        }
-
-        const processedBindings = new Set<SymbolRow<SymbolNode>>();
-        const finalBindings = new Set<SymbolRow<SymbolNode>>();
-
-        let instanceCompound: CompoundStatementNode;
-
-        if (instanceExprOrComp.type === 'compound_statement') {
-            instanceCompound = instanceExprOrComp;
-        } else {
-            // make compound from expression for ease of use
-            instanceCompound = ast.createCompoundStatement([
-                ast.createReturnStatement(
-                    instanceExprOrComp
-                )
-            ]);
-        }
-
-        if (output) {
-            if (instanceCompound.type !== 'compound_statement') {
-                throw new Error(`Is not compound statement`);
-            }
-            const outputBindings = this.refactorBodyOutput(
-                instanceCompound as CompoundStatementNode, instanceScope, output);
-            outputBindings.forEach(binding => finalBindings.add(binding));
-        }
-
-        // params
-        for (const [param, { replacementIdentifier }] of Object.entries(paramMapping)) {
-            const paramSymbolRow = builder.findSymbolOfScopeBranch(instanceScope, param);
-            if (!paramSymbolRow) {
-                throw new Error(`Undeclared binding for identifier "${param}"`);
-            }
-            processedBindings.add(paramSymbolRow);
-            const referencesWithoutDeclaration = paramSymbolRow.references
-                .filter(astNode => astNode.type !== 'parameter_declaration');
-
-            const targetBinding = builder.findSymbolOfScopeBranch(targetScope, replacementIdentifier);
-            if (!targetBinding) {
-                throw new Error(`Undeclared binding for identifier "${replacementIdentifier}"`);
-            }
-            builder.mergeAndRenameReferences(targetBinding, referencesWithoutDeclaration);
-        }
+        });
 
         // locals
         for (const [bindingIdentifier, binding] of Object.entries(instanceScope.bindings)) {
@@ -786,7 +761,8 @@ export default class ProgramCompiler {
             }
         }
 
-        return { func, includes };
+        const ref = { func, includes };
+        return structuredClone(ref);
     }
 }
 
