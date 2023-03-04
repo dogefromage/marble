@@ -14,3 +14,8 @@ export function findRight<T>(array: T[], predicate: (t: T) => boolean): T | unde
         }
     }
 }
+
+export function arrayDifference<T extends any>(arr: T[], negative: T[]) {
+    const neg = new Set(negative);
+    return arr.filter(el => !neg.has(el));
+}
