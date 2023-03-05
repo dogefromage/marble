@@ -161,8 +161,8 @@ export interface FunctionHeaderNode {
 export interface FunctionPrototypeNode {
     type: 'function_prototype';
     header: FunctionHeaderNode;
-    parameters: ParameterDeclarationNode[];
-    commas: LiteralNode[];
+    parameters?: ParameterDeclarationNode[];
+    commas?: LiteralNode[];
     rp: LiteralNode;
 }
 export interface GroupNode {

@@ -26,6 +26,10 @@ function generateCompositeInstructions(geometry: GeometryS) {
     const templateInputParams = new Array<string>();
     const templateInputArgs = new Array<string>();
     for (const input of inputs) {
+        const descriptor = dataTypeDescriptors[input.dataType];
+        if (descriptor.type === 'lambda') {
+            throw new Error(`Lambda are not allowed as grouped inputs`);
+        }
         const type = generateDataTypeText(input.dataType);
         templateInputParams.push(`${type} ${input.id}`);
         templateInputArgs.push(input.id);

@@ -7,6 +7,7 @@ export const MenuTitleDiv = styled.div<{ backColor?: string }>`
     margin: 0 -0.25rem; // ugly hack
 
     height: 35px;
+    flex-shrink: 0;
 
     ${BORDER_RADIUS_TOP}
 

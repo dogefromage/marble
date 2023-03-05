@@ -33,8 +33,8 @@ const vector_2x1: GNodeTemplate = {
         inputField('y', 'Y', 'float'),
     ],
     instructions: glsl`
-        vec3 vector_2x1(float x, float y) {
-            return vec3(x, y);
+        vec2 vector_2x1(float x, float y) {
+            return vec2(x, y);
         }
     `,
 }

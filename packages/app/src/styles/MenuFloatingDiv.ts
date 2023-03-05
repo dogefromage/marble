@@ -7,9 +7,10 @@ export const VERTICAL_MENU_WIDTH = 240;
 export interface MenuVerticalDivProps {
     anchor: Point;
     width?: string;
+    maxHeight: number;
 }
 
-const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({ 
+const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     anchor, width,
 }) => {
     return {
@@ -19,7 +20,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
             top: anchor.y + 'px',
         },
     };
-})<MenuVerticalDivProps>`
+}) <MenuVerticalDivProps>`
     position: fixed;
 
     padding: 0 4px 4px;
@@ -27,6 +28,11 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     flex-direction: column;
 
     width: ${VERTICAL_MENU_WIDTH}px;
+    /* max-height: ${({ maxHeight }) => maxHeight + 'px'}; */
+    max-height: 300px;
+
+    overflow-y: auto;
+    overflow-y: overlay;
 
     background-color: white;
     ${BORDER_RADIUS}
@@ -34,6 +40,23 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     outline: solid 1px #00000077;
 
     z-index: 1;
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    /* ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    } */
+    ::-webkit-scrollbar-thumb {
+        --color: #aaa;
+        border-radius: 10px;
+        box-shadow: inset 0 0 4px 4px var(--color);
+        border: solid 2px transparent;
+
+        &:hover {
+            background: var(--color);
+        }
+    }
 `;
 
 export default MenuVerticalDiv;

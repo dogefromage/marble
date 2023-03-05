@@ -89,7 +89,7 @@ export const allowedInputRows: Partial<MapEvery<RowDataTypeCombination, string>>
     'field:float':    'Number Field',
     'field:vec2':     '2-Vector Field', 
     'field:vec3':     '3-Vector Field',
-    'input:Surface':  'Surface Input',
+    // 'input:Surface':  'Surface Input',
     'input:float':    'Number Input',
     'input:vec2':     '2-Vector Input',
     'input:vec3':     '3-Vector Input',

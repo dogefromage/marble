@@ -201,18 +201,22 @@ export class GeometryContext {
     }
 
     public static readonly tupleStructKey = 'Tuple_';
+    public static readonly identifierPrefixes = {
+        geometry:       'geo_',
+        output:         'out_',
+        local:          '_',
+        function_param: 'param_',
+        lambda_arg:     'lambda_arg_',    
+        tuple_struct:   this.tupleStructKey,
+        struct_arg:     'arg_',
+        lambda_out: 'lambda_out_',
+    }
     public static getIdentifierName(
-        prefixTypes: 'geometry' | 'output' | 'local' | 'lambda_arg' | 'tuple_struct' | 'struct_arg',
+        prefixTypes: keyof typeof this.identifierPrefixes,
         ...descriptors: (string | number)[]
     ) {
-        const prefixes = {
-            'geometry': 'geo_',
-            'output': 'out_',
-            'local': '_',
-            'lambda_arg': 'arg_',
-            'tuple_struct': this.tupleStructKey,
-            'struct_arg': 'arg_'
-        };
-        return prefixes[prefixTypes] + descriptors.join('_');
+        const ident = this.identifierPrefixes[prefixTypes] + descriptors.join('_');
+        const replaced = ident.replaceAll(/_+/g, '_');
+        return replaced;
     }
 }

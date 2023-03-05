@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { BORDER_RADIUS } from "./utils";
 
 export const MENU_ROW_HEIGHT = 30;
@@ -13,6 +13,7 @@ export const MenuElementDiv = styled.div.attrs<MenuElementDivProps>(({ tabIndex 
     position: relative;
     width: 100%;
     height: ${MENU_ROW_HEIGHT}px;
+    flex-shrink: 0;
     
     margin-top: 0.25rem;
 
