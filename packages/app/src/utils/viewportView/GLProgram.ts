@@ -15,6 +15,7 @@ export class GLProgram
     };
     private uniformLocations = new Map<string, WebGLUniformLocation>();
     public onReady?: () => void;
+    private finalizeInterval: any;
 
     constructor(
         private gl: WebGL2RenderingContext,
@@ -36,9 +37,9 @@ export class GLProgram
         gl.linkProgram(program);
         
         const finalizeGenerator = this.finalizeCompilation();
-        const interval = setInterval(() => {
+        this.finalizeInterval = setInterval(() => {
             if (finalizeGenerator.next().done) {
-                clearInterval(interval);
+                clearInterval(this.finalizeInterval);
             }
         }, 50);
     }
@@ -48,10 +49,14 @@ export class GLProgram
 
         const ext = gl.getExtension('KHR_parallel_shader_compile');
         if (ext != null) {
-            while (!gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR)) {
+            do {
                 // suspend function while shader is compiling
                 yield;
+                if (this.state === 'destroyed') {
+                    return; // clears the interval
+                }
             }
+            while (!gl.getProgramParameter(program, ext.COMPLETION_STATUS_KHR));
         }
         // ERRORS
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
@@ -84,8 +89,9 @@ export class GLProgram
     
     public destroy() {
         const gl = this.gl;
-        this.state = 'destroyed';
         // gl.flush(); // maybe necessary
+        this.state = 'destroyed';
+        gl.flush();
         gl.deleteProgram(this.program);
         gl.deleteShader(this.vertexShader);
         gl.deleteShader(this.fragmentShader);

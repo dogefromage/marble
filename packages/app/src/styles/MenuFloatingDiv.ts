@@ -28,8 +28,7 @@ const MenuVerticalDiv = styled.div.attrs<MenuVerticalDivProps>(({
     flex-direction: column;
 
     width: ${VERTICAL_MENU_WIDTH}px;
-    /* max-height: ${({ maxHeight }) => maxHeight + 'px'}; */
-    max-height: 300px;
+    max-height: ${({ maxHeight }) => (Math.min(maxHeight, 600)) + 'px'};
 
     overflow-y: auto;
     overflow-y: overlay;

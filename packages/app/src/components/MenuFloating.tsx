@@ -90,7 +90,11 @@ const MenuFloating = ({ menuId, depth, shape, leftAnchor, parentWidth }: Props) 
     });
 
     return (
-        <MenuFloatingDiv ref={divRef} anchor={adjustedAnchor}> {
+        <MenuFloatingDiv 
+            ref={divRef} 
+            anchor={adjustedAnchor}
+            maxHeight={rootClientRect.h}
+        >{
             shape.list.map(element =>
                 <MenuElementSwitch
                     menuId={menuId}
