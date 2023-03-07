@@ -385,7 +385,7 @@ export default class ProgramCompiler {
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
         for (const [typeNode, paramIdentifier] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {
-                throw new Error(`Function parameter "${paramIdentifier}" is not a row on template.`);
+                throw new Error(`Function parameter "${paramIdentifier}" is not a row on template ${template.id}.`);
             }
         }
 

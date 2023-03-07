@@ -11,7 +11,7 @@ const marbleBuiltIns = new Set([
     'Distance', TEXTURE_LOOKUP_METHOD_NAME,
 ]);
 const marblePrefixes = new Set([
-    'geo_', 'inc_',
+    'geo_', 'inc_', 'Tuple_',
 ]);
 
 // type SymbolType = 'function' | 'var';

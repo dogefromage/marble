@@ -48,10 +48,10 @@ const separate_3x1: GNodeTemplate = {
         outputRow('x', 'X', 'float'),
         outputRow('y', 'Y', 'float'),
         outputRow('z', 'Z', 'float'),
-        inputRow('input', 'Input Vector', 'vec3'),
+        inputRow('v', 'Input Vector', 'vec3'),
     ],
     instructions: glsl`
-        Tuple_float_float_float separate_2x1(vec3 v) {
+        Tuple_float_float_float separate_3x1(vec3 v) {
             return Tuple_float_float_float(v.x, v.y, v.z);
         }
     `,
@@ -170,7 +170,7 @@ function unaryOp(
 
 const normalize = unaryOp(
     'normalize_vec3', 'Normalize Vector',
-    'input', 'unit_vector', 'vec3', 
+    'v', 'unit_vector', 'vec3', 
     glsl`
     vec3 normalize_vec3(vec3 v) {
         return normalize(v);
@@ -181,8 +181,8 @@ const absolute = unaryOp(
     'abs_vec3', 'Absolute Vector',
     'input', 'absolute_vector', 'vec3', 
     glsl` 
-    vec3 abs_vec3(vec3 v) {
-        return abs(v);
+    vec3 abs_vec3(vec3 input) {
+        return abs(input);
     }`,
 );
 
@@ -190,8 +190,8 @@ const fract = unaryOp(
     'fract_vec3', 'Fractional Part',
     'input', 'fractional_part', 'vec3', 
     glsl` 
-    vec3 fract_vec3(vec3 v) {
-        return fract(v);
+    vec3 fract_vec3(vec3 input) {
+        return fract(input);
     }`,
 );
 
@@ -199,8 +199,8 @@ const floor = unaryOp(
     'floor_vec3', 'Floor Vector',
     'input', 'floored_vector', 'vec3',
     glsl` 
-    vec3 floor_vec3(vec3 v) {
-        return floor(v);
+    vec3 floor_vec3(vec3 input) {
+        return floor(input);
     }`,
 );
 
@@ -208,8 +208,8 @@ const length = unaryOp(
     'length_vec3', 'Vector Length',
     'input', 'length', 'float',
     glsl` 
-    float length_vec3(vec3 v) {
-        return length(v);
+    float length_vec3(vec3 input) {
+        return length(input);
     }`,
 );
 
@@ -284,7 +284,7 @@ const modulo = binaryOp(
     'mod_vec3', 'Vector Modulo',
     'input', 'vec3', 'quotient', 'vec3', 'remainder', 'vec3',
     glsl`
-    float mod_vec3(vec3 input, vec3 quotient) {
+    vec3 mod_vec3(vec3 input, vec3 quotient) {
         return mod(input, quotient);
     }`,
 );

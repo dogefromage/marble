@@ -24,7 +24,7 @@ function generateShaders(sceneProgram: LayerProgram) {
     fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', sceneProgram.rootFunctionName);
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
-    // console.log(logCodeWithLines(fragCode));
+    console.log(logCodeWithLines(fragCode));
 
     return {
         vertCode: VERT_CODE_TEMPLATE,
