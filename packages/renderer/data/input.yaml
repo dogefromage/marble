@@ -1,4 +1,0 @@
-# scene:
-#   sd_sphere:
-#     radius: 1
-#     p: "ray_pos"

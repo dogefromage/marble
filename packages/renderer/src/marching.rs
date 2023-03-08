@@ -1,37 +1,25 @@
-use glam::Vec3;
+use crate::{common::Ray, scene, camera::Camera};
+use glam::{Vec3, Vec2};
 
-struct Ray {
-    o: Vec3,
-    r: Vec3,
-}
+pub fn shade(uv: Vec2, camera: &Camera) -> Vec3 {
+    let ray = camera.get_ray(uv);
 
-impl Ray {
-    pub fn at(self: &Ray, t: f32) -> Vec3 {
-        self.o + self.r * t
+    let march_t = march(&ray);
+
+    if march_t > 999. {
+        Vec3::ONE
+    } else {
+        Vec3::ZERO
     }
 }
 
-pub fn render(u: f32, v: f32) -> Vec3 {
-    let focal_length = 2.5;
-    let ray_dir = Vec3::new(u, v, focal_length).normalize();
-    let ray_origin = Vec3::new(0., 0., -5.);
-    let ray = Ray { o: ray_origin, r: ray_dir };
-
-    let has_hit = march(&ray);
-    match has_hit {
-        true => Vec3::ONE,
-        false => Vec3::ZERO
-    }
-}
-
-fn march(ray: &Ray) -> bool {
+fn march(ray: &Ray) -> f32 {
     let mut t = 0f32;
-
     for _ in 0..100 {
         let p = ray.at(t);
-        let d = sdf(p);
-        if d < 0.001 { 
-            return true;
+        let d = scene::sd_scene(p);
+        if d < 0.001 {
+            break;
         }
         t += d;
         if t > 1000. {
@@ -39,9 +27,5 @@ fn march(ray: &Ray) -> bool {
         }
     }
 
-    return false;
-}
-
-fn sdf(p: Vec3) -> f32 {
-    return p.length() - 1.;
+    return t;
 }
