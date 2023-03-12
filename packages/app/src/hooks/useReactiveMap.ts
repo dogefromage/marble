@@ -1,8 +1,6 @@
 import produce, { castDraft } from "immer";
 import { useEffect, useState } from "react";
-import { ObjMapUndef } from "../types";
-
-type IDObj = { id: string };
+import { IDObj, ObjMapUndef } from "../types";
 
 export function detectMapDifference<X extends IDObj, Y extends IDObj>(options: {
     reference: ObjMapUndef<X>,

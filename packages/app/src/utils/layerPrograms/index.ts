@@ -1,5 +1,4 @@
-import { BaseInputRowT, dataTypeDescriptors, DataTypeValueTypes, GeometryConnectionData, GeometryS, ObjMapUndef, ProgramInclude, ProgramDynamicLookupMapping, RowS, SimpleDataTypes, textureVarDatatypeSize } from "../../types";
-import { LOOKUP_TEXTURE_WIDTH } from "../viewportView/GLProgramRenderer";
+import { BaseInputRowT, dataTypeDescriptors, DataTypeValueTypes, GeometryConnectionData, GeometryS, ObjMapUndef, ProgramInclude, ProgramDynamicLookupMapping, RowS, SimpleDataTypes, textureVarDatatypeSize, LOOKUP_TEXTURE_WIDTH } from "../../types";
 
 export function splitIncludesFromSource(source: string) {
     const matches = [ ...source.matchAll(/#\s*DEFINCLUDE\s+(\w+);/g) ];

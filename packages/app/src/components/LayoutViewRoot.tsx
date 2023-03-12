@@ -11,21 +11,21 @@ const LayoutViewRoot = () => {
             orientation='horizontal'
         >
             <ReflexElement>
-                <ReflexContainer
+                {/* <ReflexContainer
                     orientation='vertical'
                 >
                     <ReflexElement
                         flex={2}
-                    >
+                    > */}
                         <ViewportView panelId='4321' />
-                    </ReflexElement>
+                    {/* </ReflexElement>
                     <ReflexSplitter />
                     <ReflexElement
                         flex={1}
                     >
                         <ConsoleView panelId='1432134' />
                     </ReflexElement>
-                </ReflexContainer>
+                </ReflexContainer> */}
             </ReflexElement>
             <ReflexSplitter />
             <ReflexElement>

@@ -1,5 +1,5 @@
+import { LOOKUP_TEXTURE_WIDTH } from "../types";
 import { glsl } from "../utils/codeStrings";
-import { LOOKUP_TEXTURE_WIDTH } from "../utils/viewportView/GLProgramRenderer";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
@@ -23,15 +23,13 @@ vec3 screenToWorld(vec3 x) {
     return unNorm.xyz / unNorm.w;
 }
 
-void main()
-{
+void main() {
     gl_Position = vec4(position, 1.0);
-
     ray_o = screenToWorld(vec3(position.xy, 0));
+    ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
 
     vec3 pan = vec3(invScreenSize, 0);
 
-    ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
     ray_dir_pan_x = screenToWorld(vec3(position.xy + pan.xz, 1)) - ray_o - ray_d;
     ray_dir_pan_y = screenToWorld(vec3(position.xy + pan.zy, 1)) - ray_o - ray_d;
 }
@@ -133,9 +131,9 @@ Intersection march(Ray ray) {
     return intersection;
 }
 
-vec3 shade(Ray ray) {
+vec4 shade(Ray ray) {
     Intersection mainIntersection = march(ray);
-    if (!mainIntersection.hasHit) return vec3(0.85,0.9,1); // clear color
+    if (!mainIntersection.hasHit) return vec4(0,0,0,0);
 
     vec3 p = rayAt(ray, mainIntersection.t);
     vec3 n = calcNormal(p);
@@ -155,24 +153,25 @@ vec3 shade(Ray ray) {
     lin *= mainIntersection.color;
 
     vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
-    return corrected;
+
+    return vec4(corrected, 1);
 }
 
 const int AA = 1;
 
-vec3 render() {
+vec4 render() {
     if (AA <= 1) {
         Ray ray = Ray(ray_o, normalize(ray_d));
         return shade(ray);
     }
     float factor = 1.0 / float(AA * AA);
-    vec3 averagePixel;
+    vec4 averagePixel;
     for (int y = 0; y < AA; y++) {
         for (int x = 0; x < AA; x++) {
             vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
             vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
             Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
-            vec3 shadingResult = shade(ray);
+            vec4 shadingResult = shade(ray);
             averagePixel += factor * shadingResult;
         }
     }
@@ -200,10 +199,9 @@ vec3 render() {
 //     else                     return col.yyy;
 // }
 
-void main()
-{
+void main() {
     // gl_FragColor = vec4(hitTest(), 1);
     // gl_FragColor = vec4(heatmap(), 1);
-    gl_FragColor = vec4(render(), 1);
+    gl_FragColor = render();
 }
 `;

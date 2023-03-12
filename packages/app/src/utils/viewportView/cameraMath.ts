@@ -1,5 +1,5 @@
 import { mat4, quat, vec3 } from "gl-matrix";
-import { Camera, ViewportCamera } from "../../types/viewportView/ViewportPanel";
+import { RenderCamera, ViewportCamera } from "../../types";
 
 // // Blender default cube camera
 // camera: {
@@ -30,8 +30,7 @@ export function viewportCameraToNormalCamera(viewportCamera: ViewportCamera) {
     const cameraPosMinusTarget = vec3.scale(vec3.create(), cameraDir, -1 * viewportCamera.distance);
     const cameraPos = vec3.add(vec3.create(), cameraPosMinusTarget, viewportCamera.target);
 
-    const camera: Camera =
-    {
+    const camera: RenderCamera = {
         position: cameraPos,
         rotation: cameraRotation,
         fov: viewportCamera.fov,
@@ -48,7 +47,7 @@ export function createTransformationMatrix(position: vec3, rotation: quat) {
     );
 }
 
-export function createCameraWorldToScreen(camera: Camera, aspect: number, nearFarFactor: number) {
+export function createCameraWorldToScreen(camera: RenderCamera, aspect: number, nearFarFactor: number) {
     // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection
     const near = 0.01 * nearFarFactor;
     const far = 100 * nearFarFactor;

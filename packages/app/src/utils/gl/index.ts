@@ -1,4 +1,4 @@
-import { UniformTypes } from "../../types";
+import { ProgramAttribute, UniformTypes } from "../../types";
 
 export function setUniform(gl: WebGL2RenderingContext, location: WebGLUniformLocation, type: UniformTypes, data: number[]) {
     if (type === UniformTypes.Uniform1ui)
@@ -53,4 +53,13 @@ export function setUniform(gl: WebGL2RenderingContext, location: WebGLUniformLoc
         return gl.uniformMatrix3x4fv(location, false, data);
     if (type === UniformTypes.UniformMatrix4fv)
         return gl.uniformMatrix4fv(location, false, data);
+}
+
+export function setVertexAttribPointer(gl: WebGL2RenderingContext, attribute: ProgramAttribute, location: number) {
+    switch (attribute.type) {
+        case 'vec3':
+            return gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+        default:
+            throw new Error(`Unknown attribute type found`);
+    }
 }

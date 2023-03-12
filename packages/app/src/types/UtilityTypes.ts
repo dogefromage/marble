@@ -41,3 +41,5 @@ export enum SelectionStatus {
     SelectedForeign = 1,
     Selected = 2,
 }
+
+export type IDObj = { id: string };

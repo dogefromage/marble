@@ -4,11 +4,11 @@ import { ViewProps, ViewTypes } from '../types';
 import { useBindPanelState } from '../utils/panelManager';
 import PanelBody from './PanelBody';
 import ViewportCanvas from './ViewportCanvas';
+import ViewportMain from './ViewportMain';
 
-const ViewportView = (viewProps: ViewProps) =>
-{
+const ViewportView = (viewProps: ViewProps) => {
     useBindPanelState(
-        viewProps.panelId, 
+        viewProps.panelId,
         createViewportPanelState,
         ViewTypes.Viewport,
     );
@@ -17,7 +17,7 @@ const ViewportView = (viewProps: ViewProps) =>
         <PanelBody
             viewProps={viewProps}
         >
-            <ViewportCanvas panelId={viewProps.panelId} />
+            <ViewportMain panelId={viewProps.panelId} />
         </PanelBody>
     )
 }
