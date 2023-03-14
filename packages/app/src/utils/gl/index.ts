@@ -27,32 +27,34 @@ export function setUniform(gl: WebGL2RenderingContext, location: WebGLUniformLoc
     if (type === UniformTypes.Uniform4iv)
         return gl.uniform4iv(location, data);
     if (type === UniformTypes.Uniform1uiv)
-        return gl.uniform1uiv(location, data);
+        return gl.uniform1iv(location, data);
     if (type === UniformTypes.Uniform2uiv)
-        return gl.uniform2uiv(location, data);
+        return gl.uniform2iv(location, data);
     if (type === UniformTypes.Uniform3uiv)
-        return gl.uniform3uiv(location, data);
+        return gl.uniform3iv(location, data);
     if (type === UniformTypes.Uniform4uiv)
-        return gl.uniform4uiv(location, data);
+        return gl.uniform4iv(location, data);
 
     if (type === UniformTypes.UniformMatrix2fv)
         return gl.uniformMatrix2fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix3x2fv)
-        return gl.uniformMatrix3x2fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix4x2fv)
-        return gl.uniformMatrix4x2fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix2x3fv)
-        return gl.uniformMatrix2x3fv(location, false, data);
     if (type === UniformTypes.UniformMatrix3fv)
         return gl.uniformMatrix3fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix4x3fv)
-        return gl.uniformMatrix4x3fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix2x4fv)
-        return gl.uniformMatrix2x4fv(location, false, data);
-    if (type === UniformTypes.UniformMatrix3x4fv)
-        return gl.uniformMatrix3x4fv(location, false, data);
     if (type === UniformTypes.UniformMatrix4fv)
         return gl.uniformMatrix4fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix3x2fv)
+    //     return gl.uniformMatrix3x2fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix4x2fv)
+    //     return gl.uniformMatrix4x2fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix2x3fv)
+    //     return gl.uniformMatrix2x3fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix4x3fv)
+    //     return gl.uniformMatrix4x3fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix2x4fv)
+    //     return gl.uniformMatrix2x4fv(location, false, data);
+    // if (type === UniformTypes.UniformMatrix3x4fv)
+    //     return gl.uniformMatrix3x4fv(location, false, data);
+    
+    throw new Error(`Uniform not supported`);
 }
 
 export function setVertexAttribPointer(gl: WebGL2RenderingContext, attribute: ProgramAttribute, location: number) {

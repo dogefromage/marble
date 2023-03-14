@@ -30,6 +30,9 @@ export abstract class GLPipeline {
     }
 
     private render() {
+        const { gl } = this;
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
         const ascendingPriority = 
             Array.from(this.programs.values())
             .sort((a, b) => a.renderIndex - b.renderIndex);
