@@ -1,6 +1,7 @@
 import { setUniform, setVertexAttribPointer } from ".";
 import { IDObj, ProgramAttribute, ProgramUniform } from "../../types";
 import { Logger } from "../debug";
+import { logCodeWithLines, logCodeWithLinesProximity } from "../debugging";
 import GLIndexedBuffer from "./GLIndexedBuffer";
 import GLTexture from "./GLTexture";
 
@@ -25,8 +26,8 @@ export default class GLProgram extends Logger implements IDObj {
         private gl: WebGL2RenderingContext,
         public id: string,
         public renderIndex: number,
-        vertCode: string, 
-        fragCode: string,
+        private vertCode: string, 
+        private fragCode: string,
         private uniforms: ProgramUniform[],
         private attributes: ProgramAttribute[],
     ) {
@@ -86,8 +87,14 @@ export default class GLProgram extends Logger implements IDObj {
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             this.info(`An error occured during compilation of GLProgram ${this.id}`);
             console.error(`Link failed: ${gl.getProgramInfoLog(program)}`);
-            console.error(gl.getShaderInfoLog(this.fragmentShader));
-            console.error(gl.getShaderInfoLog(this.vertexShader));
+            const vertError = gl.getShaderInfoLog(this.vertexShader);
+            const fragError = gl.getShaderInfoLog(this.fragmentShader);
+            if (vertError?.length) {
+                this.logShaderError("Vertex error", this.vertCode, vertError);
+            }
+            if (fragError?.length) {
+                this.logShaderError("Fragment error", this.fragCode, fragError);
+            }
             this.state = 'failed';
             return;
         }
@@ -108,6 +115,18 @@ export default class GLProgram extends Logger implements IDObj {
         this.state = 'ready';
         this.onReady?.();
         this.info(`Successfully compiled GLProgram ${this.id}`);
+    }
+
+    private logShaderError(shaderName: string, shaderCode: string, errorString: string) {
+        console.error(shaderName + ": " + errorString);
+        const match = errorString.match(/(\d+)(?::)(\d+)/);
+        const errorLine = match?.[2];
+        if (errorLine != null) {
+            let line = parseInt(errorLine);
+            console.error(logCodeWithLinesProximity(shaderCode, line, 5));
+        } else {
+            console.error(logCodeWithLines(shaderCode))
+        }
     }
     
     public destroy() {
@@ -153,9 +172,9 @@ export default class GLProgram extends Logger implements IDObj {
             if (data != null && location != null) {
                 setUniform(gl, location, uniform.type, data);
             } else if (!data) {
-                console.error(`Uniform data for "${uniform.name}" not set`);
+                console.warn(`${this.id}: Uniform data for "${uniform.name}" not set`);
             } else if (!location) {
-                console.error(`Uniform location for "${uniform.name}" not found`);
+                console.warn(`${this.id}: Uniform location for "${uniform.name}" not found`);
             }
         }
     }

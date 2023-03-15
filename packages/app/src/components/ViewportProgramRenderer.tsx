@@ -37,13 +37,16 @@ const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
         if (!pipeline || !viewportPanelState) return;
 
         const targetDistance = viewportPanelState.uniformSources.viewportCamera.distance;
+        const cameraNear = 0.01 * targetDistance;
+        const cameraFar = 100 * targetDistance;
+    
         // invSize
         const invScreenSize = [1.0 / size.w, 1.0 / size.h];
         pipeline.setGlobalUniformData('invScreenSize', invScreenSize);
         // camera
         const aspect = size.w / size.h;
         const camera = viewportCameraToNormalCamera(viewportPanelState.uniformSources.viewportCamera);
-        const worldToScreen = createCameraWorldToScreen(camera, aspect, targetDistance);
+        const worldToScreen = createCameraWorldToScreen(camera, aspect, cameraNear, cameraFar);
         const screenToWorld = mat4.invert(mat4.create(), worldToScreen);
         pipeline.setGlobalUniformData(
             globalViewportUniforms.inverseCamera.name, 
@@ -57,11 +60,19 @@ const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
             globalViewportUniforms.cameraDistance.name, 
             [ viewportPanelState.uniformSources.viewportCamera.distance ]
         );
+        // console.log(camera.direction);
+        pipeline.setGlobalUniformData(
+            globalViewportUniforms.cameraDirection.name, Array.from(camera.direction));
+        pipeline.setGlobalUniformData(
+            globalViewportUniforms.cameraNear.name, [ cameraNear ]);
+        pipeline.setGlobalUniformData(
+            globalViewportUniforms.cameraFar.name, [ cameraFar ],);
         // marchParams
         const maxMarchDist = 1e4 * targetDistance;
         const maxMarchIter = viewportPanelState.uniformSources.maxIterations;
         const marchEpsilon = 1e-6 * targetDistance;
         pipeline.setGlobalUniformData('marchParameters', [maxMarchDist, maxMarchIter, marchEpsilon]);
+
         triggerRender();
     }, [pipeline, viewportPanelState?.uniformSources, size]);
 

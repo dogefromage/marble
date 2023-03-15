@@ -1,4 +1,4 @@
-import { mat4, quat, vec3 } from "gl-matrix";
+import { mat3, mat4, quat, vec3 } from "gl-matrix";
 import { RenderCamera, ViewportCamera } from "../../types";
 
 // // Blender default cube camera
@@ -9,8 +9,8 @@ import { RenderCamera, ViewportCamera } from "../../types";
 // },
 
 export function getViewportDirection(viewportCamera: ViewportCamera) {
-    const alpha = viewportCamera.rotation[ 0 ];
-    const beta = viewportCamera.rotation[ 1 ];
+    const alpha = viewportCamera.rotation[0];
+    const beta = viewportCamera.rotation[1];
 
     const cameraRotation = quat.fromEuler(
         quat.create(),
@@ -34,6 +34,7 @@ export function viewportCameraToNormalCamera(viewportCamera: ViewportCamera) {
         position: cameraPos,
         rotation: cameraRotation,
         fov: viewportCamera.fov,
+        direction: cameraDir,
     }
 
     return camera;
@@ -47,10 +48,8 @@ export function createTransformationMatrix(position: vec3, rotation: quat) {
     );
 }
 
-export function createCameraWorldToScreen(camera: RenderCamera, aspect: number, nearFarFactor: number) {
+export function createCameraWorldToScreen(camera: RenderCamera, aspect: number, near: number, far: number) {
     // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection
-    const near = 0.01 * nearFarFactor;
-    const far = 100 * nearFarFactor;
 
     const f = 1.0 / Math.tan(camera.fov / 2);
     const rangeInv = 1 / (near - far);
@@ -64,8 +63,6 @@ export function createCameraWorldToScreen(camera: RenderCamera, aspect: number, 
 
     const transform = createTransformationMatrix(camera.position, camera.rotation);
     const inverseTransform = mat4.invert(mat4.create(), transform);
-
     const worldToScreen = mat4.multiply(mat4.create(), cameraPerspective, inverseTransform);
-
     return worldToScreen;
 }

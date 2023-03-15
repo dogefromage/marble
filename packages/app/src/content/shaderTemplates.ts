@@ -53,6 +53,10 @@ uniform vec3 ambientColor;
 uniform vec4 sunGeometry; // vec4(lightDirection.xyz, lightAngle)
 uniform vec3 sunColor;
 
+uniform vec3 cameraDirection;
+uniform float cameraNear;
+uniform float cameraFar;
+
 struct Ray {
     vec3 o;
     vec3 d;
@@ -134,6 +138,10 @@ Intersection march(Ray ray) {
 vec4 shade(Ray ray) {
     Intersection mainIntersection = march(ray);
     if (!mainIntersection.hasHit) return vec4(0,0,0,0);
+
+    // float t_par = dot(ray.d, cameraDirection) * mainIntersection.t;
+    // gl_FragDepth = (t_par - cameraNear) / (cameraFar - cameraNear);
+    gl_FragDepth = mainIntersection.t;
 
     vec3 p = rayAt(ray, mainIntersection.t);
     vec3 n = calcNormal(p);

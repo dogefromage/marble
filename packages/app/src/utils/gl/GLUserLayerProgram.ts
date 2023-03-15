@@ -10,6 +10,9 @@ import GLTexture from "./GLTexture";
 const userProgramUniforms: ProgramUniform[] = [
     globalViewportUniforms.inverseCamera,
     globalViewportUniforms.invScreenSize,
+    globalViewportUniforms.cameraDirection,
+    globalViewportUniforms.cameraNear,
+    globalViewportUniforms.cameraFar,
     {
         name: 'marchParameters',
         type: UniformTypes.Uniform3fv,

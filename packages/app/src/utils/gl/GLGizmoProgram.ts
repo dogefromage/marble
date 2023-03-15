@@ -28,9 +28,14 @@ const vertCode = glsl`#version 300 es
 const fragCode = glsl`#version 300 es
     precision mediump float;
 
-    uniform vec3 cameraTarget;
     uniform vec2 invScreenSize;
+
+    uniform vec3 cameraTarget;
     uniform float cameraDistance;
+
+    uniform vec3 cameraDirection;
+    uniform float cameraNear;
+    uniform float cameraFar;
 
     in vec3 ray_o;
     in vec3 ray_d;
@@ -90,14 +95,7 @@ const fragCode = glsl`#version 300 es
         return grid;
     }
 
-    vec4 coordinate_grid() {
-        // grid position of ray
-        float t = -ray_o.z / ray_d.z;
-        if (t < 0.) {
-            return vec4(0,0,0,0);
-        }
-        vec3 p = ray_o + ray_d * t;
-
+    vec4 coordinate_grid(vec3 p) {
         float line_width = 0.4 * cameraDistance * invScreenSize.y;
         
         vec4 axes = xy_axes(p, line_width);
@@ -119,8 +117,16 @@ const fragCode = glsl`#version 300 es
 
     out vec4 outColor;
     void main() {
-        outColor = coordinate_grid();
-        gl_FragDepth = 0.5;
+        float t = -ray_o.z / ray_d.z;
+        if (t < 0. || t > gl_FragDepth) {
+            return;
+        }
+        vec3 p = ray_o + ray_d * t;
+        outColor = coordinate_grid(p);
+
+        gl_FragDepth = t;
+        // float t_par = dot(ray_d, cameraDirection) * t;
+        // gl_FragDepth = (t_par - cameraNear) / (cameraFar - cameraNear);
     }
 
 `;
@@ -135,11 +141,14 @@ export default class GLGizmoProgram extends GLProgram {
             globalViewportUniforms.invScreenSize,
             globalViewportUniforms.cameraTarget,
             globalViewportUniforms.cameraDistance,
+            globalViewportUniforms.cameraDirection,
+            globalViewportUniforms.cameraNear,
+            globalViewportUniforms.cameraFar,
         ];
         const attributes: ProgramAttribute[] = [
             { name: 'position', type: 'vec3' },
         ];
-        super(gl, 'gizmo-program', 1000, vertCode, fragCode, uniforms, attributes);
+        super(gl, 'gizmo-program', 10, vertCode, fragCode, uniforms, attributes);
 
         this.bindBuffer('position', fullScreenQuad);
     }

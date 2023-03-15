@@ -12,6 +12,7 @@ export interface RenderCamera {
     position: vec3;
     rotation: quat;
     fov: number;
+    direction: vec3;
 }
 
 export interface ViewportPanelState extends PanelState {
