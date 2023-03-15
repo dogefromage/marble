@@ -40,6 +40,7 @@ const ViewportProgramRenderer = ({ gl, size, panelId }: Props) => {
         const cameraNear = 0.01 * targetDistance;
         const cameraFar = 100 * targetDistance;
     
+        
         // invSize
         const invScreenSize = [1.0 / size.w, 1.0 / size.h];
         pipeline.setGlobalUniformData('invScreenSize', invScreenSize);

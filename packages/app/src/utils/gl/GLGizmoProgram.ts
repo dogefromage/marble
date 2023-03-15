@@ -19,7 +19,7 @@ const vertCode = glsl`#version 300 es
     }
 
     void main() {
-        gl_Position = vec4(position, 1.0);
+        gl_Position = vec4(position.xy, 1., 1.);
         ray_o = screenToWorld(vec3(position.xy, 0));
         ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
     }
@@ -96,7 +96,7 @@ const fragCode = glsl`#version 300 es
     }
 
     vec4 coordinate_grid(vec3 p) {
-        float line_width = 0.4 * cameraDistance * invScreenSize.y;
+        float line_width = invScreenSize.y * 0.4 * cameraDistance;
         
         vec4 axes = xy_axes(p, line_width);
         float grid = 0.6 * stepped_grid(p, line_width);
@@ -114,17 +114,41 @@ const fragCode = glsl`#version 300 es
         return vec4(out_color, out_alpha * falloff_factor);
     }
 
+    float encodeZDepth(float z_depth) {
+        float n = cameraNear, 
+            f = cameraFar;
+        float z_clip = (f+n + 2.*f*n/z_depth) / (f-n); // [ n, f ] -> [ -1, 1 ]
+        return 0.5 * (z_clip - 1.); // map into [ 0, 1 ]
+    }
 
     out vec4 outColor;
     void main() {
         float t = -ray_o.z / ray_d.z;
-        if (t < 0. || t > gl_FragDepth) {
-            return;
+        if (t < 0.) {
+            return; // behind camera
         }
+
+        float z_depth = abs(dot(ray_d, cameraDirection)) * t;
+        float frag_depth = encodeZDepth(z_depth);
+        
+        outColor = vec4(
+            gl_FragDepth * 50.,
+            frag_depth * 50., 
+            0.,
+            1
+        );
+        return;
+
+        if (frag_depth < gl_FragDepth) {
+            return; // clip
+        }
+
         vec3 p = ray_o + ray_d * t;
         outColor = coordinate_grid(p);
 
-        gl_FragDepth = t;
+        // gl_FragDepth = 
+        
+        // gl_FragDepth = t;
         // float t_par = dot(ray_d, cameraDirection) * t;
         // gl_FragDepth = (t_par - cameraNear) / (cameraFar - cameraNear);
     }
@@ -149,7 +173,18 @@ export default class GLGizmoProgram extends GLProgram {
             { name: 'position', type: 'vec3' },
         ];
         super(gl, 'gizmo-program', 10, vertCode, fragCode, uniforms, attributes);
+        
+        this.depthTest = false;
 
         this.bindBuffer('position', fullScreenQuad);
+    }
+
+    public load(globalUniformData: Map<string, number[]>): void {
+        const { gl } = this;
+        super.load(globalUniformData);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.ALWAYS);
+        gl.depthMask(false);
     }
 }

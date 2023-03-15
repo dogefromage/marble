@@ -135,13 +135,19 @@ Intersection march(Ray ray) {
     return intersection;
 }
 
+float encodeZDepth(float z_depth) {
+    float n = cameraNear, 
+          f = cameraFar;
+    float z_clip = (f+n + 2.*f*n/z_depth) / (f-n); // [ n, f ] -> [ -1, 1 ]
+    return 0.5 * (z_clip - 1.); // map into [ 0, 1 ]
+}
+
 vec4 shade(Ray ray) {
     Intersection mainIntersection = march(ray);
-    if (!mainIntersection.hasHit) return vec4(0,0,0,0);
+    if (!mainIntersection.hasHit) return vec4(0,0, 0, 0);
 
-    // float t_par = dot(ray.d, cameraDirection) * mainIntersection.t;
-    // gl_FragDepth = (t_par - cameraNear) / (cameraFar - cameraNear);
-    gl_FragDepth = mainIntersection.t;
+    float z_depth = abs(dot(ray.d, cameraDirection)) * mainIntersection.t;
+    gl_FragDepth = encodeZDepth(z_depth);
 
     vec3 p = rayAt(ray, mainIntersection.t);
     vec3 n = calcNormal(p);
@@ -161,30 +167,29 @@ vec4 shade(Ray ray) {
     lin *= mainIntersection.color;
 
     vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
-
     return vec4(corrected, 1);
 }
 
-const int AA = 1;
+// const int AA = 1;
 
-vec4 render() {
-    if (AA <= 1) {
-        Ray ray = Ray(ray_o, normalize(ray_d));
-        return shade(ray);
-    }
-    float factor = 1.0 / float(AA * AA);
-    vec4 averagePixel;
-    for (int y = 0; y < AA; y++) {
-        for (int x = 0; x < AA; x++) {
-            vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
-            vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
-            Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
-            vec4 shadingResult = shade(ray);
-            averagePixel += factor * shadingResult;
-        }
-    }
-    return averagePixel;
-}
+// vec4 render() {
+//     if (AA <= 1) {
+//         Ray ray = Ray(ray_o, normalize(ray_d));
+//         return shade(ray);
+//     }
+//     float factor = 1.0 / float(AA * AA);
+//     vec4 averagePixel;
+//     for (int y = 0; y < AA; y++) {
+//         for (int x = 0; x < AA; x++) {
+//             vec2 uv = 2.0 * vec2(x, y) / float(AA - 1) - 1.0;
+//             vec3 dirPan = uv.x * ray_dir_pan_x + uv.y * ray_dir_pan_y;
+//             Ray ray = Ray(ray_o, normalize(dirPan + ray_d));
+//             vec4 shadingResult = shade(ray);
+//             averagePixel += factor * shadingResult;
+//         }
+//     }
+//     return averagePixel;
+// }
 
 // vec3 heatmap() {
 //     Ray ray = Ray(ray_o, normalize(ray_d));
@@ -212,6 +217,14 @@ out vec4 outColor;
 void main() {
     // gl_FragColor = vec4(hitTest(), 1);
     // gl_FragColor = vec4(heatmap(), 1);
-    outColor = render();
+
+    gl_FragDepth = -1.;
+
+    Ray ray = Ray(ray_o, normalize(ray_d));
+    outColor = shade(ray);
+
+    // SHOW DEPTH
+    float b = gl_FragDepth * 50.;
+    outColor = vec4(b,b,b,1);
 }
 `;

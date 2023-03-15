@@ -77,4 +77,13 @@ export default class GLUserLayerProgram extends GLProgram {
         this.setUniformData('sunColor', [1, 0.9, 0.7]);
         this.setUniformData('sunGeometry', [0.312347, 0.15617376, 0.93704257, degToRad(3)]);
     }
+    
+    public load(globalUniformData: Map<string, number[]>): void {
+        const { gl } = this;
+        super.load(globalUniformData);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.ALWAYS);
+        gl.depthMask(true);
+    }
 }

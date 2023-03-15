@@ -21,9 +21,10 @@ export default class GLProgram extends Logger implements IDObj {
     private attributeLocations = new Map<string, number>();
     private boundBuffers = new Map<string, GLIndexedBuffer>();
     private mainTexture?: GLTexture;
+    public depthTest = true;
 
     constructor(
-        private gl: WebGL2RenderingContext,
+        protected gl: WebGL2RenderingContext,
         public id: string,
         public renderIndex: number,
         private vertCode: string, 
@@ -109,7 +110,7 @@ export default class GLProgram extends Logger implements IDObj {
             if (location) {
                 this.uniformLocations.set(uniform.name, location);
             } else {
-                console.warn(`Uniform not found in program ${this.id}: ${uniform.name}`);
+                console.warn(`${this.id}: Uniform not found: ${uniform.name}`);
             }
         }
         this.state = 'ready';
@@ -143,6 +144,11 @@ export default class GLProgram extends Logger implements IDObj {
     public load(globalUniformData: Map<string, number[]>) {
         const { gl } = this;
         gl.useProgram(this.program);
+        if (this.depthTest) {
+            gl.enable(gl.DEPTH_TEST);
+        } else {
+            gl.disable(gl.DEPTH_TEST);
+        }
 
         if (this.mainTexture) {
             this.mainTexture.bind(gl);
@@ -179,7 +185,7 @@ export default class GLProgram extends Logger implements IDObj {
         }
     }
 
-    public draw() {
+    public draw() {        
         for (const buffer of this.boundBuffers.values()) {
             buffer.drawElements(this.gl);
         }
