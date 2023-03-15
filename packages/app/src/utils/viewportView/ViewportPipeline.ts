@@ -37,7 +37,7 @@ export class ViewportPipeline extends GLPipeline {
         // console.log(gl.getSupportedExtensions());
 
         gl.enable(gl.BLEND);
-        gl.enable(gl.DEPTH_TEST);
+        // gl.enable(gl.DEPTH_TEST);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         this.fullScreenQuad = GLIndexedBuffer.createFullScreenQuad(gl);

@@ -5,18 +5,18 @@ import { glsl } from "../utils/codeStrings";
 
 export const TEXTURE_LOOKUP_METHOD_NAME = 'tx';
 
-export const VERT_CODE_TEMPLATE = glsl`
+export const VERT_CODE_TEMPLATE = glsl`#version 300 es
 
 precision highp float;
 
-attribute vec3 position;
+in vec3 position;
 uniform mat4 inverseCamera;
 uniform vec2 invScreenSize;
 
-varying vec3 ray_o;
-varying vec3 ray_d;
-varying vec3 ray_dir_pan_x;
-varying vec3 ray_dir_pan_y;
+out vec3 ray_o;
+out vec3 ray_d;
+out vec3 ray_dir_pan_x;
+out vec3 ray_dir_pan_y;
 
 vec3 screenToWorld(vec3 x) {
     vec4 unNorm = inverseCamera * vec4(x, 1);
@@ -37,15 +37,15 @@ void main() {
 
 ////////////////////////////////// FRAGMENT SHADER //////////////////////////////////
 
-export const FRAG_CODE_TEMPLATE = glsl`
+export const FRAG_CODE_TEMPLATE = glsl`#version 300 es
 
 precision highp float;
 
 uniform sampler2D varSampler;
-varying vec3 ray_o;
-varying vec3 ray_d;
-varying vec3 ray_dir_pan_x;
-varying vec3 ray_dir_pan_y;
+in vec3 ray_o;
+in vec3 ray_d;
+in vec3 ray_dir_pan_x;
+in vec3 ray_dir_pan_y;
 
 uniform vec3 marchParameters;  // vec3(maxDistance, maxIterations, epsilon)
 uniform vec3 ambientColor;
@@ -79,7 +79,7 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
     int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
     vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
-    return texture2D(varSampler, uv).r;
+    return texture(varSampler, uv).r;
 }
 
 %INCLUDES%
@@ -199,9 +199,11 @@ vec4 render() {
 //     else                     return col.yyy;
 // }
 
+out vec4 outColor;
+
 void main() {
     // gl_FragColor = vec4(hitTest(), 1);
     // gl_FragColor = vec4(heatmap(), 1);
-    gl_FragColor = render();
+    outColor = render();
 }
 `;

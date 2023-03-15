@@ -4,14 +4,14 @@ import { globalViewportUniforms } from "../viewportView/uniforms";
 import GLIndexedBuffer from "./GLIndexedBuffer";
 import GLProgram from "./GLProgram";
 
-const vertCode = glsl`
+const vertCode = glsl`#version 300 es
 
     precision mediump float;
 
-    attribute vec3 position;
+    in vec3 position;
     uniform mat4 inverseCamera;
-    varying vec3 ray_o;
-    varying vec3 ray_d;
+    out vec3 ray_o;
+    out vec3 ray_d;
 
     vec3 screenToWorld(vec3 x) {
         vec4 unNorm = inverseCamera * vec4(x, 1);
@@ -26,15 +26,14 @@ const vertCode = glsl`
 `;
 
 const fragCode = glsl`#version 300 es
-
     precision mediump float;
 
     uniform vec3 cameraTarget;
     uniform vec2 invScreenSize;
     uniform float cameraDistance;
 
-    varying vec3 ray_o;
-    varying vec3 ray_d;
+    in vec3 ray_o;
+    in vec3 ray_d;
 
     struct GridLevel {
         float start_dist;
@@ -117,10 +116,11 @@ const fragCode = glsl`#version 300 es
         return vec4(out_color, out_alpha * falloff_factor);
     }
 
-    void main() {
-        gl_FragColor = coordinate_grid();
 
-        gl_FragDepthEXT = 0.5;
+    out vec4 outColor;
+    void main() {
+        outColor = coordinate_grid();
+        gl_FragDepth = 0.5;
     }
 
 `;

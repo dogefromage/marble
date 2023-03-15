@@ -1,4 +1,12 @@
 import { ProgramUniform, UniformTypes } from "../../types";
+import { glsl } from "../codeStrings";
+
+// const cameraStructDefinition = glsl`
+// struct Camera {
+//     transform
+// };
+// uniform camera Camera;
+// `;
 
 const inverseCamera: ProgramUniform = {
     name: 'inverseCamera',
