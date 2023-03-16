@@ -128,20 +128,20 @@ const fragCode = glsl`#version 300 es
             return; // behind camera
         }
 
-        float z_depth = abs(dot(ray_d, cameraDirection)) * t;
-        float frag_depth = encodeZDepth(z_depth);
+        // float z_depth = abs(dot(ray_d, cameraDirection)) * t;
+        // float frag_depth = encodeZDepth(z_depth);
         
-        outColor = vec4(
-            gl_FragDepth * 50.,
-            frag_depth * 50., 
-            0.,
-            1
-        );
-        return;
+        // outColor = vec4(
+        //     gl_FragDepth * 50.,
+        //     frag_depth * 50., 
+        //     0.,
+        //     1
+        // );
+        // return;
 
-        if (frag_depth < gl_FragDepth) {
-            return; // clip
-        }
+        // if (frag_depth < gl_FragDepth) {
+        //     return; // clip
+        // }
 
         vec3 p = ray_o + ray_d * t;
         outColor = coordinate_grid(p);
@@ -183,8 +183,8 @@ export default class GLGizmoProgram extends GLProgram {
         const { gl } = this;
         super.load(globalUniformData);
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.ALWAYS);
-        gl.depthMask(false);
+        // gl.enable(gl.DEPTH_TEST);
+        // gl.depthFunc(gl.ALWAYS);
+        // gl.depthMask(false);
     }
 }

@@ -82,8 +82,8 @@ export default class GLUserLayerProgram extends GLProgram {
         const { gl } = this;
         super.load(globalUniformData);
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.ALWAYS);
-        gl.depthMask(true);
+        // gl.enable(gl.DEPTH_TEST);
+        // gl.depthFunc(gl.ALWAYS);
+        // gl.depthMask(true);
     }
 }

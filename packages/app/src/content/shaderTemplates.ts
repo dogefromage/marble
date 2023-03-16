@@ -223,8 +223,8 @@ void main() {
     Ray ray = Ray(ray_o, normalize(ray_d));
     outColor = shade(ray);
 
-    // SHOW DEPTH
-    float b = gl_FragDepth * 50.;
-    outColor = vec4(b,b,b,1);
+    // // SHOW DEPTH
+    // float b = gl_FragDepth * 50.;
+    // outColor = vec4(b,b,b,1);
 }
 `;
