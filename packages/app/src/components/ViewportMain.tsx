@@ -3,11 +3,13 @@ import useResizeObserver from '@react-hook/resize-observer';
 import { vec2, vec3 } from 'gl-matrix';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { Matrix3, Vector2, Vector3 } from 'three';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { Point, Size, ViewportCamera, ViewTypes } from '../types';
-import { getViewportDirection } from '../utils/viewportView/cameraMath';
+import { degToRad } from '../utils/math';
+import { getViewportRotation } from '../utils/viewportView/cameraMath';
 import ViewportCanvas from './ViewportCanvas';
 
 const CanvasWrapperDiv = styled.div`
@@ -48,7 +50,7 @@ const ViewportMain = ({ panelId }: Props) => {
     }
     const dragRef = useRef<{
         mode: DragMode;
-        mouseStart: vec2;
+        mouseStart: Vector2;
     }>();
 
     const lastCameraRef = useRef<ViewportCamera>();
@@ -64,7 +66,7 @@ const ViewportMain = ({ panelId }: Props) => {
         }));
     }
 
-    const handleGestureStart = (clientPos: vec2, shiftKey: boolean, ctrlKey: boolean) => {
+    const handleGestureStart = (clientPos: Vector2, shiftKey: boolean, ctrlKey: boolean) => {
         if (!viewportPanelState) return;
         const mode =
             shiftKey ? DragMode.Pan :
@@ -78,41 +80,46 @@ const ViewportMain = ({ panelId }: Props) => {
         }
     }
 
-    const handleGestureMove = (mouseNew: vec2) => {
+    const handleGestureMove = (mouseNew: Vector2) => {
         if (!dragRef.current) return;
 
         if (dragRef.current.mode === DragMode.Orbit) {
-            const cameraSensitivity = vec2.fromValues(-0.8, -0.8);
+            const cameraSensitivity = -0.014;
             const { mouseStart } = dragRef.current!;
             const lastCamera = lastCameraRef.current!;
-            const delta = vec2.sub(vec2.create(), mouseNew, mouseStart);
-            const deltaRot = vec2.fromValues(delta[1] * cameraSensitivity[1], delta[0] * cameraSensitivity[0]);
-            const rotation = vec2.add(vec2.create(), lastCamera.rotation, deltaRot);
+            const mouseDelta = mouseNew.clone().sub(mouseStart);
+            const deltaRot = new Vector2(mouseDelta.y * cameraSensitivity, mouseDelta.x * cameraSensitivity)
+            const rotation = new Vector2().fromArray(lastCamera.rotation);
+            rotation.add(deltaRot);
             dispatch(viewportPanelEditCamera({
                 panelId,
-                partialCamera: { rotation }
+                partialCamera: { rotation: rotation.toArray() },
             }));
 
         } else if (dragRef.current.mode === DragMode.Pan) {
             if (!size) return;
             const { mouseStart } = dragRef.current!;
             const lastCamera = lastCameraRef.current!;
-            const delta = vec2.sub(vec2.create(), mouseNew, mouseStart);
-            const { cameraRotation } = getViewportDirection(lastCamera);
+            const mouseDelta = mouseNew.clone().sub(mouseStart);
+            const rotation = getViewportRotation(lastCamera);
             // somehow this is just about right, no idea why
-            const panFactor = 1.0 / (2 * size.h);
-            const windowPan = vec3.fromValues(-panFactor * delta[0], panFactor * delta[1], 0);
-            const worldPan = vec3.transformQuat(vec3.create(), windowPan, cameraRotation);
-            vec3.scale(worldPan, worldPan, lastCamera.distance);
-            const newTarget = vec3.add(vec3.create(), lastCamera.target, worldPan);
+            const fovFactor = Math.tan(degToRad(lastCamera.fov));
+            const panFactor = fovFactor / (size.h);
+            const windowPan = new Vector3(-panFactor * mouseDelta.x, panFactor * mouseDelta.y, 0);
+            const worldPan = windowPan.clone()
+                .applyQuaternion(rotation)
+                .multiplyScalar(lastCamera.distance);
+            const target = new Vector3()
+                .fromArray(lastCamera.target)
+                .add(worldPan);    
             dispatch(viewportPanelEditCamera({
                 panelId,
-                partialCamera: { target: newTarget },
+                partialCamera: { target: target.toArray() },
             }));
 
         } else if (dragRef.current.mode === DragMode.Zoom) {
             const { mouseStart } = dragRef.current;
-            const dragDelta = mouseNew[1] - mouseStart[1];
+            const dragDelta = mouseNew.y - mouseStart.y;
             const dragZoomSensitivity = -5.;
             zoomCamera(dragDelta * dragZoomSensitivity);
 
@@ -123,12 +130,14 @@ const ViewportMain = ({ panelId }: Props) => {
         mouseButton: 1,
         start: e => {
             handleGestureStart(
-                vec2.fromValues(e.clientX, e.clientY),
+                new Vector2(e.clientX, e.clientY),
                 e.shiftKey, e.ctrlKey
             );
         },
         move: e => {
-            handleGestureMove(vec2.fromValues(e.clientX, e.clientY));
+            handleGestureMove(
+                new Vector2(e.clientX, e.clientY),
+            );
         },
     });
     const onWheel: React.WheelEventHandler = e => {
@@ -141,18 +150,17 @@ const ViewportMain = ({ panelId }: Props) => {
         if (!viewportPanelState || e.touches.length !== 1) return;
         const touch = e.touches[0];
         handleGestureStart(
-            vec2.fromValues(touch.clientX, touch.clientY),
+            new Vector2(touch.clientX, touch.clientY),
             e.shiftKey, e.ctrlKey
         );
     }
     const touchMove: React.TouchEventHandler = e => {
         if (!dragRef.current || e.touches.length !== 1) return;
         const touch = e.touches[0];
-        handleGestureMove(vec2.fromValues(touch.clientX, touch.clientY));
+        handleGestureMove(
+            new Vector2(touch.clientX, touch.clientY),
+        );
     }
-    // const touchEnd: React.TouchEventHandler = e => {
-    //     e.stopPropagation();
-    // }
 
     return (
         <CanvasWrapperDiv
@@ -161,8 +169,6 @@ const ViewportMain = ({ panelId }: Props) => {
             onWheel={onWheel}
             onTouchStart={touchStart}
             onTouchMove={touchMove}
-            // onTouchCancel={touchEnd}
-            // onTouchEnd={touchEnd}
         > {
                 size &&
                 <ViewportCanvas panelId={panelId} size={size} />

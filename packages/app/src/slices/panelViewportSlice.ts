@@ -10,10 +10,10 @@ export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelSta
         viewType: ViewTypes.Viewport,
         uniformSources: {
             viewportCamera: {
-                target: vec3.fromValues(0, 0, 0),
-                rotation: vec2.fromValues(-30, 40),
+                target: [ 0, 0, 0 ],
+                rotation: [ degToRad(-30), degToRad(40) ],
                 distance: 15,
-                fov: degToRad(30),
+                fov: 15,
             },
             maxIterations: 200,
         }
@@ -32,7 +32,8 @@ export const viewportPanelsSlice = createSlice({
 
             Object.assign(camera, a.payload.partialCamera);
 
-            camera.rotation[ 0 ] = clamp(camera.rotation[ 0 ], -90, 90);
+            const maxBeta = 0.5 * Math.PI;
+            camera.rotation[ 0 ] = clamp(camera.rotation[ 0 ], -maxBeta, maxBeta);
             camera.distance = clamp(camera.distance, 1e-4, 1e6);
         },
     }

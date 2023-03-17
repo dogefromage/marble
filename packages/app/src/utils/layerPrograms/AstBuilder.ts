@@ -253,6 +253,7 @@ export class AstBuilder<T extends AstNode> {
     private static getEditInstance() {
         if (!AstBuilder.editInstance) {
             throw new Error(`Not editing`);
+            
         }
         return AstBuilder.editInstance;
     }

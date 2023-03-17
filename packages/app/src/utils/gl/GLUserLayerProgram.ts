@@ -1,6 +1,4 @@
-import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaderTemplates";
 import { LayerProgram, ProgramAttribute, ProgramUniform, UniformTypes } from "../../types";
-import { CodeTemplate } from "../codeStrings";
 import { degToRad } from "../math";
 import { globalViewportUniforms } from "../viewportView/uniforms";
 import GLIndexedBuffer from "./GLIndexedBuffer";
@@ -37,25 +35,6 @@ const userProgramAttributes: ProgramAttribute[] = [
         type: 'vec3',
     }
 ]
-
-function generateShaders(layerProgram: LayerProgram) {
-    const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
-
-    const includedCodeTotal = layerProgram.includes
-        .map(i => i.source)
-        .join('\n');
-    fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
-    fragCodeTemplate.replace('%MAIN_PROGRAM%', layerProgram.programCode);
-    fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', layerProgram.rootFunction);
-
-    const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
-    // console.log(logCodeWithLines(fragCode));
-
-    return {
-        vertCode: VERT_CODE_TEMPLATE,
-        fragCode,
-    };
-}
 
 export default class GLUserLayerProgram extends GLProgram {
     public layerProgram: LayerProgram;

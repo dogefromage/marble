@@ -1,9 +1,10 @@
 import { quat, vec2, vec3 } from "gl-matrix";
+import { Vector2 } from "three";
 import { PanelState } from "../panelManager";
 
 export interface ViewportCamera {
-    target: vec3;
-    rotation: vec2;
+    target: THREE.Vector3Tuple;
+    rotation: THREE.Vector2Tuple;
     distance: number;
     fov: number;
 }
