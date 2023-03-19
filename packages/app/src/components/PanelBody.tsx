@@ -14,8 +14,7 @@ const PanelDiv = styled.div`
     flex-direction: column;
 `;
 
-interface Props
-{
+interface Props {
     children: React.ReactNode;
     viewProps: ViewProps;
 }
@@ -29,7 +28,7 @@ const PanelBody = ({ children, viewProps: { panelId } }: Props) => {
         dispatch(panelManagerSetActive({
             activePanel: panelId,
         }))
-    }, [ dispatch ]);
+    }, [dispatch]);
 
     useResizeObserver(panelDiv, div => {
         const bounds = div.target.getBoundingClientRect();
@@ -54,7 +53,7 @@ const PanelBody = ({ children, viewProps: { panelId } }: Props) => {
             <ErrorBoundary
                 fallbackComponent={ErrorDisplay}
             >
-                { children }
+                {children}
             </ErrorBoundary>
         </PanelDiv>
     );

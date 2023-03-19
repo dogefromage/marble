@@ -5,15 +5,17 @@ import { CreatePanelStateCallback, ObjMap, ViewportCamera, ViewportPanelState, V
 import { clamp, degToRad } from "../utils/math";
 import { getPanelState } from "../utils/panelManager";
 
+export const defaultViewportCamera: ViewportCamera = {
+    target: [ 0, 0, 0 ],
+    rotation: [ degToRad(-30), degToRad(40) ],
+    distance: 25,
+    fov: 15,
+};
+
 export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => {
     return {
         viewType: ViewTypes.Viewport,
-        viewportCamera: {
-            target: [ 0, 0, 0 ],
-            rotation: [ degToRad(-30), degToRad(40) ],
-            distance: 15,
-            fov: 15,
-        },
+        viewportCamera: defaultViewportCamera,
         maxIterations: 200,
     };
 }
@@ -26,13 +28,14 @@ export const viewportPanelsSlice = createSlice({
             const ps = getPanelState(s, a);
             if (!ps) return;
 
-            const camera = ps.viewportCamera;
-
-            Object.assign(camera, a.payload.partialCamera);
+            ps.viewportCamera = {
+                ...ps.viewportCamera,
+                ...structuredClone(a.payload.partialCamera),
+            };
 
             const maxBeta = 0.5 * Math.PI;
-            camera.rotation[ 0 ] = clamp(camera.rotation[ 0 ], -maxBeta, maxBeta);
-            camera.distance = clamp(camera.distance, 1e-4, 1e6);
+            ps.viewportCamera.rotation[ 0 ] = clamp(ps.viewportCamera.rotation[ 0 ], -maxBeta, maxBeta);
+            ps.viewportCamera.distance = clamp(ps.viewportCamera.distance, 1e-4, 1e6);
         },
     }
 });

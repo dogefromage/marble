@@ -68,7 +68,7 @@ export default class LambdaTranspiler {
             }
             const returnIdent = AstBuilder.clone(returnStmt.expression) as IdentifierNode;
             if (returnIdent.type !== 'identifier') {
-                debugger
+                // debugger
                 throw new Error(`Lambda function must return identifier`);
             }
             const callExpr = ast.createFunctionCall(

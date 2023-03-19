@@ -13,7 +13,7 @@ import { Units } from '../utils/formatUnitValues';
 const SlidableInputDiv = styled.div`
     position: relative;
     width: 100%;
-    height: ${GNODE_ROW_UNIT_HEIGHT * 0.7}px;
+    height: ${GNODE_ROW_UNIT_HEIGHT * 0.85}px;
     display: flex;
     align-items: center;
 

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { MENU_ROW_HEIGHT } from "./MenuElementDiv";
 import { BORDER_RADIUS_TOP } from "./utils";
 
 export const MenuTitleDiv = styled.div<{ backColor?: string }>`
@@ -6,7 +7,7 @@ export const MenuTitleDiv = styled.div<{ backColor?: string }>`
     width: calc(100% + 0.5rem);
     margin: 0 -0.25rem; // ugly hack
 
-    height: 35px;
+    height: ${MENU_ROW_HEIGHT * 1.2}px;
     flex-shrink: 0;
 
     ${BORDER_RADIUS_TOP}
@@ -20,7 +21,7 @@ export const MenuTitleDiv = styled.div<{ backColor?: string }>`
     p
     {
         margin: 0;
-        padding: 0 1.5rem;
+        padding: 0 0.75rem;
         font-weight: bold;
 
         overflow: hidden;

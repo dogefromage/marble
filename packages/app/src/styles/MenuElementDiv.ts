@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { BORDER_RADIUS } from "./utils";
 
-export const MENU_ROW_HEIGHT = 30;
+export const MENU_ROW_HEIGHT = 26;
 
 export interface MenuElementDivProps {
     tabIndex?: number;

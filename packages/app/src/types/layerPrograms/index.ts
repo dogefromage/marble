@@ -56,14 +56,14 @@ export interface DataTypeValueTypes {
 export const FAR_DISTANCE = 100000.0;
 
 export const initialDataTypeValue: { [D in DataTypes]: DataTypeValueTypes[D] } = {
-    unknown:          0,
-    float:            0,
-    vec2:           [ 0, 0 ],
-    vec3:           [ 0, 0, 0 ],
-    vec4:           [ 0, 0, 0, 0 ],
-    mat3:           [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ],
+    unknown:    0,
+    float:      0,
+    vec2:     [ 0, 0 ],
+    vec3:     [ 0, 0, 0 ],
+    vec4:     [ 0, 0, 0, 0 ],
+    mat3:     [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ],
     Distance: [ FAR_DISTANCE, [ 0, 0, 0 ] ],
-    Surface:          null,
+    Surface:    null,
 }
 
 export const textureVarDatatypeSize: MapEvery<DataTypes, number> = {

@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
 import { Size, ViewportCamera, ViewTypes } from '../types';
 import { degToRad } from '../utils/math';
+import useContextMenu from '../utils/menus/useContextMenu';
 import { getViewportRotation } from '../utils/viewportView/cameraMath';
 import ViewportCanvas from './ViewportCanvas';
 
@@ -161,6 +162,14 @@ const ViewportMain = ({ panelId }: Props) => {
         );
     }
 
+    const contextMenu = useContextMenu(
+        panelId,
+        'Viewport',
+        [
+            'viewport.resetView',
+        ]
+    );
+
     return (
         <CanvasWrapperDiv
             ref={wrapperRef}
@@ -168,6 +177,7 @@ const ViewportMain = ({ panelId }: Props) => {
             onWheel={onWheel}
             onTouchStart={touchStart}
             onTouchMove={touchMove}
+            onContextMenu={contextMenu}
         > {
                 size &&
                 <ViewportCanvas panelId={panelId} size={size} />

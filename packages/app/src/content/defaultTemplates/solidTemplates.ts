@@ -82,14 +82,14 @@ const solid_cylinder: GNodeTemplate = {
     rows: [
         nameRow('Cylinder', templateColors['solids']),
         outputRow,
-        inputField('radius', 'Height', 'float', 1),
-        inputField('height', 'Radius', 'float', 1),
+        inputField('height', 'Height', 'float', 1),
+        inputField('radius', 'Radius', 'float', 1),
         colorRow,
     ],
     instructions: glsl`
         Distance:(vec3) cylinder(float radius, float height, vec3 color) {
             return lambda (vec3 p) : {
-                vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(radius, height);
+                vec2 d = abs(vec2(length(p.xy), p.z)) - vec2(radius, height);
                 return Distance(min(max(d.x,d.y),0.0) + length(max(d,0.0)), color);
             };
         }

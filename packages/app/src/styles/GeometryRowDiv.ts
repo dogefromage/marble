@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const GNODE_ROW_UNIT_HEIGHT = 28;
+export const GNODE_ROW_UNIT_HEIGHT = 24;
 
 export interface GeometryRowWrapperProps
 {

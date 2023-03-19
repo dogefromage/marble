@@ -39,8 +39,8 @@ float line_factor(float coord, float line_width) {
 }
 
 vec4 xy_axes(vec3 p, float line_width) {
-    float line_x_axis = line_factor(p.x, line_width);
-    float line_y_axis = line_factor(p.y, line_width);
+    float line_x_axis = line_factor(p.y, line_width);
+    float line_y_axis = line_factor(p.x, line_width);
     vec3 color = vec3(line_x_axis, line_y_axis, 0);
     float alpha = max(line_x_axis, line_y_axis);
     return vec4(color, alpha);
@@ -89,10 +89,10 @@ vec4 coordinate_grid(vec3 p) {
     float line_width = invScreenSize.y * 0.18 * cameraDistance;
     
     vec4 axes = xy_axes(p, line_width);
-    float grid = 0.3 * stepped_grid(p, line_width);
+    float is_grid = stepped_grid(p, line_width);
     vec3 grid_col = vec3(1,1,1) * 0.3; // gray
 
-    float out_alpha = max(axes.a, grid);
+    float out_alpha = max(axes.a, 0.3 * is_grid);
     vec3 out_color = mix(grid_col, axes.rgb, axes.a);
 
     // falloff
@@ -135,5 +135,6 @@ export function createCoordinateGrid(fullscreenQuad: THREE.PlaneGeometry, unifor
     });
     const mesh = new THREE.Mesh(fullscreenQuad, material);
     mesh.name = `Coordinate Grid`;
+    mesh.frustumCulled = false;
     return mesh;
 }

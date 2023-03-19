@@ -2,6 +2,7 @@ import { redo, undo } from "../../enhancers/undoableEnhancer";
 import { consoleClearMessages } from "../../slices/consoleSlice";
 import { Command, CommandScope, ViewTypes } from "../../types";
 import { geometryEditorCommands } from "./geometryEditorCommands";
+import { viewportCommands } from "./viewportCommands";
 
 export const DEFAULT_COMMANDS: Command[] =
 [
@@ -37,4 +38,5 @@ export const DEFAULT_COMMANDS: Command[] =
         },
     },
     ...geometryEditorCommands,
+    ...viewportCommands
 ]

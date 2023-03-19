@@ -51,7 +51,6 @@ const GeometryEditorViewport = ({ panelId }: Props) => {
         ]
     );
 
-
     return (
         <EditorWrapper
             onDoubleClick={e => {

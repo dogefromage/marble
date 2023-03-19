@@ -4,6 +4,7 @@ import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaders/us
 import { detectMapDifference } from "../../hooks/useReactiveMap";
 import { IDObj, LayerProgram, LOOKUP_TEXTURE_WIDTH, ObjMapUndef, Size, ViewportPanelState } from "../../types";
 import { CodeTemplate } from "../codeStrings";
+import { logCodeWithLines } from "../debugging";
 import { degToRad } from "../math";
 import { getViewportRotation } from "./cameraMath";
 import { createCoordinateGrid } from "./coordinateGrid";
@@ -61,6 +62,8 @@ export default class ViewportScene {
         canvas: HTMLCanvasElement,
     ) {
         this.renderer = new THREE.WebGLRenderer({ canvas });
+
+
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera();
 
@@ -79,16 +82,16 @@ export default class ViewportScene {
         const coordinateGrid = createCoordinateGrid(this.fullScreenQuad, this.globalUniforms);
         this.scene.add(coordinateGrid);
 
-        // TEST CUBE
-        const cube = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new THREE.MeshPhongMaterial({ color: 0xff0000 }),
-        )
-        this.scene.add(cube);
-        const light = new THREE.DirectionalLight();
-        light.position.set(5, 10, 20);
-        light.intensity = 2;
-        this.scene.add(light);
+        // // TEST CUBE
+        // const cube = new THREE.Mesh(
+        //     new THREE.BoxGeometry(1, 1, 1),
+        //     new THREE.MeshPhongMaterial({ color: 0xff0000 }),
+        // )
+        // this.scene.add(cube);
+        // const light = new THREE.DirectionalLight();
+        // light.position.set(5, 10, 20);
+        // light.intensity = 2;
+        // this.scene.add(light);
     }
 
     public setSize({ w, h }: Size) {
@@ -156,7 +159,7 @@ export default class ViewportScene {
         });
         const mesh = new THREE.Mesh(this.fullScreenQuad, material);
         mesh.name = `LayerMesh:${layerProgram.id}`;
-
+        mesh.frustumCulled = false;
         const wrapper: UserProgramWrapper = {
             id: layerProgram.id,
             hash: layerProgram.hash,

@@ -1,6 +1,6 @@
 import { LOOKUP_TEXTURE_WIDTH } from "../../types";
 import { glsl } from "../../utils/codeStrings";
-import { GLSL_ENCODE_DEPTH, GLSL_SCREEN_TO_WORLD } from "./common";
+import { GLSL_ENCODE_DEPTH, GLSL_RAY_STRUCTURE, GLSL_SCREEN_TO_WORLD } from "./common";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
@@ -42,7 +42,6 @@ in vec3 ray_d;
 
 uniform vec3 marchParameters;  // vec3(maxDistance, maxIterations, epsilon)
 uniform vec3 ambientColor;
-// uniform vec2 ambientOcclusion; // vec2(logisticHalfwayPoint, logisticZero)
 uniform vec4 sunGeometry; // vec4(lightDirection.xyz, lightAngle)
 uniform vec3 sunColor;
 
@@ -50,11 +49,23 @@ uniform float cameraNear;
 uniform float cameraFar;
 uniform vec3 cameraDirection;
 
-struct Intersection { float t; float penumbra; int iterations; bool hasHit; vec3 color; };
-struct Distance { float d; vec3 color; };
-struct Ray { vec3 o; vec3 d; };
+#define INTERSECTION_STATE_CLEAR 0
+#define INTERSECTION_STATE_MAX_ITER 1
+#define INTERSECTION_STATE_HIT 2
 
-vec3 rayAt(Ray ray, float t) { return ray.o + t * ray.d; }
+struct Intersection { 
+    int state;
+    float t; 
+    float penumbra; 
+    int iterations; 
+    vec3 color; 
+};
+struct Distance { 
+    float d; 
+    vec3 color; 
+};
+
+${GLSL_RAY_STRUCTURE}
 
 float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
     int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
@@ -63,16 +74,13 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
     return texture(varTexture, uv).r;
 }
 
+// PROGRAM TAGS
 %INCLUDES%
-
 %MAIN_PROGRAM%
 
 Distance sdf(vec3 p) { return %ROOT_FUNCTION_NAME%(p); }
-// Distance sdf(vec3 p) { 
-//     return Distance(length(p) - 2., vec3(1,1,0)); 
-// }
 
-vec3 calcNormal(vec3 p) {
+vec3 normal(vec3 p) {
     // https://iquilezles.org/articles/normalsSDF/
     float h = 10.0 * marchParameters.z;
     vec2 k = vec2(1,-1);
@@ -82,63 +90,86 @@ vec3 calcNormal(vec3 p) {
                       k.xxx * sdf( p + k.xxx*h ).d );
 }
 
-Intersection march(Ray ray) {
-    Intersection intersection = Intersection(.0, 1.0, 0, false, vec3(0,0,0));
-    for (int i = 0; i < 10000; i++) {
-        if (i >= int(marchParameters.y)) break; // max iterations parameter
-        intersection.iterations = i + 1;
+Intersection march(Ray ray, float clear_distance, int max_iter, float epsilon) {
+    int i = 1;
+    float t = 0.;
+    float penumbra = 1.;
+    vec3 last_color = vec3(0,0,0);
 
-        vec3 p = rayAt(ray, intersection.t);
-        Distance sd = sdf(p);
-        float d = 0.99 * sd.d;
+    for ( ; i < 10000; i++) {
+        if (i >= max_iter) break;
 
-        float minAllowedDist = marchParameters.z;
+        vec3 p = ray_at(ray, t);
+        Distance surface_hit = sdf(p);
+        float d = 0.99 * surface_hit.d;
+        last_color = surface_hit.color;
 
-        if (d < minAllowedDist) {
-            intersection.hasHit = true;
-            intersection.color = sd.color;
-            return intersection;
+        if (d < epsilon) {
+            return Intersection(
+                INTERSECTION_STATE_HIT,
+                t, penumbra, i, last_color
+            );
         }
 
-        if (intersection.t > .0) {
-            intersection.penumbra = min(intersection.penumbra, d / intersection.t);
+        if (t > .0) {
+            penumbra = min(penumbra, d / t);
         }
+        t += d;
 
-        intersection.t += d;
-        if (intersection.t > marchParameters.x)  {
-            break;
+        if (t > clear_distance)  {
+            return Intersection(
+                INTERSECTION_STATE_CLEAR,
+                t, penumbra, i, vec3(0,0,0)
+            );
         }
     }
-    return intersection;
+    
+    return Intersection(
+        INTERSECTION_STATE_MAX_ITER,
+        t, penumbra, i, last_color
+    );
 }
 
 ${GLSL_ENCODE_DEPTH}
 
 vec4 shade(Ray ray) {
-    Intersection mainIntersection = march(ray);
-    if (!mainIntersection.hasHit) return vec4(0,0, 0, 0);
+    float clear_distance = marchParameters.x;
+    int main_march_iter = int(marchParameters.y);
+    float main_march_epsilon = marchParameters.z;
 
-    gl_FragDepth = encodeDepth(ray.d, mainIntersection.t);
+    Intersection main_march = march(
+        ray, clear_distance, main_march_iter, main_march_epsilon);
 
-    vec3 p = rayAt(ray, mainIntersection.t);
-    vec3 n = calcNormal(p);
-    vec3 pSafe = p + 2.0 * marchParameters.z * n;
-
-    vec3 sunDir = sunGeometry.xyz;
-    Intersection shadowIntersection = march(Ray(pSafe, sunDir));
-
-    vec3 lin = ambientColor;
-    
-    if (!shadowIntersection.hasHit) {
-        // in light
-        float dotFactor = max(0.0, dot(sunDir, n));
-        float penumbraFactor = clamp(1.570796 * shadowIntersection.penumbra / sunGeometry.w, 0., 1.);
-        lin += sunColor * dotFactor * penumbraFactor;
+    if (main_march.state == INTERSECTION_STATE_CLEAR) {
+        // CLEAR
+        return vec4(0,0,0,0);
     }
-    lin *= mainIntersection.color;
+    
+    // HAS HIT or MAX ITER
+    gl_FragDepth = encodeDepth(ray.d, main_march.t);
 
-    vec3 corrected = pow(lin, vec3(1.0 / 2.2)); // gamma correction
-    return vec4(corrected, 1);
+    vec3 p = ray_at(ray, main_march.t);
+    vec3 n = normal(p);
+    
+    float shadow_epsilon = main_march_epsilon * 10.; // play around with this
+    vec3 shadow_p_safe = p + 2.0 * shadow_epsilon * n;
+    vec3 sun_direction = sunGeometry.xyz;
+    Intersection shadow_march = march(
+        Ray(shadow_p_safe, sun_direction), clear_distance, main_march_iter, shadow_epsilon);
+
+    vec3 col_lin = ambientColor;
+    
+    if (shadow_march.state == INTERSECTION_STATE_CLEAR) {
+        // in light
+        float sun_intensity = 1.3;
+        float diffuse_light = max(0.0, dot(sun_direction, n));
+        float penumbra_factor = clamp(1.570796 * shadow_march.penumbra / sunGeometry.w, 0., 1.);
+        col_lin += sunColor * sun_intensity * diffuse_light * penumbra_factor;
+    }
+    col_lin *= main_march.color;
+
+    vec3 col_log = pow(col_lin, vec3(1.0 / 2.2)); // crude gamma correction
+    return vec4(col_log, 1);
 }
 
 // const int AA = 1;
@@ -186,8 +217,7 @@ vec4 shade(Ray ray) {
 out vec4 outColor;
 
 void main() {
-    gl_FragDepth = 1.; // far is default 
-
+    gl_FragDepth = 1.; // MUST BE SET UNCONDITIONALLY
     Ray ray = Ray(ray_o, normalize(ray_d));
     outColor = shade(ray);
 }

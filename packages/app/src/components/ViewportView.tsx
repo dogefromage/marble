@@ -3,7 +3,6 @@ import { createViewportPanelState } from '../slices/panelViewportSlice';
 import { ViewProps, ViewTypes } from '../types';
 import { useBindPanelState } from '../utils/panelManager';
 import PanelBody from './PanelBody';
-import ViewportCanvas from './ViewportCanvas';
 import ViewportMain from './ViewportMain';
 
 const ViewportView = (viewProps: ViewProps) => {

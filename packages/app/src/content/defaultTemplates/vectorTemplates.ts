@@ -126,28 +126,6 @@ const separate_2x1: GNodeTemplate = {
 //     `,
 // }
 
-// const transform: GNodeTemplate = {
-//     id: getTemplateId('static', 'transform'),
-//     version: 0,
-//     category: 'vectors',
-//     rows: [
-//         nameRow('Transform', templateColors['vectors']),
-//         outputRow('output', 'Output position', 'vec3'),
-//         outputRow('sd_correction', 'Dist. Correction', 'float'),
-//         // defaultInputRows.position,
-//         inputField('translation', 'Translation', 'vec3'), {
-//             id: 'rotation', type: 'rotation',
-//             dataType: 'mat3', rotationModel: 'xyz',
-//             name: 'Rotation', value: initialDataTypeValue['mat3'],
-//         },
-//         inputField('scale', 'Scale', 'float', 1),
-//     ],
-//     instructions: glsl`
-//         vec3 output = rotation * (position - translation) / scale;
-//         float sd_correction = scale;
-//     `,
-// }
-
 function unaryOp(
     key: string, name: string,
     inVecId: string,

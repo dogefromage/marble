@@ -1,4 +1,4 @@
-import { getTemplateId, GNodeTemplate } from "../../types"
+import { getTemplateId, GNodeTemplate, initialDataTypeValue } from "../../types"
 import { glsl } from "../../utils/codeStrings"
 import { inputField, inputRow, nameRow, outputRow } from "./rowShorthands"
 import { templateColors } from "./templateConstants"
@@ -101,7 +101,7 @@ const smooth_union: GNodeTemplate = {
         outputRow('output', 'Smooth Union', 'Surface'),
         inputRow('surf_a', 'Surface A', 'Surface'),
         inputRow('surf_b', 'Surface B', 'Surface'),
-        inputField('k', 'Smoothness', 'float'),
+        inputField('k', 'Smoothness', 'float', 1),
     ],
     instructions: glsl`
         #INCLUDE inc_smooth_union;
@@ -122,7 +122,7 @@ const smooth_difference: GNodeTemplate = {
         outputRow('output', 'Smooth Difference', 'Surface'),
         inputRow('surf_a', 'Surface A', 'Surface'),
         inputRow('surf_b', 'Surface B', 'Surface'),
-        inputField('k', 'Smoothness', 'float'),
+        inputField('k', 'Smoothness', 'float', 1),
     ],
     instructions: glsl`
         #INCLUDE inc_smooth_difference;
@@ -143,7 +143,7 @@ const smooth_intersection: GNodeTemplate = {
         outputRow('output', 'Smooth Intersection', 'Surface'),
         inputRow('surf_a', 'Surface A', 'Surface'),
         inputRow('surf_b', 'Surface B', 'Surface'),
-        inputField('k', 'Smoothness', 'float'),
+        inputField('k', 'Smoothness', 'float', 1),
     ],
     instructions: glsl`
         #INCLUDE inc_smooth_intersection;
@@ -194,6 +194,32 @@ const onion: GNodeTemplate  = {
             };
         }
         // Solid output = Solid(abs(solid.sd) - thickness, solid.color);
+    `,
+}
+
+const transform: GNodeTemplate = {
+    id: getTemplateId('static', 'transform'),
+    version: 0,
+    category: 'solid_operators',
+    rows: [
+        nameRow('Transform', templateColors['solid_operators']),
+        outputRow('output', 'Transformed', 'Surface'),
+        inputRow('surf', 'Surface', 'Surface'),
+        inputField('translation', 'Translation', 'vec3'), {
+            id: 'rotation', type: 'rotation',
+            dataType: 'mat3', rotationModel: 'xyz',
+            name: 'Rotation', value: initialDataTypeValue['mat3'],
+        },
+        inputField('scale', 'Scale', 'float', 1),
+    ],
+    instructions: glsl`
+        Distance:(vec3) transform(Distance:(vec3) surf, vec3 translation, mat3 rotation, float scale) {
+            return lambda (vec3 p) : {
+                Distance sd = surf(rotation * (p - translation) / scale);
+                sd.d *= scale;
+                return sd;
+            };
+        }
     `,
 }
 
@@ -259,6 +285,7 @@ export default [
     union, difference, intersection,
     smooth_union, smooth_difference, smooth_intersection,
 
+    transform,
     round_corners, onion,
     // extrude_z,
     set_color, 
