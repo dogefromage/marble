@@ -1,6 +1,6 @@
 import { AstNode, CompoundStatementNode, DeclarationNode, FunctionCallNode, FunctionNode, IdentifierNode, LambdaExpressionNode, ParameterDeclarationNode, SimpleTypeSpecifierNode } from "@marble/language";
 import { AstNode as AstNodeShaderfrog, NodeVisitor, Path, visit } from "@shaderfrog/glsl-parser/ast";
-import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
+import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaders/userShaderTemplates";
 import { arrayDifference } from "../arrays";
 import { isIntegerString } from "../math";
 

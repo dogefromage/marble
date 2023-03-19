@@ -17,10 +17,8 @@ export interface RenderCamera {
 }
 
 export interface ViewportPanelState extends PanelState {
-    uniformSources: {
-        viewportCamera: ViewportCamera;
-        maxIterations: number;
-    }
+    viewportCamera: ViewportCamera;
+    maxIterations: number;
 }
 export interface ProgramUniform {
     name: string;

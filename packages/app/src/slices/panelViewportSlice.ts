@@ -8,15 +8,13 @@ import { getPanelState } from "../utils/panelManager";
 export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelState> = () => {
     return {
         viewType: ViewTypes.Viewport,
-        uniformSources: {
-            viewportCamera: {
-                target: [ 0, 0, 0 ],
-                rotation: [ degToRad(-30), degToRad(40) ],
-                distance: 15,
-                fov: 15,
-            },
-            maxIterations: 200,
-        }
+        viewportCamera: {
+            target: [ 0, 0, 0 ],
+            rotation: [ degToRad(-30), degToRad(40) ],
+            distance: 15,
+            fov: 15,
+        },
+        maxIterations: 200,
     };
 }
 
@@ -28,7 +26,7 @@ export const viewportPanelsSlice = createSlice({
             const ps = getPanelState(s, a);
             if (!ps) return;
 
-            const camera = ps.uniformSources.viewportCamera;
+            const camera = ps.viewportCamera;
 
             Object.assign(camera, a.payload.partialCamera);
 

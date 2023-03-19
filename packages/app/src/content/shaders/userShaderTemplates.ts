@@ -1,51 +1,44 @@
-import { LOOKUP_TEXTURE_WIDTH } from "../types";
-import { glsl } from "../utils/codeStrings";
+import { LOOKUP_TEXTURE_WIDTH } from "../../types";
+import { glsl } from "../../utils/codeStrings";
+import { GLSL_ENCODE_DEPTH, GLSL_SCREEN_TO_WORLD } from "./common";
 
 ////////////////////////////////// VERTEX SHADER //////////////////////////////////
 
 export const TEXTURE_LOOKUP_METHOD_NAME = 'tx';
 
-export const VERT_CODE_TEMPLATE = glsl`#version 300 es
+export const VERT_CODE_TEMPLATE = glsl`
 
-precision highp float;
-
-in vec3 position;
-uniform mat4 inverseCamera;
-uniform vec2 invScreenSize;
+uniform mat4 cameraWorld;
+// uniform vec2 invScreenSize;
 
 out vec3 ray_o;
 out vec3 ray_d;
-out vec3 ray_dir_pan_x;
-out vec3 ray_dir_pan_y;
+// out vec3 ray_dir_pan_x;
+// out vec3 ray_dir_pan_y;
 
-vec3 screenToWorld(vec3 x) {
-    vec4 unNorm = inverseCamera * vec4(x, 1);
-    return unNorm.xyz / unNorm.w;
-}
+${GLSL_SCREEN_TO_WORLD}
 
 void main() {
+    // gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
     gl_Position = vec4(position, 1.0);
-    ray_o = screenToWorld(vec3(position.xy, 0));
-    ray_d = screenToWorld(vec3(position.xy, 1)) - ray_o;
+    ray_o = screenToWorld(vec4(position.xy, -1, 1));
+    ray_d = screenToWorld(vec4(position.xy, 1, 1)) - ray_o;
 
-    vec3 pan = vec3(invScreenSize, 0);
-
-    ray_dir_pan_x = screenToWorld(vec3(position.xy + pan.xz, 1)) - ray_o - ray_d;
-    ray_dir_pan_y = screenToWorld(vec3(position.xy + pan.zy, 1)) - ray_o - ray_d;
+    // vec3 pan = vec3(invScreenSize, 0);
+    // ray_dir_pan_x = screenToWorld(vec3(position.xy + pan.xz, 1)) - ray_o - ray_d;
+    // ray_dir_pan_y = screenToWorld(vec3(position.xy + pan.zy, 1)) - ray_o - ray_d;
 }
 `;
 
 ////////////////////////////////// FRAGMENT SHADER //////////////////////////////////
 
-export const FRAG_CODE_TEMPLATE = glsl`#version 300 es
+export const FRAG_CODE_TEMPLATE = glsl`
 
-precision highp float;
-
-uniform sampler2D varSampler;
+uniform sampler2D varTexture;
 in vec3 ray_o;
 in vec3 ray_d;
-in vec3 ray_dir_pan_x;
-in vec3 ray_dir_pan_y;
+// in vec3 ray_dir_pan_x;
+// in vec3 ray_dir_pan_y;
 
 uniform vec3 marchParameters;  // vec3(maxDistance, maxIterations, epsilon)
 uniform vec3 ambientColor;
@@ -53,47 +46,31 @@ uniform vec3 ambientColor;
 uniform vec4 sunGeometry; // vec4(lightDirection.xyz, lightAngle)
 uniform vec3 sunColor;
 
-uniform vec3 cameraDirection;
 uniform float cameraNear;
 uniform float cameraFar;
+uniform vec3 cameraDirection;
 
-struct Ray {
-    vec3 o;
-    vec3 d;
-};
-vec3 rayAt(Ray ray, float t) {
-    return ray.o + t * ray.d;
-}
+struct Intersection { float t; float penumbra; int iterations; bool hasHit; vec3 color; };
+struct Distance { float d; vec3 color; };
+struct Ray { vec3 o; vec3 d; };
 
-struct Intersection {
-    float t;
-    float penumbra;
-    int iterations;
-    bool hasHit;
-    vec3 color;
-};
+vec3 rayAt(Ray ray, float t) { return ray.o + t * ray.d; }
 
-struct Distance {
-    float d;
-    vec3 color;
-};
-
-float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate)
-{
+float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
     int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
     vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
-    return texture(varSampler, uv).r;
+    return texture(varTexture, uv).r;
 }
 
 %INCLUDES%
 
 %MAIN_PROGRAM%
 
-Distance sdf(vec3 p)
-{
-    return %ROOT_FUNCTION_NAME%(p);
-}
+Distance sdf(vec3 p) { return %ROOT_FUNCTION_NAME%(p); }
+// Distance sdf(vec3 p) { 
+//     return Distance(length(p) - 2., vec3(1,1,0)); 
+// }
 
 vec3 calcNormal(vec3 p) {
     // https://iquilezles.org/articles/normalsSDF/
@@ -135,19 +112,13 @@ Intersection march(Ray ray) {
     return intersection;
 }
 
-float encodeZDepth(float z_depth) {
-    float n = cameraNear, 
-          f = cameraFar;
-    float z_clip = (f+n + 2.*f*n/z_depth) / (f-n); // [ n, f ] -> [ -1, 1 ]
-    return 0.5 * (z_clip - 1.); // map into [ 0, 1 ]
-}
+${GLSL_ENCODE_DEPTH}
 
 vec4 shade(Ray ray) {
     Intersection mainIntersection = march(ray);
     if (!mainIntersection.hasHit) return vec4(0,0, 0, 0);
 
-    float z_depth = abs(dot(ray.d, cameraDirection)) * mainIntersection.t;
-    gl_FragDepth = encodeZDepth(z_depth);
+    gl_FragDepth = encodeDepth(ray.d, mainIntersection.t);
 
     vec3 p = rayAt(ray, mainIntersection.t);
     vec3 n = calcNormal(p);
@@ -215,16 +186,9 @@ vec4 shade(Ray ray) {
 out vec4 outColor;
 
 void main() {
-    // gl_FragColor = vec4(hitTest(), 1);
-    // gl_FragColor = vec4(heatmap(), 1);
-
-    gl_FragDepth = -1.;
+    gl_FragDepth = 1.; // far is default 
 
     Ray ray = Ray(ray_o, normalize(ray_d));
     outColor = shade(ray);
-
-    // // SHOW DEPTH
-    // float b = gl_FragDepth * 50.;
-    // outColor = vec4(b,b,b,1);
 }
 `;

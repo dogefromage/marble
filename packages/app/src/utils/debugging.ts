@@ -1,7 +1,7 @@
 
 
 function labelLine(line: string, index: number) {
-    return index.toString().padStart(4, ' ') + line;
+    return index.toString().padStart(4, ' ') + " | " + line;
 }
 
 export function logCodeWithLinesProximity(code: string, focus: number, range: number) {

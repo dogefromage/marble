@@ -1,6 +1,6 @@
 import { ExpressionNode, FunctionCallNode, LambdaTypeSpecifierNode, LiteralNode, SimpleTypeSpecifierNode, TypeSpecifierNode } from "@marble/language";
 import _ from "lodash";
-import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaderTemplates";
+import { TEXTURE_LOOKUP_METHOD_NAME } from "../../content/shaders/userShaderTemplates";
 import { dataTypeDescriptors, DataTypes, DataTypeValueTypes, initialDataTypeValue, textureVarDatatypeSize } from "../../types";
 import { arrayRange } from "../arrays";
 import ast from "./AstUtils";

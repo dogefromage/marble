@@ -1,13 +1,12 @@
 import { useMouseDrag } from '@marble/interactive';
 import useResizeObserver from '@react-hook/resize-observer';
-import { vec2, vec3 } from 'gl-matrix';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Matrix3, Vector2, Vector3 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { viewportPanelEditCamera } from '../slices/panelViewportSlice';
-import { Point, Size, ViewportCamera, ViewTypes } from '../types';
+import { Size, ViewportCamera, ViewTypes } from '../types';
 import { degToRad } from '../utils/math';
 import { getViewportRotation } from '../utils/viewportView/cameraMath';
 import ViewportCanvas from './ViewportCanvas';
@@ -73,7 +72,7 @@ const ViewportMain = ({ panelId }: Props) => {
                 ctrlKey ? DragMode.Zoom :
                     DragMode.Orbit;
 
-        lastCameraRef.current = viewportPanelState.uniformSources.viewportCamera;
+        lastCameraRef.current = viewportPanelState.viewportCamera;
         dragRef.current = {
             mode: mode,
             mouseStart: clientPos,
@@ -142,7 +141,7 @@ const ViewportMain = ({ panelId }: Props) => {
     });
     const onWheel: React.WheelEventHandler = e => {
         if (!viewportPanelState) return;
-        lastCameraRef.current = viewportPanelState.uniformSources.viewportCamera;
+        lastCameraRef.current = viewportPanelState.viewportCamera;
         zoomCamera(e.deltaY);
     }
 
