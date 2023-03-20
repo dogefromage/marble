@@ -30,13 +30,13 @@ const CompilerRoot = () => {
             lastImage: layerPrograms,
             map: (layer) => {
                 try {
-                    // console.time("COMPILATION");
+                    console.time("COMPILATION");
                     const program = compiler.compileProgram({ 
                         layer, geometries, includes,
                         geometryDatas, dependencyGraph,  
                         textureVarRowIndex: layer.index,
                     });
-                    // console.timeEnd("COMPILATION");
+                    console.timeEnd("COMPILATION");
                     return program;
                 } catch (e: any) {
                     console.error(e);

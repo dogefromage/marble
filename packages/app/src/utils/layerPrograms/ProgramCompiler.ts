@@ -371,16 +371,24 @@ export default class ProgramCompiler {
         return Array.from(usedIncludes);
     }
 
-    private getTemplateProgramInstance(template: GNodeTemplate) {
-        // TODO cache
-        const program = parseMarbleLanguage(template.instructions, { quiet: true });
+    private programCache = new Map<string, Program>();
+    private getCachedOrCompileProgram(instructions: string) {
+        const cached = this.programCache.get(instructions);
+        if (cached != null) {
+            return cached;
+        }
+        const program = parseMarbleLanguage(instructions, { quiet: true });
+        this.programCache.set(instructions, program);
+        return program;
+    }
 
+    private getTemplateProgramInstance(template: GNodeTemplate) {
+        const program = this.getCachedOrCompileProgram(template.instructions);
         const func = program.program.find(node => node.type === 'function') as FunctionNode;
         if (!func) {
             throw new Error(`No function found on template instructions`);
         }
         const includes = this.processIncludes(program);
-
         const inputParams = ast.getParameterIdentifiers(func.prototype.parameters);
         for (const [typeNode, paramIdentifier] of inputParams) {
             if (!template.rows.find(row => row.id === paramIdentifier)) {

@@ -4,7 +4,6 @@ import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaders/us
 import { detectMapDifference } from "../../hooks/useReactiveMap";
 import { IDObj, LayerProgram, LOOKUP_TEXTURE_WIDTH, ObjMapUndef, Size, ViewportPanelState } from "../../types";
 import { CodeTemplate } from "../codeStrings";
-import { logCodeWithLines } from "../debugging";
 import { degToRad } from "../math";
 import { getViewportRotation } from "./cameraMath";
 import { createCoordinateGrid } from "./coordinateGrid";
@@ -20,6 +19,7 @@ function generateShaders(layerProgram: LayerProgram) {
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
     // console.log(logCodeWithLines(fragCode));
+    console.log(layerProgram.programCode);
 
     return {
         vertCode: VERT_CODE_TEMPLATE,
@@ -190,6 +190,7 @@ export default class ViewportScene {
         for (const removeProgram of difference.removeItems) {
             delete this.userPrograms[removeProgram.id];
         }
+        
         for (const setProgram of difference.setItems) {
             this.userPrograms[setProgram.id] = setProgram;
             this.scene.add(setProgram.mesh);
