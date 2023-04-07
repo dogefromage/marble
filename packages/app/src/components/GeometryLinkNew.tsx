@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useAppDispatch } from "../redux/hooks";
-import { geometryEditorPanelsSetNewLink } from "../slices/panelGeometryEditorSlice";
+import { geometryEditorPanelsSetNewLink } from "../slices/panelFlowEditorSlice";
 import { GeometryNewLink, GNodeData, GNodeState, PlanarCamera } from "../types";
 import getJointPositionWorld from "../utils/geometries/geometryUtils";
 import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";

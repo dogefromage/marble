@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import { BORDER_RADIUS } from '../styles/utils';
-import { ButtonMenuElement, FloatingMenuShape, ObjMap, Point } from '../types';
+import { ButtonMenuElement, FloatingMenuShape, Obj, Vec2 } from '../types';
 import MenuRootFloating from './MenuRootFloating';
 
 const SelectOptionDiv = styled.div<{ disabled?: boolean }>`
@@ -36,7 +36,7 @@ export interface SelectOptionProps {
     value: string;
     options: string[];
     onChange: (newValue: string) => void;
-    mapName?: ObjMap<string>;
+    mapName?: Obj<string>;
     className?: string;
     icon?: string;
     disabled?: boolean;
@@ -45,7 +45,7 @@ export interface SelectOptionProps {
 const FormSelectOption = ({ className, icon, value, onChange, options, mapName, disabled }: SelectOptionProps) => {
     const [ dropdown, setDropdown ] = useState<{
         menuId: string;
-        anchor: Point;
+        anchor: Vec2;
     }>();
     const wrapperRef = useRef<HTMLDivElement>(null);
 

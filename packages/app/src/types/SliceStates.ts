@@ -1,22 +1,23 @@
-import { Command, ConsoleMessage, ContextMenuState, DependencyGraph, GeometryConnectionData, GeometryS, GNodeTemplate, Layer, LayerProgram, MenuState, ProgramInclude, World } from ".";
-import { ObjMapUndef, Rect } from "./UtilityTypes";
+import { FlowGraph } from "@marble/language";
+import { Command, ConsoleMessage, ContextMenuState, DependencyGraph, Layer, LayerProgram, MenuState, World } from ".";
+import { Obj, Rect } from "./UtilityTypes";
 
-export type GeometriesSliceState = ObjMapUndef<GeometryS>;
-export type GeometryDatasSliceState = ObjMapUndef<GeometryConnectionData>;
-export type LayerProgramsSliceState = ObjMapUndef<LayerProgram>;
-export type MenusSliceState = ObjMapUndef<MenuState>;
-export type LayersSliceState = ObjMapUndef<Layer>;
+export type FlowsSliceState = Obj<FlowGraph | undefined>;
+// export type GeometryDatasSliceState = Obj<GeometryConnectionData>;
+export type LayerProgramsSliceState = Obj<LayerProgram>;
+export type MenusSliceState = Obj<MenuState>;
+export type LayersSliceState = Obj<Layer>;
 export type DependencyGraphSliceState = DependencyGraph;
 export type WorldSliceState = World;
 
 export type PreferencesSliceState = {};
 
-export interface CommandsSliceState { commands: ObjMapUndef<Command> };
+export interface CommandsSliceState { commands: Obj<Command> };
 
-export type TemplatesSliceState = {
-    templates: ObjMapUndef<GNodeTemplate>;
-    includes: ObjMapUndef<ProgramInclude>;
-}
+// export type TemplatesSliceState = {
+//     templates: Obj<GNodeTemplate>;
+//     includes: Obj<ProgramInclude>;
+// }
 
 export interface PanelManagerSliceState {
     activePanelId: string;

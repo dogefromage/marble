@@ -2,12 +2,10 @@ import { useEffect, useRef } from 'react';
 import { detectMapDifference } from '../hooks/useReactiveMap';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
-import { selectGeometries } from '../slices/geometriesSlice';
-import { selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { layerProgramsSetMany, layerProgramsSetRows, selectLayerPrograms } from '../slices/layerProgramsSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
-import { getDependencyKey, Layer, LayerProgram, ObjMap } from '../types';
+import { getDependencyKey, Layer, LayerProgram, Obj } from '../types';
 import { mapDynamicValues } from '../utils/layerPrograms';
 import ProgramCompiler from '../utils/layerPrograms/ProgramCompiler';
 
@@ -60,7 +58,7 @@ const CompilerRoot = () => {
     }, [ dispatch, dependencyGraph, geometryDatas, ]); // geometryDatas are generated after depGraph changed
 
     useEffect(() => {
-        const setRows: ObjMap<number[]> = {};
+        const setRows: Obj<number[]> = {};
         for (const program of Object.values(layerPrograms) as LayerProgram[]) {
             const newRow = mapDynamicValues(program.textureVarMappings, geometries, geometryDatas, program.textureVarRow);
             if (newRow != program.textureVarRow) {

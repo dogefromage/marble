@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Matrix4, Vector2, Vector3, Vector4 } from "three";
 import { FRAG_CODE_TEMPLATE, VERT_CODE_TEMPLATE } from "../../content/shaders/userShaderTemplates";
 import { detectMapDifference } from "../../hooks/useReactiveMap";
-import { IDObj, LayerProgram, LOOKUP_TEXTURE_WIDTH, ObjMapUndef, Size, ViewportPanelState } from "../../types";
+import { IDObj, LOOKUP_TEXTURE_WIDTH, LayerProgram, Obj, Size, ViewportPanelState } from "../../types";
 import { CodeTemplate } from "../codeStrings";
 import { degToRad } from "../math";
 import { getViewportRotation } from "./cameraMath";
@@ -39,7 +39,7 @@ export default class ViewportScene {
     private camera: THREE.PerspectiveCamera;
 
     private fullScreenQuad: THREE.PlaneGeometry;
-    private userPrograms: ObjMapUndef<UserProgramWrapper> = {};
+    private userPrograms: Obj<UserProgramWrapper> = {};
     private varTexture: THREE.DataTexture;
 
     private isRendering = false;
@@ -168,7 +168,7 @@ export default class ViewportScene {
         return wrapper;
     }
 
-    private createOrDestroyPrograms(layerPrograms: ObjMapUndef<LayerProgram>) {
+    private createOrDestroyPrograms(layerPrograms: Obj<LayerProgram>) {
         const difference = detectMapDifference<LayerProgram, UserProgramWrapper>({
             reference: layerPrograms,
             lastImage: this.userPrograms,
@@ -223,7 +223,7 @@ export default class ViewportScene {
         // );
     }
 
-    public syncUserPrograms(layerPrograms: ObjMapUndef<LayerProgram>) {
+    public syncUserPrograms(layerPrograms: Obj<LayerProgram>) {
         this.createOrDestroyPrograms(layerPrograms);
 
         // textureVarRows

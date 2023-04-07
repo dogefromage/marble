@@ -3,16 +3,16 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesCreate, selectSingleGeometry } from '../slices/geometriesSlice';
 import { layersCreate } from '../slices/layersSlice';
 import { UndoRecord, ViewTypes } from '../types';
-import { rootGeometryTemplate } from '../types/geometries/defaultRows';
 import useDispatchCommand from '../utils/commands/useDispatchCommand';
 import useContextMenu from '../utils/menus/useContextMenu';
-import { TEST_LAYER_ID, TEST_ROOT_GEOMETRY_ID } from '../utils/testSetup';
-import GeometryEditorBreadCrumbs from './GeometryEditorBreadCrumbs';
-import GeometryEditorTransform from './GeometryEditorTransform';
+import { TEST_LAYER_ID, TEST_ROOT_FLOW_ID } from '../utils/testSetup';
+import FlowEditorBreadCrumbs from './FlowEditorBreadCrumbs';
+import FlowEditorTransform from './FlowEditorTransform';
 import GeometryTemplateCatalog from './GeometryTemplateCatalog';
+import { flowsCreate, selectSingleFlow } from '../slices/flowsSlice';
+import { topFlowSignature } from '../types/flows';
 
 const EditorWrapper = styled.div`
     position: relative;
@@ -33,55 +33,55 @@ interface Props {
     panelId: string;
 }
 
-const GeometryEditorViewport = ({ panelId }: Props) => {
+const FlowEditorViewport = ({ panelId }: Props) => {
     const dispatch = useAppDispatch();
-    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
-    const geometryId = panelState?.geometryStack[0];
-    const geometry = useAppSelector(selectSingleGeometry(geometryId));
+    const panelState = useAppSelector(selectPanelState(ViewTypes.FlowEditor, panelId));
+    const flowId = panelState?.flowStack[0];
+    const geometry = useAppSelector(selectSingleFlow(flowId!));
     const dispatchCommand = useDispatchCommand();
 
     const contextMenu = useContextMenu(
         panelId, 
         'Geometry Nodes', 
         [
-            'geometryEditor.openTemplateCatalog',
-            'geometryEditor.deleteSelected',
-            'geometryEditor.resetSelected',
-            'geometryEditor.createSubgeometry'
+            // 'geometryEditor.openTemplateCatalog',
+            'flowEditor.deleteSelected',
+            // 'geometryEditor.resetSelected',
+            // 'geometryEditor.createSubgeometry'
         ]
     );
 
     return (
         <EditorWrapper
-            onDoubleClick={e => {
-                dispatchCommand(
-                    'geometryEditor.openTemplateCatalog', 
-                    { clientCursor: { x: e.clientX, y: e.clientY } },
-                    'view',
-                );
-            }}
+            // onDoubleClick={e => {
+            //     dispatchCommand(
+            //         'geometryEditor.openTemplateCatalog', 
+            //         { clientCursor: { x: e.clientX, y: e.clientY } },
+            //         'view',
+            //     );
+            // }}
             onContextMenu={contextMenu}
         >
             {
-                geometryId &&
-                <GeometryEditorTransform
+                flowId &&
+                <FlowEditorTransform
                     panelId={panelId}
-                    geometryId={geometryId}
+                    flowId={flowId}
                 />
             }
-            <GeometryEditorBreadCrumbs
+            <FlowEditorBreadCrumbs
                 panelId={panelId}
-                geometryStack={panelState?.geometryStack || []}
+                flowStack={panelState?.flowStack || []}
             />
             {
-                geometryId && panelState?.templateCatalog &&
-                <GeometryTemplateCatalog
-                    panelId={panelId}
-                    geometryId={geometryId}
-                />
+                // flowId && panelState?.templateCatalog &&
+                // <GeometryTemplateCatalog
+                //     panelId={panelId}
+                //     geometryId={flowId}
+                // />
             }{
                 // only for testing
-                geometryId && !geometry &&
+                flowId && !geometry &&
                 <TestButton
                     onClick={() => {
                         const record: UndoRecord = {
@@ -90,21 +90,22 @@ const GeometryEditorViewport = ({ panelId }: Props) => {
                         }
                         dispatch(layersCreate({
                             id: TEST_LAYER_ID,
-                            rootGeometryId: TEST_ROOT_GEOMETRY_ID,
+                            rootGeometryId: TEST_ROOT_FLOW_ID,
                             undo: record,
-                        }))
-                        dispatch(geometriesCreate({
-                            geometryId,
-                            geometryTemplate: rootGeometryTemplate,
+                        }));
+                        dispatch(flowsCreate({
+                            flowId,
+                            name: 'Test flow',
+                            signature: topFlowSignature,
                             undo: record,
                         }));
                     }}
                 >
-                    Create geometry
+                    Create flow
                 </TestButton>
             }
         </EditorWrapper>
     );
 }
 
-export default GeometryEditorViewport;
+export default FlowEditorViewport;

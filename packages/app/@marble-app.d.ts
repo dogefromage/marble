@@ -1,4 +1,6 @@
-declare module '*.glsl?raw' {
-    const value: string
-    export default value
+
+declare module '*.template.glsl' {
+    import { SourceTemplate } from "@marble/vite-plugin-glsl-templates";
+    const templates: SourceTemplate[];
+    export default templates;
 }

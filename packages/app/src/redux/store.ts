@@ -1,16 +1,21 @@
 import { AnyAction, configureStore, Dispatch, Middleware, ThunkDispatch } from "@reduxjs/toolkit";
 import { CurriedGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
-import { enableMapSet } from "immer";
 import rootReducer from "./rootReducer";
-enableMapSet();
+
+import test from '../glsl/test.template.glsl';
+
+for (const template of test) {
+    console.log(template.signature);
+}
+
 
 function generateMiddleware(getDefaultMiddleWare: CurriedGetDefaultMiddleware) {
     const middleware: Middleware[] = [
             ...getDefaultMiddleWare({
                 serializableCheck: {
                     ignoredPaths: [
-                        'recorded.past',
-                        'recorded.future',
+                        // 'recorded.past',
+                        // 'recorded.future',
                         'recorded.present.dependencyGraph',
                         'editor.panelManager.clientRects',
                         'menus',

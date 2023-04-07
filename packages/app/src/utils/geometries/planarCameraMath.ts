@@ -1,5 +1,5 @@
 import { vec2 } from "gl-matrix";
-import { PlanarCamera, Point } from "../../types";
+import { PlanarCamera, Vec2 } from "../../types";
 import { p2v, v2p } from "../linalg";
 
 export function vectorScreenToWorld(camera: PlanarCamera, v: vec2) {
@@ -7,11 +7,11 @@ export function vectorScreenToWorld(camera: PlanarCamera, v: vec2) {
 }
 
 export function pointScreenToWorld(camera: PlanarCamera, p: vec2): vec2;
-export function pointScreenToWorld(camera: PlanarCamera, p: Point): Point;
+export function pointScreenToWorld(camera: PlanarCamera, p: Vec2): Vec2;
 export function pointScreenToWorld(camera: PlanarCamera, p: any) {
     const isPoint = !Array.isArray(p);
     if (isPoint) {
-        p = p2v(p as Point);
+        p = p2v(p as Vec2);
     }
     const cameraPos = vec2.fromValues(camera.position.x, camera.position.y);
     const worldVec = vec2.add(cameraPos, cameraPos, vectorScreenToWorld(camera, p));

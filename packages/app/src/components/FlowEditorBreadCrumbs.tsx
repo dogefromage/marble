@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectGeometries } from '../slices/geometriesSlice';
-import { geometryEditorPanelsSetGeometryId } from '../slices/panelGeometryEditorSlice';
+import { selectFlows } from '../slices/flowsSlice';
 import { BOX_SHADOW } from '../styles/utils';
+import { flowEditorPanelsSetFlowId } from '../slices/panelFlowEditorSlice';
 
 const BreadcrumbsWrapperDiv = styled.div`
     top: 0.5rem;
@@ -16,11 +16,7 @@ const BreadcrumbsWrapperDiv = styled.div`
 
 const BreadcrumbsDiv = styled.div`
 
-    filter: 
-        drop-shadow(3px 4px #00000055)
-        
-    
-    ;
+    filter: drop-shadow(3px 4px #00000055);
 
     a {
         display: block;
@@ -53,37 +49,37 @@ const BreadcrumbsDiv = styled.div`
 
 interface Props {
     panelId: string;
-    geometryStack: string[];
+    flowStack: string[];
 }
 
-const GeometryEditorBreadCrumbs = ({ panelId, geometryStack }: Props) => {
+const FlowEditorBreadCrumbs = ({ panelId, flowStack }: Props) => {
 
-    const geometries = useAppSelector(selectGeometries);
+    const flows = useAppSelector(selectFlows);
     const dispatch = useAppDispatch();
 
-    const selectGeometry = (geometryId: string) => {
-        dispatch(geometryEditorPanelsSetGeometryId({
-            panelId, geometryId,
+    const selectGeometry = (flowId: string) => {
+        dispatch(flowEditorPanelsSetFlowId({
+            panelId, flowId,
         }));
     }
 
     return (
         <BreadcrumbsWrapperDiv>
-        {
-            geometryStack.map((geometryId, index) => 
-                <BreadcrumbsDiv
-                    key={geometryId + index}
-                >
-                    {/* <div className='inner'> */}
-                        <a onClick={() => selectGeometry(geometryId)}>
-                            { geometries[geometryId]?.name || geometryId }
+            {
+                flowStack.map((flowId, index) =>
+                    <BreadcrumbsDiv
+                        key={flowId + index}
+                    >
+                        {/* <div className='inner'> */}
+                        <a onClick={() => selectGeometry(flowId)}>
+                            {flows[flowId]?.name || flowId}
                         </a>
-                    {/* </div> */}
-                </BreadcrumbsDiv>
-            )
-        }
+                        {/* </div> */}
+                    </BreadcrumbsDiv>
+                )
+            }
         </BreadcrumbsWrapperDiv>
     );
 }
 
-export default GeometryEditorBreadCrumbs;
+export default FlowEditorBreadCrumbs;

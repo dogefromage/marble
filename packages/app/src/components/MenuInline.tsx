@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { menusSetNode, selectSingleMenu } from '../slices/menusSlice';
 import { MenuHorizontalExpandDiv as MenuInlineExpandDiv } from '../styles/MenuElementDiv';
 import MenuInlineDiv from '../styles/MenuInlineDiv';
-import { InlineMenuShape, MenuStackNode, Point } from '../types';
+import { InlineMenuShape, MenuStackNode, Vec2 } from '../types';
 import MenuFloating from './MenuFloating';
 
 interface Props {
@@ -28,7 +28,7 @@ const MenuInline = ({ menuId, depth, shape }: Props) => {
                         const div = e.currentTarget as HTMLDivElement;
                         if (!div) return;
                         const rect = div.getBoundingClientRect();
-                        const leftAnchor: Point = {
+                        const leftAnchor: Vec2 = {
                             x: rect.left,
                             y: rect.bottom,
                         };

@@ -8,7 +8,7 @@ export * from './UtilityTypes';
 export * from './viewportView';
 export * from './layer';
 export * from './dependencyGraph';
-export * from './geometryEditorView';
+export * from './flowEditorView';
 export * from './SliceStates';
 export * from './contextMenu';
 export * from './layer';

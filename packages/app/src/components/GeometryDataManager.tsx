@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
-import { geometriesUpdateExpiredProps, selectGeometries } from '../slices/geometriesSlice';
+import { geometriesUpdateExpiredProps, selectGeometries } from '../slices/flowsSlice';
 import { geometryDatasSetMany, selectGeometryDatas } from '../slices/geometryDatasSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { GeometryConnectionData, GeometryS, getDependencyKey } from '../types';

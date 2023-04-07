@@ -1,12 +1,12 @@
 import styled, { css } from 'styled-components';
-import { Point, SelectionStatus } from '../types';
+import { Vec2, SelectionStatus } from '../types';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const DEFAULT_NODE_WIDTH = 180;
 
 export interface GeometryNodeDivProps
 {
-    position: Point;
+    position: Vec2;
     width: number;
     selectionStatus: SelectionStatus;
 }

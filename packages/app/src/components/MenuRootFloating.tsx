@@ -5,7 +5,7 @@ import useClickedOutside from '../hooks/useClickedOutside';
 import useStopMouseEvents from '../hooks/useStopMouseEvents';
 import { useAppDispatch } from '../redux/hooks';
 import { menusSetClosed } from '../slices/menusSlice';
-import { FloatingMenuShape, MenuTypes, Point } from '../types';
+import { FloatingMenuShape, MenuTypes, Vec2 } from '../types';
 import { useBindMenuState } from '../utils/menus';
 import MenuFloating from './MenuFloating';
 import { MENU_PORTAL_MOUNT_ID } from './MenuPortalMount';
@@ -22,7 +22,7 @@ interface Props {
     menuType: MenuTypes;
     shape: FloatingMenuShape
     onClose: () => void;
-    anchor: Point;
+    anchor: Vec2;
 }
 
 const MenuRootFloating = ({ menuId, menuType, shape, onClose, anchor }: Props) => {

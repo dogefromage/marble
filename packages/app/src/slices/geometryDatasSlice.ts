@@ -1,37 +1,35 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { useCallback } from "react";
-import { RootState } from "../redux/store";
-import { GeometryConnectionData, GeometryDatasSliceState } from "../types";
 
-const initialState: GeometryDatasSliceState = {};
+export {};
 
-export const geometryDatasSlice = createSlice({
-    name: 'geometryDatas',
-    initialState,
-    reducers: {
-        setMany: (s, a: PayloadAction<{ setDatas: GeometryConnectionData[], removeDatas: string[] }>) => {
-            for (const id of a.payload.removeDatas) {
-                delete s[id];
-            }
-            for (const d of a.payload.setDatas) {
-                s[d.geometryId] = d;
-            }
-        }
-    }
-});
+// const initialState: GeometryDatasSliceState = {};
 
-export const {
-    setMany: geometryDatasSetMany,
-} = geometryDatasSlice.actions;
+// export const geometryDatasSlice = createSlice({
+//     name: 'geometryDatas',
+//     initialState,
+//     reducers: {
+//         setMany: (s, a: PayloadAction<{ setDatas: GeometryConnectionData[], removeDatas: string[] }>) => {
+//             for (const id of a.payload.removeDatas) {
+//                 delete s[id];
+//             }
+//             for (const d of a.payload.setDatas) {
+//                 s[d.geometryId] = d;
+//             }
+//         }
+//     }
+// });
 
-export const selectGeometryDatas = (state: RootState) => state.recorded.present.geometryDatas;
+// export const {
+//     setMany: geometryDatasSetMany,
+// } = geometryDatasSlice.actions;
 
-export const selectSingleGeometryData = (geometryId: string) => 
-    useCallback((state: RootState) => // memoize selector bc. redux will
-        selectGeometryDatas(state)[geometryId] as GeometryConnectionData | undefined,
-        [ geometryId ],
-    );
+// export const selectGeometryDatas = (state: RootState) => state.recorded.present.geometryDatas;
 
-const geometryDatasReducer = geometryDatasSlice.reducer;
+// export const selectSingleGeometryData = (geometryId: string) => 
+//     useCallback((state: RootState) => // memoize selector bc. redux will
+//         selectGeometryDatas(state)[geometryId] as GeometryConnectionData | undefined,
+//         [ geometryId ],
+//     );
 
-export default geometryDatasReducer;
+// const geometryDatasReducer = geometryDatasSlice.reducer;
+
+// export default geometryDatasReducer;

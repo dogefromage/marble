@@ -1,14 +1,14 @@
 import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesRemoveIncomingElements } from '../slices/geometriesSlice';
-import { GeometryEdge, GeometryJointLocation, Point } from '../types';
+import { geometriesRemoveIncomingElements } from '../slices/flowsSlice';
+import { GeometryEdge, GeometryJointLocation, Vec2 } from '../types';
 import GeometryLinkDiv from './GeometryLinkDiv';
 
 interface Props {
     geometryId: string;
     edge: GeometryEdge;
-    posA: Point;
-    posB: Point;
+    posA: Vec2;
+    posB: Vec2;
     joints: GeometryJointLocation[];
 }
 

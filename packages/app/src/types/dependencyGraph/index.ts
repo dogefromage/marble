@@ -1,6 +1,6 @@
 import { splitFirst } from "../../utils/codeStrings";
 
-export type DependencyNodeType = 'layer' | 'geometry' | 'node_template';
+export type DependencyNodeType = 'layer' | 'flow' | 'function';
 
 export function getDependencyKey(id: string, type: DependencyNodeType) {
     return `${type}:${id}` as const;

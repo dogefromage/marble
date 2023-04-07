@@ -1,5 +1,5 @@
 import React from "react";
-import { ColorTuple, Point, Rect } from "../UtilityTypes";
+import { Vec2 } from "../UtilityTypes";
 
 export type MenuElementTypes = 'expand' | 'command' | 'button' | 'search' | 'title' | 'color';
 
@@ -55,7 +55,7 @@ export type MenuShape = InlineMenuShape | FloatingMenuShape
 
 export interface MenuStackNode {
     key: string;
-    leftAnchor: Point;
+    leftAnchor: Vec2;
     parentWidth: number;
 }
 

@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useAppSelector } from '../redux/hooks';
 import { selectPanelManager } from '../slices/panelManagerSlice';
 import MenuFloatingDiv, { VERTICAL_MENU_WIDTH } from '../styles/MenuFloatingDiv';
-import { ButtonMenuElement, ColorMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, Point, Rect, SearchMenuElement, Size, TitleMenuElement } from '../types';
+import { ButtonMenuElement, ColorMenuElement, CommandMenuElement, ExpandMenuElement, FloatingMenuShape, MenuElement, Vec2, Rect, SearchMenuElement, Size, TitleMenuElement } from '../types';
 import MenuButton from './MenuButton';
 import MenuColor from './MenuColor';
 import MenuCommand from './MenuCommand';
@@ -40,7 +40,7 @@ interface Props {
     menuId: string;
     depth: number;
     shape: FloatingMenuShape;
-    leftAnchor: Point;
+    leftAnchor: Vec2;
     parentWidth: number;
 }
 

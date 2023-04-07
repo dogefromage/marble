@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WritableDraft } from "immer/dist/internal";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { MenusSliceState, MenuStackNode, MenuState, Rect } from "../types";
+import { MenusSliceState, MenuStackNode, MenuState } from "../types";
 
 const initialState: MenusSliceState = {};
 

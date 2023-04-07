@@ -1,6 +1,19 @@
 import { FunctionSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
 import { Obj, Vector2, Versionable } from "./utils";
 
+interface InputJointLocation {
+    direction: 'input';
+    nodeId: string;
+    rowId: string;
+    jointIndex: number;
+}
+interface OutputJointLocation {
+    direction: 'output';
+    nodeId: string;
+    rowId: string;
+}
+export type JointLocation = InputJointLocation | OutputJointLocation
+
 export interface OutputLocation {
     nodeId: string;
     outputId: string;
@@ -25,4 +38,5 @@ export interface FlowGraph extends Versionable {
     nodes: Obj<FlowNode>;
     inputs: InputRowSignature[];
     outputs: OutputRowSignature[];
+    nextIdIndex: number;
 }

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, GNodeTemplateTypes, InputRowT, NullArr, ObjMap, ObjMapUndef, OutputRowT } from "../../types";
+import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryAdjacencyList, GeometryConnectionData, GeometryEdge, GeometryFromIndices, GeometryJointLocation, GeometryS, GeometryToIndices, GNodeData, GNodeTemplate, GNodeTemplateTypes, InputRowT, NullArr, Obj, ObjMapUndef, OutputRowT } from "../../types";
 import { calculateNodeSizes as calculateNodeSize } from "./geometryUtils";
 
 function customizer(objValue: any, srcValue: any) {
@@ -34,7 +34,7 @@ function genAdjList(
         const template = nodeTemplates[nodeIndex];
         if (template) {
             // initialize connection count
-            const nodesConnections: ObjMap<number> = {};
+            const nodesConnections: Obj<number> = {};
             rowConnectedJoints[nodeIndex] = nodesConnections;
             let outputCounter = 0;
             for (let rowIndex = 0; rowIndex < template.rows.length; rowIndex++) {

@@ -1,0 +1,19 @@
+{
+    "name": "@marble/vite-plugin-glsl-templates",
+    "version": "1.0.0",
+    "description": "",
+    "main": "lib/index.js",
+    "scripts": {
+        "dev": "tsc --watch",
+        "build": "tsc"
+    },
+    "author": "zebrapig",
+    "license": "MIT",
+    "devDependencies": {
+        "vite": "^4.2.1"
+    },
+    "dependencies": {
+        "@marble/language": "*",
+        "@shaderfrog/glsl-parser": "^1.4.0"
+    }
+}

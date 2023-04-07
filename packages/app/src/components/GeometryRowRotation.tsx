@@ -1,7 +1,7 @@
 import { mat3, quat } from 'gl-matrix';
 import React, { useEffect } from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesAssignRowData } from '../slices/geometriesSlice';
+import { geometriesAssignRowData } from '../slices/flowsSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';

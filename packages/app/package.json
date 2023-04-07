@@ -5,13 +5,13 @@
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
+    "dev": "concurrently --raw \"tsc --watch\" \"copy-and-watch --watch src/**/*.glsl src/**/*.glsl lib\"",
     "schemagen": "sh src/dev/schemagen.sh"
   },
   "dependencies": {
-    "@marble/interactive": "^1.0.0",
-    "@marble/language": "^1.0.0",
+    "@marble/interactive": "*",
+    "@marble/language": "*",
+    "@marble/vite-plugin-glsl-templates": "*",
     "@react-hook/resize-observer": "^1.2.6",
     "@reduxjs/toolkit": "^1.8.5",
     "@shaderfrog/glsl-parser": "1.1.0",
@@ -19,7 +19,6 @@
     "gl-matrix": "^3.4.3",
     "immer": "^9.0.15",
     "lodash": "^4.17.21",
-    "object-path": "^0.11.8",
     "react": "18.2.0",
     "react-redux": "^8.0.2",
     "react-reflex": "^4.0.9",
@@ -41,6 +40,8 @@
     "@types/styled-components": "^5.1.26",
     "@types/three": "^0.149.0",
     "@types/uuid": "^8.3.4",
+    "concurrently": "^8.0.1",
+    "copy-and-watch": "^0.1.6",
     "typescript-json-schema": "^0.55.0"
   }
 }

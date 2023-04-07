@@ -1,6 +1,6 @@
 import { ExpressionNode } from '@marble/language';
 import { getRowMetadata } from '../../components/GeometryRowRoot';
-import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, ObjMap, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
+import { BaseInputRowT, DataTypes, decomposeTemplateId, GeometryConnectionData, GeometryS, Obj, RowS, RowTypes, textureVarDatatypeSize } from "../../types";
 import { findDependencies, sortTopologically } from '../analyzeBasicGraph';
 import geometryNodesToGraphAdjacency from "../geometries/geometryNodesToGraphAdjacency";
 import { parseDataTypeValue } from './generateCodeStatements';

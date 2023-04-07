@@ -5,7 +5,7 @@
   "type": "module",
   "main": "lib",
   "scripts": {
-    "dev": "vite --force",
+    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@marble/app": "*",
+    "@marble/vite-plugin-glsl-templates": "*",
     "@tauri-apps/api": "^1.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

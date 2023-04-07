@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
-import { LayerProgramsSliceState, LayerProgram, ObjMap } from "../types";
+import { LayerProgramsSliceState, LayerProgram, Obj } from "../types";
 
 const initialState: LayerProgramsSliceState = {};
 
@@ -16,7 +16,7 @@ export const layerProgramsSlice = createSlice({
                 s[ p.id ] = p;
             }
         },
-        setRows: (s, a: PayloadAction<{ rowMap: ObjMap<number[]> }>) => {
+        setRows: (s, a: PayloadAction<{ rowMap: Obj<number[]> }>) => {
             for (const [ layerId, row ] of Object.entries(a.payload.rowMap)) {
                 if (s[layerId] != null) {
                     s[layerId]!.textureVarRow = row;

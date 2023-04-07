@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { menusSetState, selectSingleMenu } from '../slices/menusSlice';
-import { ColorTuple, FloatingMenuShape, Point } from '../types';
+import { ColorTuple, FloatingMenuShape, Vec2 } from '../types';
 import { colorTupleToHex } from '../utils/color';
 import MenuRootFloating from './MenuRootFloating';
 
@@ -53,7 +53,7 @@ interface Props {
 const FormColorPicker = ({ value, onChange }: Props) => {
     const dispatch = useAppDispatch();
     const [ menu, setMenu ] = useState<{
-        anchor: Point;
+        anchor: Vec2;
         menuId: string;
     }>();
     const menuState = useSelector(selectSingleMenu(menu?.menuId));

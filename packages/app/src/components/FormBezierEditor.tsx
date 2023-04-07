@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
 import { BOX_SHADOW, INSET_SHADOW } from '../styles/utils';
-import { DataTypeValueTypes, Point } from '../types';
+import { DataTypeValueTypes, Vec2 } from '../types';
 
 export const BEZIER_WIDTH_PIXELS = 260;
 export const BEZIER_GRID_UNITS = 8;
@@ -33,7 +33,7 @@ const CanvasWrapperDiv = styled.div`
         linear-gradient(to bottom, #ccc 1px, transparent 1px);
 `;
 
-interface HandleDivProps { point: Point };
+interface HandleDivProps { point: Vec2 };
 const HandleDiv = styled.div.attrs<HandleDivProps>(({ point }) => ({
     style: {
         left: `${point.x * CANVAS_WIDTH}px`,
@@ -50,7 +50,7 @@ const HandleDiv = styled.div.attrs<HandleDivProps>(({ point }) => ({
 
 interface Handle {
     index: number;
-    point: Point;
+    point: Vec2;
 }
 
 const A_inverse = mat4.transpose(mat4.create(), mat4.fromValues(

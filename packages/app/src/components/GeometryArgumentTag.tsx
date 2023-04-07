@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppSelector } from '../redux/hooks';
-import { selectSingleGeometry } from '../slices/geometriesSlice';
+import { selectSingleGeometry } from '../slices/flowsSlice';
 import { GeometryArgumentTagDiv, GeometryArgumentTagWrapperDiv } from '../styles/GeometryArgumentTagDiv';
 import { InputRowT } from '../types';
 

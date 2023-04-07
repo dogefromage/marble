@@ -1,29 +1,29 @@
 import React, { useEffect } from "react";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useAppDispatch } from "../redux/hooks";
-import { createGeometryEditorPanelState, geometryEditorPanelsSetGeometryId } from "../slices/panelGeometryEditorSlice";
 import { ViewProps, ViewTypes } from "../types/panelManager/views";
 import { useBindPanelState } from "../utils/panelManager";
-import { TEST_ROOT_GEOMETRY_ID } from "../utils/testSetup";
+import { TEST_ROOT_FLOW_ID } from "../utils/testSetup";
 import GeometryEditorInspector from "./GeometryEditorInspector";
-import GeometryEditorViewport from "./GeometryEditorViewport";
+import FlowEditorViewport from "./FlowEditorViewport";
 import PanelBody from "./PanelBody";
+import { createFlowEditorPanelState, flowEditorPanelsSetFlowId } from "../slices/panelFlowEditorSlice";
 
-const GeometryEditorView = (viewProps: ViewProps) => {
+const FlowEditorView = (viewProps: ViewProps) => {
     const dispatch = useAppDispatch();
     const { panelId } = viewProps;
 
     useBindPanelState(
         panelId,
-        createGeometryEditorPanelState,
-        ViewTypes.GeometryEditor,
+        createFlowEditorPanelState,
+        ViewTypes.FlowEditor,
     );
     
     ////////////////// TESTING //////////////////
     useEffect(() => {
-        dispatch(geometryEditorPanelsSetGeometryId({
+        dispatch(flowEditorPanelsSetFlowId({
             panelId: panelId,
-            geometryId: TEST_ROOT_GEOMETRY_ID,
+            flowId: TEST_ROOT_FLOW_ID,
         }));
     }, []);
     /////////////////////////////////////////////
@@ -31,17 +31,17 @@ const GeometryEditorView = (viewProps: ViewProps) => {
     return (
         <PanelBody viewProps={viewProps}>
             {/* <PanelBar /> */}
-            <ReflexContainer orientation='vertical'>
+            <FlowEditorViewport panelId={panelId} />
+            {/* <ReflexContainer orientation='vertical'>
                 <ReflexElement>
-                    <GeometryEditorViewport panelId={panelId} />
                 </ReflexElement>
                 <ReflexSplitter />
                 <ReflexElement size={400}>
                     <GeometryEditorInspector panelId={panelId} />
                 </ReflexElement>
-            </ReflexContainer>
+            </ReflexContainer> */}
         </PanelBody>
     )
 }
 
-export default GeometryEditorView;
+export default FlowEditorView;

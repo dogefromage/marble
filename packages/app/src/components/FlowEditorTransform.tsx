@@ -4,17 +4,15 @@ import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesSetUserSelection, selectSingleGeometry } from '../slices/geometriesSlice';
-import { selectSingleGeometryData } from '../slices/geometryDatasSlice';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, geometryEditorPanelsSetNewLink, geometryEditorPanelsUpdateCamera } from '../slices/panelGeometryEditorSlice';
 import { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
 import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
 import MouseSelectionDiv from '../styles/MouseSelectionDiv';
-import { Rect, JointLinkDndTransfer, JOINT_LINK_DND_TAG, PlanarCamera, Point, ViewTypes } from '../types';
 import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
 import { clamp } from '../utils/math';
-import { TEST_USER_ID } from '../utils/testSetup';
-import GeometryEditorContent from './GeometryEditorContent';
+import FlowEditorContent from './FlowEditorContent';
+import { PlanarCamera, Rect, Vec2, ViewTypes } from '../types';
+import { selectSingleFlow } from '../slices/flowsSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, flowEditorPanelsUpdateCamera } from '../slices/panelFlowEditorSlice';
 
 const defaultPlanarCamera: PlanarCamera = {
     position: { x: 0, y: 0 },
@@ -61,19 +59,21 @@ const TransformingDiv = styled.div`
 `;
 
 interface Props {
-    geometryId: string;
+    flowId: string;
     panelId: string;
 }
 
-const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
+const FlowEditorTransform = ({ flowId, panelId }: Props) => {
     const dispatch = useAppDispatch();
-    const panelState = useAppSelector(selectPanelState(ViewTypes.GeometryEditor, panelId));
-    const geometry = useAppSelector(selectSingleGeometry(geometryId));
-    const geometryData = useAppSelector(selectSingleGeometryData(geometryId));
-    const cameraRef = useRef(panelState?.camera);
-    cameraRef.current = panelState?.camera;
-    const getCamera = useCallback(() => cameraRef.current, [cameraRef]);
-    const userSelection = geometry?.selections[TEST_USER_ID];
+    const panelState = useAppSelector(selectPanelState(ViewTypes.FlowEditor, panelId));
+    const flow = useAppSelector(selectSingleFlow(flowId));
+    // const geometryData = useAppSelector(selectSingleGeometryData(flowId));
+    const panelStateRef = useRef(panelState);
+    panelStateRef.current = panelState;
+    const getPanelState = useCallback(() => {
+        return panelStateRef.current!;
+    }, [panelStateRef]);
+    // const userSelection = geometry?.selections[TEST_USER_ID];
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const getOffsetPoint = (e: React.MouseEvent) => {
@@ -85,9 +85,9 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
         };
     }
 
-    const selectionRef = useRef<{ startPoint: Point }>();
-    const [ selection, setSelection ] = useState<Rect>();
-    const panRef = useRef<{ lastMouse: Point, lastCamera: PlanarCamera }>();
+    const selectionRef = useRef<{ startPoint: Vec2 }>();
+    const [selection, setSelection] = useState<Rect>();
+    const panRef = useRef<{ lastMouse: Vec2, lastCamera: PlanarCamera }>();
     const isActionOngoingRef = useRef(false);
 
     const { handlers: panHandlers, catcher: panCatcher } = useMouseDrag([
@@ -118,46 +118,47 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
             },
             end: e => {
                 setSelection(undefined);
-                isActionOngoingRef.current = false;
-                if (!selection || !panelState?.camera || 
-                    !geometry || !geometryData || 
-                    geometry.version !== geometryData.geometryVersion) return;
-                
-                const screenPos = vec2.fromValues(selection.x, selection.y);
-                const screenSize = vec2.fromValues(selection.w, selection.h);
-                const [ s_x1, s_y1 ] = pointScreenToWorld(panelState.camera, screenPos);
-                const [ selectionWidth, selectionHeight ] = vectorScreenToWorld(panelState.camera, screenSize);
-                const s_x2 = s_x1 + selectionWidth;
-                const s_y2 = s_y1 + selectionHeight;
 
-                const selectedIds: string[] = [];
+                // isActionOngoingRef.current = false;
+                // if (!selection || !panelState?.camera ||
+                //     !geometry || !geometryData ||
+                //     geometry.version !== geometryData.geometryVersion) return;
 
-                for (let i = 0; i < geometry.nodes.length; i++) {
-                    const node = geometry.nodes[i];
-                    const { x: n_x1, y: n_y1 } = node.position;
-                    const nodeData = geometryData.nodeDatas[i];
-                    const widthPixels = nodeData?.widthPixels ?? DEFAULT_NODE_WIDTH;
-                    const heightUnits = nodeData?.rowHeights.at(-1) ?? 1;
-                    const heightPixels = heightUnits * GNODE_ROW_UNIT_HEIGHT;
-                    const n_x2 = n_x1 + widthPixels;
-                    const n_y2 = n_y1 + heightPixels;
+                // const screenPos = vec2.fromValues(selection.x, selection.y);
+                // const screenSize = vec2.fromValues(selection.w, selection.h);
+                // const [s_x1, s_y1] = pointScreenToWorld(panelState.camera, screenPos);
+                // const [selectionWidth, selectionHeight] = vectorScreenToWorld(panelState.camera, screenSize);
+                // const s_x2 = s_x1 + selectionWidth;
+                // const s_y2 = s_y1 + selectionHeight;
 
-                    // https://silentmatt.com/rectangle-intersection/
-                    const nodeIntersectsSelection = 
-                        s_x1 < n_x2 && s_x2 > n_x1 &&
-                        s_y1 < n_y2 && s_y2 > n_y1;
+                // const selectedIds: string[] = [];
 
-                    if (nodeIntersectsSelection) {
-                        selectedIds.push(node.id);
-                    }
-                }
+                // for (let i = 0; i < geometry.nodes.length; i++) {
+                //     const node = geometry.nodes[i];
+                //     const { x: n_x1, y: n_y1 } = node.position;
+                //     const nodeData = geometryData.nodeDatas[i];
+                //     const widthPixels = nodeData?.widthPixels ?? DEFAULT_NODE_WIDTH;
+                //     const heightUnits = nodeData?.rowHeights.at(-1) ?? 1;
+                //     const heightPixels = heightUnits * GNODE_ROW_UNIT_HEIGHT;
+                //     const n_x2 = n_x1 + widthPixels;
+                //     const n_y2 = n_y1 + heightPixels;
 
-                dispatch(geometriesSetUserSelection({
-                    geometryId,
-                    userId: TEST_USER_ID,
-                    selection: selectedIds,
-                    undo: { desc: `Selected ${selectedIds.length} nodes in active geometry.` },
-                }));
+                //     // https://silentmatt.com/rectangle-intersection/
+                //     const nodeIntersectsSelection =
+                //         s_x1 < n_x2 && s_x2 > n_x1 &&
+                //         s_y1 < n_y2 && s_y2 > n_y1;
+
+                //     if (nodeIntersectsSelection) {
+                //         selectedIds.push(node.id);
+                //     }
+                // }
+
+                // dispatch(geometriesSetUserSelection({
+                //     geometryId: flowId,
+                //     userId: TEST_USER_ID,
+                //     selection: selectedIds,
+                //     undo: { desc: `Selected ${selectedIds.length} nodes in active geometry.` },
+                // }));
             }
         },
         {
@@ -176,12 +177,12 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
                     panRef.current.lastMouse.y - e.clientY,
                 );
                 const deltaWorld = vectorScreenToWorld(panRef.current.lastCamera, deltaScreen);
-                const position: Point =
+                const position: Vec2 =
                 {
                     x: panRef.current.lastCamera.position.x + deltaWorld[0],
                     y: panRef.current.lastCamera.position.y + deltaWorld[1],
                 };
-                dispatch(geometryEditorPanelsUpdateCamera({
+                dispatch(flowEditorPanelsUpdateCamera({
                     panelId,
                     newCamera: { position }
                 }));
@@ -212,81 +213,81 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
             },
             zoom: z2,
         };
-        dispatch(geometryEditorPanelsUpdateCamera({
+        dispatch(flowEditorPanelsUpdateCamera({
             panelId,
             newCamera: newCamera,
         }));
     };
 
-    const prevDefault = (e: React.DragEvent) => e.preventDefault();
-    const lastCallTime = useRef(0);
+    // const prevDefault = (e: React.DragEvent) => e.preventDefault();
+    // const lastCallTime = useRef(0);
 
-    const { handlers: dragJointHandler } = useDroppable<JointLinkDndTransfer>({
-        tag: JOINT_LINK_DND_TAG,
-        enter: prevDefault,
-        leave: prevDefault,
-        over(e, transfer) {
-            if (wrapperRef.current == null)
-                return;
+    // const { handlers: dragJointHandler } = useDroppable<JointLinkDndTransfer>({
+    //     tag: JOINT_LINK_DND_TAG,
+    //     enter: prevDefault,
+    //     leave: prevDefault,
+    //     over(e, transfer) {
+    //         if (wrapperRef.current == null)
+    //             return;
 
-            const time = new Date().getTime();
-            if (lastCallTime.current < time - 20) {
-                lastCallTime.current = time;
+    //         const time = new Date().getTime();
+    //         if (lastCallTime.current < time - 20) {
+    //             lastCallTime.current = time;
 
-                const bounds = wrapperRef.current.getBoundingClientRect();
-                const offsetPos =
-                {
-                    x: e.clientX - bounds.left,
-                    y: e.clientY - bounds.top,
-                };
+    //             const bounds = wrapperRef.current.getBoundingClientRect();
+    //             const offsetPos =
+    //             {
+    //                 x: e.clientX - bounds.left,
+    //                 y: e.clientY - bounds.top,
+    //             };
 
-                dispatch(geometryEditorPanelsSetNewLink({
-                    panelId,
-                    newLink: {
-                        location: transfer.location,
-                        dataType: transfer.dataType,
-                        direction: transfer.direction,
-                        offsetPos,
-                    },
-                }));
-            }
-            prevDefault(e);
-        },
-        drop: e => {
-            dispatch(geometryEditorPanelsSetNewLink({
-                panelId,
-                newLink: null,
-            }));
-        }
-    });
+    //             dispatch(geometryEditorPanelsSetNewLink({
+    //                 panelId,
+    //                 newLink: {
+    //                     location: transfer.location,
+    //                     dataType: transfer.dataType,
+    //                     direction: transfer.direction,
+    //                     offsetPos,
+    //                 },
+    //             }));
+    //         }
+    //         prevDefault(e);
+    //     },
+    //     drop: e => {
+    //         dispatch(geometryEditorPanelsSetNewLink({
+    //             panelId,
+    //             newLink: null,
+    //         }));
+    //     }
+    // });
 
-    const clearSelectionAndActive = (e: React.MouseEvent) => {
-        if (userSelection?.length) {
-            dispatch(geometriesSetUserSelection({
-                geometryId,
-                userId: TEST_USER_ID,
-                selection: [],
-                undo: { desc: `Cleared selection in active geometry.` },
-            }));
-        }
-    }
+    // const clearSelectionAndActive = (e: React.MouseEvent) => {
+    //     if (userSelection?.length) {
+    //         dispatch(geometriesSetUserSelection({
+    //             geometryId: flowId,
+    //             userId: TEST_USER_ID,
+    //             selection: [],
+    //             undo: { desc: `Cleared selection in active geometry.` },
+    //         }));
+    //     }
+    // }
 
     return (
         <BackgroundDiv
             ref={wrapperRef}
             onWheel={onWheel}
             camera={panelState?.camera || defaultPlanarCamera}
-            onClick={clearSelectionAndActive}
+            // onClick={clearSelectionAndActive}
             {...panHandlers}
-            {...dragJointHandler}
+        // {...dragJointHandler}
         >
             <TransformingDiv>
                 {
-                    geometryId &&
-                    <GeometryEditorContent
+                    flowId &&
+                    <FlowEditorContent
                         panelId={panelId}
-                        geometryId={geometryId}
-                        getCamera={getCamera}
+                        flowId={flowId}
+                        getPanelState={getPanelState}
                     />
                 }
             </TransformingDiv>
@@ -300,4 +301,4 @@ const GeometryEditorTransform = ({ geometryId, panelId }: Props) => {
     );
 }
 
-export default GeometryEditorTransform;
+export default FlowEditorTransform;

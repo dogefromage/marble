@@ -41,9 +41,14 @@ export type FunctionSignatureId = `${FunctionSignatureSources}:${string}`
  * 
  * The order of inputs and outputs in the array should be only used for display.
  */
-export interface FunctionSignature extends Versionable {
-    id: FunctionSignatureId;
-    name: string;
+
+export interface AnonymousFunctionSignature {
     inputs: InputRowSignature[];
     outputs: OutputRowSignature[];
+}
+
+export interface FunctionSignature extends Versionable, AnonymousFunctionSignature {
+    id: FunctionSignatureId;
+    name: string;
+    category: string;
 }

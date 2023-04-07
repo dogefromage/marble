@@ -1,11 +1,11 @@
-import { DataTypes, Point } from "../types";
+import { DataTypes, Vec2 } from "../types";
 import styled from 'styled-components';
 
 interface LinkDivProps
 {
     dataType: DataTypes;
-    A: Point;
-    B: Point;
+    A: Vec2;
+    B: Vec2;
 }
 
 const GeometryLinkDiv = styled.div.attrs<LinkDivProps>(({ A, B, theme, dataType }) =>

@@ -1,4 +1,4 @@
-import { GeometryEditorPanelState } from "../geometryEditorView";
+import { FlowEditorPanelState } from "../flowEditorView";
 import { ViewportPanelState } from "../viewportView";
 
 export interface ViewProps {
@@ -9,14 +9,14 @@ export interface ViewProps {
  * Serves also as keys of panels slice in store
  */
 export enum ViewTypes {
-    GeometryEditor = 'geometryEditor',
+    FlowEditor = 'flow_editor',
     Viewport = 'viewport',
     Console = 'console',
 }
 
 export type PanelStateMap =
 {
-    [ViewTypes.GeometryEditor]: GeometryEditorPanelState;
+    [ViewTypes.FlowEditor]: FlowEditorPanelState;
     [ViewTypes.Viewport]: ViewportPanelState;
     [ViewTypes.Console]: {}
 }

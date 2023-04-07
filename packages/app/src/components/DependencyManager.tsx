@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAppSelector } from '../redux/hooks';
 import { selectDependencyGraph } from '../slices/dependencyGraphSlice';
-import { selectGeometries } from '../slices/geometriesSlice';
+import { selectGeometries } from '../slices/flowsSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { decomposeTemplateId, DependencyNodeKey, GeometryS, getDependencyKey, GNodeTemplate, Layer } from '../types';

@@ -2,7 +2,7 @@ import { AnyAction, PayloadAction, Reducer } from "@reduxjs/toolkit";
 import produce, { Draft } from "immer";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { PanelState, ObjMap } from "../types";
+import { PanelState, Obj } from "../types";
 import { ViewTypes, PanelStateMap } from "../types";
 
 enum PanelStateActionTypes {
@@ -28,8 +28,8 @@ export const panelStateRemove = (payload: RemovePayload) => ({
 });
 
 export default function panelStateEnhancer<S extends PanelState, A extends AnyAction>
-    (reducer: Reducer<ObjMap<S>, A>, viewType: ViewTypes):
-    Reducer<ObjMap<S>, A> {
+    (reducer: Reducer<Obj<S>, A>, viewType: ViewTypes):
+    Reducer<Obj<S>, A> {
     return (state = {}, action) => {
         const a = action as unknown as PanelStateAction;
 

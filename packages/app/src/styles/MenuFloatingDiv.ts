@@ -1,11 +1,11 @@
 import styled from 'styled-components';
-import { Point } from '../types';
+import { Vec2 } from '../types';
 import { BORDER_RADIUS, BOX_SHADOW } from './utils';
 
 export const VERTICAL_MENU_WIDTH = 240;
 
 export interface MenuVerticalDivProps {
-    anchor: Point;
+    anchor: Vec2;
     width?: string;
     maxHeight: number;
 }

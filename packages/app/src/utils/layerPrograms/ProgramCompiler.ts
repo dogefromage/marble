@@ -2,7 +2,7 @@ import { DeclarationNode, DeclaratorListNode, FunctionNode, parse as parseMarble
 import { generate as generateGlslCode } from '@shaderfrog/glsl-parser';
 import { visit } from '@shaderfrog/glsl-parser/ast/ast';
 import { mapDynamicValues } from '.';
-import { dataTypeDescriptors, DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, LOOKUP_TEXTURE_WIDTH, ObjMap, ObjMapUndef, OutputRowT, ProgramDynamicLookupMapping, ProgramInclude, splitDependencyKey } from "../../types";
+import { dataTypeDescriptors, DataTypes, DependencyGraph, GeometryConnectionData, GeometryS, getDependencyKey, GNodeTemplate, Layer, LayerProgram, LOOKUP_TEXTURE_WIDTH, Obj, ObjMapUndef, OutputRowT, ProgramDynamicLookupMapping, ProgramInclude, splitDependencyKey } from "../../types";
 import { Counter } from '../Counter';
 import topSortDependencies from '../dependencyGraph/topSortDependencies';
 import { generateTupleOutputType } from '../templateManager/generateDynamicTemplates';
@@ -523,7 +523,7 @@ export default class ProgramCompiler {
     }
 }
 
-export type ParamMapping = ObjMap<{
+export type ParamMapping = Obj<{
     replacementIdentifier: string;
 }>
 

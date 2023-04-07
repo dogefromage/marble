@@ -1,6 +1,6 @@
 import { AnyAction } from '@reduxjs/toolkit';
 import { PanelStateMap, ViewTypes } from '../panelManager/views';
-import { Point, Rect } from '../UtilityTypes';
+import { Vec2, Rect } from '../UtilityTypes';
 
 export interface KeyCombination {
     key: string;
@@ -23,10 +23,10 @@ export interface ViewCommandArgs<V extends ViewTypes = ViewTypes> extends Comman
     activePanelId: string;
     panelClientRect: Rect;
     panelState: PanelStateMap[ V ];
-    offsetCenter: Point;
-    clientCenter: Point;
-    offsetCursor?: Point;
-    clientCursor?: Point;
+    offsetCenter: Vec2;
+    clientCenter: Vec2;
+    offsetCursor?: Vec2;
+    clientCursor?: Vec2;
 }
 
 interface BaseCommand {
@@ -36,7 +36,7 @@ interface BaseCommand {
 }
 
 interface BaseCommandParameters {
-    clientCursor: Point;
+    clientCursor: Vec2;
 }
 export type CommandParameterMap = 
     Partial<BaseCommandParameters> 

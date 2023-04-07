@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesAssignRowData } from '../slices/geometriesSlice';
+import { geometriesAssignRowData } from '../slices/flowsSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { ColorRowT, ColorTuple, RowMetadata, ViewTypes } from '../types';

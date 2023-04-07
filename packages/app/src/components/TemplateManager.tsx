@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import includeSource from '../../assets/includes.glsl?raw';
 import defaultTemplates from '../content/defaultTemplates';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectGeometries } from '../slices/geometriesSlice';
+import { selectGeometries } from '../slices/flowsSlice';
 import { selectTemplates, templatesAddGLSLSnippets, templatesAddTemplates, templatesRemoveTemplates } from '../slices/templatesSlice';
 import { splitIncludesFromSource } from '../utils/layerPrograms';
 import generateDynamicTemplates from '../utils/templateManager/generateDynamicTemplates';

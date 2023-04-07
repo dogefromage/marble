@@ -1,9 +1,9 @@
-import { CommandParameterMap, Point } from "..";
+import { CommandParameterMap, Vec2 } from "..";
 
 export interface ContextMenuState {
     panelId: string;
     name: string;
-    position: Point;
+    position: Vec2;
     commandIds: string[];
     paramMap: CommandParameterMap;
 }

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { vec2, vec3 } from "gl-matrix";
 import panelStateEnhancer from "../enhancers/panelStateEnhancer";
-import { CreatePanelStateCallback, ObjMap, ViewportCamera, ViewportPanelState, ViewTypes } from "../types";
+import { CreatePanelStateCallback, Obj, ViewportCamera, ViewportPanelState, ViewTypes } from "../types";
 import { clamp, degToRad } from "../utils/math";
 import { getPanelState } from "../utils/panelManager";
 
@@ -22,7 +22,7 @@ export const createViewportPanelState: CreatePanelStateCallback<ViewportPanelSta
 
 export const viewportPanelsSlice = createSlice({
     name: 'viewportPanels',
-    initialState: {} as ObjMap<ViewportPanelState>,
+    initialState: {} as Obj<ViewportPanelState>,
     reducers: {
         editCamera: (s, a: PayloadAction<{ panelId: string, partialCamera: Partial<ViewportCamera> }>) => {
             const ps = getPanelState(s, a);

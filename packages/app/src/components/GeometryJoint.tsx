@@ -1,7 +1,7 @@
 import { useDraggable, useDroppable } from '@marble/interactive';
 import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesInsertIncomingElement } from '../slices/geometriesSlice';
+import { geometriesInsertIncomingElement } from '../slices/flowsSlice';
 import { GeometryJointDiv } from '../styles/GeometryJointDiv';
 import { DataTypes, GeometryJointDirection, GeometryJointLocation, JointLinkDndTransfer, JOINT_LINK_DND_TAG } from '../types';
 

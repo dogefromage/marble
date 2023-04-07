@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
-import { geometriesAssignRowData } from '../slices/geometriesSlice';
+import { geometriesAssignRowData } from '../slices/flowsSlice';
 import GeometryRowDiv from '../styles/GeometryRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { DataTypes, FieldRowT } from '../types';

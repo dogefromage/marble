@@ -40,19 +40,23 @@ const AppRoot = ({ projectId }: Props) => {
         >
             <Provider store={store}>
                 {/* APP STATE */}
-                <DependencyManager />
-                <TemplateManager staticOnly={false} />
-                <GeometryDataManager />
+                {/* <DependencyManager /> */}
+                {/* <TemplateManager staticOnly={false} /> */}
+                {/* <GeometryDataManager /> */}
+
                 {/* COMPILATION */}
-                <CompilerRoot />
+                {/* <CompilerRoot /> */}
+                
                 {/* Views */}
                 <ThemeProvider theme={defaultTheme}>
                     <LayoutRoot />
                 </ThemeProvider>
+                
                 {/* USER INTERACTION */}
                 <KeyboardCommandListener />
                 <ContextMenu />
                 <StartAnouncer projectId={projectId} />
+                
                 {/* PORTAL MOUNTS */}
                 <MenuPortalMount />
                 <DragzonePortalMount />

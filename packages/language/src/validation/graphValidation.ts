@@ -72,6 +72,7 @@ function generateSyntaxNodes(graph: FlowGraph) {
         id: `syntax:input`,
         version: graph.version,
         name: 'Input',
+        category: 'In/Out',
         inputs: [],
         outputs: graph.inputs.map(o => ({
             id: o.id,
@@ -84,6 +85,7 @@ function generateSyntaxNodes(graph: FlowGraph) {
         id: `syntax:output`,
         version: graph.version,
         name: 'Output',
+        category: 'In/Out',
         inputs: graph.outputs.map(o => ({
             id: o.id,
             label: o.label,
@@ -113,6 +115,7 @@ function validateFlowGraph(
 
     const graphSignature: FunctionSignature = {
         id: `composed:${graph.id}`,
+        category: 'Groups',
         version: graph.version,
         name: graph.name,
         inputs: graph.inputs,

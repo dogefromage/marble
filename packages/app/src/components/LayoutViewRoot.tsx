@@ -2,7 +2,7 @@ import React from 'react';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
 import { useAppDispatch } from '../redux/hooks';
 import ConsoleView from './ConsoleView';
-import GeometryEditorView from './GeometryEditorView';
+import FlowEditorView from './FlowEditorView';
 import ViewportView from './ViewportView';
 
 const LayoutViewRoot = () => {
@@ -29,7 +29,7 @@ const LayoutViewRoot = () => {
             </ReflexElement>
             <ReflexSplitter />
             <ReflexElement>
-                <GeometryEditorView panelId='1234' />
+                <FlowEditorView panelId='1234' />
             </ReflexElement>
         </ReflexContainer>
     );

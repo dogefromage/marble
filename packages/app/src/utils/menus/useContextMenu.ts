@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppDispatch } from "../../redux/hooks";
 import { contextMenuOpen } from "../../slices/contextMenuSlice";
-import { CommandParameterMap, Point } from "../../types";
+import { CommandParameterMap, Vec2 } from "../../types";
 
 export default function useContextMenu(
     panelId: string,
@@ -15,7 +15,7 @@ export default function useContextMenu(
         e.preventDefault();
         e.stopPropagation();
 
-        const position: Point = {
+        const position: Vec2 = {
             x: e.clientX,
             y: e.clientY,
         };

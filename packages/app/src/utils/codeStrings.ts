@@ -89,11 +89,10 @@ export function splitFirst(input: string, searchValue: RegExp | string) {
     ];
 }
 
-export function generateCodeSafeUUID() {
-    const id = uuidv4();
-    // @ts-ignore
-    return id.replaceAll('-', '_');
-}
+// export function generateCodeSafeUUID() {
+//     const id = uuidv4();
+//     return id.replaceAll('-', '_');
+// }
 
 export function formatVariable(word: string) {
     if (!word.length) return word;

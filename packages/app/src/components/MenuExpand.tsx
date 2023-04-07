@@ -4,7 +4,7 @@ import { menusSetNode, selectSingleMenu } from '../slices/menusSlice';
 import { selectPanelManager } from '../slices/panelManagerSlice';
 import MaterialSymbol from '../styles/MaterialSymbol';
 import { MenuExpandDiv } from '../styles/MenuElementDiv';
-import { ExpandMenuElement, MenuStackNode, Point } from '../types';
+import { ExpandMenuElement, MenuStackNode, Vec2 } from '../types';
 import MenuFloating, { MenuElementProps } from './MenuFloating';
 
 const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuElement>) => {
@@ -22,7 +22,7 @@ const MenuExpand = ({ menuId, element, depth }: MenuElementProps<ExpandMenuEleme
                 const div = e.currentTarget as HTMLDivElement;
                 if (!div) return;
                 const rect = div.getBoundingClientRect();
-                const leftAnchor: Point = {
+                const leftAnchor: Vec2 = {
                     x: rect.left,
                     y: rect.top,
                 };

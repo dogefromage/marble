@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { geometriesAddNode } from '../slices/geometriesSlice';
+import { geometriesAddNode } from '../slices/flowsSlice';
 import { selectSingleMenu } from '../slices/menusSlice';
-import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelGeometryEditorSlice';
+import { geometryEditorPanelsCloseTemplateCatalog } from '../slices/panelFlowEditorSlice';
 import { selectPanelClientRect } from '../slices/panelManagerSlice';
 import { selectTemplates } from '../slices/templatesSlice';
 import { decomposeTemplateId, FloatingMenuShape, GNodeTemplate, GNodeTemplateCategory, MenuElement, SearchMenuElement, templateCategoryNames, TitleMenuElement, ViewTypes } from '../types';
