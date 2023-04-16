@@ -1,11 +1,11 @@
 import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/flowsSlice';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';
 import { FieldRowT } from '../types';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 import { getRowMetadataField } from './GeometryRowField';
 import { RowProps } from './GeometryRowRoot';
 import SlidableInput from './SlideableInput';
@@ -40,7 +40,7 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) => {
     const isConnected = row.numConnectedJoints > 0;
 
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={meta.heightUnits}
         >
             <GeometryRowNameP
@@ -62,14 +62,14 @@ const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) => {
                     </IndentRowDiv>
                 )
             }
-            <GeometryJoint
-                geometryId={geometryId}
+            <FlowJoint
+                flowId={geometryId}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 jointDirection='input'
                 connected={isConnected}
                 dataType={row.dataType}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

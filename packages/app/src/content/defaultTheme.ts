@@ -6,19 +6,19 @@ const defaultTheme: DefaultTheme = {
         general: {
             fields: '#e3e3e3',
         },
-        geometryEditor: {
-            background: '#ddd',
-            backgroundDots: '#bbb',
+        flowEditor: {
+            background: '#ada8a6',
+            backgroundDots: '#8f8885',
+            nodeColor: '#ebedf0',
         },
         dataTypes: {
-            unknown: '#636363',
+            bool: '#787878',
+            int: '#617a43',
             float: '#5f91c9',
             vec2: '#3f478c',
             vec3: '#6a40a8',
             vec4: '#5532bf',
             mat3: '#9840ad',
-            Surface: '#d4a63b',
-            Distance: '#00ff00',
         },
         selectionStatus: {
             [SelectionStatus.Selected]:        '#e7b84a',

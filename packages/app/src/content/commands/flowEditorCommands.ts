@@ -1,21 +1,22 @@
 import { flowsRemoveNodes } from "../../slices/flowsSlice";
+import { flowEditorSetStateAddNodeAtPosition } from "../../slices/panelFlowEditorSlice";
 import { Command, ViewTypes } from "../../types";
 
 export const flowEditorCommands: Command[] = [
-    // {
-    //     scope: 'view',
-    //     viewType: ViewTypes.FlowEditor,
-    //     id: 'flowEditor.openTemplateCatalog',
-    //     name: 'Add Node',
-    //     actionCreator({ activePanelId, clientCursor, offsetCursor, offsetCenter, clientCenter }, params) {
-    //         return flowEditorPanelsOpenTemplateCatalog({
-    //             panelId: activePanelId,
-    //             menuAnchor: clientCursor || clientCenter,
-    //             offsetPosition: offsetCursor || offsetCenter,
-    //         });
-    //     },
-    //     keyCombinations: [{ key: ' ', displayName: 'Space' }],
-    // },
+    {
+        scope: 'view',
+        viewType: ViewTypes.FlowEditor,
+        id: 'flowEditor.addNodeAtPosition',
+        name: 'Add Node',
+        actionCreator({ activePanelId, clientCursor, offsetCursor, offsetCenter, clientCenter }, params) {
+            return flowEditorSetStateAddNodeAtPosition({
+                panelId: activePanelId,
+                clientPosition: clientCursor || clientCenter,
+                offsetPosition: offsetCursor || offsetCenter,
+            });
+        },
+        keyCombinations: [{ key: ' ', displayName: 'Space' }],
+    },
     {
         scope: 'view',
         viewType: ViewTypes.FlowEditor,

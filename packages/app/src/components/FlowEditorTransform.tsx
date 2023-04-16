@@ -4,15 +4,17 @@ import React, { useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
-import MouseSelectionDiv from '../styles/MouseSelectionDiv';
-import { pointScreenToWorld, vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
-import { clamp } from '../utils/math';
-import FlowEditorContent from './FlowEditorContent';
-import { PlanarCamera, Rect, Vec2, ViewTypes } from '../types';
 import { selectSingleFlow } from '../slices/flowsSlice';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, flowEditorPanelsUpdateCamera } from '../slices/panelFlowEditorSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, flowEditorPanelsUpdateCamera, flowEditorSetSelection, flowEditorSetStateNeutral, flowEditorUpdateDragginLinkPosition } from '../slices/panelFlowEditorSlice';
+import MouseSelectionDiv from '../styles/MouseSelectionDiv';
+import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
+import { PlanarCamera, Rect, Vec2, ViewTypes } from '../types';
+import { clamp, rectanglesIntersect } from '../utils/math';
+import { pointScreenToWorld } from '../utils/planarCameraMath';
+import FlowEditorContent from './FlowEditorContent';
+import { DRAG_JOIN_DND_TAG } from './FlowJoint';
+import { FLOW_NODE_DIV_CLASS } from './FlowNodeElement';
+import _ from 'lodash';
 
 const defaultPlanarCamera: PlanarCamera = {
     position: { x: 0, y: 0 },
@@ -25,7 +27,7 @@ interface DivProps {
 
 const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) => {
     const translate = vec2.fromValues(-camera.position.x, -camera.position.y);
-    const gridSize = 40 * camera.zoom;
+    const gridSize = 2 * FLOW_NODE_ROW_HEIGHT * camera.zoom;
     const pos = vec2.scale(vec2.create(), translate, camera.zoom);
     return {
         style: {
@@ -41,10 +43,10 @@ const BackgroundDiv = styled.div.attrs<DivProps>(({ camera }) => {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: ${({ theme }) => theme.colors.geometryEditor.background};
+    background-color: ${({ theme }) => theme.colors.flowEditor.background};
     background-position: var(--bg-pos-x) var(--bg-pos-y);
     background-size: var(--grid-size) var(--grid-size);
-    --grid-color: ${({ theme }) => theme.colors.geometryEditor.backgroundDots};
+    --grid-color: ${({ theme }) => theme.colors.flowEditor.backgroundDots};
     background-image: radial-gradient(var(--grid-color) calc(0.04 * var(--grid-size)), transparent 0);
 `;
 
@@ -76,12 +78,12 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
     // const userSelection = geometry?.selections[TEST_USER_ID];
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    const getOffsetPoint = (e: React.MouseEvent) => {
+    const getOffsetPoint = (clientPoint: Vec2) => {
         if (!wrapperRef.current) return;
         const bounds = wrapperRef.current.getBoundingClientRect();
         return {
-            x: e.clientX - bounds.left,
-            y: e.clientY - bounds.top,
+            x: clientPoint.x - bounds.left,
+            y: clientPoint.y - bounds.top,
         };
     }
 
@@ -94,13 +96,13 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
         {
             mouseButton: 0,
             start: e => {
-                const startPoint = getOffsetPoint(e);
+                const startPoint = getOffsetPoint({ x: e.clientX, y: e.clientY });
                 if (!startPoint) return;
                 selectionRef.current = { startPoint };
             },
             move: e => {
                 const startPoint = selectionRef.current?.startPoint;
-                const endPoint = getOffsetPoint(e);
+                const endPoint = getOffsetPoint({ x: e.clientX, y: e.clientY });
                 if (!startPoint || !endPoint) return;
 
                 const left = Math.min(startPoint.x, endPoint.x);
@@ -118,47 +120,27 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
             },
             end: e => {
                 setSelection(undefined);
-
-                // isActionOngoingRef.current = false;
-                // if (!selection || !panelState?.camera ||
-                //     !geometry || !geometryData ||
-                //     geometry.version !== geometryData.geometryVersion) return;
-
-                // const screenPos = vec2.fromValues(selection.x, selection.y);
-                // const screenSize = vec2.fromValues(selection.w, selection.h);
-                // const [s_x1, s_y1] = pointScreenToWorld(panelState.camera, screenPos);
-                // const [selectionWidth, selectionHeight] = vectorScreenToWorld(panelState.camera, screenSize);
-                // const s_x2 = s_x1 + selectionWidth;
-                // const s_y2 = s_y1 + selectionHeight;
-
-                // const selectedIds: string[] = [];
-
-                // for (let i = 0; i < geometry.nodes.length; i++) {
-                //     const node = geometry.nodes[i];
-                //     const { x: n_x1, y: n_y1 } = node.position;
-                //     const nodeData = geometryData.nodeDatas[i];
-                //     const widthPixels = nodeData?.widthPixels ?? DEFAULT_NODE_WIDTH;
-                //     const heightUnits = nodeData?.rowHeights.at(-1) ?? 1;
-                //     const heightPixels = heightUnits * GNODE_ROW_UNIT_HEIGHT;
-                //     const n_x2 = n_x1 + widthPixels;
-                //     const n_y2 = n_y1 + heightPixels;
-
-                //     // https://silentmatt.com/rectangle-intersection/
-                //     const nodeIntersectsSelection =
-                //         s_x1 < n_x2 && s_x2 > n_x1 &&
-                //         s_y1 < n_y2 && s_y2 > n_y1;
-
-                //     if (nodeIntersectsSelection) {
-                //         selectedIds.push(node.id);
-                //     }
-                // }
-
-                // dispatch(geometriesSetUserSelection({
-                //     geometryId: flowId,
-                //     userId: TEST_USER_ID,
-                //     selection: selectedIds,
-                //     undo: { desc: `Selected ${selectedIds.length} nodes in active geometry.` },
-                // }));
+                isActionOngoingRef.current = false;
+                if (!selection || !flow) return;
+                const nodeDivs = Array.from(wrapperRef.current?.querySelectorAll(`.${FLOW_NODE_DIV_CLASS}`) || []);
+                const intersectingNodes = nodeDivs.filter(item => {
+                    const clientBounds = item.getBoundingClientRect();
+                    const offsetPoint = getOffsetPoint(clientBounds);
+                    if (!offsetPoint) return false;
+                    const offsetNode: Rect = {
+                        ...offsetPoint,
+                        w: clientBounds.width,
+                        h: clientBounds.height
+                    };
+                    return rectanglesIntersect(offsetNode, selection);
+                });
+                const intersectingIds = intersectingNodes
+                    .map(node => node.getAttribute('data-id'))
+                    .filter(id => id != null) as string[];
+                dispatch(flowEditorSetSelection({
+                    panelId,
+                    selection: intersectingIds,
+                }));
             }
         },
         {
@@ -172,16 +154,11 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
             },
             move: e => {
                 if (!panRef.current) return;
-                const deltaScreen = vec2.fromValues(
-                    panRef.current.lastMouse.x - e.clientX,
-                    panRef.current.lastMouse.y - e.clientY,
-                );
-                const deltaWorld = vectorScreenToWorld(panRef.current.lastCamera, deltaScreen);
-                const position: Vec2 =
-                {
-                    x: panRef.current.lastCamera.position.x + deltaWorld[0],
-                    y: panRef.current.lastCamera.position.y + deltaWorld[1],
+                const deltaScreen = {
+                    x: panRef.current.lastMouse.x - e.clientX,
+                    y: panRef.current.lastMouse.y - e.clientY,
                 };
+                const position = pointScreenToWorld(panRef.current.lastCamera, deltaScreen);
                 dispatch(flowEditorPanelsUpdateCamera({
                     panelId,
                     newCamera: { position }
@@ -197,7 +174,7 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
         if (!panelState || isActionOngoingRef.current) return;
         const zoomFactor = 1.1;
         const k = Math.pow(zoomFactor, -e.deltaY / 100);
-        const ps = getOffsetPoint(e);
+        const ps = getOffsetPoint({ x: e.clientX, y: e.clientY });
         if (!ps) return;
         const cam = panelState.camera;
         // taken from mycel\daw\views\node_editor\components\NodeEditorView\NodeEditorGUI.tsx
@@ -219,67 +196,49 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
         }));
     };
 
-    // const prevDefault = (e: React.DragEvent) => e.preventDefault();
-    // const lastCallTime = useRef(0);
+    const prevDefault = (e: React.DragEvent) => e.preventDefault();
 
-    // const { handlers: dragJointHandler } = useDroppable<JointLinkDndTransfer>({
-    //     tag: JOINT_LINK_DND_TAG,
-    //     enter: prevDefault,
-    //     leave: prevDefault,
-    //     over(e, transfer) {
-    //         if (wrapperRef.current == null)
-    //             return;
+    const updatePosition = useCallback(
+        _.throttle((clientPos: Vec2) => {
+            const bounds = wrapperRef.current?.getBoundingClientRect();
+            if (!bounds) return;
+            const offsetCursor = {
+                x: clientPos.x - bounds.left,
+                y: clientPos.y - bounds.top,
+            }
+            dispatch(flowEditorUpdateDragginLinkPosition({
+                panelId, offsetCursor,
+            }));
+        }, 16),
+        [ dispatch, panelId, wrapperRef ]
+    );
 
-    //         const time = new Date().getTime();
-    //         if (lastCallTime.current < time - 20) {
-    //             lastCallTime.current = time;
-
-    //             const bounds = wrapperRef.current.getBoundingClientRect();
-    //             const offsetPos =
-    //             {
-    //                 x: e.clientX - bounds.left,
-    //                 y: e.clientY - bounds.top,
-    //             };
-
-    //             dispatch(geometryEditorPanelsSetNewLink({
-    //                 panelId,
-    //                 newLink: {
-    //                     location: transfer.location,
-    //                     dataType: transfer.dataType,
-    //                     direction: transfer.direction,
-    //                     offsetPos,
-    //                 },
-    //             }));
-    //         }
-    //         prevDefault(e);
-    //     },
-    //     drop: e => {
-    //         dispatch(geometryEditorPanelsSetNewLink({
-    //             panelId,
-    //             newLink: null,
-    //         }));
-    //     }
-    // });
-
-    // const clearSelectionAndActive = (e: React.MouseEvent) => {
-    //     if (userSelection?.length) {
-    //         dispatch(geometriesSetUserSelection({
-    //             geometryId: flowId,
-    //             userId: TEST_USER_ID,
-    //             selection: [],
-    //             undo: { desc: `Cleared selection in active geometry.` },
-    //         }));
-    //     }
-    // }
+    const { handlers: dragJointHandler } = useDroppable({
+        tag: DRAG_JOIN_DND_TAG,
+        enter: prevDefault,
+        leave: prevDefault,
+        over(e) {
+            if (wrapperRef.current == null)
+                return;
+            updatePosition({
+                x: e.clientX,
+                y: e.clientY,
+            });
+            prevDefault(e);
+        },
+        drop: e => {
+            dispatch(flowEditorSetStateNeutral({ panelId }));
+            updatePosition.cancel();
+        },
+    });
 
     return (
         <BackgroundDiv
             ref={wrapperRef}
             onWheel={onWheel}
             camera={panelState?.camera || defaultPlanarCamera}
-            // onClick={clearSelectionAndActive}
             {...panHandlers}
-        // {...dragJointHandler}
+            {...dragJointHandler}
         >
             <TransformingDiv>
                 {

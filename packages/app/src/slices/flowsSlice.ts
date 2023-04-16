@@ -1,4 +1,4 @@
-import { AnonymousFunctionSignature, FlowGraph, FlowNode, FunctionSignatureId } from "@marble/language";
+import { AnonymousFunctionSignature, FlowGraph, FlowNode, FunctionSignatureId, InputJointLocation, JointLocation, OutputJointLocation } from "@marble/language";
 import { createSlice } from "@reduxjs/toolkit";
 import _ from "lodash";
 import { useCallback } from "react";
@@ -17,6 +17,19 @@ function getNode(s: FlowsSliceState, a: { payload: { flowId: string, nodeId: str
     const n = getFlow(s, a)?.nodes[a.payload.nodeId];
     if (!n) return console.error(`Node with id ${a.payload.nodeId} not found`);
     return n;
+}
+
+function removeConnectionsToNodes(g: FlowGraph, nodes: Set<string>) {
+    for (const node of Object.values(g.nodes)) {
+        for (const [ rowId, rowState ] of Object.entries(node.rowStates)) {
+            for (let i = rowState.connections.length - 1; i >= 0; i--) {
+                const conn = rowState.connections[i];
+                if (nodes.has(conn.nodeId)) {
+                    rowState.connections.splice(i, 1);
+                }
+            }
+        }
+    }
 }
 
 // function removeIncomingElements(s: FlowsSliceState, flowId: string, elements: FlowJointLocation[]) {
@@ -132,6 +145,7 @@ export const flowsSlice = createSlice({
                 for (const id of targets) {
                     delete g.nodes[id];
                 }
+                removeConnectionsToNodes(g, new Set(targets));
                 g.version++;
             }
         },
@@ -145,6 +159,7 @@ export const flowsSlice = createSlice({
             if (!g) return;
             for (const id of a.payload.selection) {
                 const node = g.nodes[id];
+                if (!node) continue;
                 node.position.x += a.payload.delta.x;
                 node.position.y += a.payload.delta.y;
             }
@@ -169,46 +184,61 @@ export const flowsSlice = createSlice({
         //     const g = getFlow(s, a)!;
         //     g.rowStateInvalidator++;
         // },
-        // insertIncomingElement: (s, a: UndoAction<{
-        //     flowId: string,
-        //     jointLocation: FlowJointLocation,
-        //     incomingElement: FlowIncomingElement
-        //     isStackedInput?: boolean,
-        // }>) => {
-        //     const g = getFlow(s, a);
-        //     if (!g) return;
+        addLink: (s, a: UndoAction<{
+            flowId: string,
+            locations: [JointLocation, JointLocation],
+        }>) => {
+            const g = getFlow(s, a);
+            if (!g) return;
 
-        //     const inputNode = getNode(s, {
-        //         payload: {
-        //             nodeId: a.payload.jointLocation.nodeId,
-        //             flowId: a.payload.flowId,
-        //         }
-        //     });
-        //     if (!inputNode) return;
+            const inputLocation = a.payload.locations
+                .find(l => l.direction === 'input') as InputJointLocation | undefined;
+            const outputLocation = a.payload.locations
+                .find(l => l.direction === 'output') as OutputJointLocation | undefined;
+            if (!inputLocation || !outputLocation) {
+                return console.error(`Must provide both input and output location`);
+            }
 
-        //     const defaultInputRow: RowS = { incomingElements: [] };
-        //     const inputRow = inputNode.rows[ a.payload.jointLocation.rowId ] || defaultInputRow;
-        //     inputNode.rows[ a.payload.jointLocation.rowId ] = inputRow;
+            const inputNode = getNode(s, {
+                payload: {
+                    nodeId: inputLocation.nodeId,
+                    flowId: a.payload.flowId,
+                }
+            });
+            if (!inputNode) return console.error(`Couldn't find input node`);
+            
+            inputNode.rowStates[inputLocation.rowId] ||= { connections: [], state: {} };
+            const connections = inputNode.rowStates[inputLocation.rowId]!.connections;
+            const setIndex = Math.max(0, Math.min(inputLocation.jointIndex, connections.length));
+            connections[setIndex] = {
+                nodeId: outputLocation.nodeId,
+                outputId: outputLocation.rowId,
+            }
 
-        //     if (a.payload.isStackedInput) {
-        //         const newSubIndex = a.payload.jointLocation.subIndex;
-        //         inputRow.incomingElements = [
-        //             ...inputRow.incomingElements.slice(0, newSubIndex),
-        //             a.payload.incomingElement,
-        //             ...inputRow.incomingElements.slice(newSubIndex),
-        //         ];
-        //     } else {
-        //         inputRow.incomingElements = [ a.payload.incomingElement ];
-        //     }
+            // const defaultInputRow: RowS = { incomingElements: [] };
+            // const inputRow = inputNode.rows[ a.payload.jointLocation.rowId ] || defaultInputRow;
+            // inputNode.rows[ a.payload.jointLocation.rowId ] = inputRow;
 
-        //     g.version++;
-        // },
-        // removeIncomingElements: (s, a: UndoAction<{ flowId: string, joints: FlowJointLocation[] }>) => {
-        //     const g = getFlow(s, a);
-        //     if (!g) return;
-        //     removeIncomingElements(s, a.payload.flowId, a.payload.joints);
-        //     g.version++;
-        // },
+            // if (a.payload.isStackedInput) {
+            //     const newSubIndex = a.payload.jointLocation.subIndex;
+            //     inputRow.incomingElements = [
+            //         ...inputRow.incomingElements.slice(0, newSubIndex),
+            //         a.payload.incomingElement,
+            //         ...inputRow.incomingElements.slice(newSubIndex),
+            //     ];
+            // } else {
+            //     inputRow.incomingElements = [ a.payload.incomingElement ];
+            // }
+
+            g.version++;
+        },
+        removeEdge: (s, a: UndoAction<{ flowId: string, input: InputJointLocation }>) => {
+            const g = getFlow(s, a);
+            if (!g) return;
+            const { nodeId, rowId, jointIndex } = a.payload.input;
+            g.nodes[nodeId]?.rowStates[rowId]?.connections.splice(jointIndex, 1);
+            g.version++;
+        },
         // setUserSelection: (s, a: UndoAction<{ flowId: string, userId: string, selection: string[] }>) => {
         //     const g = getFlow(s, a);
         //     if (!g) return;
@@ -375,9 +405,8 @@ export const {
     removeNodes: flowsRemoveNodes,
     positionNode: flowsPositionNode,
     moveSelection: flowsMoveSelection,
-    // assignRowData: flowsAssignRowData,
-    // insertIncomingElement: flowsInsertIncomingElement,
-    // removeIncomingElements: flowsRemoveIncomingElements,
+    addLink: flowsAddLink,
+    removeEdge: flowsRemoveEdge,
     // setUserSelection: flowsSetUserSelection,
     // resetUserSelectedNodes: flowsResetUserSelectedNodes,
     // updateExpiredProps: flowsUpdateExpiredProps,

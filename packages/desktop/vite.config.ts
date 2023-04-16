@@ -1,6 +1,8 @@
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 import { glslTemplatePlugin } from '@marble/vite-plugin-glsl-templates';
+// import * as TEST from '@marble/vite-plugin-glsl-templates';
+// console.log(TEST);
 
 // https://vitejs.dev/config/
 export default defineConfig({

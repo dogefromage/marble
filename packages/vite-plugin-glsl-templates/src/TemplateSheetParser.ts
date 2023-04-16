@@ -1,7 +1,7 @@
-import { parser, generate } from '@shaderfrog/glsl-parser';
-import { FunctionNode, ParameterDeclarationNode, PreprocessorNode, TypeSpecifierNode, KeywordNode, IdentifierNode, StructNode } from '@shaderfrog/glsl-parser/ast';
+import { FunctionSignature, Primitives, TypeSpecifier, inputRowTypes, outputRowTypes, primitiveTypeNames } from '@marble/language';
+import { generate, parser } from '@shaderfrog/glsl-parser';
+import { FunctionNode, ParameterDeclarationNode, PreprocessorNode, TypeSpecifierNode } from '@shaderfrog/glsl-parser/ast';
 import { SourceTemplate } from './typings';
-import { FunctionSignature, TypeSpecifier } from '@marble/language';
 
 export class TemplateSheetParser {
 
@@ -10,11 +10,13 @@ export class TemplateSheetParser {
     private currentColor = '#aa66aa';
     private currentCategory = 'other';
     private currentName = 'Unnamed';
+    private currentOutTypes: TypeSpecifier[] = [];
+    private rowRecords: Record<string, Record<string, string>> = {};
 
     constructor(
         src: string
     ) {
-        const ast = parser.parse(src);
+        const ast = parser.parse(src, { quiet: true });
         for (const node of ast.program) {
             switch (node.type) {
                 case 'preprocessor':
@@ -28,29 +30,43 @@ export class TemplateSheetParser {
     }
 
     private registerPreprocessor(node: PreprocessorNode) {
-        const [ _, command, ...args ] = node.line.split(/\s+/);
+        const commandMatch = /^\s*#\s*(\w+)(.*)/.exec(node.line);
+        if (!commandMatch) return;
+        const [_, command, argList] = commandMatch;
+        const tokenizer = new MetadataTokenizer(argList);
 
-        switch (command) {
+        switch (command.toLocaleLowerCase()) {
             case 'category':
-                const [ category ] = args;
-                this.currentCategory = category;
-                break;
-            case 'color':
-                const [ color ] = args;
-                this.currentColor = color;
+                this.currentCategory = tokenizer.expectSimple(`Expected category`).value;
                 break;
             case 'name':
-                const [ name ] = args;
-                this.currentName = name;
+                this.currentName = tokenizer.expectSimple(`Expected name`).value;
                 break;
-            default: 
-                throw new Error(`Unknown preprocessor keyword "${command}" in line "${node.line}"`);
+            case 'color':
+                this.currentColor = tokenizer.expectSimple(`Expected color`).value;
+                break;
+            case 'outtype':
+                const types: string[] = [];
+                do {
+                    types.push(tokenizer.expectSimple('Expected output row type').value)
+                }
+                while (tokenizer.hasSimple());
+                this.currentOutTypes = types.map(typeName => generateNamedSpecifier(typeName));
+                break;
+            case 'row':
+                const rowId = tokenizer.expectSimple(`expected row id`).value;
+                const rowData: Record<string, string> = {};
+                while (tokenizer.hasMapped()) {
+                    const entry = tokenizer.expectMapped(`Expected row data`);
+                    rowData[entry.key] = entry.value;
+                }
+                this.rowRecords[rowId] = rowData;
+                break;
         }
     }
 
     private registerFunction(funcNode: FunctionNode) {
         const functionId = funcNode.prototype.header.name.identifier;
-        const functionReturnType = funcNode.prototype.header.returnType.specifier;
         const params = (funcNode.prototype.parameters as ParameterDeclarationNode[])
             .filter(param => param.type === 'parameter_declaration')
             .map(param => {
@@ -63,27 +79,42 @@ export class TemplateSheetParser {
         const signature: FunctionSignature = {
             id: `internal:${functionId}`,
             name: this.currentName,
+            description: '',
             version: 0,
             attributes: {
                 category: this.currentCategory,
                 color: this.currentColor,
             },
             inputs: params.map(param => {
+                const rowId = param.identifier.identifier;
+                const rowRecord = this.rowRecords[rowId] || {};
+                const rowType: any = rowRecord.rt || 'input-simple';
+                if (!inputRowTypes.includes(rowType)) {
+                    throw new Error(`"${rowType}" is not a valid input rowtype`);
+                }
+            
                 return {
-                    id: param.identifier.identifier,
-                    label: param.identifier.identifier,
-                    rowType: 'input-simple',
-                    dataType: parseDataType(param.specifier),
+                    id: rowId,
+                    label: rowRecord.n || rowId,
+                    rowType: rowType,
+                    dataType: parseTypeSpecifierNode(param.specifier),
                 }
             }),
-            outputs: [
-                {
-                    id: 'output',
-                    label: 'Output',
-                    rowType: 'output',
-                    dataType: parseDataType(functionReturnType),
+            outputs: this.currentOutTypes.map((outType, outIndex) => {
+                const rowId = outIndex.toString();
+                const rowRecord = this.rowRecords[rowId] || {};
+                const rowType: any = rowRecord.rt || 'output';
+                if (!outputRowTypes.includes(rowType)) {
+                    throw new Error(`"${rowType}" is not a valid output rowtype`);
                 }
-            ]
+
+                return {
+                    id: rowId,
+                    label: rowRecord.n || rowId,
+                    rowType,
+                    dataType: outType,
+                };
+            }),
         };
 
         funcNode.body.rb.whitespace = '\n';
@@ -97,13 +128,100 @@ export class TemplateSheetParser {
     }
 }
 
-
-function parseDataType(typeSpec: TypeSpecifierNode): TypeSpecifier {
+function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): TypeSpecifier {
+    let name: string | undefined; 
     if (typeSpec.specifier.type === 'identifier') {
-        return { type: 'atomic', atom: typeSpec.specifier.identifier };
+        name = typeSpec.specifier.identifier;
     }
     if (typeSpec.specifier.type === 'keyword') {
-        return { type: 'atomic', atom: typeSpec.specifier.token };
+        name = typeSpec.specifier.token;
     }
-    throw new Error(`Unknown type ${typeSpec.specifier.type}`);
+    if (name == null) {
+        throw new Error(`Unknown type ${typeSpec.specifier.type}`);
+    }
+
+    return generateNamedSpecifier(name);
+}
+
+function generateNamedSpecifier(name: string): TypeSpecifier {
+    if (primitiveTypeNames.includes(name as Primitives)) {
+        return {
+            type: 'primitive',
+            primitive: name as Primitives,
+        }
+    }
+    return {
+        type: 'reference',
+        name,
+    }
+}
+
+
+
+type ArgumentToken =
+    | { type: 'simple', value: string }
+    | { type: 'mapped', key: string, value: string }
+
+
+class MetadataTokenizer {
+    private tokens: ArgumentToken[] = [];
+
+    constructor(str: string) {
+        const tokenStream: string[] = [];
+        while (true) {
+            const tokenMatch =
+                /^[\s]*"(.*?)"/.exec(str)   // in quotations
+                || /^[\s]*([^\s]+)/.exec(str); // other token
+            if (!tokenMatch) {
+                break;
+            }
+            str = str.slice(tokenMatch[0].length);
+            tokenStream.push(tokenMatch[1]);
+        }
+
+        while (tokenStream.length) {
+            const currToken = tokenStream.shift()!;
+            if (currToken.startsWith('-')) {
+                const valueToken = tokenStream.shift()!;
+                if (!valueToken) {
+                    throw new Error(`No value passed`);
+                }
+                this.tokens.push({
+                    type: 'mapped',
+                    key: currToken.slice(1),
+                    value: valueToken,
+                })
+            } else {
+                this.tokens.push({
+                    type: 'simple',
+                    value: currToken,
+                });
+            }
+        }
+    }
+
+    public hasSimple() {
+        return this.isSimpleToken(this.tokens[0]);
+    }
+    public hasMapped() {
+        return this.isMappedToken(this.tokens[0]);
+    }
+    public expectSimple(errMsg: string) {
+        if (!this.hasSimple()) {
+            throw new Error(errMsg)
+        }
+        return this.tokens.shift() as ArgumentToken & { type: 'simple' };
+    }
+    public expectMapped(errMsg: string) {
+        if (!this.hasMapped()) {
+            throw new Error(errMsg)
+        }
+        return this.tokens.shift() as ArgumentToken & { type: 'mapped' };
+    }
+    private isSimpleToken(token: ArgumentToken | undefined): token is ArgumentToken & { type: 'simple' } {
+        return token?.type === 'simple';
+    }
+    private isMappedToken(token: ArgumentToken | undefined): token is ArgumentToken & { type: 'mapped' } {
+        return token?.type === 'mapped';
+    }
 }

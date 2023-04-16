@@ -1,9 +1,9 @@
 import React from 'react';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { RowMetadata, StackedInputRowT } from '../types';
 import { arrayRange } from '../utils/arrays';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
 const MAX_ROWS = 64;
@@ -26,7 +26,7 @@ const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<
                 const rowName = `${row.name} ${subIndex + 1}`
 
                 return (
-                    <GeometryRowDiv
+                    <FlowRowDiv
                         heightUnits={1}
                         key={`subrow-${subIndex}`}
                     >
@@ -35,8 +35,8 @@ const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<
                         >
                             {rowName}
                         </GeometryRowNameP>
-                        <GeometryJoint
-                            geometryId={geometryId}
+                        <FlowJoint
+                            flowId={geometryId}
                             jointLocation={{ nodeId, rowId: row.id, subIndex }}
                             jointDirection='input'
                             connected={isConnected}
@@ -44,7 +44,7 @@ const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<
                             additional={!isConnected}
                             isStackedInput={true}
                         />
-                    </GeometryRowDiv>
+                    </FlowRowDiv>
                 )
             })
         }

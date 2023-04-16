@@ -1,29 +1,35 @@
 import { Obj } from "./utils";
 
-export interface AtomicTypeSpecifier {
-    type: 'atomic';
-    atom: string;
+export type PrimitiveBoolean = 'bool';
+export type PrimitiveFloat = 'float';
+export type PrimitiveInteger = 'int';
+export type Primitives = PrimitiveBoolean | PrimitiveFloat | PrimitiveInteger; // string?
+
+export const primitiveTypeNames: Primitives[] = [ 'bool', 'float', 'int' ];
+
+export interface PrimitiveTypeSpecifier<P extends Primitives = Primitives> {
+    type: 'primitive';
+    primitive: P;
 }
 export interface ListTypeSpecifier {
     type: 'list';
     elementType: TypeSpecifier; // all elements have same type
+    length?: number;
 }
 export interface MapTypeSpecifier {
     type: 'map';
     elements: Obj<TypeSpecifier>;
 }
-// export interface FunctionTypeSpecifier {
-//     type: 'function';
-//     parameterMap: MapTypeSpecifier;
-//     outputMap: MapTypeSpecifier;
-// }
-// export interface ReferenceTypeSpecifier {
-//     type: 'reference';
-//     name: string;
-// }
+export interface ReferenceTypeSpecifier {
+    type: 'reference';
+    name: string;
+}
+export interface UnknownTypeSpecifier {
+    type: 'unknown';
+}
 export type TypeSpecifier =
-    | AtomicTypeSpecifier
+    | PrimitiveTypeSpecifier
     | MapTypeSpecifier
     | ListTypeSpecifier
-    // | FunctionTypeSpecifier
-    // | ReferenceTypeSpecifier
+    | ReferenceTypeSpecifier
+    | UnknownTypeSpecifier

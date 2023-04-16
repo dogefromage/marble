@@ -1,5 +1,5 @@
 import React from 'react';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { BaseInputRowT } from '../types';
 import GeometryInputJoint from './GeometryInputJoint';
@@ -7,7 +7,7 @@ import { RowProps } from './GeometryRowRoot';
 
 const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row }: RowProps<BaseInputRowT>) => {
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={1}
         >
             <GeometryRowNameP
@@ -20,7 +20,7 @@ const GeometryRowInputOnly = ({ geometryId, panelId, nodeId, row }: RowProps<Bas
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 row={row}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

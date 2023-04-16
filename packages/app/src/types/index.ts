@@ -1,6 +1,5 @@
 export * from './commands';
 export * from './menus';
-export * from './geometries';
 export * from './panelManager';
 export * from './layerPrograms';
 export * from './undo';

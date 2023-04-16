@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/flowsSlice';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { ColorRowT, ColorTuple, RowMetadata, ViewTypes } from '../types';
 import FormColorPicker from './FormColorPicker';
@@ -45,7 +45,7 @@ const GeometryRowColor = ({ geometryId, panelId, nodeId, row }: RowProps<ColorRo
     if (!panelState) return null;
 
     return (
-        <GeometryRowDiv heightUnits={meta.heightUnits}>
+        <FlowRowDiv heightUnits={meta.heightUnits}>
             <SplitColorDiv>
                 <GeometryRowNameP align='left'>
                     {row.name}
@@ -59,7 +59,7 @@ const GeometryRowColor = ({ geometryId, panelId, nodeId, row }: RowProps<ColorRo
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 row={row}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { PassthroughRowT, RowMetadata } from '../types';
 import GeometryArgumentTag from './GeometryArgumentTag';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
 export function getRowMetadataPassthrough(props: RowMetaProps<PassthroughRowT>): RowMetadata {
@@ -17,7 +17,7 @@ const GeometryRowPassthrough = ({ geometryId, panelId, nodeId, row }: RowProps<P
     const argumentId = row.defaultParameter;
 
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={1}
         >
             <GeometryRowNameP align='left'>Input</GeometryRowNameP> 
@@ -28,14 +28,14 @@ const GeometryRowPassthrough = ({ geometryId, panelId, nodeId, row }: RowProps<P
                     argumentId={argumentId}
                 />
             }
-            <GeometryJoint
-                geometryId={geometryId}
+            <FlowJoint
+                flowId={geometryId}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 jointDirection='output'
                 dataType={row.dataType}
                 connected={row.numConnectedJoints > 0}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

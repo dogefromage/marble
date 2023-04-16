@@ -1,13 +1,13 @@
-import { FunctionSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
-import { Obj, Vector2, Versionable } from "./utils";
+import { FlowSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
+import { Obj, Vec2, Versionable } from "./utils";
 
-interface InputJointLocation {
+export interface InputJointLocation {
     direction: 'input';
     nodeId: string;
     rowId: string;
     jointIndex: number;
 }
-interface OutputJointLocation {
+export interface OutputJointLocation {
     direction: 'output';
     nodeId: string;
     rowId: string;
@@ -27,10 +27,9 @@ export interface RowState {
 export interface FlowNode {
     id: string;
     name?: string;
-    position: Vector2;
+    position: Vec2;
     rowStates: Obj<RowState>;
-    signature: FunctionSignatureId;
-    // type: 'instance' | 'syntax';
+    signature: FlowSignatureId;
 }
 
 export interface FlowGraph extends Versionable {

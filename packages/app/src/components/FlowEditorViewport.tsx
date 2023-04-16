@@ -10,7 +10,7 @@ import useContextMenu from '../utils/menus/useContextMenu';
 import { TEST_LAYER_ID, TEST_ROOT_FLOW_ID } from '../utils/testSetup';
 import FlowEditorBreadCrumbs from './FlowEditorBreadCrumbs';
 import FlowEditorTransform from './FlowEditorTransform';
-import GeometryTemplateCatalog from './GeometryTemplateCatalog';
+import FlowNodeCatalog from './FlowNodeCatalog';
 import { flowsCreate, selectSingleFlow } from '../slices/flowsSlice';
 import { topFlowSignature } from '../types/flows';
 
@@ -41,10 +41,10 @@ const FlowEditorViewport = ({ panelId }: Props) => {
     const dispatchCommand = useDispatchCommand();
 
     const contextMenu = useContextMenu(
-        panelId, 
-        'Geometry Nodes', 
+        panelId,
+        'Geometry Nodes',
         [
-            // 'geometryEditor.openTemplateCatalog',
+            'flowEditor.addNodeAtPosition',
             'flowEditor.deleteSelected',
             // 'geometryEditor.resetSelected',
             // 'geometryEditor.createSubgeometry'
@@ -53,13 +53,13 @@ const FlowEditorViewport = ({ panelId }: Props) => {
 
     return (
         <EditorWrapper
-            // onDoubleClick={e => {
-            //     dispatchCommand(
-            //         'geometryEditor.openTemplateCatalog', 
-            //         { clientCursor: { x: e.clientX, y: e.clientY } },
-            //         'view',
-            //     );
-            // }}
+            onDoubleClick={e => {
+                dispatchCommand(
+                    'flowEditor.addNodeAtPosition', 
+                    { clientCursor: { x: e.clientX, y: e.clientY } },
+                    'view',
+                );
+            }}
             onContextMenu={contextMenu}
         >
             {
@@ -73,13 +73,10 @@ const FlowEditorViewport = ({ panelId }: Props) => {
                 panelId={panelId}
                 flowStack={panelState?.flowStack || []}
             />
+            <FlowNodeCatalog
+                panelId={panelId}
+            />
             {
-                // flowId && panelState?.templateCatalog &&
-                // <GeometryTemplateCatalog
-                //     panelId={panelId}
-                //     geometryId={flowId}
-                // />
-            }{
                 // only for testing
                 flowId && !geometry &&
                 <TestButton

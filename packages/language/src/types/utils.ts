@@ -1,10 +1,10 @@
 
-export interface Vector2 {
+export interface Vec2 {
     x: number;
     y: number;
 }
 
-export type Obj<T> = { [ key: string ]: T };
+export type Obj<T> = Record<string, T>;
 
 export interface Versionable {
     id: string;

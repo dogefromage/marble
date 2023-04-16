@@ -4,7 +4,7 @@ import { useAppDispatch } from "../redux/hooks";
 import { geometryEditorPanelsSetNewLink } from "../slices/panelFlowEditorSlice";
 import { GeometryNewLink, GNodeData, GNodeState, PlanarCamera } from "../types";
 import getJointPositionWorld from "../utils/geometries/geometryUtils";
-import { pointScreenToWorld } from "../utils/geometries/planarCameraMath";
+import { pointScreenToWorld } from "../utils/planarCameraMath";
 import { p2v, v2p } from "../utils/linalg";
 import GeometryLinkDiv from "./GeometryLinkDiv";
 

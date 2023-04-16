@@ -1,7 +1,7 @@
 import React from 'react';
 import { GeometryJointLocation, InputRowT, RowZ } from '../types';
 import GeometryArgumentTag from './GeometryArgumentTag';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 
 interface Props {
     geometryId: string;
@@ -21,8 +21,8 @@ const GeometryInputJoint = ({ geometryId, row, jointLocation }: Props) => {
                 argumentId={argumentId}
             />
         }
-        <GeometryJoint
-            geometryId={geometryId}
+        <FlowJoint
+            flowId={geometryId}
             jointLocation={jointLocation}
             jointDirection='input'
             connected={incomingElement != null}

@@ -2,13 +2,13 @@ import { mat3, quat } from 'gl-matrix';
 import React, { useEffect } from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/flowsSlice';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { IndentRowDiv } from '../styles/IndentRowDiv';
 import { rotationModelNames, RotationModels, RotationRowT, RowMetadata, RowS, Tuple } from '../types';
 import { Metrics } from '../types/world';
 import { eulerToMat3, quaternionToEuler } from '../utils/linalg';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 import GeometrySelectOptionSubRow from './GeometrySelectOptionSubRow';
 import SlidableInput from './SlideableInput';
@@ -131,7 +131,7 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
     const isConnected = row.numConnectedJoints > 0;
 
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={meta.heightUnits}
         >
             <GeometryRowNameP
@@ -168,14 +168,14 @@ const GeometryRowRotation = ({ geometryId, panelId, nodeId, row }: Props) => {
                 }
                 </>
             }
-            <GeometryJoint
-                geometryId={geometryId}
+            <FlowJoint
+                flowId={geometryId}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 jointDirection='input'
                 connected={isConnected}
                 dataType={row.dataType}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

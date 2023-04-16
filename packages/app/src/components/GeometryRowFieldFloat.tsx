@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppDispatch } from '../redux/hooks';
 import { geometriesAssignRowData } from '../slices/flowsSlice';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { DataTypes, FieldRowT } from '../types';
 import GeometryInputJoint from './GeometryInputJoint';
@@ -16,7 +16,7 @@ const GeometryRowFieldFloat = ({ geometryId, nodeId, row }: Props) =>
     const isConnected = row.numConnectedJoints > 0;
 
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={1}
         >
             {
@@ -45,7 +45,7 @@ const GeometryRowFieldFloat = ({ geometryId, nodeId, row }: Props) =>
                 row={row}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

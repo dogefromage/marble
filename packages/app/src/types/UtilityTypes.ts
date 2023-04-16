@@ -1,5 +1,6 @@
 
-export type Obj<T> = { [ key: string ]: T | undefined };
+export type Obj<T> = { [ key: string ]: T };
+export type ObjStrict<T> = { [ key: string ]: T };
 
 export type NullArr<T> = (T | null)[];
 

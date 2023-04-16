@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
+import { GNODE_ROW_UNIT_HEIGHT } from '../styles/FlowRowDiv';
 import FormSelectOption, { SelectOptionProps } from './FormSelectOption';
 
 const Wrapper = styled.div`

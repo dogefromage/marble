@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { DEFAULT_COMMANDS } from "../content/commands/defaultCommands";
+import { defaultCommands } from "../content/commands/defaultCommands";
 import { RootState } from "../redux/store";
 import { CommandsSliceState } from "../types";
 
 const defaultCommandMap = Object.fromEntries(
-    DEFAULT_COMMANDS.map(c => ([ c.id, c ]))
+    defaultCommands.map(c => ([ c.id, c ]))
 );
 
 const initialState: CommandsSliceState = {

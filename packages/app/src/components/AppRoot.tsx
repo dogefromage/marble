@@ -6,18 +6,16 @@ import { Provider } from 'react-redux';
 import 'react-reflex/styles.css';
 import { ThemeProvider } from 'styled-components';
 import defaultTheme from '../content/defaultTheme';
-import { initStore, RootState } from '../redux/store';
-import CompilerRoot from './CompilerRoot';
+import { RootState, initStore } from '../redux/store';
+import AssetsManager from './AssetsManager';
 import ContextMenu from './ContextMenu';
-import DependencyManager from './DependencyManager';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
-import GeometryDataManager from './GeometryDataManager';
 import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
 import { MenuPortalMount } from './MenuPortalMount';
 import StartAnouncer from './StartAnouncer';
-import TemplateManager from './TemplateManager';
+import ProgramsManager from './ProgramsManager';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -40,6 +38,8 @@ const AppRoot = ({ projectId }: Props) => {
         >
             <Provider store={store}>
                 {/* APP STATE */}
+                <AssetsManager />
+                <ProgramsManager />
                 {/* <DependencyManager /> */}
                 {/* <TemplateManager staticOnly={false} /> */}
                 {/* <GeometryDataManager /> */}

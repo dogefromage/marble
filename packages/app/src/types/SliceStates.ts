@@ -1,8 +1,9 @@
-import { FlowGraph } from "@marble/language";
+import { FlowGraph, FunctionSignature, TypeSpecifier } from "@marble/language";
+import { ProjectContext } from "@marble/language";
 import { Command, ConsoleMessage, ContextMenuState, DependencyGraph, Layer, LayerProgram, MenuState, World } from ".";
 import { Obj, Rect } from "./UtilityTypes";
 
-export type FlowsSliceState = Obj<FlowGraph | undefined>;
+export type FlowsSliceState = Obj<FlowGraph>;
 // export type GeometryDatasSliceState = Obj<GeometryConnectionData>;
 export type LayerProgramsSliceState = Obj<LayerProgram>;
 export type MenusSliceState = Obj<MenuState>;
@@ -14,10 +15,16 @@ export type PreferencesSliceState = {};
 
 export interface CommandsSliceState { commands: Obj<Command> };
 
-// export type TemplatesSliceState = {
-//     templates: Obj<GNodeTemplate>;
-//     includes: Obj<ProgramInclude>;
-// }
+export interface AssetsSliceState {
+    signatures: Obj<FunctionSignature>;
+    types: Obj<TypeSpecifier>;
+    glsl: Obj<string>;
+}
+
+export interface ContextSliceState {
+    projectContext: ProjectContext | null;
+    // add cache
+}
 
 export interface PanelManagerSliceState {
     activePanelId: string;

@@ -1,3 +1,3 @@
 
 export * from './types';
-export { validateProgram, generateSuitableEnvironment } from './validation/graphValidation';
+export { validateProject } from './validation/graphValidation';

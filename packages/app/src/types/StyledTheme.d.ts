@@ -8,9 +8,10 @@ declare module 'styled-components' {
             general: {
                 fields: string;
             }
-            geometryEditor: {
+            flowEditor: {
                 background: string;
                 backgroundDots: string;
+                nodeColor: string;
             }
             dataTypes: {
                 [ D in DataTypes ]: string;

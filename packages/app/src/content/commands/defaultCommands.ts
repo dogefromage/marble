@@ -4,8 +4,7 @@ import { Command, ViewTypes } from "../../types";
 import { flowEditorCommands } from "./flowEditorCommands";
 import { viewportCommands } from "./viewportCommands";
 
-export const DEFAULT_COMMANDS: Command[] =
-[
+export const defaultCommands: Command[] = [
     /**
      * GLOBAL
      */
@@ -14,14 +13,14 @@ export const DEFAULT_COMMANDS: Command[] =
         name: 'Undo',
         scope: 'global',
         actionCreator: undo,
-        keyCombinations: [ { key: 'z', ctrlKey: true } ],
+        keyCombinations: [{ key: 'z', ctrlKey: true }],
     },
     {
         id: 'global.redo',
         name: 'Redo',
         scope: 'global',
         actionCreator: redo,
-        keyCombinations: [ { key: 'y', ctrlKey: true } ],
+        keyCombinations: [{ key: 'y', ctrlKey: true }],
     },
     /**
      * Console view

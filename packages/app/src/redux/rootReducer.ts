@@ -13,6 +13,8 @@ import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
+import assetsReducer from "../slices/assetsSlice";
+import contextReducer from "../slices/contextSlice";
 
 const rootReducer = combineReducers({
     recorded: undoableEnhancer(
@@ -25,11 +27,10 @@ const rootReducer = combineReducers({
                 }),
                 'project',
             ),
-            // geometryDatas: geometryDatasReducer,
-            // dependencyGraph: dependencyGraphReducer,
+            context: contextReducer,
             layerPrograms: layerProgramsReducer,
-            // templates: templatesReducer,    
-        })
+            // dependencyGraph: dependencyGraphReducer,
+        }),
     ),
     editor: combineReducers({
         panels: combineReducers({
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
         }),
         panelManager: panelManagerReducer,
     }),
+    assets: assetsReducer,
     console: consoleReducer,
     menus: menusReducer,
     contextMenu: contextMenuReducer,

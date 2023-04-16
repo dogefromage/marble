@@ -1,4 +1,4 @@
-import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, ExpressionNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LambdaExpressionNode, LambdaTypeSpecifierNode, LiteralNode, ParameterDeclarationNode, PostfixNode, ReturnStatementNode, SimpleTypeSpecifierNode, StatementNode, StructDeclarationNode, StructNode, TypeSpecifierNode } from "@marble/language";
+import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, ParameterDeclarationNode, PostfixNode, QuantifierNode, ReturnStatementNode, StructDeclarationNode, StructNode, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 
 class AstUtils {
     public createLiteral(literal: string, whitespace = ''): LiteralNode {
@@ -35,7 +35,7 @@ class AstUtils {
         }
         return declarationStmt;
     }
-    public createReturnStatement(expression: ExpressionNode): ReturnStatementNode {
+    public createReturnStatement(expression: any): ReturnStatementNode {
         return {
             type: 'return_statement',
             return: this.createKeyword('return'),
@@ -43,11 +43,19 @@ class AstUtils {
             semi: this.createLiteral(';', '\n'),
         };
     }
-    public createTypeSpecifierNode(typeNameIdentifier: KeywordNode | IdentifierNode): TypeSpecifierNode {
+    public createTypeSpecifier(typeNameIdentifier: KeywordNode | IdentifierNode | StructNode, quantifier?: QuantifierNode): TypeSpecifierNode {
         return {
             type: 'type_specifier',
-            quantifier: null,
             specifier: typeNameIdentifier,
+            quantifier: quantifier || null,
+        };
+    }
+    public createQuantifier(expression: any): QuantifierNode {
+        return {
+            type: 'quantifier',
+            lb: ast.createLiteral('['),
+            expression,
+            rb: ast.createLiteral(']'),
         };
     }
     public createFullySpecifiedType(typeSpecNode: TypeSpecifierNode): FullySpecifiedTypeNode {
@@ -72,42 +80,16 @@ class AstUtils {
         }
         return paramDec;
     }
-    public createFunctionCall(identifier: FunctionCallNode['identifier'], args: ExpressionNode[]): FunctionCallNode {
+    public createFunctionCall(identifier: FunctionCallNode['identifier'], argExpressions: any[]): FunctionCallNode {
         return {
             type: 'function_call',
             identifier,
             lp: this.createLiteral('(', ''),
             rp: this.createLiteral(')', ''),
-            args: this.placeCommas(args),
+            args: this.placeCommas(argExpressions),
         }
     }
-    public createLambdaExpression(name: string, parameters: ParameterDeclarationNode[], body: ExpressionNode): LambdaExpressionNode {
-        return {
-            type: 'lambda_expression',
-            header: {
-                type: 'lambda_expression_header',
-                name,
-                lambda: this.createKeyword('lambda'),
-                colon: this.createLiteral(':'),
-                lp: this.createLiteral('('),
-                rp: this.createLiteral(')'),
-                parameters,
-            },
-            body,
-        }
-    }
-    public createLambdaTypeSpecifier(return_type: SimpleTypeSpecifierNode, args: SimpleTypeSpecifierNode[]): LambdaTypeSpecifierNode {
-        // float:(vec3,vec4)
-        return {
-            type: 'lambda_type_specifier',
-            return_type,
-            colon: this.createLiteral(':', ''),
-            lp: this.createLiteral('(', ''),
-            args,
-            rp: this.createLiteral(')', ''),
-        }
-    }
-    public createCompoundStatement(statements: StatementNode[]): CompoundStatementNode {
+    public createCompoundStatement(statements: any[]): CompoundStatementNode {
         return {
             type: 'compound_statement',
             lb: this.createLiteral('{', '\n'),
@@ -179,7 +161,7 @@ class AstUtils {
             }
         }
     }
-    public createPostfix(expression: ExpressionNode, postfix: FieldSelectionNode): PostfixNode {
+    public createPostfix(expression: any, postfix: FieldSelectionNode): PostfixNode {
         return {
             type: 'postfix',
             expression,
@@ -193,13 +175,9 @@ class AstUtils {
             selection,
         }
     }
-
-
     public addTypeSpecWhitespace(specifier: TypeSpecifierNode) {
-        if (specifier.type === 'type_specifier') {
+        if (specifier.specifier.type !== 'struct') {
             specifier.specifier.whitespace = ' ';
-        } else {
-            specifier.rp.whitespace = ' ';
         }
     }
     public getParameterIdentifiers(parameterDeclarationList?: ParameterDeclarationNode[]): [TypeSpecifierNode, string][] {
@@ -247,9 +225,6 @@ class AstUtils {
                 case 'expression_statement':
                     statement.semi.whitespace = '\n' + spaces;
                     break;
-                // default:
-                //     console.log(statement.type);
-                //     break;
             }
         }
     }

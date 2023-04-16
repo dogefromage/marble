@@ -1,5 +1,5 @@
 import { TypeSpecifier } from "./typeSpecifiers";
-import { Versionable } from "./utils";
+import { Obj, Versionable } from "./utils";
 
 /**
  * Rows are either inputs or outputs of node.
@@ -14,23 +14,24 @@ interface BaseRow<R extends string> {
 }
 
 type SimpleInputRow = BaseRow<'input-simple'>;
+type VariableInputRow = BaseRow<'input-variable'>;
 type ListInputRow = BaseRow<'input-list'>;
-interface NullableInputRow extends BaseRow<'input-nullable'> {
-    defaultValue: any;
-}
 
 type SimpleOutputRow = BaseRow<'output'>;
 
 export type InputRowSignature =
     | SimpleInputRow
     | ListInputRow
-    | NullableInputRow
-
-export type OutputRowSignature = 
+    | VariableInputRow
+    
+export type OutputRowSignature =
     | SimpleOutputRow
 
+export const inputRowTypes: InputRowSignature['rowType'][] = ['input-simple', 'input-variable', 'input-list'];
+export const outputRowTypes: OutputRowSignature['rowType'][] = ['output'];
+
 export type FunctionSignatureSources = 'internal' | 'composed' | 'syntax';
-export type FunctionSignatureId = `${FunctionSignatureSources}:${string}`
+export type FlowSignatureId = `${FunctionSignatureSources}:${string}`
 
 /**
  * Minimum data required to instantiate this function either internal, graph or other location.
@@ -42,13 +43,14 @@ export type FunctionSignatureId = `${FunctionSignatureSources}:${string}`
  * The order of inputs and outputs in the array should be only used for display.
  */
 
-export interface AnonymousFunctionSignature {
+export interface AnonymousFlowSignature {
     inputs: InputRowSignature[];
     outputs: OutputRowSignature[];
 }
 
-export interface FunctionSignature extends Versionable, AnonymousFunctionSignature {
-    id: FunctionSignatureId;
+export interface FlowSignature extends Versionable, AnonymousFlowSignature {
+    id: FlowSignatureId;
     name: string;
-    category: string;
+    description: string | null;
+    attributes: Obj<string>;
 }

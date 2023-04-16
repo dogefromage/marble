@@ -2,10 +2,13 @@
     "name": "@marble/language",
     "version": "1.0.0",
     "description": "",
-    "main": "lib/index.js",
+    "main": "lib/cjs/index.js",
+    "module": "lib/es/index.js",
+    "types": "lib/es/index.d.ts",
     "scripts": {
-        "dev": "tsc --watch",
-        "build": "tsc"
+        "dev": "tsc --watch --project tsconfig-es.json",
+        "build": "tsc --project tsconfig-es.json",
+        "build-cjs": "tsc --project tsconfig-cjs.json"
     },
     "author": "zebrapig",
     "license": "MIT"

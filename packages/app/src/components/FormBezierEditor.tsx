@@ -1,7 +1,7 @@
 import { mat4, vec4 } from 'gl-matrix';
 import React, { useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/GeometryRowDiv';
+import { GNODE_ROW_UNIT_HEIGHT } from '../styles/FlowRowDiv';
 import { BOX_SHADOW, INSET_SHADOW } from '../styles/utils';
 import { DataTypeValueTypes, Vec2 } from '../types';
 

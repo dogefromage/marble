@@ -1,14 +1,14 @@
 import React from 'react';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import FlowRowDiv from '../styles/FlowRowDiv';
 import GeometryRowNameP from '../styles/GeometryRowNameP';
 import { OutputRowT } from '../types';
-import GeometryJoint from './GeometryJoint';
+import FlowJoint from './FlowJoint';
 import { RowProps } from './GeometryRowRoot';
 
 const GeometryRowOutput = ({ geometryId, panelId, nodeId, row }: RowProps<OutputRowT>) =>
 {
     return (
-        <GeometryRowDiv
+        <FlowRowDiv
             heightUnits={1}
         >
             <GeometryRowNameP
@@ -16,14 +16,14 @@ const GeometryRowOutput = ({ geometryId, panelId, nodeId, row }: RowProps<Output
             >
                 { row.name }
             </GeometryRowNameP>
-            <GeometryJoint 
-                geometryId={geometryId}
+            <FlowJoint 
+                flowId={geometryId}
                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
                 jointDirection='output'
                 connected={row.numConnectedJoints > 0}
                 dataType={row.dataType}
             />
-        </GeometryRowDiv>
+        </FlowRowDiv>
     );
 }
 

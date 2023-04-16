@@ -1,31 +1,36 @@
 import { useMouseDrag } from '@marble/interactive';
-import { vec2 } from 'gl-matrix';
-import React, { useRef } from 'react';
+import { FlowNode, FlowNodeContext } from '@marble/language';
+import React, { useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
-import GeometryNodeDiv, { DEFAULT_NODE_WIDTH } from '../styles/GeometryNodeDiv';
-import { Vec2, SelectionStatus } from '../types/UtilityTypes';
-import { vectorScreenToWorld } from '../utils/geometries/planarCameraMath';
-import { v2p } from '../utils/linalg';
-import { ErrorBoundary } from './ErrorBoundary';
-import { GeometryMissingTemplateContent, GeometryErrorOccuredContent } from './GeometryErrorContent';
-import GeometryRowRoot from './GeometryRowRoot';
-import { FlowNode } from '@marble/language';
-import { FlowEditorPanelState } from '../types';
 import { flowsMoveSelection } from '../slices/flowsSlice';
-import GeometryRowDiv from '../styles/GeometryRowDiv';
+import { flowEditorSetSelection } from '../slices/panelFlowEditorSlice';
+import { FlowNodeDiv } from '../styles/flowStyles';
+import { FlowEditorPanelState } from '../types';
+import { SelectionStatus, Vec2 } from '../types/UtilityTypes';
+import { vectorScreenToWorld } from '../utils/planarCameraMath';
+import FlowNodeContent from './FlowNodeContent';
+import { FlowNodeMissingContent } from './FlowNodeMissingContent';
+
+export const FLOW_NODE_DIV_CLASS = 'flow-node-div';
 
 interface Props {
     panelId: string;
     flowId: string;
     node: FlowNode;
-    // nodeData: GNodeData | null;
+    context: FlowNodeContext;
     getPanelState: () => FlowEditorPanelState;
     selectionStatus: SelectionStatus;
 }
 
-const FlowNodeElement = ({ panelId, flowId, node, /* nodeData, */ getPanelState, selectionStatus }: Props) => {
+const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, selectionStatus }: Props) => {
     const dispatch = useAppDispatch();
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    const getClientNodePos = useCallback(() => {
+        const rect = wrapperRef.current!.getBoundingClientRect();
+        return { x: rect.x, y: rect.y } as Vec2;
+    }, [ wrapperRef ]);
 
     const dragRef = useRef<{
         startCursor: Vec2;
@@ -35,14 +40,12 @@ const FlowNodeElement = ({ panelId, flowId, node, /* nodeData, */ getPanelState,
     }>();
 
     const ensureSelection = () => {
-        // if (selectionStatus !== SelectionStatus.Selected) {
-        //     dispatch(geometriesSetUserSelection({
-        //         geometryId,
-        //         userId: TEST_USER_ID,
-        //         selection: [ nodeState.id ],
-        //         undo: { desc: `Selected single node in active geometry.` },
-        //     }))
-        // }
+        if (selectionStatus !== SelectionStatus.Selected) {
+            dispatch(flowEditorSetSelection({
+                panelId,
+                selection: [node.id],
+            }));
+        }
     }
 
     const { handlers, catcher } = useMouseDrag({
@@ -63,18 +66,17 @@ const FlowNodeElement = ({ panelId, flowId, node, /* nodeData, */ getPanelState,
 
             if (!dragRef.current || !camera) return;
 
-            const screenDelta = vec2.fromValues(
-                e.clientX - dragRef.current.lastCursor.x,
-                e.clientY - dragRef.current.lastCursor.y,
-            );
-            dragRef.current.lastCursor = { x: e.clientX, y: e.clientY };
+            const screenDelta = {
+                x: e.clientX - dragRef.current.lastCursor.x,
+                y: e.clientY - dragRef.current.lastCursor.y,
+            };
             const worldMove = vectorScreenToWorld(camera, screenDelta);
-            const delta = v2p(worldMove);
+            dragRef.current.lastCursor = { x: e.clientX, y: e.clientY };
 
             dispatch(flowsMoveSelection({
                 flowId,
                 selection,
-                delta,
+                delta: worldMove,
                 undo: {
                     actionToken: dragRef.current!.stackToken,
                     desc: `Moved selection in active geometry.`
@@ -85,65 +87,49 @@ const FlowNodeElement = ({ panelId, flowId, node, /* nodeData, */ getPanelState,
         cursor: 'grab',
     });
 
-    const width = /* nodeData?.widthPixels || */ DEFAULT_NODE_WIDTH;
-
     return (
-        <GeometryNodeDiv
+        <FlowNodeDiv
             position={node.position}
-            width={width}
             selectionStatus={selectionStatus}
             {...handlers}
+            className={FLOW_NODE_DIV_CLASS}
+            data-id={node.id} // for DOM querying node ids
             onClick={e => {
                 e.stopPropagation();
             }}
-            // onDoubleClick={e => {
-            //     // enter nested geometry
-            //     if (nodeData?.template == null) {
-            //         return;
-            //     }
-            //     const { id: subGeoId, type: templateType } = decomposeTemplateId(nodeData.template.id);
-            //     if (templateType === 'composite') {
-            //         dispatch(geometryEditorPanelsPushGeometryId({
-            //             panelId,
-            //             geometryId: subGeoId,
-            //         }));
-            //         e.stopPropagation();
-            //     }
-            // }}
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
+            ref={wrapperRef}
+        // onDoubleClick={e => {
+        //     // enter nested geometry
+        //     if (nodeData?.template == null) {
+        //         return;
+        //     }
+        //     const { id: subGeoId, type: templateType } = decomposeTemplateId(nodeData.template.id);
+        //     if (templateType === 'composite') {
+        //         dispatch(geometryEditorPanelsPushGeometryId({
+        //             panelId,
+        //             geometryId: subGeoId,
+        //         }));
+        //         e.stopPropagation();
+        //     }
+        // }}
         >
             {
-                <GeometryRowDiv heightUnits={1}>
-                    <p>Rows here</p>
-                </GeometryRowDiv>
-                // nodeData ? (
-                //     nodeData.template.rows.map(rowTemplate => {
-                //         const rowState = nodeState.rows[rowTemplate.id];
-                //         const numConnectedJoints = nodeData.rowConnections[rowTemplate.id];
-
-                //         // @ts-ignore
-                //         const rowZ: RowZ = {
-                //             ...rowTemplate,
-                //             ...rowState,
-                //             numConnectedJoints,
-                //         } // merge rows
-
-                //         return (
-                //             <GeometryRowRoot
-                //                 geometryId={geometryId}
-                //                 panelId={panelId}
-                //                 nodeId={nodeState.id}
-                //                 key={rowZ.id}
-                //                 row={rowZ}
-                //             />
-                //         );
-                //     })
-                // ) : (
-                //     <GeometryMissingTemplateContent />
-                // )
+                context.signature ? (
+                    <FlowNodeContent
+                        panelId={panelId}
+                        flowId={flowId}
+                        nodeId={node.id}
+                        context={context}
+                        signature={context.signature}
+                        getClientNodePos={getClientNodePos}
+                    />
+                ) : (
+                    <FlowNodeMissingContent />
+                )
             }
             {catcher}
-        </GeometryNodeDiv >
+        </FlowNodeDiv >
     );
 }
 
