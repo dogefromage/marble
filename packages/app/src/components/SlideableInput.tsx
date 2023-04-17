@@ -5,19 +5,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectWorld } from '../slices/worldSlice';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/FlowRowDiv';
 import { BORDER_RADIUS, INSET_SHADOW } from '../styles/utils';
 import { Metrics, UnitNames } from '../types/world';
 import { Units } from '../utils/formatUnitValues';
+import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 
 const SlidableInputDiv = styled.div`
     position: relative;
     width: 100%;
-    height: ${GNODE_ROW_UNIT_HEIGHT * 0.85}px;
+    height: ${FLOW_NODE_ROW_HEIGHT * 0.85}px;
     display: flex;
     align-items: center;
 
-    margin: ${GNODE_ROW_UNIT_HEIGHT * 0.15}px 0;
+    margin: ${FLOW_NODE_ROW_HEIGHT * 0.15}px 0;
 
     form,
     input

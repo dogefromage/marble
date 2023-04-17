@@ -1,4 +1,4 @@
-import { FlowGraph, FunctionSignature, TypeSpecifier } from "@marble/language";
+import { FlowGraph, FlowSignature, TypeSpecifier } from "@marble/language";
 import { ProjectContext } from "@marble/language";
 import { Command, ConsoleMessage, ContextMenuState, DependencyGraph, Layer, LayerProgram, MenuState, World } from ".";
 import { Obj, Rect } from "./UtilityTypes";
@@ -16,7 +16,7 @@ export type PreferencesSliceState = {};
 export interface CommandsSliceState { commands: Obj<Command> };
 
 export interface AssetsSliceState {
-    signatures: Obj<FunctionSignature>;
+    signatures: Obj<FlowSignature>;
     types: Obj<TypeSpecifier>;
     glsl: Obj<string>;
 }

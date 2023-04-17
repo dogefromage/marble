@@ -1,3 +1,4 @@
 
 export * from './types';
-export { validateProject } from './validation/graphValidation';
+export { validateProject } from './core/validation';
+export { emitPrograms } from './core/emission';

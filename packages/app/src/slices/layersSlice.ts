@@ -8,7 +8,7 @@ export const layersSlice = createSlice({
     name: 'layers',
     initialState,
     reducers: {
-        create: (s, a: UndoAction<{ id: string, rootGeometryId: string }>) => {
+        create: (s, a: UndoAction<{ id: string, topFlowId: string }>) => {
             if (s[a.payload.id] != null) {
                 throw new Error(`Layer already exists`);
             }
@@ -18,7 +18,7 @@ export const layersSlice = createSlice({
                 name: 'New Layer',
                 version: 0,
                 index: count,
-                rootGeometryId: a.payload.rootGeometryId,
+                topFlowId: a.payload.topFlowId,
             };
         },
     },

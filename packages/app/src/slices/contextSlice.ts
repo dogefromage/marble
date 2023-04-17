@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { RootState } from "../redux/store";
 import { ContextSliceState } from "../types";
 import { ProjectContext } from "@marble/language";
+import { castDraft } from "immer";
 
 const initialState: ContextSliceState = {
     projectContext: null,
@@ -13,7 +14,7 @@ export const contextSlice = createSlice({
     initialState,
     reducers: {
         setContext: (s, a: PayloadAction<{ context: ProjectContext }>) => {
-            s.projectContext = a.payload.context;
+            s.projectContext = castDraft(a.payload.context);
         }
     }
 });
@@ -25,7 +26,7 @@ export const {
 export const selectProjectContext = (state: RootState) => state.recorded.present.context;
 export const selectFlowContext = (flowId: string) => {
     return useCallback((state: RootState) =>
-        selectProjectContext(state).projectContext?.flows[flowId],
+        selectProjectContext(state).projectContext?.flowContexts[flowId],
         [flowId],
     );
 }

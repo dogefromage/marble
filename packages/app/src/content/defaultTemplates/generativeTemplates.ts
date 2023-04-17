@@ -1,5 +1,3 @@
-import { getTemplateId, GNodeTemplate } from "../../types";
-import { glsl } from "../../utils/codeStrings";
 
 // const generative_perlin_noise: GNodeTemplate = {
 //     id: getTemplateId('static', 'perlin_noise'),

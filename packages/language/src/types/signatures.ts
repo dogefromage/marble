@@ -13,19 +13,19 @@ interface BaseRow<R extends string> {
     rowType: R;
 }
 
-type SimpleInputRow = BaseRow<'input-simple'>;
-type VariableInputRow = BaseRow<'input-variable'>;
-type ListInputRow = BaseRow<'input-list'>;
+export type SimpleInputRowSignature = BaseRow<'input-simple'>;
+export type VariableInputRowSignature = BaseRow<'input-variable'>;
+export type ListInputRowSignature = BaseRow<'input-list'>;
 
-type SimpleOutputRow = BaseRow<'output'>;
+export type SimpleOutputRowSignature = BaseRow<'output'>;
 
 export type InputRowSignature =
-    | SimpleInputRow
-    | ListInputRow
-    | VariableInputRow
+    | SimpleInputRowSignature
+    | ListInputRowSignature
+    | VariableInputRowSignature
     
 export type OutputRowSignature =
-    | SimpleOutputRow
+    | SimpleOutputRowSignature
 
 export const inputRowTypes: InputRowSignature['rowType'][] = ['input-simple', 'input-variable', 'input-list'];
 export const outputRowTypes: OutputRowSignature['rowType'][] = ['output'];

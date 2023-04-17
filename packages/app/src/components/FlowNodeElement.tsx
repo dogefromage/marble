@@ -115,13 +115,13 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
         // }}
         >
             {
-                context.signature ? (
+                context.templateSignature ? (
                     <FlowNodeContent
                         panelId={panelId}
                         flowId={flowId}
                         nodeId={node.id}
                         context={context}
-                        signature={context.signature}
+                        signature={context.templateSignature}
                         getClientNodePos={getClientNodePos}
                     />
                 ) : (

@@ -1,6 +1,6 @@
-import { AnonymousFunctionSignature } from "@marble/language";
+import { AnonymousFlowSignature } from "@marble/language";
 
-export const topFlowSignature: AnonymousFunctionSignature = {
+export const topFlowSignature: AnonymousFlowSignature = {
     inputs: [{
         id: 'p',
         label: 'Position',

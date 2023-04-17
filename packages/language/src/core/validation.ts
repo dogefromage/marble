@@ -1,9 +1,9 @@
-import { EnvironmentContent, FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, InputRowSignature, MapTypeSpecifier, OutputRowSignature, TypeSpecifier } from "../types";
+import { EnvironmentContent, FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, InitializerValue, InputRowSignature, MapTypeSpecifier, OutputRowSignature, RowState, TypeSpecifier } from "../types";
 import { FlowGraphContext, FlowNodeContext, ProjectContext, RowContext, RowProblem } from "../types/context";
 import { Obj } from "../types/utils";
-import { assertDef, wrapDefined } from "../utils";
+import { assert, wrapDefined } from "../utils";
 import { sortTopologically } from "../utils/algorithms";
-import { GraphTypeException, compareTypes } from "./typeStructure";
+import { GraphTypeException, compareTypes, generateDefaultValue, validateValue } from "./typeStructure";
 
 export function validateProject(
     flowGraphs: Obj<FlowGraph>,
@@ -48,7 +48,7 @@ export function validateProject(
     result.topologicalFlowOrder = topSortResult.topologicalSorting.map(i => flowEntries[i][0]);
 
     for (const graphIndex of topSortResult.topologicalSorting) {
-        const [ graphId, graph ] = flowEntries[graphIndex];
+        const [graphId, graph] = flowEntries[graphIndex];
         const graphSyntaxContent = generateSyntaxLayer(graph);
 
         dynamicEnvironment = dynamicEnvironment
@@ -59,14 +59,14 @@ export function validateProject(
             signatures: { [graphId]: graphContext.flowSignature },
             types: {},
         }
-        
+
         dynamicEnvironment = dynamicEnvironment
             .pop(graphSyntaxContent)
             .push(graphSignatureContent);
 
         result.flowContexts[graphId] = graphContext;
 
-        graphContext.dependencies = assertDef(flowDependenciesMap.get(graphId));
+        graphContext.dependencies = assert(flowDependenciesMap.get(graphId));
         graphContext.dependants = numberedAdjacency[graphIndex]
             .map(index => flowEntries[index][0]);
     }
@@ -280,69 +280,82 @@ function validateNodeInputs(
     earlierNodeOutputTypes: Map<string, MapTypeSpecifier>,
     environment: FlowEnvironment,
 ): Obj<RowContext> {
-    // each node input receives a list of connections to support list inputs
-    const connectionTypeLists: Obj<TypeSpecifier[]> = {};
-    for (const [rowId, rowState] of Object.entries(rowStates)) {
-        const rowTypes: TypeSpecifier[] = [];
-        for (const conn of rowState.connections) {
-            const sourceOutput = earlierNodeOutputTypes.get(conn.nodeId);
-            const rowOutputType = sourceOutput?.elements[conn.outputId];
-            if (rowOutputType) {
-                rowTypes.push(rowOutputType);
-            } else {
-                rowTypes.push({ type: 'unknown' });
-            }
-        }
-        connectionTypeLists[rowId] = rowTypes;
-    }
-
     const rowResults: Obj<RowContext> = {};
 
     for (const input of inputRowSigs) {
-        const expectedType = input.dataType;
-        const connectedTypeList = connectionTypeLists[input.id] || [];
-        const inputProblems = validateNodeInput(input, expectedType, connectedTypeList, environment);
-        rowResults[input.id] = {
-            specifier: expectedType,
-            problems: inputProblems || [],
-        };
+        const rowState = rowStates[input.id] as RowState | undefined;
+        // each node input receives a list of connections to support list inputs
+        const connectedTypes: TypeSpecifier[] = rowState?.connections.map(conn => {
+            const sourceOutput = earlierNodeOutputTypes.get(conn.nodeId);
+            const rowOutputType = sourceOutput?.elements[conn.outputId];
+            if (!rowOutputType) {
+                return { type: 'unknown' };
+            }
+            return rowOutputType;
+        }) || [];
+
+        const rowResult = validateRowInput(input, rowState, connectedTypes, environment);
+        rowResults[input.id] = rowResult;
     }
 
     return rowResults;
 }
 
-function validateNodeInput(
+function validateRowInput(
     input: InputRowSignature,
-    expectedType: TypeSpecifier,
+    rowState: RowState | undefined,
     connectedTypeList: TypeSpecifier[],
     environment: FlowEnvironment,
-): RowProblem[] | undefined {
+): RowContext {
+    const expectedType = input.dataType;
+    const result: RowContext = {
+        ref: rowState,
+        problems: [],
+        specifier: expectedType,
+    }
+
     if (input.rowType === 'input-list') {
         if (expectedType.type !== 'list') {
-            return [{ type: 'invalid-signature' }];
+            result.problems.push({ type: 'invalid-signature' });
+            return result;
         }
-        const listProblems: RowProblem[] = [];
         for (let i = 0; i < connectedTypeList.length; i++) {
             const listItemProblem = compareParameterToExpected(connectedTypeList[i], expectedType.elementType, i, environment);
             if (listItemProblem) {
-                listProblems.push(listItemProblem);
+                result.problems.push(listItemProblem);
             }
         }
-        return listProblems;
+        return result;
     }
     const [connectedType] = connectedTypeList;
 
     if (input.rowType === 'input-simple') {
         if (connectedType == null) {
-            return [{ type: 'required-parameter' }];
+            result.problems.push({ type: 'required-parameter' });
+            return result;
         }
-        return wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));
+        const problems = wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));
+        result.problems.push(...problems);
+        return result;
     }
     if (input.rowType === 'input-variable') {
         if (connectedType == null) {
-            return; // use initializer
+            let displayValue: InitializerValue | undefined;
+            if (rowState?.value != null) {
+                const problem = validateValue(expectedType, rowState.value, environment);
+                if (problem) {
+                    result.problems.push(problem);
+                } else {
+                    displayValue = rowState.value;
+                }
+            }
+            displayValue ||= generateDefaultValue(expectedType, environment);
+
+            return result; // use initializer
         }
-        return wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));
+        const problems = wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));
+        result.problems.push(...problems);
+        return result;
     }
 
     throw new Error(`Unknown type ${(input as any).rowType}`);

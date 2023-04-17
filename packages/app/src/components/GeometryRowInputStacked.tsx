@@ -1,54 +1,49 @@
-import React from 'react';
-import FlowRowDiv from '../styles/FlowRowDiv';
-import GeometryRowNameP from '../styles/GeometryRowNameP';
-import { RowMetadata, StackedInputRowT } from '../types';
-import { arrayRange } from '../utils/arrays';
-import FlowJoint from './FlowJoint';
-import { rowMeta, RowMetaProps, RowProps } from './GeometryRowRoot';
 
-const MAX_ROWS = 64;
+// const MAX_ROWS = 64;
 
-export function getRowMetadataStackedInput(props: RowMetaProps<StackedInputRowT>): RowMetadata {
-    const heightUnits = Math.min(MAX_ROWS, props.numConnectedJoints + 1);
-    return rowMeta({ heightUnits });
-}
+// export function getRowMetadataStackedInput(props: RowMetaProps<StackedInputRowT>): RowMetadata {
+//     const heightUnits = Math.min(MAX_ROWS, props.numConnectedJoints + 1);
+//     return rowMeta({ heightUnits });
+// }
 
-const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<StackedInputRowT>) => {
-    const numConnectedJoints = row.incomingElements?.length || 0;
-    const rowMeta = getRowMetadataStackedInput({ state: row, template: row, numConnectedJoints, })
-    const heightUnits = rowMeta.heightUnits;
-    const indices = arrayRange(heightUnits);
+// const GeometryRowInputStacked = ({ geometryId, panelId, nodeId, row }: RowProps<StackedInputRowT>) => {
+//     const numConnectedJoints = row.incomingElements?.length || 0;
+//     const rowMeta = getRowMetadataStackedInput({ state: row, template: row, numConnectedJoints, })
+//     const heightUnits = rowMeta.heightUnits;
+//     const indices = arrayRange(heightUnits);
 
-    return (<>
-        {
-            indices.map(subIndex => {
-                const isConnected = subIndex < heightUnits - 1;
-                const rowName = `${row.name} ${subIndex + 1}`
+//     return (<>
+//         {
+//             indices.map(subIndex => {
+//                 const isConnected = subIndex < heightUnits - 1;
+//                 const rowName = `${row.name} ${subIndex + 1}`
 
-                return (
-                    <FlowRowDiv
-                        heightUnits={1}
-                        key={`subrow-${subIndex}`}
-                    >
-                        <GeometryRowNameP
-                            align='left'
-                        >
-                            {rowName}
-                        </GeometryRowNameP>
-                        <FlowJoint
-                            flowId={geometryId}
-                            jointLocation={{ nodeId, rowId: row.id, subIndex }}
-                            jointDirection='input'
-                            connected={isConnected}
-                            dataType={row.dataType}
-                            additional={!isConnected}
-                            isStackedInput={true}
-                        />
-                    </FlowRowDiv>
-                )
-            })
-        }
-    </>);
-}
+//                 return (
+//                     <FlowRowDiv
+//                         heightUnits={1}
+//                         key={`subrow-${subIndex}`}
+//                     >
+//                         <GeometryRowNameP
+//                             align='left'
+//                         >
+//                             {rowName}
+//                         </GeometryRowNameP>
+//                         <FlowJoint
+//                             flowId={geometryId}
+//                             jointLocation={{ nodeId, rowId: row.id, subIndex }}
+//                             jointDirection='input'
+//                             connected={isConnected}
+//                             dataType={row.dataType}
+//                             additional={!isConnected}
+//                             isStackedInput={true}
+//                         />
+//                     </FlowRowDiv>
+//                 )
+//             })
+//         }
+//     </>);
+// }
 
-export default GeometryRowInputStacked;
+// export default GeometryRowInputStacked;
+
+export {};

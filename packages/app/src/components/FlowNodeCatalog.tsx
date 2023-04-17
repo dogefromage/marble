@@ -1,4 +1,3 @@
-import { FunctionSignature, FunctionSignatureId } from '@marble/language';
 import React, { useMemo } from 'react';
 import { Vec2 } from 'three';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
@@ -9,6 +8,7 @@ import { flowEditorSetStateNeutral } from '../slices/panelFlowEditorSlice';
 import { selectFlowContext } from '../slices/contextSlice';
 import { FloatingMenuShape, FlowEditorActionState, MenuElement, ObjStrict, SearchMenuElement, TitleMenuElement, ViewTypes } from '../types';
 import MenuRootFloating from './MenuRootFloating';
+import { FlowSignature, FlowSignatureId } from '@marble/language';
 
 function isCatalogOpen(
     state: FlowEditorActionState
@@ -32,7 +32,7 @@ const FlowNodeCatalog = ({ panelId }: Props) => {
     const menuState = useAppSelector(selectSingleMenu(menuId));
     const searchValue: string = menuState?.state.get(SEARCH_ELEMENT_KEY) ?? '';
 
-    const addNode = (signatureId: FunctionSignatureId, position: Vec2) => {
+    const addNode = (signatureId: FlowSignatureId, position: Vec2) => {
         if (!flowId) return;
         dispatch(flowsAddNode({
             flowId,
@@ -45,11 +45,11 @@ const FlowNodeCatalog = ({ panelId }: Props) => {
     const catalogState = panelState && isCatalogOpen(panelState.state) && panelState.state || undefined;
 
     const environmentSignatures = useMemo(() => {
-        const signatureObj = graphValidation?.environment.getAvailableSignatures();
+        const signatureObj = graphValidation?.flowEnvironment.getAvailableSignatures();
         if (signatureObj) {
-            return Array.from(Object.values(signatureObj)) as FunctionSignature[];
+            return Array.from(Object.values(signatureObj)) as FlowSignature[];
         }
-    }, [ graphValidation?.environment ])
+    }, [ graphValidation?.flowEnvironment ])
 
     const menuShape = useMemo(() => {
         if (!catalogState || !environmentSignatures) return;
@@ -96,7 +96,7 @@ const FlowNodeCatalog = ({ panelId }: Props) => {
                     if (groupes[key] == null) { groupes[key] = []; }
                     groupes[key]!.push(current!);
                     return groupes;
-                }, {} as ObjStrict<FunctionSignature[]>);
+                }, {} as ObjStrict<FlowSignature[]>);
 
             const sortedGroupes = Object.entries(groupedTemplatesMap)
                 .sort(([a], [b]) => a.localeCompare(b));

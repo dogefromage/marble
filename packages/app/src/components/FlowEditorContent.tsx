@@ -46,7 +46,7 @@ const FlowEditorContent = ({ flowId, panelId, getPanelState }: Props) => {
                     if (panelState.selection.includes(node.id)) {
                         selectionStatus = SelectionStatus.Selected;
                     }
-                    const nodeContext = context.nodes[node.id];
+                    const nodeContext = context.nodeContexts[node.id];
                     if (!nodeContext) return null;
 
                     return (

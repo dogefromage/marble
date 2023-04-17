@@ -1,13 +1,13 @@
 import { mat4, vec4 } from 'gl-matrix';
 import React, { useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
-import { GNODE_ROW_UNIT_HEIGHT } from '../styles/FlowRowDiv';
 import { BOX_SHADOW, INSET_SHADOW } from '../styles/utils';
 import { DataTypeValueTypes, Vec2 } from '../types';
+import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 
 export const BEZIER_WIDTH_PIXELS = 260;
 export const BEZIER_GRID_UNITS = 8;
-const SIZE = GNODE_ROW_UNIT_HEIGHT * BEZIER_GRID_UNITS;
+const SIZE = FLOW_NODE_ROW_HEIGHT * BEZIER_GRID_UNITS;
 const CANVAS_WIDTH = SIZE;
 const CANVAS_HEIGHT = SIZE;
 const TENTH = SIZE / 10.0;

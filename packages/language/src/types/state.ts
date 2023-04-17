@@ -1,6 +1,13 @@
 import { FlowSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
 import { Obj, Vec2, Versionable } from "./utils";
 
+export type InitializerValue =
+    | null
+    | number 
+    | boolean
+    | readonly InitializerValue[]
+    | { [key: string]: InitializerValue }
+
 export interface InputJointLocation {
     direction: 'input';
     nodeId: string;
@@ -21,7 +28,7 @@ export interface OutputLocation {
 
 export interface RowState {
     connections: OutputLocation[];
-    state: Obj<any>;
+    value: InitializerValue | null;
 }
 
 export interface FlowNode {

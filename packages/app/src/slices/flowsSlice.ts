@@ -1,19 +1,20 @@
-import { AnonymousFunctionSignature, FlowGraph, FlowNode, FunctionSignatureId, InputJointLocation, JointLocation, OutputJointLocation } from "@marble/language";
+import { AnonymousFlowSignature, FlowGraph, FlowNode, FlowSignatureId, InputJointLocation, JointLocation, OutputJointLocation } from "@marble/language";
 import { createSlice } from "@reduxjs/toolkit";
+import { castDraft, enableMapSet } from "immer";
+import { WritableDraft } from "immer/dist/internal";
 import _ from "lodash";
 import { useCallback } from "react";
 import { RootState } from "../redux/store";
-import { FlowsSliceState, Vec2, UndoAction } from "../types";
-import { enableMapSet } from "immer";
+import { FlowsSliceState, UndoAction, Vec2 } from "../types";
 enableMapSet();
 
-function getFlow(s: FlowsSliceState, a: { payload: { flowId: string } }) {
+function getFlow(s: WritableDraft<FlowsSliceState>, a: { payload: { flowId: string } }) {
     const g = s[a.payload.flowId];
     if (!g) return console.error(`Flow with id ${a.payload.flowId} not found`);
-    return g;
+    return g as any as FlowGraph;
 }
 
-function getNode(s: FlowsSliceState, a: { payload: { flowId: string, nodeId: string } }) {
+function getNode(s: WritableDraft<FlowsSliceState>, a: { payload: { flowId: string, nodeId: string } }) {
     const n = getFlow(s, a)?.nodes[a.payload.nodeId];
     if (!n) return console.error(`Node with id ${a.payload.nodeId} not found`);
     return n;
@@ -31,6 +32,7 @@ function removeConnectionsToNodes(g: FlowGraph, nodes: Set<string>) {
         }
     }
 }
+
 
 // function removeIncomingElements(s: FlowsSliceState, flowId: string, elements: FlowJointLocation[]) {
 //     for (const element of elements) {
@@ -95,7 +97,7 @@ export const flowsSlice = createSlice({
         create: (s, a: UndoAction<{
             name: string;
             flowId?: string;
-            signature: AnonymousFunctionSignature,
+            signature: AnonymousFlowSignature,
         }>) => {
             const id = a.payload.flowId || _.snakeCase(a.payload.name);
             if (!/^\w+$/.test(id)) {
@@ -113,7 +115,8 @@ export const flowsSlice = createSlice({
                 outputs: a.payload.signature.outputs,
                 nextIdIndex: 10, // start at "a"
             }
-            s[id] = flow;
+            
+            s[id] = castDraft(flow);
         },
         rename: (s, a: UndoAction<{ flowId: string, name: string }>) => {
             const g = getFlow(s, a);
@@ -125,7 +128,7 @@ export const flowsSlice = createSlice({
         remove: (s, a: UndoAction<{ flowId: string }>) => {
             delete s[a.payload.flowId];
         },
-        addNode: (s, a: UndoAction<{ flowId: string, signatureId: FunctionSignatureId, position: Vec2 }>) => {
+        addNode: (s, a: UndoAction<{ flowId: string, signatureId: FlowSignatureId, position: Vec2 }>) => {
             const g = getFlow(s, a);
             if (!g) return;
             const node: FlowNode = {
@@ -207,7 +210,7 @@ export const flowsSlice = createSlice({
             });
             if (!inputNode) return console.error(`Couldn't find input node`);
             
-            inputNode.rowStates[inputLocation.rowId] ||= { connections: [], state: {} };
+            inputNode.rowStates[inputLocation.rowId] ||= { connections: [], value: null };
             const connections = inputNode.rowStates[inputLocation.rowId]!.connections;
             const setIndex = Math.max(0, Math.min(inputLocation.jointIndex, connections.length));
             connections[setIndex] = {

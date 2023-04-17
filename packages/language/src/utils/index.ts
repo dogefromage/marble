@@ -1,5 +1,5 @@
 
-export function assertDef<T>(element: T | null | undefined, msg?: string) {
+export function assert<T>(element: T | null | undefined, msg?: string) {
     if (element == null) {
         throw new Error(msg || `Not defined`);
     }

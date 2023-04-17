@@ -1,14 +1,14 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { TypeSpecifier } from "@marble/language";
+import { SourceTemplate } from '@marble/vite-plugin-glsl-templates';
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { AssetsSliceState } from "../types";
-import { SourceTemplate } from '@marble/vite-plugin-glsl-templates';
-import { TypeSpecifier } from "@marble/language";
 
-const vec3: TypeSpecifier = {
+const vec3 = {
     type: 'list',
     length: 3,
     elementType: { type: 'primitive', primitive: 'float' },
-}
+} satisfies TypeSpecifier
 
 const initialState: AssetsSliceState = {
     signatures: {},

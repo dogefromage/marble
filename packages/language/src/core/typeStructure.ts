@@ -1,35 +1,4 @@
-import { FlowEnvironment, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, TypeSpecifier } from "../types";
-
-export class TypeTreePath {
-    constructor(
-        private path: string[] = []
-    ) {}
-
-    public add(element: string) {
-        return new TypeTreePath([...this.path, element]);
-    }
-
-    public toArray() {
-        return this.path.slice();
-    }
-}
-
-export type GraphTypeExceptionType = 'type-mismatch' | 'missing-element' | 'unknown-reference';
-export class GraphTypeException extends Error {
-    constructor(
-        public type: GraphTypeExceptionType,
-        public path: TypeTreePath,
-    ) {
-        super(type);
-    }
-
-    toString() {
-        return [
-            `Type validation exception: ${this.type} @`,
-            this.path.toString(),
-        ].join('\n');
-    }
-}
+import { FlowEnvironment, InitializerValue, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, TypeSpecifier } from "../types";
 
 export function compareTypes(gotten: TypeSpecifier, expected: TypeSpecifier, env: FlowEnvironment) {
     compareSwitch(new TypeTreePath(), gotten, expected, env);
@@ -38,7 +7,7 @@ export function compareTypes(gotten: TypeSpecifier, expected: TypeSpecifier, env
 function compareSwitch(path: TypeTreePath, gotten: TypeSpecifier, expected: TypeSpecifier, env: FlowEnvironment) {
     gotten = resolveReferences(path, gotten, env);
     expected = resolveReferences(path, expected, env);
-    
+
     if (gotten.type === 'unknown' || expected.type === 'unknown') {
         return;
     }
@@ -100,6 +69,88 @@ function compareMap(basePath: TypeTreePath, gotten: MapTypeSpecifier, expected: 
         gottenKeys.delete(expectedKey);
     }
     if (gottenKeys.size > 0) {
-        // add logic here if passing too many keys should throw an error
+        // wanted behaviour?
+    }
+}
+
+
+
+export function validateValue(specifier: TypeSpecifier, value: InitializerValue, env: FlowEnvironment) {
+    return _validateValue(new TypeTreePath(), specifier, value, env);
+}
+function _validateValue(path: TypeTreePath, specifier: TypeSpecifier, value: InitializerValue, env: FlowEnvironment) {
+    return undefined; // TODO
+}
+
+
+
+export function generateDefaultValue(specifier: TypeSpecifier, env: FlowEnvironment) {
+    return _generateDefaultValue(new TypeTreePath(), specifier, env);
+}
+function _generateDefaultValue(path: TypeTreePath, specifier: TypeSpecifier, env: FlowEnvironment): InitializerValue {
+    specifier = resolveReferences(path, specifier, env);
+    if (specifier.type === 'unknown') {
+        return null;
+    }
+    if (specifier.type === 'primitive') {
+        if (specifier.primitive === 'bool') {
+            return false;
+        } 
+        if (specifier.primitive === 'float' || specifier.primitive === 'int') {
+            return 0;
+        }
+        throw new Error(`Unknown primitive ${specifier.primitive}`);
+    }
+    if (specifier.type === 'list') {
+        if (specifier.length == null || specifier.length === 0) {
+            return Object.freeze([]);
+        }
+        const elementValue = _generateDefaultValue(path.add('list'), specifier.elementType, env);
+        const arr = new Array(specifier.length).fill(elementValue);
+        return Object.freeze(arr);
+    }
+    if (specifier.type === 'map') {
+        const mapPath = path.add('map');
+        const valueEntries = Object
+            .entries(specifier.elements)
+            .map(([key, valueType]) => {
+                const propPath = mapPath.add(key);
+                return [key, _generateDefaultValue(propPath, valueType, env)];
+            });
+        return Object.freeze(Object.fromEntries(valueEntries));
+    }
+    throw new Error(`Unhandled specifier ${specifier.type}`);
+}
+
+
+
+export class TypeTreePath {
+    constructor(
+        private path: string[] = []
+    ) {}
+
+    public add(element: string) {
+        return new TypeTreePath([...this.path, element]);
+    }
+
+    public toArray() {
+        return this.path.slice();
+    }
+}
+
+export type GraphTypeExceptionType = 'type-mismatch' | 'missing-element' | 'unknown-reference';
+export class GraphTypeException extends Error {
+    constructor(
+        public type: GraphTypeExceptionType,
+        public path: TypeTreePath,
+    ) {
+        super(type);
+    }
+
+    toString() {
+        return [
+            `Type validation exception: ${this.type} @`,
+            this.path.toString(),
+        ].join('\n');
     }
 }

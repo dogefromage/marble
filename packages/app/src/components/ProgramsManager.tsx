@@ -1,12 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import { EnvironmentContent, validateProject } from '@marble/language';
+import { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { selectFlows } from '../slices/flowsSlice';
-import { validateProject } from '@marble/language';
 import { selectAssets } from '../slices/assetsSlice';
 import { validationSetResult } from '../slices/contextSlice';
-import { EnvironmentContent } from '@marble/language';
-import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
+import { selectFlows } from '../slices/flowsSlice';
 import { selectLayers } from '../slices/layersSlice';
+import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
 
 interface Props {
 
@@ -33,8 +32,8 @@ const ProgramsManager = ({}: Props) => {
             context: projectContext,
         }));
 
-        const programs = programEmitter.current
-            .emitPrograms(layers, flows, projectContext);
+        // const programs = programEmitter.current
+        //     .emitPrograms(projectContext, layers);
 
     }, [ layers, flows, assets.signatures ]);
 

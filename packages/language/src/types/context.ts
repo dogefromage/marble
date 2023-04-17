@@ -1,6 +1,6 @@
 import { FlowEnvironment } from "./environments";
 import { FlowSignature } from "./signatures";
-import { FlowGraph, FlowNode, InputJointLocation, OutputJointLocation, RowState } from "./state";
+import { FlowGraph, FlowNode, InitializerValue, InputJointLocation, OutputJointLocation, RowState } from "./state";
 import { MapTypeSpecifier, TypeSpecifier } from "./typeSpecifiers";
 import { Obj } from "./utils";
 
@@ -39,6 +39,7 @@ export interface FlowNodeContext {
 
 export interface RowContext {
     ref?: RowState;
+    displayValue?: InitializerValue;
     problems: RowProblem[];
     specifier: TypeSpecifier;
 }

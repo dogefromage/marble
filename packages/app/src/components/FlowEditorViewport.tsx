@@ -87,7 +87,7 @@ const FlowEditorViewport = ({ panelId }: Props) => {
                         }
                         dispatch(layersCreate({
                             id: TEST_LAYER_ID,
-                            rootGeometryId: TEST_ROOT_FLOW_ID,
+                            topFlowId: flowId,
                             undo: record,
                         }));
                         dispatch(flowsCreate({

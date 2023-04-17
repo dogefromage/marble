@@ -1,10 +1,10 @@
 import produce, { castDraft } from "immer";
 import { useEffect, useState } from "react";
-import { IDObj, ObjMapUndef } from "../types";
+import { IDObj, Obj } from "../types";
 
 export function detectMapDifference<X extends IDObj, Y extends IDObj>(options: {
-    reference: ObjMapUndef<X>,
-    lastImage: ObjMapUndef<Y>,
+    reference: Obj<X>,
+    lastImage: Obj<Y>,
     map: (input: X) => Y | null,
     hasChanged: (reference: X, image: Y) => boolean,
 }) {
@@ -34,13 +34,13 @@ export function detectMapDifference<X extends IDObj, Y extends IDObj>(options: {
  * Reacts on changes of property reference.
  */
 export default function <X extends IDObj, Y extends IDObj>(options: {
-    reference: ObjMapUndef<X>,
+    reference: Obj<X>,
     map: (input: X) => Y,
     hasChanged: (reference: X, image: Y) => boolean,
     onDestroy?: (item: Y) => void,
 }) {
     const { reference, map, hasChanged, onDestroy } = options;
-    const [ image, setImage ] = useState<ObjMapUndef<Y>>({});
+    const [ image, setImage ] = useState<Obj<Y>>({});
 
     useEffect(() => {
         const { setItems, removeItems } = detectMapDifference<X, Y>({

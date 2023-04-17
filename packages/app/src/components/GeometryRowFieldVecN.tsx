@@ -1,76 +1,65 @@
-import React from 'react';
-import { useAppDispatch } from '../redux/hooks';
-import { geometriesAssignRowData } from '../slices/flowsSlice';
-import FlowRowDiv from '../styles/FlowRowDiv';
-import GeometryRowNameP from '../styles/GeometryRowNameP';
-import { IndentRowDiv } from '../styles/IndentRowDiv';
-import { FieldRowT } from '../types';
-import FlowJoint from './FlowJoint';
-import { getRowMetadataField } from './GeometryRowField';
-import { RowProps } from './GeometryRowRoot';
-import SlidableInput from './SlideableInput';
 
-export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z' ];
+// export const FIELD_ROW_LIST_NAMES = [ 'X', 'Y', 'Z' ];
 
-type Props = RowProps<FieldRowT<'vec2' | 'vec3'>>;
+// type Props = RowProps<FieldRowT<'vec2' | 'vec3'>>;
 
-const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) => {
-    const dispatch = useAppDispatch();
+// const GeometryRowFieldVecN = ({ geometryId, panelId, nodeId, row }: Props) => {
+//     const dispatch = useAppDispatch();
 
-    const updateValue = (index: number) =>
-        (value: number, actionToken: string | undefined) => {
-            const combinedValue = [...row.value] as typeof row.value;
-            combinedValue[index] = value;
+//     const updateValue = (index: number) =>
+//         (value: number, actionToken: string | undefined) => {
+//             const combinedValue = [...row.value] as typeof row.value;
+//             combinedValue[index] = value;
 
-            dispatch(geometriesAssignRowData({
-                geometryId: geometryId,
-                nodeId: nodeId,
-                rowId: row.id,
-                rowData: { value: combinedValue },
-                undo: { actionToken, desc: `Updated row field value.` },
-            }));
-        }
+//             dispatch(geometriesAssignRowData({
+//                 geometryId: geometryId,
+//                 nodeId: nodeId,
+//                 rowId: row.id,
+//                 rowData: { value: combinedValue },
+//                 undo: { actionToken, desc: `Updated row field value.` },
+//             }));
+//         }
 
-    const meta = getRowMetadataField({
-        state: row,
-        template: row,
-        numConnectedJoints: row.numConnectedJoints,
-    });
+//     const meta = getRowMetadataField({
+//         state: row,
+//         template: row,
+//         numConnectedJoints: row.numConnectedJoints,
+//     });
 
-    const isConnected = row.numConnectedJoints > 0;
+//     const isConnected = row.numConnectedJoints > 0;
 
-    return (
-        <FlowRowDiv
-            heightUnits={meta.heightUnits}
-        >
-            <GeometryRowNameP
-                align='left'
-            >
-                {row.name}
-            </GeometryRowNameP>
-            {
-                !isConnected &&
-                row.value.map((value, index) =>
-                    <IndentRowDiv
-                        key={index}
-                    >
-                        <SlidableInput
-                            value={value}
-                            onChange={updateValue(index)}
-                            name={FIELD_ROW_LIST_NAMES[index]}
-                        />
-                    </IndentRowDiv>
-                )
-            }
-            <FlowJoint
-                flowId={geometryId}
-                jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
-                jointDirection='input'
-                connected={isConnected}
-                dataType={row.dataType}
-            />
-        </FlowRowDiv>
-    );
-}
+//     return (
+//         <FlowRowDiv
+//             heightUnits={meta.heightUnits}
+//         >
+//             <GeometryRowNameP
+//                 align='left'
+//             >
+//                 {row.name}
+//             </GeometryRowNameP>
+//             {
+//                 !isConnected &&
+//                 row.value.map((value, index) =>
+//                     <IndentRowDiv
+//                         key={index}
+//                     >
+//                         <SlidableInput
+//                             value={value}
+//                             onChange={updateValue(index)}
+//                             name={FIELD_ROW_LIST_NAMES[index]}
+//                         />
+//                     </IndentRowDiv>
+//                 )
+//             }
+//             <FlowJoint
+//                 flowId={geometryId}
+//                 jointLocation={{ nodeId, rowId: row.id, subIndex: 0 }}
+//                 jointDirection='input'
+//                 connected={isConnected}
+//                 dataType={row.dataType}
+//             />
+//         </FlowRowDiv>
+//     );
+// }
 
-export default GeometryRowFieldVecN;
+// export default GeometryRowFieldVecN;

@@ -10,10 +10,10 @@ import { createCoordinateGrid } from "./coordinateGrid";
 
 function generateShaders(layerProgram: LayerProgram) {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
-    const includedCodeTotal = layerProgram.includes
-        .map(i => i.source)
-        .join('\n');
-    fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
+    // const includedCodeTotal = layerProgram.includes
+    //     .map(i => i.source)
+    //     .join('\n');
+    // fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
     fragCodeTemplate.replace('%MAIN_PROGRAM%', layerProgram.programCode);
     fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', layerProgram.rootFunction);
 
