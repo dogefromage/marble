@@ -1,8 +1,9 @@
 import { EnvironmentContent, FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, InitializerValue, InputRowSignature, MapTypeSpecifier, OutputRowSignature, RowState, TypeSpecifier } from "../types";
-import { FlowGraphContext, FlowNodeContext, ProjectContext, RowContext, RowProblem } from "../types/context";
+import { EdgeColor, FlowEdge, FlowGraphContext, FlowNodeContext, ProjectContext, RowContext, RowProblem } from "../types/context";
 import { Obj } from "../types/utils";
 import { assert, wrapDefined } from "../utils";
-import { sortTopologically } from "../utils/algorithms";
+import { findDependencies, sortTopologically } from "../utils/algorithms";
+import { LinkedFlowEnvironment } from "./LinkedFlowEnvironment";
 import { GraphTypeException, compareTypes, generateDefaultValue, validateValue } from "./typeStructure";
 
 export function validateProject(
@@ -16,7 +17,7 @@ export function validateProject(
         topologicalFlowOrder: [],
     }
 
-    let dynamicEnvironment = new FlowEnvironment(content);
+    let dynamicEnvironment = new LinkedFlowEnvironment(content);
 
     const flowEntries = Object.entries(flowGraphs);
     const flowDependenciesMap = new Map<string, string[]>();
@@ -49,7 +50,7 @@ export function validateProject(
 
     for (const graphIndex of topSortResult.topologicalSorting) {
         const [graphId, graph] = flowEntries[graphIndex];
-        const graphSyntaxContent = generateSyntaxLayer(graph);
+        const graphSyntaxContent = generateFlowSyntaxLayer(graph);
 
         dynamicEnvironment = dynamicEnvironment
             .push(graphSyntaxContent);
@@ -61,7 +62,7 @@ export function validateProject(
         }
 
         dynamicEnvironment = dynamicEnvironment
-            .pop(graphSyntaxContent)
+            .pop()
             .push(graphSignatureContent);
 
         result.flowContexts[graphId] = graphContext;
@@ -74,7 +75,7 @@ export function validateProject(
     return result;
 }
 
-function generateSyntaxLayer(graph: FlowGraph): EnvironmentContent {
+function generateFlowSyntaxLayer(graph: FlowGraph): EnvironmentContent {
     const input: FlowSignature = {
         id: `syntax:input`,
         version: graph.version,
@@ -105,13 +106,11 @@ function generateSyntaxLayer(graph: FlowGraph): EnvironmentContent {
         })),
         outputs: [],
     }
-
-    const values = [input, output];
-    const signatures = Object.fromEntries(values.map(sig => [sig.id, sig]));
+    const signatures = Object.fromEntries([input, output].map(sig => [sig.id, sig]));
     return {
         signatures,
         types: {},
-    };
+    }
 }
 
 function collectFlowDependencies(flow: FlowGraph) {
@@ -154,14 +153,15 @@ function validateFlowGraph(
     // edge information and adjacency list
     const nodeEntries = Object.entries(flow.nodes);
     const numberedAdjacency = new Array(nodeEntries.length)
-        .fill([])
-        .map(_ => [] as number[]);
+        .fill([]).map(_ => [] as number[]);
+    const allEdges: FlowEdge[] = [];
     for (let inputNodeIndex = 0; inputNodeIndex < nodeEntries.length; inputNodeIndex++) {
         const [inputNodeId, inputNode] = nodeEntries[inputNodeIndex];
         const inputNodeDepIndices = new Set<number>();
 
         for (const [inputRowId, inputRow] of Object.entries(inputNode.rowStates)) {
             const { connections } = inputRow!;
+            const edgesOfInputRow: FlowEdge[] = [];
             for (let inputIndex = 0; inputIndex < connections.length; inputIndex++) {
                 const { nodeId: outputNodeId, outputId } = connections[inputIndex];
                 // check if present
@@ -175,7 +175,7 @@ function validateFlowGraph(
                 inputNodeDepIndices.add(depIndex);
                 // edge list
                 const edgeId = `${outputNodeId}.${outputId}_${inputNodeId}.${inputRowId}.${inputIndex}`;
-                result.edges[edgeId] = {
+                const flowEdge: FlowEdge = {
                     id: edgeId,
                     source: {
                         direction: 'output',
@@ -188,10 +188,12 @@ function validateFlowGraph(
                         rowId: inputRowId,
                         jointIndex: inputIndex
                     },
+                    color: 'normal',
                 };
+                result.edges[edgeId] = flowEdge;
+                allEdges.push(flowEdge);
             }
         }
-
         for (const depIndex of inputNodeDepIndices) {
             numberedAdjacency[depIndex].push(inputNodeIndex);
         }
@@ -205,6 +207,13 @@ function validateFlowGraph(
     }
 
     const topSortResult = sortTopologically(numberedAdjacency);
+    const namedTopSort = topSortResult.topologicalSorting
+        .map(i => nodeEntries[i][0]);
+    result.topologicalNodeOrder = namedTopSort;
+
+    type GraphEdgeKey = `${string}:${string}`;
+    const edgeColors = new Map<GraphEdgeKey, EdgeColor>();
+
     if (topSortResult.cycles.length) {
         const namedCycles = topSortResult.cycles
             .map(cycle => cycle.map(i => nodeEntries[i][0]));
@@ -212,13 +221,17 @@ function validateFlowGraph(
             type: 'cyclic-nodes',
             cycles: namedCycles,
         });
+        // collect all edges (u,v) which are somewhere in a cycle
+        for (const cycle of namedCycles) {
+            for (let i = 0; i < cycle.length; i++) {
+                let j = (i + 1) % cycle.length;
+                const key: GraphEdgeKey = `${cycle[i]}:${cycle[j]}`;
+                edgeColors.set(key, 'cyclic');
+            }
+        }
     }
 
-    const namedTopSort = topSortResult.topologicalSorting
-        .map(i => nodeEntries[i][0]);
-    result.topologicalNodeOrder = namedTopSort;
-
-    // type checking algorithm
+    // filling type table bottom-up using topsort
     const nodeOutputTypes = new Map<string, MapTypeSpecifier>()
     for (const nodeId of namedTopSort) {
         const node = flow.nodes[nodeId];
@@ -227,6 +240,30 @@ function validateFlowGraph(
         if (nodeResult.outputSpecifier) {
             nodeOutputTypes.set(nodeId, nodeResult.outputSpecifier);
         }
+    }
+
+    // output and redundancy
+    let outputIndex = -1;
+    for (let i = 0; i < nodeEntries.length; i++) {
+        const node = nodeEntries[i][1];
+        if (node.signature === 'syntax:output') {
+            outputIndex = i;
+            break;
+        }
+    }
+    if (outputIndex < 0) {
+        result.problems.push({
+            type: 'output-missing',
+        });
+    } else {
+        const dependants = findDependencies(numberedAdjacency, outputIndex);
+        const 
+    }
+
+    // color edges
+    for (const edge of allEdges) {
+        const edgeKey: GraphEdgeKey = `${edge.source.nodeId}:${edge.target.nodeId}`;
+        edge.color = edgeColors.get(edgeKey) || edge.color;
     }
 
     return result;
@@ -346,12 +383,11 @@ function validateRowInput(
                 if (problem) {
                     result.problems.push(problem);
                 } else {
-                    displayValue = rowState.value;
+                    result.displayValue = rowState.value;
                 }
             }
-            displayValue ||= generateDefaultValue(expectedType, environment);
-
-            return result; // use initializer
+            result.displayValue ||= generateDefaultValue(expectedType, environment);
+            return result; // show displayValue
         }
         const problems = wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));
         result.problems.push(...problems);

@@ -1,4 +1,4 @@
-import { FunctionSignature, Primitives, TypeSpecifier, inputRowTypes, outputRowTypes, primitiveTypeNames } from '@marble/language';
+import { FlowSignature, Primitives, TypeSpecifier, inputRowTypes, outputRowTypes, primitiveTypeNames } from '@marble/language';
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { FunctionNode, ParameterDeclarationNode, PreprocessorNode, TypeSpecifierNode } from '@shaderfrog/glsl-parser/ast';
 import { SourceTemplate } from './typings';
@@ -76,7 +76,7 @@ export class TemplateSheetParser {
                 return param.declaration;
             });
 
-        const signature: FunctionSignature = {
+        const signature: FlowSignature = {
             id: `internal:${functionId}`,
             name: this.currentName,
             description: '',

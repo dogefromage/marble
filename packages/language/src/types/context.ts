@@ -1,13 +1,23 @@
-import { FlowEnvironment } from "./environments";
-import { FlowSignature } from "./signatures";
-import { FlowGraph, FlowNode, InitializerValue, InputJointLocation, OutputJointLocation, RowState } from "./state";
-import { MapTypeSpecifier, TypeSpecifier } from "./typeSpecifiers";
-import { Obj } from "./utils";
+import { FlowEnvironment } from './environments';
+import {
+    FlowGraph,
+    FlowNode,
+    InitializerValue,
+    InputJointLocation,
+    OutputJointLocation,
+    RowState
+    } from './state';
+import { FlowSignature } from './signatures';
+import { MapTypeSpecifier, TypeSpecifier } from './typeSpecifiers';
+import { Obj } from './utils';
+
+export type EdgeColor = 'normal' | 'redundant' | 'cyclic';
 
 export interface FlowEdge {
     id: string;
     source: OutputJointLocation;
     target: InputJointLocation;
+    color: EdgeColor;
 }
 
 export interface ProjectContext {
@@ -45,7 +55,6 @@ export interface RowContext {
 }
 
 
-
 interface CyclicFlows {
     type: 'cyclic-flows';
     cycles: string[][];
@@ -61,9 +70,13 @@ interface MissingNode {
     type: 'missing-node';
     nodeId: string;
 }
+interface OutputMissing {
+    type: 'output-missing';
+}
 export type FlowProblem =
     | CyclicNodes
     | MissingNode
+    | OutputMissing
 
 interface MissingSignature {
     type: 'missing-signature';

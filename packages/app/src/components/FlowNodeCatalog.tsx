@@ -45,9 +45,9 @@ const FlowNodeCatalog = ({ panelId }: Props) => {
     const catalogState = panelState && isCatalogOpen(panelState.state) && panelState.state || undefined;
 
     const environmentSignatures = useMemo(() => {
-        const signatureObj = graphValidation?.flowEnvironment.getAvailableSignatures();
+        const signatureObj = graphValidation?.flowEnvironment.getTotalContent().signatures;
         if (signatureObj) {
-            return Array.from(Object.values(signatureObj)) as FlowSignature[];
+            return Array.from(Object.values(signatureObj));
         }
     }, [ graphValidation?.flowEnvironment ])
 

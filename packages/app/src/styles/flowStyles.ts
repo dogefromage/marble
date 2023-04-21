@@ -33,9 +33,7 @@ export const FlowNodeDiv = styled.div.attrs<FlowNodeDivProps>(({ position }) => 
     cursor: pointer;
 `;
 
-export const FlowNodeRowDiv = styled.div<{
-    heightUnits: number;
-}>`
+export const FlowNodeRowDiv = styled.div`
     display: grid;
     grid-auto-rows: ${FLOW_NODE_ROW_HEIGHT}px;
 
@@ -85,7 +83,7 @@ export const FlowJointDiv = styled.div<{
             'left' : 'right'}: -10px`
     };
     width: 20px;
-    height: 100%;
+    height: ${FLOW_NODE_ROW_HEIGHT}px;
     transform: translateY(-50%);
     
     /* background-color: #ff000033; */

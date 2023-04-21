@@ -1,4 +1,4 @@
-import { FlowEdge, FlowGraph, JointLocation } from '@marble/language';
+import { EdgeColor, FlowEdge, FlowGraph, JointLocation } from '@marble/language';
 import React from 'react';
 import styled from 'styled-components';
 import { Box2, Vector2 } from 'three';
@@ -8,6 +8,8 @@ import { selectFlowContext } from '../slices/contextSlice';
 import { flowsRemoveEdge, selectSingleFlow } from '../slices/flowsSlice';
 import { FlowEditorPanelState, Obj, ObjStrict, ViewTypes } from '../types';
 import { getJointLocationKey } from '../utils/flows';
+
+const NEW_LINK_KEY = `NEW_LINK`;
 
 interface SVGProps {
     box: Box2;
@@ -31,7 +33,9 @@ const FlowEdgesSVG = styled.svg.attrs<SVGProps>(({ box }) => {
 }) <SVGProps>`
     position: absolute;
     /* outline: solid 1px red; */
+`;
 
+const FlowEdgeGroup = styled.g<{ color: EdgeColor, key: string }>`
     .path-catcher {
         fill: none;
         stroke: transparent;
@@ -39,18 +43,18 @@ const FlowEdgesSVG = styled.svg.attrs<SVGProps>(({ box }) => {
         stroke-width: 10px;
         cursor: pointer;
     }
-    
+
     .path-display {
         fill: none;
-        stroke: black;
+        stroke: ${({ color, theme }) => theme.colors.flowEditor.edgeColors[color]};
         stroke-width: 3px;
         pointer-events: none;
     }
 
-    .path-catcher:hover + .path-display {
+    .path-catcher:hover:not([data-key="${NEW_LINK_KEY}"]) + .path-display {
         stroke-width: 5px;
     }
-`;
+`
 
 interface Props {
     panelId: string;
@@ -80,36 +84,32 @@ const FlowEdges = ({ panelId, flowId }: Props) => {
 
     const { handleQuadruples, svgBox } = generateVectorData(context.edges, flow, panelState);
 
+    if (handleQuadruples.length === 0) return null;
+
     return (
-        handleQuadruples.length > 0 &&
         <FlowEdgesSVG
             box={svgBox}
         >
             {
-                handleQuadruples.map(({ key, points }) => {
+                handleQuadruples.map(({ key, points, edge }) => {
                     const [A, B, C, D] = points.map(p => `${p.x},${p.y}`);
                     const d = `M${A} C${B} ${C} ${D}`;
 
                     return (
-                        <React.Fragment
+                        <FlowEdgeGroup
                             key={key}
+                            id={key}
+                            color={edge?.color || 'normal'}
+                            onClick={() => removeEdge(key)}
+                            onMouseDown={e => e.stopPropagation()}
                         >
-                            <path
-                                className='path-catcher'
-                                d={d}
-                                onClick={() => removeEdge(key)}
-                                onMouseDown={e => e.stopPropagation()}
-                            />
-                            <path
-                                className='path-display'
-                                d={d}
-                            />
-                        </React.Fragment>
+                            <path className='path-catcher' d={d} />
+                            <path className='path-display' d={d} />
+                        </FlowEdgeGroup>
                     );
                 })
             }
-        </FlowEdgesSVG> 
-        || null
+        </FlowEdgesSVG>
     );
 }
 
@@ -121,6 +121,7 @@ function generateVectorData(edges: Obj<FlowEdge>, flow: FlowGraph, panelState: F
         key: string;
         A: Vector2;
         D: Vector2;
+        edge?: FlowEdge;
     }> = [];
 
     for (const [edgeId, edge] of Object.entries(edges as ObjStrict<FlowEdge>)) {
@@ -128,7 +129,7 @@ function generateVectorData(edges: Obj<FlowEdge>, flow: FlowGraph, panelState: F
         const D = getJointPosition(edge.target, panelState, flow);
         if (A && D) {
             handleEndPoints.push({
-                key: edgeId, A, D,
+                key: edgeId, A, D, edge,
             });
         }
     }
@@ -145,21 +146,25 @@ function generateVectorData(edges: Obj<FlowEdge>, flow: FlowGraph, panelState: F
                 D = temp;
             }
             handleEndPoints.push({
-                key: `NEW_LINK`,
+                key: NEW_LINK_KEY,
                 A, D
             });
         }
     }
 
     const handleQuadruples = handleEndPoints.map(endPoints => {
-        const { key, A, D } = endPoints;
+        const { key, A, D, edge } = endPoints;
         const dist = A.distanceTo(D);
         const threshold = 200;
         let offset = 0.5 * threshold * Math.atan(dist / threshold);
         // offset = 0; // no squiggly
         const B = new Vector2(+offset, 0).add(A);
         const C = new Vector2(-offset, 0).add(D);
-        return { key, points: [ A, B, C, D ] };
+        return {
+            key,
+            points: [A, B, C, D],
+            edge,
+        };
     });
 
     const setOfHandlePoints = handleQuadruples.reduce((set, currQuad) => {

@@ -13,7 +13,7 @@ import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
-import assetsReducer from "../slices/assetsSlice";
+// import assetsReducer from "../slices/assetsSlice";
 import contextReducer from "../slices/contextSlice";
 
 const rootReducer = combineReducers({
@@ -39,7 +39,7 @@ const rootReducer = combineReducers({
         }),
         panelManager: panelManagerReducer,
     }),
-    assets: assetsReducer,
+    // assets: assetsReducer,
     console: consoleReducer,
     menus: menusReducer,
     contextMenu: contextMenuReducer,

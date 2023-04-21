@@ -1,10 +1,18 @@
-import { FlowEnvironment, InitializerValue, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, TypeSpecifier } from "../types";
+import { ArrayTypeSpecifier, FlowEnvironment, InitializerValue, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, TypeSpecifier } from "../types";
 
 export function compareTypes(gotten: TypeSpecifier, expected: TypeSpecifier, env: FlowEnvironment) {
     compareSwitch(new TypeTreePath(), gotten, expected, env);
 }
 
 function compareSwitch(path: TypeTreePath, gotten: TypeSpecifier, expected: TypeSpecifier, env: FlowEnvironment) {
+    // both same reference
+    if (gotten.type === 'reference' &&
+        expected.type === 'reference' &&
+        gotten.name === expected.name
+    ) {
+        return;
+    }
+
     gotten = resolveReferences(path, gotten, env);
     expected = resolveReferences(path, expected, env);
 
@@ -22,6 +30,9 @@ function compareSwitch(path: TypeTreePath, gotten: TypeSpecifier, expected: Type
             break;
         case 'list':
             compareList(pathWithType, gotten, expected as ListTypeSpecifier, env);
+            break;
+        case 'array':
+            compareArray(pathWithType, gotten, expected as ArrayTypeSpecifier, env);
             break;
         case 'map':
             compareMap(pathWithType, gotten, expected as MapTypeSpecifier, env);
@@ -53,6 +64,13 @@ function comparePrimitive(path: TypeTreePath, gotten: PrimitiveTypeSpecifier, ex
 }
 
 function compareList(path: TypeTreePath, gotten: ListTypeSpecifier, expected: ListTypeSpecifier, env: FlowEnvironment) {
+    compareSwitch(path.add('elementType'), gotten.elementType, expected.elementType, env);
+}
+
+function compareArray(path: TypeTreePath, gotten: ArrayTypeSpecifier, expected: ArrayTypeSpecifier, env: FlowEnvironment) {
+    if (gotten.length !== expected.length) {
+        throw new GraphTypeException('type-mismatch', path.add('length'));
+    }
     compareSwitch(path.add('elementType'), gotten.elementType, expected.elementType, env);
 }
 
@@ -95,19 +113,19 @@ function _generateDefaultValue(path: TypeTreePath, specifier: TypeSpecifier, env
     if (specifier.type === 'primitive') {
         if (specifier.primitive === 'bool') {
             return false;
-        } 
+        }
         if (specifier.primitive === 'float' || specifier.primitive === 'int') {
             return 0;
         }
         throw new Error(`Unknown primitive ${specifier.primitive}`);
     }
-    if (specifier.type === 'list') {
-        if (specifier.length == null || specifier.length === 0) {
-            return Object.freeze([]);
-        }
-        const elementValue = _generateDefaultValue(path.add('list'), specifier.elementType, env);
+    if (specifier.type === 'array') {
+        const elementValue = _generateDefaultValue(path.add('array'), specifier.elementType, env);
         const arr = new Array(specifier.length).fill(elementValue);
         return Object.freeze(arr);
+    }
+    if (specifier.type === 'list') {
+        return Object.freeze([]);
     }
     if (specifier.type === 'map') {
         const mapPath = path.add('map');

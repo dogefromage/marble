@@ -1,9 +1,9 @@
 import { InputRowSignature, ListInputRowSignature, OutputRowSignature, RowContext, SimpleInputRowSignature, TypeSpecifier, VariableInputRowSignature } from "@marble/language";
 import React from "react";
-import styled, { css } from "styled-components";
-import { FlowNodeRowDiv, FlowNodeRowNameP } from "../styles/flowStyles";
+import { FlowNodeRowNameP } from "../styles/flowStyles";
 import { DataTypes, Vec2 } from "../types";
 import FlowJoint from "./FlowJoint";
+import FlowNodeRow from "./FlowNodeRow";
 
 function getDataTypeLiteral(specifier: TypeSpecifier): DataTypes {
     if (specifier.type === 'primitive') {
@@ -27,10 +27,10 @@ export type RowComponentProps<R extends InputRowSignature | OutputRowSignature> 
 export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
     const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
     const dataTypeLiteral = getDataTypeLiteral(row.dataType);
-    
+
     return (
-        <FlowNodeRowDiv
-            heightUnits={1}
+        <FlowNodeRow
+            context={context}
         >
             <FlowJoint
                 panelId={panelId}
@@ -43,27 +43,23 @@ export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
                 }}
                 getClientNodePos={getClientNodePos}
             />
-            <FlowProblemTooltip
-                context={context}
+            <FlowNodeRowNameP
+                align='right'
             >
-                <FlowNodeRowNameP
-                    align='right'
-                >
-                    {row.label}
-                </FlowNodeRowNameP>
-            </FlowProblemTooltip>
-        </FlowNodeRowDiv>
+                {row.label}
+            </FlowNodeRowNameP>
+        </FlowNodeRow>
     );
 }
 
 export const FlowInputRowSwitch = (props: RowComponentProps<InputRowSignature>) => {
     switch (props.row.rowType) {
         case 'input-simple':
-            return <FlowInputRowSimple {...props as RowComponentProps<SimpleInputRowSignature>}/>
+            return <FlowInputRowSimple {...props as RowComponentProps<SimpleInputRowSignature>} />
         case 'input-variable':
-            return <FlowInputRowVariable {...props as RowComponentProps<VariableInputRowSignature>}/>
+            return <FlowInputRowVariable {...props as RowComponentProps<VariableInputRowSignature>} />
         case 'input-list':
-            return <FlowInputRowList {...props as RowComponentProps<ListInputRowSignature>}/>
+            return <FlowInputRowList {...props as RowComponentProps<ListInputRowSignature>} />
         default:
             console.error(`unknown row type ${(props.row as any).rowType}`);
             return null;
@@ -75,8 +71,8 @@ export const FlowInputRowSimple = (props: RowComponentProps<SimpleInputRowSignat
     const dataTypeLiteral = getDataTypeLiteral(row.dataType);
 
     return (
-        <FlowNodeRowDiv
-            heightUnits={1}
+        <FlowNodeRow
+            context={context}
         >
             <FlowJoint
                 panelId={panelId}
@@ -90,16 +86,12 @@ export const FlowInputRowSimple = (props: RowComponentProps<SimpleInputRowSignat
                 }}
                 getClientNodePos={getClientNodePos}
             />
-            <FlowProblemTooltip
-                context={context}
+            <FlowNodeRowNameP
+                align='left'
             >
-                <FlowNodeRowNameP
-                    align='left'
-                >
-                    {row.label}
-                </FlowNodeRowNameP>
-            </FlowProblemTooltip>
-        </FlowNodeRowDiv>
+                {row.label}
+            </FlowNodeRowNameP>
+        </FlowNodeRow>
     );
 }
 
@@ -108,10 +100,8 @@ export const FlowInputRowVariable = (props: RowComponentProps<VariableInputRowSi
     const dataTypeLiteral = getDataTypeLiteral(row.dataType);
 
     return (
-        <FlowNodeRowDiv
-            heightUnits={1}
-        >
-            {/* <FlowJoint
+        <FlowNodeRow context={context}>
+            <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
                 dataType={dataTypeLiteral}
@@ -122,17 +112,19 @@ export const FlowInputRowVariable = (props: RowComponentProps<VariableInputRowSi
                     rowId: row.id,
                 }}
                 getClientNodePos={getClientNodePos}
-            /> */}
-            <FlowProblemTooltip
-                context={context}
-            >
-                <FlowNodeRowNameP
-                    align='left'
-                >
-                    {row.label}
-                </FlowNodeRowNameP>
-            </FlowProblemTooltip>
-        </FlowNodeRowDiv>
+            />
+            {
+                context?.displayValue ? (
+                    <p>Input</p>
+                ) : (
+                    <FlowNodeRowNameP
+                        align='left'
+                    >
+                        {row.label}
+                    </FlowNodeRowNameP>
+                )
+            }
+        </FlowNodeRow >
     );
 }
 
@@ -141,9 +133,7 @@ export const FlowInputRowList = (props: RowComponentProps<ListInputRowSignature>
     const dataTypeLiteral = getDataTypeLiteral(row.dataType);
 
     return (
-        <FlowNodeRowDiv
-            heightUnits={1}
-        >
+        <FlowNodeRow context={context}>
             {/* <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
@@ -156,57 +146,12 @@ export const FlowInputRowList = (props: RowComponentProps<ListInputRowSignature>
                 }}
                 getClientNodePos={getClientNodePos}
             /> */}
-            <FlowProblemTooltip
-                context={context}
+            <FlowNodeRowNameP
+                align='left'
             >
-                <FlowNodeRowNameP
-                    align='left'
-                >
-                    {row.label}
-                </FlowNodeRowNameP>
-            </FlowProblemTooltip>
-        </FlowNodeRowDiv>
+                {row.label}
+            </FlowNodeRowNameP>
+        </FlowNodeRow>
     );
 }
 
-
-const ErrorUnderlineSpan = styled.span<{ hasErrors: boolean }>`
-    ${({ hasErrors }) => hasErrors && css`
-        position: relative;
-
-        p {
-            text-decoration: red wavy underline;
-            text-underline-position: auto;
-        }
-
-        .error-tooltip {
-            position: absolute;
-            visibility: hidden;
-            width: 120px;
-            background-color: black;
-            color: #fff;
-            text-align: center;
-            padding: 5px 0;
-            border-radius: 6px;
-            z-index: 1;
-            top: -5px;
-            left: 105%;
-        }
-
-        &:hover .error-tooltip {
-            visibility: visible;
-        }
-    `}
-`;
-
-const FlowProblemTooltip = ({ context, children }: { context: RowContext | undefined, children: JSX.Element | JSX.Element[] }) => {
-
-    return (
-        <ErrorUnderlineSpan
-            hasErrors={!!context?.problems.length}
-        >
-            {children}
-            <span className='error-tooltip'>{context?.problems[0]?.type}</span>
-        </ErrorUnderlineSpan>
-    )
-}

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import testingTemplates from '../glsl/test.template.glsl';
 import { useAppDispatch } from '../redux/hooks';
 import { assetsAddTemplates } from '../slices/assetsSlice';
 

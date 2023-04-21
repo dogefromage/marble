@@ -38,7 +38,7 @@ const AppRoot = ({ projectId }: Props) => {
         >
             <Provider store={store}>
                 {/* APP STATE */}
-                <AssetsManager />
+                {/* <AssetsManager /> */}
                 <ProgramsManager />
                 {/* <DependencyManager /> */}
                 {/* <TemplateManager staticOnly={false} /> */}

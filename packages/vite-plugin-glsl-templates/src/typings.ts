@@ -1,8 +1,8 @@
-import { FunctionSignature } from "@marble/language";
+import { FlowSignature } from "@marble/language";
 
 interface SignatureTemplate {
     type: 'signature';
-    signature: FunctionSignature;
+    signature: FlowSignature;
     glsl: string;
 }
 

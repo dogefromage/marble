@@ -1,20 +1,17 @@
 import { Obj } from "./utils";
 
-export type PrimitiveBoolean = 'bool';
-export type PrimitiveFloat = 'float';
-export type PrimitiveInteger = 'int';
-export type Primitives = PrimitiveBoolean | PrimitiveFloat | PrimitiveInteger; // string?
-
-export const primitiveTypeNames: Primitives[] = [ 'bool', 'float', 'int' ];
-
-export interface PrimitiveTypeSpecifier<P extends Primitives = Primitives> {
+export interface PrimitiveTypeSpecifier {
     type: 'primitive';
-    primitive: P;
+    primitive: string;
 }
 export interface ListTypeSpecifier {
     type: 'list';
     elementType: TypeSpecifier; // all elements have same type
-    length?: number;
+}
+export interface ArrayTypeSpecifier {
+    type: 'array';
+    length: number;
+    elementType: TypeSpecifier; // all elements have same type
 }
 export interface MapTypeSpecifier {
     type: 'map';
@@ -31,5 +28,6 @@ export type TypeSpecifier =
     | PrimitiveTypeSpecifier
     | MapTypeSpecifier
     | ListTypeSpecifier
+    | ArrayTypeSpecifier
     | ReferenceTypeSpecifier
     | UnknownTypeSpecifier

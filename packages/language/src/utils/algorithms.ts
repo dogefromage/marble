@@ -7,15 +7,8 @@ interface TopSortResult {
 
 export function sortTopologically(Adj: number[][]): TopSortResult {
     const n = Adj.length;
-    const { post, cyclicVerts } = generatePrePostOrder(n, Adj);
-
-    if (cyclicVerts.length > 0) {
-        const cycles = findCycleTroughVertices(n, Adj, cyclicVerts);
-        return {
-            cycles,
-            topologicalSorting: [],
-        }
-    }
+    const { post, cyclicVerts } = generatePrePostOrder(Adj);
+    const cycles = findCycleTroughVertices(Adj, cyclicVerts);
 
     const topologicalSorting = post
         .map((p, index) => [ p, index ])    // create pair 
@@ -23,7 +16,7 @@ export function sortTopologically(Adj: number[][]): TopSortResult {
         .map(([ p, index ]) => index);      // map to index
 
     return {
-        cycles: [],
+        cycles,
         topologicalSorting,
     };
 }
@@ -31,7 +24,8 @@ export function sortTopologically(Adj: number[][]): TopSortResult {
 /**
  * perform DFS to find pre, postorder and cyclic verts
  */
-function generatePrePostOrder(n: number, Adj: number[][]) {
+function generatePrePostOrder(Adj: number[][]) {
+    const n = Adj.length;
     const visited = new Array<boolean>(n).fill(false);
     const pre = new Array<number>(n).fill(0);
     const post = new Array<number>(n).fill(0);
@@ -63,7 +57,8 @@ function generatePrePostOrder(n: number, Adj: number[][]) {
     return { pre, post, cyclicVerts };
 }
 
-function findCycleTroughVertices(n: number, Adj: number[][], cyclicVerts: number[]) {
+function findCycleTroughVertices(Adj: number[][], cyclicVerts: number[]) {
+    const n = Adj.length;
     const visited = new Array<boolean>(n).fill(false);
     const cycles: number[][] = [];
     const stack: number[] = [];
@@ -92,7 +87,8 @@ function findCycleTroughVertices(n: number, Adj: number[][], cyclicVerts: number
     return cycles;
 }
 
-export function findDependencies(n: number, Adj: number[][], targetIndex: number) {
+export function findDependencies(Adj: number[][], targetIndex: number) {
+    const n = Adj.length;
     const visited = new Array<boolean>(n).fill(false);
     const isDependant = new Array<boolean>(n).fill(false);
     // base case

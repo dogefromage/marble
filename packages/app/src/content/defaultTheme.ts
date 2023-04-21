@@ -10,6 +10,11 @@ const defaultTheme: DefaultTheme = {
             background: '#ada8a6',
             backgroundDots: '#8f8885',
             nodeColor: '#ebedf0',
+            edgeColors: {
+                normal: 'black',
+                redundant: '#363636aa',
+                cyclic: '#ba2a09',
+            }
         },
         dataTypes: {
             bool: '#787878',
