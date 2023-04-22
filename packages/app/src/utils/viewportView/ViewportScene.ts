@@ -7,6 +7,7 @@ import { CodeTemplate } from "../codeStrings";
 import { degToRad } from "../math";
 import { getViewportRotation } from "./cameraMath";
 import { createCoordinateGrid } from "./coordinateGrid";
+import { logCodeWithLines } from "../debugging";
 
 function generateShaders(layerProgram: LayerProgram) {
     const fragCodeTemplate = new CodeTemplate(FRAG_CODE_TEMPLATE);
@@ -19,7 +20,6 @@ function generateShaders(layerProgram: LayerProgram) {
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
     // console.log(logCodeWithLines(fragCode));
-    console.log(layerProgram.programCode);
 
     return {
         vertCode: VERT_CODE_TEMPLATE,
@@ -28,7 +28,7 @@ function generateShaders(layerProgram: LayerProgram) {
 }
 
 interface UserProgramWrapper extends IDObj {
-    hash: number;
+    // hash: number;
     mesh: THREE.Mesh;
 }
 
@@ -162,7 +162,7 @@ export default class ViewportScene {
         mesh.frustumCulled = false;
         const wrapper: UserProgramWrapper = {
             id: layerProgram.id,
-            hash: layerProgram.hash,
+            // hash: layerProgram.hash,
             mesh,
         }
         return wrapper;
@@ -172,7 +172,7 @@ export default class ViewportScene {
         const difference = detectMapDifference<LayerProgram, UserProgramWrapper>({
             reference: layerPrograms,
             lastImage: this.userPrograms,
-            hasChanged: (layerProg, meshWrapper) => layerProg.hash !== meshWrapper.hash,
+            hasChanged: (layerProg, meshWrapper) => true /* layerProg.hash !== meshWrapper.hash */,
             map: layerProgram => this.createUserProgramMesh(layerProgram),
         });
 
@@ -226,12 +226,12 @@ export default class ViewportScene {
     public syncUserPrograms(layerPrograms: Obj<LayerProgram>) {
         this.createOrDestroyPrograms(layerPrograms);
 
-        // textureVarRows
-        for (const layer of Object.values(layerPrograms) as LayerProgram[]) {
-            this.setVarTextureRow(
-                layer.textureVarRowIndex,
-                layer.textureVarRow,
-            );
-        }
+        // // textureVarRows
+        // for (const layer of Object.values(layerPrograms) as LayerProgram[]) {
+        //     this.setVarTextureRow(
+        //         layer.textureVarRowIndex,
+        //         layer.textureVarRow,
+        //     );
+        // }
     }
 }

@@ -6,7 +6,6 @@ export * from './undo';
 export * from './UtilityTypes';
 export * from './viewportView';
 export * from './layer';
-export * from './dependencyGraph';
 export * from './flowEditorView';
 export * from './SliceStates';
 export * from './contextMenu';

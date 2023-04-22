@@ -4,7 +4,8 @@ import { SelectionStatus } from "../types";
 const defaultTheme: DefaultTheme = {
     colors: {
         general: {
-            fields: '#e3e3e3',
+            fields: '#d7d7d7',
+            errorOverlay: '#ff000022',
         },
         flowEditor: {
             background: '#ada8a6',
@@ -12,14 +13,14 @@ const defaultTheme: DefaultTheme = {
             nodeColor: '#ebedf0',
             edgeColors: {
                 normal: 'black',
-                redundant: '#363636aa',
+                redundant: '#36363677',
                 cyclic: '#ba2a09',
             }
         },
         dataTypes: {
-            bool: '#787878',
-            int: '#617a43',
-            float: '#5f91c9',
+            boolean: '#787878',
+            // int: '#617a43',
+            number: '#5f91c9',
             vec2: '#3f478c',
             vec3: '#6a40a8',
             vec4: '#5532bf',

@@ -1,13 +1,11 @@
-import { FlowGraph, FlowSignature, TypeSpecifier } from "@marble/language";
-import { ProjectContext } from "@marble/language";
-import { Command, ConsoleMessage, ContextMenuState, DependencyGraph, Layer, LayerProgram, MenuState, World } from ".";
+import { FlowGraph, ProjectContext } from "@marble/language";
+import { Command, ConsoleMessage, ContextMenuState, Layer, LayerProgram, MenuState, World } from ".";
 import { Obj, Rect } from "./UtilityTypes";
 
 export type FlowsSliceState = Obj<FlowGraph>;
 export type LayerProgramsSliceState = Obj<LayerProgram>;
 export type MenusSliceState = Obj<MenuState>;
 export type LayersSliceState = Obj<Layer>;
-export type DependencyGraphSliceState = DependencyGraph;
 export type WorldSliceState = World;
 
 export type PreferencesSliceState = {};

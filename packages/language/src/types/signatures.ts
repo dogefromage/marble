@@ -1,4 +1,4 @@
-import { TypeSpecifier } from "./typeSpecifiers";
+import { InitializerValue, TypeSpecifier } from "./typeSpecifiers";
 import { Obj, Versionable } from "./utils";
 
 /**
@@ -13,9 +13,11 @@ interface BaseRow<R extends string> {
     rowType: R;
 }
 
-export type SimpleInputRowSignature = BaseRow<'input-simple'>;
-export type VariableInputRowSignature = BaseRow<'input-variable'>;
-export type ListInputRowSignature = BaseRow<'input-list'>;
+export interface SimpleInputRowSignature extends BaseRow<'input-simple'> {};
+export interface ListInputRowSignature extends BaseRow<'input-list'> {};
+export interface VariableInputRowSignature extends BaseRow<'input-variable'> {
+    defaultValue: InitializerValue | null;
+};
 
 export type SimpleOutputRowSignature = BaseRow<'output'>;
 
@@ -23,15 +25,15 @@ export type InputRowSignature =
     | SimpleInputRowSignature
     | ListInputRowSignature
     | VariableInputRowSignature
-    
+
 export type OutputRowSignature =
     | SimpleOutputRowSignature
 
 export const inputRowTypes: InputRowSignature['rowType'][] = ['input-simple', 'input-variable', 'input-list'];
 export const outputRowTypes: OutputRowSignature['rowType'][] = ['output'];
 
-export type FunctionSignatureSources = 'internal' | 'composed' | 'syntax';
-export type FlowSignatureId = `${FunctionSignatureSources}:${string}`
+export type FlowSignatureSources = 'internal' | 'composed' | 'syntax';
+export type FlowSignatureId = `${FlowSignatureSources}:${string}`
 
 /**
  * Minimum data required to instantiate this function either internal, graph or other location.

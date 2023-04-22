@@ -1,12 +1,6 @@
 import { FlowSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
+import { InitializerValue } from "./typeSpecifiers";
 import { Obj, Vec2, Versionable } from "./utils";
-
-export type InitializerValue =
-    | null
-    | number 
-    | boolean
-    | readonly InitializerValue[]
-    | { [key: string]: InitializerValue }
 
 export interface InputJointLocation {
     direction: 'input';

@@ -2,7 +2,7 @@ import { Obj } from "./utils";
 
 export interface PrimitiveTypeSpecifier {
     type: 'primitive';
-    primitive: string;
+    primitive: 'number' | 'boolean' | 'string';
 }
 export interface ListTypeSpecifier {
     type: 'list';
@@ -31,3 +31,11 @@ export type TypeSpecifier =
     | ArrayTypeSpecifier
     | ReferenceTypeSpecifier
     | UnknownTypeSpecifier
+
+export type InitializerValue =
+    | null
+    | number
+    | boolean
+    | string
+    | readonly InitializerValue[]
+    | { [key: string]: InitializerValue }

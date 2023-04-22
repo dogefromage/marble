@@ -1,4 +1,4 @@
-import { AnonymousFlowSignature, FlowGraph, FlowNode, FlowSignatureId, InputJointLocation, JointLocation, OutputJointLocation } from "@marble/language";
+import { AnonymousFlowSignature, FlowGraph, FlowNode, FlowSignatureId, InitializerValue, InputJointLocation, JointLocation, OutputJointLocation } from "@marble/language";
 import { createSlice } from "@reduxjs/toolkit";
 import { castDraft, enableMapSet } from "immer";
 import { WritableDraft } from "immer/dist/internal";
@@ -22,7 +22,7 @@ function getNode(s: WritableDraft<FlowsSliceState>, a: { payload: { flowId: stri
 
 function removeConnectionsToNodes(g: FlowGraph, nodes: Set<string>) {
     for (const node of Object.values(g.nodes)) {
-        for (const [ rowId, rowState ] of Object.entries(node.rowStates)) {
+        for (const [rowId, rowState] of Object.entries(node.rowStates)) {
             for (let i = rowState.connections.length - 1; i >= 0; i--) {
                 const conn = rowState.connections[i];
                 if (nodes.has(conn.nodeId)) {
@@ -115,7 +115,7 @@ export const flowsSlice = createSlice({
                 outputs: a.payload.signature.outputs,
                 nextIdIndex: 10, // start at "a"
             }
-            
+
             s[id] = castDraft(flow);
         },
         rename: (s, a: UndoAction<{ flowId: string, name: string }>) => {
@@ -167,6 +167,18 @@ export const flowsSlice = createSlice({
                 node.position.y += a.payload.delta.y;
             }
         },
+        setRowValue: (s, a: UndoAction<{ flowId: string, nodeId: string, rowId: string, rowValue: InitializerValue }>) => {
+            const g = getFlow(s, a);
+            if (!g) return;
+            const node = g.nodes[a.payload.nodeId];
+            if (!node) {
+                return console.error(`Could not find node ${a.payload.nodeId}`);
+            }
+            // init default
+            node.rowStates[a.payload.rowId] ||= { connections: [], value: null };
+            // set value
+            node.rowStates[a.payload.rowId].value = a.payload.rowValue;
+        },
         // assignRowData: (s, a: UndoAction<{ flowId: string, nodeId: string, rowId: string, rowData?: Partial<RowS> }>) => {
         //     const n = getNode(s, a);
         //     if (!n) return;
@@ -209,7 +221,7 @@ export const flowsSlice = createSlice({
                 }
             });
             if (!inputNode) return console.error(`Couldn't find input node`);
-            
+
             inputNode.rowStates[inputLocation.rowId] ||= { connections: [], value: null };
             const connections = inputNode.rowStates[inputLocation.rowId]!.connections;
             const setIndex = Math.max(0, Math.min(inputLocation.jointIndex, connections.length));
@@ -410,9 +422,7 @@ export const {
     moveSelection: flowsMoveSelection,
     addLink: flowsAddLink,
     removeEdge: flowsRemoveEdge,
-    // setUserSelection: flowsSetUserSelection,
-    // resetUserSelectedNodes: flowsResetUserSelectedNodes,
-    // updateExpiredProps: flowsUpdateExpiredProps,
+    setRowValue: flowsSetRowValue,
     // // META
     // addCustomRow: flowsAddCustomRow,
     // addDefaultRow: flowsAddDefaultRow,

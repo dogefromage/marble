@@ -2,13 +2,12 @@
     "name": "@marble/language",
     "version": "1.0.0",
     "description": "",
+    "types": "lib/types/index.d.ts",
+    "module": "lib/esm/index.js",
     "main": "lib/cjs/index.js",
-    "module": "lib/es/index.js",
-    "types": "lib/es/index.d.ts",
     "scripts": {
-        "dev": "tsc --watch --project tsconfig-es.json",
-        "build": "tsc --project tsconfig-es.json",
-        "build-cjs": "tsc --project tsconfig-cjs.json"
+        "dev": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json --watch",
+        "build": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json"
     },
     "author": "zebrapig",
     "license": "MIT"

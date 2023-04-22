@@ -1,4 +1,4 @@
-import { CompoundStatementNode, DeclarationNode, DeclarationStatementNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, ParameterDeclarationNode, PostfixNode, QuantifierNode, ReturnStatementNode, StructDeclarationNode, StructNode, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
+import { AstNode, CompoundStatementNode, DeclarationNode, DeclarationStatementNode, FieldSelectionNode, FullySpecifiedTypeNode, FunctionCallNode, FunctionHeaderNode, FunctionNode, FunctionPrototypeNode, IdentifierNode, KeywordNode, LiteralNode, ParameterDeclarationNode, PostfixNode, QuantifierNode, ReturnStatementNode, StructDeclarationNode, StructNode, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 
 class AstUtils {
     public createLiteral(literal: string, whitespace = ''): LiteralNode {
@@ -38,7 +38,7 @@ class AstUtils {
     public createReturnStatement(expression: any): ReturnStatementNode {
         return {
             type: 'return_statement',
-            return: this.createKeyword('return'),
+            return: this.createKeyword('return', ' '),
             expression,
             semi: this.createLiteral(';', '\n'),
         };
@@ -80,10 +80,10 @@ class AstUtils {
         }
         return paramDec;
     }
-    public createFunctionCall(identifier: FunctionCallNode['identifier'], argExpressions: any[]): FunctionCallNode {
+    public createFunctionCall(callableExpression: AstNode, argExpressions: any[]): FunctionCallNode {
         return {
             type: 'function_call',
-            identifier,
+            identifier: callableExpression,
             lp: this.createLiteral('(', ''),
             rp: this.createLiteral(')', ''),
             args: this.placeCommas(argExpressions),
@@ -131,7 +131,7 @@ class AstUtils {
             typeName,
             struct: this.createKeyword('struct', ' '),
             lb: this.createLiteral('{', '\n    '),
-            rb: this.createLiteral('}'),
+            rb: this.createLiteral('};'),
         }
     }
     public createStructDefinition(struct: StructNode): DeclarationStatementNode {
@@ -142,6 +142,7 @@ class AstUtils {
         }
     }
     public createStructDeclaration(specifier: TypeSpecifierNode, identifier: IdentifierNode): StructDeclarationNode {
+        this.addTypeSpecWhitespace(specifier);
         return {
             type: 'struct_declaration',
             semi: this.createLiteral(';', '\n    '),
@@ -227,6 +228,13 @@ class AstUtils {
                     break;
             }
         }
+    }
+    public createFloatLiteral(num: number) {
+        let str = num.toString();
+        if (!/\./.test(str)) {
+            str += '.';
+        }
+        return ast.createLiteral(str);
     }
 }
 

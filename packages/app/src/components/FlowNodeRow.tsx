@@ -4,12 +4,15 @@ import { FlowNodeRowDiv } from '../styles/flowStyles';
 import { RowContext } from '@marble/language';
 
 const ErrorUnderlineSpan = styled.span<{ hasErrors: boolean }>`
-    ${({ hasErrors }) => hasErrors && css`
+    ${({ hasErrors, theme }) => hasErrors && css`
         position: relative;
 
         p {
+            /* background-color: ${theme.colors.general.errorOverlay}; */
+            /* text-decoration: underline overline red; */
             text-decoration: red wavy underline;
-            text-underline-position: auto;
+            /* font-style: italic; */
+            /* text-underline-position: auto; */
         }
 
         .error-tooltip {
@@ -38,10 +41,14 @@ interface Props {
 }
 
 const FlowNodeRow = ({ context, children }: Props) => {
+    const hasErrors = !!context?.problems.length;
 
     return (
         <ErrorUnderlineSpan
-            hasErrors={!!context?.problems.length}
+            hasErrors={hasErrors}
+            onMouseEnter={(hasErrors) => {
+                // hasErrors && console.log(context?.problems);
+            }}
         >
             <FlowNodeRowDiv>
                 {children}

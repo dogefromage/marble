@@ -16,8 +16,8 @@ export const layersSlice = createSlice({
             s[a.payload.id] = {
                 id: a.payload.id,
                 name: 'New Layer',
-                version: 0,
-                index: count,
+                // version: 0,
+                drawIndex: count,
                 topFlowId: a.payload.topFlowId,
             };
         },

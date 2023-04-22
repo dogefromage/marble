@@ -133,6 +133,7 @@ function getCombinerInputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): Inpu
                 label: (i + 1).toString(),
                 dataType: type.elementType,
                 rowType: 'input-variable',
+                defaultValue: null,
             });
         }
         return rows;
@@ -146,6 +147,7 @@ function getCombinerInputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): Inpu
                     label: key,
                     dataType: type,
                     rowType: 'input-variable',
+                    defaultValue: null,
                 };
                 return row;
             });

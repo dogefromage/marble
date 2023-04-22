@@ -7,7 +7,6 @@ import 'react-reflex/styles.css';
 import { ThemeProvider } from 'styled-components';
 import defaultTheme from '../content/defaultTheme';
 import { RootState, initStore } from '../redux/store';
-import AssetsManager from './AssetsManager';
 import ContextMenu from './ContextMenu';
 import { ErrorBoundary } from './ErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';

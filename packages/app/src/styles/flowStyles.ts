@@ -72,9 +72,8 @@ export const FlowNodeRowNameP = styled.p<{
 
 export const FlowJointDiv = styled.div<{
     direction: 'input' | 'output';
-    additional?: boolean;
     dataType: DataTypes;
-    cannotDrop: boolean;
+    isHovering: boolean;
 }>`
     position: absolute;
     top: ${0.5 * FLOW_NODE_ROW_HEIGHT}px;
@@ -95,24 +94,16 @@ export const FlowJointDiv = styled.div<{
     div {
         width: 10px;
         height: 10px;
+        
+        transition: transform 50ms;
 
-        background-color: ${({ theme, dataType, cannotDrop }) => {
-        if (cannotDrop) return '#777';
-        return theme.colors.dataTypes[dataType];
-    }};
-
+        background-color: ${({ theme, dataType }) => theme.colors.dataTypes[dataType]};
         border: solid 2px #00000033;
 
-        /* ${({ additional, theme, dataType }) => additional ? css`
-            background-color: unset;
-            outline: solid 3px ${theme.colors.dataTypes[dataType]};
-            outline-offset: -3px;
-        ` : ''} */
-
-        /* opacity: ${({ cannotDrop }) => cannotDrop ? 0.8 : 1}; */
+        ${({ isHovering }) => isHovering && `transform: scale(1.3);`}
     }
     
     &:hover div {
-        opacity: 1;
+        transform: scale(1.3);
     }
 `;

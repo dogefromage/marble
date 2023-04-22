@@ -1,11 +1,13 @@
-import { AnonymousFlowSignature, EnvironmentContent, FlowSignature, MapTypeSpecifier, TypeSpecifier } from "@marble/language";
+import { AnonymousFlowSignature, EnvironmentContent, FlowSignature, TypeSpecifier } from "@marble/language";
 import internalTemplates from '../../glsl/test.template.glsl';
 import { Obj } from "../UtilityTypes";
 
-const float: TypeSpecifier = { type: 'primitive', primitive: 'float' };
-const vec3: MapTypeSpecifier = { type: 'map', elements: { x: float, y: float, z: float } };
+const vec3 = { type: 'reference', name: 'vec3' } satisfies TypeSpecifier;
+const number = { type: 'primitive', primitive: 'number' } satisfies TypeSpecifier;
 
-export const glslPrimitives = { vec3, float };
+const specifierDefinitions: Obj<TypeSpecifier> = { 
+    vec3: { type: 'map', elements: { x: number, y: number, z: number } }, 
+};
 
 export const topFlowSignature: AnonymousFlowSignature = {
     inputs: [{
@@ -18,17 +20,21 @@ export const topFlowSignature: AnonymousFlowSignature = {
         id: 'd',
         label: 'Distance',
         rowType: 'output',
-        dataType: float,
+        dataType: number,
     }],
 }
 
-
 const signatures: Obj<FlowSignature> = {};
+export const buildinFunctionBlocks: Obj<string> = {};
+
 for (const template of internalTemplates) {
-    signatures[template.signature.id] = template.signature;
+    if (template.type === 'signature') {
+        signatures[template.signature.id] = template.signature;
+        buildinFunctionBlocks[template.signature.id] = template.glsl;
+    }
 }
 
 export const baseEnvironment: EnvironmentContent = {
-    types: glslPrimitives,
+    types: specifierDefinitions,
     signatures,
 };

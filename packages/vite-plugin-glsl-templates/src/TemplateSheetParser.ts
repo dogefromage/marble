@@ -1,4 +1,4 @@
-import { FlowSignature, Primitives, TypeSpecifier, inputRowTypes, outputRowTypes, primitiveTypeNames } from '@marble/language';
+import { FlowSignature, InitializerValue, InputRowSignature, TypeSpecifier, VariableInputRowSignature, inputRowTypes, outputRowTypes } from '@marble/language';
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { FunctionNode, ParameterDeclarationNode, PreprocessorNode, TypeSpecifierNode } from '@shaderfrog/glsl-parser/ast';
 import { SourceTemplate } from './typings';
@@ -88,16 +88,36 @@ export class TemplateSheetParser {
             inputs: params.map(param => {
                 const rowId = param.identifier.identifier;
                 const rowRecord = this.rowRecords[rowId] || {};
-                const rowType: any = rowRecord.rt || 'input-simple';
+
+                const rowType: InputRowSignature['rowType'] = (rowRecord.rt as any) || 'input-simple';
                 if (!inputRowTypes.includes(rowType)) {
                     throw new Error(`"${rowType}" is not a valid input rowtype`);
                 }
-            
-                return {
-                    id: rowId,
-                    label: rowRecord.n || rowId,
-                    rowType: rowType,
-                    dataType: parseTypeSpecifierNode(param.specifier),
+
+                if (rowType === 'input-variable') {
+                    let defaultValue: InitializerValue | null = null;
+                    if (rowRecord.dv != null) {
+                        try {
+                            defaultValue = JSON.parse(rowRecord.dv);
+                        } catch (e) {
+                            throw new Error(`Could not parse default value: ${e}`);
+                        }
+                    }
+                    const row: VariableInputRowSignature = {
+                        id: rowId,
+                        label: rowRecord.n || rowId,
+                        rowType: rowType,
+                        dataType: parseTypeSpecifierNode(param.specifier),
+                        defaultValue,
+                    }
+                    return row;
+                } else {
+                    return {
+                        id: rowId,
+                        label: rowRecord.n || rowId,
+                        rowType: rowType,
+                        dataType: parseTypeSpecifierNode(param.specifier),
+                    }
                 }
             }),
             outputs: this.currentOutTypes.map((outType, outIndex) => {
@@ -129,7 +149,7 @@ export class TemplateSheetParser {
 }
 
 function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): TypeSpecifier {
-    let name: string | undefined; 
+    let name: string | undefined;
     if (typeSpec.specifier.type === 'identifier') {
         name = typeSpec.specifier.identifier;
     }
@@ -144,12 +164,13 @@ function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): TypeSpecifier {
 }
 
 function generateNamedSpecifier(name: string): TypeSpecifier {
-    if (primitiveTypeNames.includes(name as Primitives)) {
-        return {
-            type: 'primitive',
-            primitive: name as Primitives,
-        }
+    if (name === 'float') {
+        return { type: 'primitive', primitive: 'number' };
     }
+    if (name === 'bool') {
+        return { type: 'primitive', primitive: 'boolean' };
+    }
+
     return {
         type: 'reference',
         name,
@@ -169,14 +190,24 @@ class MetadataTokenizer {
     constructor(str: string) {
         const tokenStream: string[] = [];
         while (true) {
-            const tokenMatch =
-                /^[\s]*"(.*?)"/.exec(str)   // in quotations
-                || /^[\s]*([^\s]+)/.exec(str); // other token
-            if (!tokenMatch) {
-                break;
+            let trimmedString = str.trimStart();
+            const quotationMatch = /^\"(\\.|[^\"])*\"/.exec(trimmedString);
+            if (quotationMatch) {
+                const matchString = quotationMatch[0];
+                let token = quotationMatch[0].slice(1, matchString.length - 1);
+                token = token.replaceAll('\\"', "\"");
+                str = trimmedString.slice(matchString.length); 
+                tokenStream.push(token);
+                continue;
             }
-            str = str.slice(tokenMatch[0].length);
-            tokenStream.push(tokenMatch[1]);
+            const noQuotationMatch = /^[^\s]+/.exec(trimmedString);
+            if (noQuotationMatch) {
+                const token = noQuotationMatch[0];
+                str = trimmedString.slice(token.length);
+                tokenStream.push(token);
+                continue;
+            }
+            break; // no match
         }
 
         while (tokenStream.length) {

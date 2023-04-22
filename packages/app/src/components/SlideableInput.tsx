@@ -13,11 +13,11 @@ import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 const SlidableInputDiv = styled.div`
     position: relative;
     width: 100%;
-    height: ${FLOW_NODE_ROW_HEIGHT * 0.85}px;
+    height: ${FLOW_NODE_ROW_HEIGHT * 0.8}px;
     display: flex;
     align-items: center;
 
-    margin: ${FLOW_NODE_ROW_HEIGHT * 0.15}px 0;
+    /* margin: ${FLOW_NODE_ROW_HEIGHT * 0.1}px 0; */
 
     form,
     input
@@ -36,11 +36,12 @@ const SlidableInputDiv = styled.div`
         input
         {
             padding: 0 0.5em;
-            ${BORDER_RADIUS}
-            ${INSET_SHADOW}
-            background-color: ${({ theme }) => theme.colors.general.fields };
+
+            box-shadow: inset 2px 2px #00000033;
+
+            background-color: ${({ theme }) => theme.colors.general.fields};
             border: none;
-            outline: none;
+            /* outline: none; */
             
             text-align: right;
 
@@ -89,12 +90,12 @@ const SlidableInput = ({
     const dispatch = useAppDispatch();
 
     const inputRef = useRef<HTMLInputElement>(null);
-    const [ isWriting, setIsWriting ] = useState(false);
-    const [ textValue, setTextValue ] = useState<string>();
+    const [isWriting, setIsWriting] = useState(false);
+    const [textValue, setTextValue] = useState<string>();
 
     const { unitSystem } = useAppSelector(selectWorld);
 
-    const unitName = unitSystem[ metric! ] as UnitNames | undefined;
+    const unitName = unitSystem[metric!] as UnitNames | undefined;
 
     const formatValue = (value: number) => Units.formatNumber(value, unitName);
 

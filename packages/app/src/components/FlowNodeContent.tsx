@@ -19,7 +19,6 @@ const FlowNodeContent = ({ panelId, flowId, nodeId, context, signature, getClien
 
     return (<>
         <FlowNodeNameWrapper
-            heightUnits={1}
             backColor={signature.attributes.color}
         >
             <FlowNodeRowNameP

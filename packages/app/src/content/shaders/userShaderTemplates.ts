@@ -74,11 +74,12 @@ float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
     return texture(varTexture, uv).r;
 }
 
-// PROGRAM TAGS
-%INCLUDES%
 %MAIN_PROGRAM%
 
-Distance sdf(vec3 p) { return %ROOT_FUNCTION_NAME%(p); }
+Distance sdf(vec3 p) { 
+    float dist = %ROOT_FUNCTION_NAME%(p); 
+    return Distance(dist, vec3(1,1,1));
+}
 
 vec3 normal(vec3 p) {
     // https://iquilezles.org/articles/normalsSDF/

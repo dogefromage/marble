@@ -48,10 +48,11 @@ const FlowEdgeGroup = styled.g<{ color: EdgeColor, key: string }>`
         fill: none;
         stroke: ${({ color, theme }) => theme.colors.flowEditor.edgeColors[color]};
         stroke-width: 3px;
+        transition: stroke-width 50ms;
         pointer-events: none;
     }
 
-    .path-catcher:hover:not([data-key="${NEW_LINK_KEY}"]) + .path-display {
+    .path-catcher:hover:not([data-ke="${NEW_LINK_KEY}"]) + .path-display {
         stroke-width: 5px;
     }
 `

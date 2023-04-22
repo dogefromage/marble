@@ -6,6 +6,8 @@ import { selectFlows } from '../slices/flowsSlice';
 import { selectLayers } from '../slices/layersSlice';
 import { baseEnvironment } from '../types/flows';
 import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
+import { objMap } from '../utils/data';
+import { layerProgramsSetMany } from '../slices/layerProgramsSlice';
 
 interface Props {
 
@@ -22,14 +24,19 @@ const ProgramsManager = ({}: Props) => {
     // }, [ assets ]);
 
     useEffect(() => {
-        const projectContext = validateProject(flows, baseEnvironment);
+        const topFlowsPerLayer = objMap(layers, l => l.topFlowId);
+        const projectContext = validateProject(flows, baseEnvironment, topFlowsPerLayer);
         dispatch(validationSetResult({
             context: projectContext,
         }));
 
-        // const programs = programEmitter.current
-        //     .emitPrograms(projectContext, layers);
+        const newPrograms = programEmitter.current
+            .emitPrograms(projectContext, layers);
 
+        dispatch(layerProgramsSetMany({
+            setPrograms: newPrograms,
+            removePrograms: [], // TODO
+        }));
     }, [ layers, flows ]);
 
     return null;

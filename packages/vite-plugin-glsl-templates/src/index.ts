@@ -36,6 +36,6 @@ function templatesToModule(src: string) {
     return moduleCode;
 }
 
-function escapeSpecials(str: string) {
+export function escapeSpecials(str: string) {
     return str.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
 }

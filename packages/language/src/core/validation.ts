@@ -9,12 +9,14 @@ import { GraphTypeException, compareTypes, generateDefaultValue, validateValue }
 export function validateProject(
     flowGraphs: Obj<FlowGraph>,
     content: EnvironmentContent,
+    programTopFlows: Record<string, string>,
 ): ProjectContext {
     const result: ProjectContext = {
         ref: flowGraphs,
         flowContexts: {},
         problems: [],
         topologicalFlowOrder: [],
+        programDependencies: {},
     }
 
     let dynamicEnvironment = new LinkedFlowEnvironment(content);
@@ -47,6 +49,21 @@ export function validateProject(
         });
     }
     result.topologicalFlowOrder = topSortResult.topologicalSorting.map(i => flowEntries[i][0]);
+
+    for (const [ programId, topFlowId ] of Object.entries(programTopFlows)) {
+        const topFlowIndex = flowEntries.findIndex(flow => flow[0] === topFlowId);
+        if (topFlowIndex < 0) {
+            result.problems.push({
+                type: 'missing-top-flow',
+                id: topFlowId,
+            });
+        }
+        const numberedDeps = findDependencies(numberedAdjacency, topFlowIndex);
+        const namedDeps = new Set(
+            Array.from(numberedDeps).map(index => flowEntries[index][0])
+        );
+        result.programDependencies[programId] = namedDeps;
+    }
 
     for (const graphIndex of topSortResult.topologicalSorting) {
         const [graphId, graph] = flowEntries[graphIndex];
@@ -143,7 +160,7 @@ function validateFlowGraph(
         flowSignature,
         flowEnvironment,
         edges: {},
-        topologicalNodeOrder: [],
+        filteredSortedNodes: [],
         dependencies: [],
         dependants: [],
     }
@@ -209,11 +226,61 @@ function validateFlowGraph(
     const topSortResult = sortTopologically(numberedAdjacency);
     const namedTopSort = topSortResult.topologicalSorting
         .map(i => nodeEntries[i][0]);
-    result.topologicalNodeOrder = namedTopSort;
+    // result.topologicalNodeOrder = namedTopSort;
+
+    // filling type table bottom-up using topsort
+    const nodeOutputTypes = new Map<string, MapTypeSpecifier>()
+    for (const nodeId of namedTopSort) {
+        const node = flow.nodes[nodeId];
+        const nodeResult = validateNode(node, flowEnvironment, nodeOutputTypes);
+        result.nodeContexts[nodeId] = nodeResult;
+        if (nodeResult.outputSpecifier) {
+            nodeOutputTypes.set(nodeId, nodeResult.outputSpecifier);
+        }
+    }
 
     type GraphEdgeKey = `${string}:${string}`;
     const edgeColors = new Map<GraphEdgeKey, EdgeColor>();
 
+    // output and outputs dependencies
+    let outputIndex = -1;
+    for (let i = 0; i < nodeEntries.length; i++) {
+        const node = nodeEntries[i][1];
+        if (node.signature === 'syntax:output') {
+            outputIndex = i;
+            break;
+        }
+    }
+    if (outputIndex < 0) {
+        result.problems.push({
+            type: 'output-missing',
+        });
+    } else {
+        // mark nodes redundant
+        const numberedOutputDeps = findDependencies(numberedAdjacency, outputIndex);
+        const namedOutputDeps = Array.from(numberedOutputDeps)
+            .map(index => nodeEntries[index][0])
+        const usedNodeIds = new Set(namedOutputDeps);
+
+        for (const [nodeId, nodeContext] of Object.entries(result.nodeContexts)) {
+            if (!usedNodeIds.has(nodeId)) {
+                nodeContext.isRedundant = true;
+            }
+        }
+
+        // mark edges redundant
+        for (const edge of allEdges) {
+            const targetNode = edge.target.nodeId;
+            if (!usedNodeIds.has(targetNode)) {
+                const edgeKey: GraphEdgeKey = `${edge.source.nodeId}:${edge.target.nodeId}`;
+                edgeColors.set(edgeKey, 'redundant');
+            }
+        }
+
+        result.filteredSortedNodes = namedTopSort.filter(nodeId => usedNodeIds.has(nodeId));
+    }
+
+    // mark cycles
     if (topSortResult.cycles.length) {
         const namedCycles = topSortResult.cycles
             .map(cycle => cycle.map(i => nodeEntries[i][0]));
@@ -229,35 +296,6 @@ function validateFlowGraph(
                 edgeColors.set(key, 'cyclic');
             }
         }
-    }
-
-    // filling type table bottom-up using topsort
-    const nodeOutputTypes = new Map<string, MapTypeSpecifier>()
-    for (const nodeId of namedTopSort) {
-        const node = flow.nodes[nodeId];
-        const nodeResult = validateNode(node, flowEnvironment, nodeOutputTypes);
-        result.nodeContexts[nodeId] = nodeResult;
-        if (nodeResult.outputSpecifier) {
-            nodeOutputTypes.set(nodeId, nodeResult.outputSpecifier);
-        }
-    }
-
-    // output and redundancy
-    let outputIndex = -1;
-    for (let i = 0; i < nodeEntries.length; i++) {
-        const node = nodeEntries[i][1];
-        if (node.signature === 'syntax:output') {
-            outputIndex = i;
-            break;
-        }
-    }
-    if (outputIndex < 0) {
-        result.problems.push({
-            type: 'output-missing',
-        });
-    } else {
-        const dependants = findDependencies(numberedAdjacency, outputIndex);
-        const 
     }
 
     // color edges
@@ -285,6 +323,7 @@ function validateNode(
             outputSpecifier: null,
             templateSignature: null,
             rowContexts: {},
+            isRedundant: false,
         }
     }
     const outputSpecifier = signatureRowsToMapType(templateSignature.outputs);
@@ -296,6 +335,7 @@ function validateNode(
         templateSignature,
         outputSpecifier,
         rowContexts,
+        isRedundant: false,
     };
     return result;
 }
@@ -377,16 +417,27 @@ function validateRowInput(
     }
     if (input.rowType === 'input-variable') {
         if (connectedType == null) {
-            let displayValue: InitializerValue | undefined;
-            if (rowState?.value != null) {
-                const problem = validateValue(expectedType, rowState.value, environment);
-                if (problem) {
-                    result.problems.push(problem);
-                } else {
-                    result.displayValue = rowState.value;
+            let displayValue: InitializerValue | undefined = 
+                rowState?.value ?? input.defaultValue;
+
+            if (displayValue != null) {
+                try {
+                    validateValue(expectedType, displayValue, environment);
+                } catch (e) {
+                    if (e instanceof GraphTypeException) {
+                        result.problems.push({
+                            type: 'invalid-value',
+                            typeProblemMessage: e.message,
+                            typeProblemPath: e.path.toArray(),
+                        });
+                        displayValue = undefined;
+                    } else {
+                        throw e;
+                    }
                 }
             }
-            result.displayValue ||= generateDefaultValue(expectedType, environment);
+            const generatedDefault = generateDefaultValue(expectedType, environment);
+            result.displayValue = displayValue ?? generatedDefault;
             return result; // show displayValue
         }
         const problems = wrapDefined(compareParameterToExpected(connectedType, expectedType, 0, environment));

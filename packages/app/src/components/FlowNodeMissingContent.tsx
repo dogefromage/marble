@@ -4,7 +4,6 @@ import { FlowNodeNameWrapper, FlowNodeRowNameP } from '../styles/flowStyles';
 export const FlowNodeMissingContent = () => {
     return (
         <FlowNodeNameWrapper
-            heightUnits={1}
             backColor={'#555555'}
         >
             <FlowNodeRowNameP

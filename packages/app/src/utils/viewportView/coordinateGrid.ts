@@ -55,18 +55,13 @@ float xy_grid(vec3 p, float line_width, float grid_size) {
     return max(alpha_x, alpha_y);
 }
 
-float stepped_grid(vec3 p, float line_width) {
-    
-    GridLevel grid_levels[3];
-    grid_levels[0] = GridLevel(  0.,   1.);
-    grid_levels[1] = GridLevel( 25.,  10.);
-    grid_levels[2] = GridLevel(250., 100.);
+float blend_grid_levels(vec3 p, float line_width, GridLevel[8] grid_levels, int level_count) {
 
     float blend_margin_factor = 3.;
 
     float grid = xy_grid(p, line_width, grid_levels[0].grid_size);
 
-    for (int i = 1; i < 3; i++) {
+    for (int i = 1; i < level_count; i++) {
         GridLevel level = grid_levels[i];
         if (level.start_dist < cameraDistance) {
             float next_grid = xy_grid(p, line_width, level.grid_size);
@@ -82,6 +77,17 @@ float stepped_grid(vec3 p, float line_width) {
     }
 
     return grid;
+}
+
+float stepped_grid(vec3 p, float line_width) {
+    
+    GridLevel grid_levels[8];
+    int level_count = 3;
+    grid_levels[0] = GridLevel(  0.,   1.);
+    grid_levels[1] = GridLevel( 25.,  10.);
+    grid_levels[2] = GridLevel(250., 100.);
+
+    return blend_grid_levels(p, line_width, grid_levels, level_count);
 }
 
 vec4 coordinate_grid(vec3 p) {

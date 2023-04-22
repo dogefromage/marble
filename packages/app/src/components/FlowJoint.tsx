@@ -32,11 +32,7 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
                 panelId,
                 fromJoint: location,
             }));
-
-            return {
-                // location,
-                // mergeStackInput: isStackedInput || false,
-            }
+            return {};
         },
     });
 
@@ -85,20 +81,17 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
             panelId,
             jointKey,
             relativeClientPosition: relativePos,
-        }))
+        }));
     }, []);
-
-    const cannotDrop = actionState?.type === 'dragging-link' && ! isDroppableTarget;
 
     return (
         <FlowJointDiv
             direction={location.direction}
-            additional={false}
             dataType={dataType}
             {...drag.handlers}
             {...drop.handlers}
-            cannotDrop={cannotDrop}
             onMouseDown={e => e.stopPropagation()}
+            isHovering={drop.isHovering}
         >
             <div
                 className={JOINT_DIV_CLASS}

@@ -17,11 +17,11 @@ export const layerProgramsSlice = createSlice({
             }
         },
         setRows: (s, a: PayloadAction<{ rowMap: Obj<number[]> }>) => {
-            for (const [ layerId, row ] of Object.entries(a.payload.rowMap)) {
-                if (s[layerId] != null) {
-                    s[layerId]!.textureVarRow = row;
-                }
-            }
+            // for (const [ layerId, row ] of Object.entries(a.payload.rowMap)) {
+            //     if (s[layerId] != null) {
+            //         s[layerId]!.textureVarRow = row;
+            //     }
+            // }
         }
     }
 });

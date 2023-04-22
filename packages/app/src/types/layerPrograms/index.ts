@@ -1,32 +1,30 @@
-import { ListTypeSpecifier, Primitives, TypeSpecifier } from "@marble/language";
 import { Tuple } from "../UtilityTypes";
 
-export type ConstructedTypes = 'vec2' | 'vec3' | 'vec4' | 'mat3';
-export type DataTypes = Primitives | ConstructedTypes;
+export type DataTypes = 'number' | 'boolean' | 'vec2' | 'vec3' | 'vec4' | 'mat3';
 
-export const dataTypeDescriptors: Record<DataTypes, TypeSpecifier> = {
-    // primitives
-    bool:  { type: 'primitive', primitive: 'bool' },
-    int:   { type: 'primitive', primitive: 'int' },
-    float: { type: 'primitive', primitive: 'float' },
-    // constructed
-    vec2:  { type: 'reference', name: 'vec2' },
-    vec3:  { type: 'reference', name: 'vec3' },
-    vec4:  { type: 'reference', name: 'vec4' },
-    mat3:  { type: 'reference', name: 'mat3' },
-}
+// export const dataTypeDescriptors: Record<DataTypes, TypeSpecifier> = {
+//     // primitives
+//     bool:  { type: 'primitive', primitive: 'bool' },
+//     int:   { type: 'primitive', primitive: 'int' },
+//     float: { type: 'primitive', primitive: 'float' },
+//     // constructed
+//     vec2:  { type: 'reference', name: 'vec2' },
+//     vec3:  { type: 'reference', name: 'vec3' },
+//     vec4:  { type: 'reference', name: 'vec4' },
+//     mat3:  { type: 'reference', name: 'mat3' },
+// }
 
-const createFloatList = (length: number): ListTypeSpecifier => ({ 
-    type: 'list', 
-    length, 
-    elementType: dataTypeDescriptors.float, 
-});
-export const dataTypeDefinitions: Record<ConstructedTypes, TypeSpecifier> = {
-    vec2: createFloatList(2),
-    vec3: createFloatList(3),
-    vec4: createFloatList(4),
-    mat3: createFloatList(9),
-}
+// const createFloatList = (length: number): ListTypeSpecifier => ({ 
+//     type: 'list', 
+//     length, 
+//     elementType: dataTypeDescriptors.float, 
+// });
+// export const dataTypeDefinitions: Record<ConstructedTypes, TypeSpecifier> = {
+//     vec2: createFloatList(2),
+//     vec3: createFloatList(3),
+//     vec4: createFloatList(4),
+//     mat3: createFloatList(9),
+// }
 
 export interface DataTypeValueTypes {
     bool:  number;
@@ -53,10 +51,10 @@ export interface LayerProgram {
     id: string;
     name: string;
     drawIndex: number;
-    hash: number;
+    // hash: number;
     programCode: string;
     rootFunction: string;
-    textureVarMappings: ProgramDynamicLookupMapping[];
-    textureVarRowIndex: number;
-    textureVarRow: number[];
+    // textureVarMappings: ProgramDynamicLookupMapping[];
+    // textureVarRowIndex: number;
+    // textureVarRow: number[];
 }

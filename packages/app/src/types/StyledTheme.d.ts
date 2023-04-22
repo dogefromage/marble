@@ -8,6 +8,7 @@ declare module 'styled-components' {
         colors: {
             general: {
                 fields: string;
+                errorOverlay: string;
             }
             flowEditor: {
                 background: string;

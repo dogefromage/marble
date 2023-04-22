@@ -110,12 +110,12 @@ export function findDependencies(Adj: number[][], targetIndex: number) {
         }
     }
 
-    const visitedIndices = visited.reduce((indices, visited, index) => {
-        if (visited) {
+    const dependantIndices = isDependant.reduce((indices, dependant, index) => {
+        if (dependant) {
             indices.add(index);
         }
         return indices;
     }, new Set<number>());
 
-    return visitedIndices;
+    return dependantIndices;
 }

@@ -4,10 +4,11 @@ import { FlowNodeRowNameP } from "../styles/flowStyles";
 import { DataTypes, Vec2 } from "../types";
 import FlowJoint from "./FlowJoint";
 import FlowNodeRow from "./FlowNodeRow";
+import FlowNodeRowInitializer from "./FlowNodeRowInitializer";
 
 function getDataTypeLiteral(specifier: TypeSpecifier): DataTypes {
     if (specifier.type === 'primitive') {
-        return specifier.primitive;
+        return specifier.primitive as DataTypes;
     }
     if (specifier.type === 'reference') {
         return specifier.name as DataTypes;
@@ -113,17 +114,12 @@ export const FlowInputRowVariable = (props: RowComponentProps<VariableInputRowSi
                 }}
                 getClientNodePos={getClientNodePos}
             />
-            {
-                context?.displayValue ? (
-                    <p>Input</p>
-                ) : (
-                    <FlowNodeRowNameP
-                        align='left'
-                    >
-                        {row.label}
-                    </FlowNodeRowNameP>
-                )
-            }
+            <FlowNodeRowInitializer
+                flowId={flowId}
+                nodeId={nodeId}
+                row={row}
+                context={context}
+            />
         </FlowNodeRow >
     );
 }

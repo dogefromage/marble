@@ -26,7 +26,7 @@ const MouseSelectionDiv = styled.div.attrs<Props>(({ rect }) =>
     height: var(--rect-h);
 
     background-color: #ffffff55;
-    border: dashed 1px #111;
+    border: dashed 2px #111;
 `;
 
 export default MouseSelectionDiv;

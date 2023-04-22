@@ -1,0 +1,7 @@
+{
+  "name": "three",
+  "version": "0.150.1",
+  "description": "JavaScript 3D library",
+  "type": "module",
+  "module": "./three.module.js"
+}

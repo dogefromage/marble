@@ -2,13 +2,12 @@ import { FlowEnvironment } from './environments';
 import {
     FlowGraph,
     FlowNode,
-    InitializerValue,
     InputJointLocation,
     OutputJointLocation,
     RowState
     } from './state';
 import { FlowSignature } from './signatures';
-import { MapTypeSpecifier, TypeSpecifier } from './typeSpecifiers';
+import { InitializerValue, MapTypeSpecifier, TypeSpecifier } from './typeSpecifiers';
 import { Obj } from './utils';
 
 export type EdgeColor = 'normal' | 'redundant' | 'cyclic';
@@ -25,6 +24,7 @@ export interface ProjectContext {
     problems: ProjectProblem[];
     flowContexts: Obj<FlowGraphContext>;
     topologicalFlowOrder: string[];
+    programDependencies: Obj<Set<string>>;
 }
 
 export interface FlowGraphContext {
@@ -36,7 +36,8 @@ export interface FlowGraphContext {
     flowEnvironment: FlowEnvironment;
     dependencies: string[];
     dependants: string[];
-    topologicalNodeOrder: string[];
+    // topologicalNodeOrder: string[];
+    filteredSortedNodes: string[];
 }
 
 export interface FlowNodeContext {
@@ -45,6 +46,7 @@ export interface FlowNodeContext {
     rowContexts: Obj<RowContext>;
     templateSignature: FlowSignature | null;
     outputSpecifier: MapTypeSpecifier | null;
+    isRedundant: boolean;
 }
 
 export interface RowContext {
@@ -59,8 +61,13 @@ interface CyclicFlows {
     type: 'cyclic-flows';
     cycles: string[][];
 }
+interface MissingTopFlow {
+    type: 'missing-top-flow';
+    id: string;
+}
 export type ProjectProblem =
     | CyclicFlows
+    | MissingTopFlow
 
 interface CyclicNodes {
     type: 'cyclic-nodes';
@@ -97,7 +104,13 @@ interface IncompatibleType {
     typeProblemPath: string[];
     typeProblemMessage: string;
 }
+interface InvalidValue {
+    type: 'invalid-value';
+    typeProblemPath: string[];
+    typeProblemMessage: string;
+}
 export type RowProblem = 
     | InvalidSignature
     | RequiredParameter
     | IncompatibleType
+    | InvalidValue

@@ -6,7 +6,7 @@
 #DESCRIPTION "Signed distance to a box of double the specified side lengths."
 #OUTTYPE float
 #ROW p -n Position -rt input-simple
-#ROW s -n Scale -rt input-variable
+#ROW s -n Size -rt input-variable -dv "{\"x\":1,\"y\":1,\"z\":1}"
 #ROW 0 -n Distance -rt output
 
 float sd_box(vec3 p, vec3 s) {
@@ -17,7 +17,7 @@ float sd_box(vec3 p, vec3 s) {
 #NAME Sphere
 #DESCRIPTION Sphere.
 #OUTTYPE float
-#ROW r -n Radius -rt input-variable
+#ROW r -n Radius -rt input-variable -dv "1"
 #ROW 0 -n Distance -rt output
 
 float sd_sphere(vec3 p, float r) {

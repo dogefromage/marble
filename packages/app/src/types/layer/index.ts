@@ -1,7 +1,7 @@
-import { Dependable } from "../dependencyGraph";
 
-export interface Layer extends Dependable {
+export interface Layer {
+    id: string;
     name: string;
-    index: number;
+    drawIndex: number;
     topFlowId: string;
 }
