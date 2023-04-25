@@ -8,7 +8,7 @@ import {
     } from './state';
 import { FlowSignature } from './signatures';
 import { InitializerValue, MapTypeSpecifier, TypeSpecifier } from './typeSpecifiers';
-import { Obj } from './utils';
+import { Obj } from './utilTypes';
 
 export type EdgeColor = 'normal' | 'redundant' | 'cyclic';
 
@@ -24,7 +24,7 @@ export interface ProjectContext {
     problems: ProjectProblem[];
     flowContexts: Obj<FlowGraphContext>;
     topologicalFlowOrder: string[];
-    programDependencies: Obj<Set<string>>;
+    entryPointDependencies: Obj<Set<string>>;
 }
 
 export interface FlowGraphContext {
@@ -35,9 +35,7 @@ export interface FlowGraphContext {
     flowSignature: FlowSignature;
     flowEnvironment: FlowEnvironment;
     dependencies: string[];
-    dependants: string[];
-    // topologicalNodeOrder: string[];
-    filteredSortedNodes: string[];
+    sortedUsedNodes: string[];
 }
 
 export interface FlowNodeContext {
@@ -91,7 +89,7 @@ interface MissingSignature {
 }
 export type NodeProblem =
     | MissingSignature
-    
+
 interface InvalidSignature {
     type: 'invalid-signature';
 }

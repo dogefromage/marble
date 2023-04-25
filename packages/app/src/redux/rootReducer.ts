@@ -15,6 +15,7 @@ import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
 // import assetsReducer from "../slices/assetsSlice";
 import contextReducer from "../slices/contextSlice";
+import projectEnvironmentReducer from "../slices/projectEnvironmentSlice";
 
 const rootReducer = combineReducers({
     recorded: undoableEnhancer(
@@ -39,7 +40,7 @@ const rootReducer = combineReducers({
         }),
         panelManager: panelManagerReducer,
     }),
-    // assets: assetsReducer,
+    projectEnvironment: projectEnvironmentReducer,
     console: consoleReducer,
     menus: menusReducer,
     contextMenu: contextMenuReducer,

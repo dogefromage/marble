@@ -14,7 +14,7 @@ import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
 import { MenuPortalMount } from './MenuPortalMount';
 import StartAnouncer from './StartAnouncer';
-import ProgramsManager from './ProgramsManager';
+import ProjectManager from './ProjectManager';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -38,7 +38,7 @@ const AppRoot = ({ projectId }: Props) => {
             <Provider store={store}>
                 {/* APP STATE */}
                 {/* <AssetsManager /> */}
-                <ProgramsManager />
+                <ProjectManager />
                 {/* <DependencyManager /> */}
                 {/* <TemplateManager staticOnly={false} /> */}
                 {/* <GeometryDataManager /> */}

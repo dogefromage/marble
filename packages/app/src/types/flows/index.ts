@@ -2,39 +2,40 @@ import { AnonymousFlowSignature, EnvironmentContent, FlowSignature, TypeSpecifie
 import internalTemplates from '../../glsl/test.template.glsl';
 import { Obj } from "../UtilityTypes";
 
-const vec3 = { type: 'reference', name: 'vec3' } satisfies TypeSpecifier;
-const number = { type: 'primitive', primitive: 'number' } satisfies TypeSpecifier;
-
-const specifierDefinitions: Obj<TypeSpecifier> = { 
-    vec3: { type: 'map', elements: { x: number, y: number, z: number } }, 
-};
+const vec3Reference = { type: 'reference', name: 'vec3' } satisfies TypeSpecifier;
+const numberPrimitive = { type: 'primitive', primitive: 'number' } satisfies TypeSpecifier;
 
 export const topFlowSignature: AnonymousFlowSignature = {
     inputs: [{
         id: 'p',
         label: 'Position',
         rowType: 'input-simple',
-        dataType: vec3,
+        dataType: vec3Reference,
     }],
     outputs: [{
         id: 'd',
         label: 'Distance',
         rowType: 'output',
-        dataType: number,
+        dataType: numberPrimitive,
     }],
 }
 
-const signatures: Obj<FlowSignature> = {};
-export const buildinFunctionBlocks: Obj<string> = {};
-
+// import from loader
+export const internalNodeSignatures: Obj<FlowSignature> = {};
+export const internalNodeFunctions: Obj<string> = {};
 for (const template of internalTemplates) {
     if (template.type === 'signature') {
-        signatures[template.signature.id] = template.signature;
-        buildinFunctionBlocks[template.signature.id] = template.glsl;
+        internalNodeSignatures[template.signature.id] = template.signature;
+        internalNodeFunctions[template.signature.id] = template.glsl;
     }
 }
 
-export const baseEnvironment: EnvironmentContent = {
-    types: specifierDefinitions,
-    signatures,
+export const initialEnvironment: EnvironmentContent = {
+    types: {
+        vec3: {
+            type: 'map',
+            elements: { x: numberPrimitive, y: numberPrimitive, z: numberPrimitive }
+        },
+    },
+    signatures: internalNodeSignatures,
 };

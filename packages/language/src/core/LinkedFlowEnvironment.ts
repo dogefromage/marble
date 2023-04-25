@@ -1,7 +1,7 @@
 import { EnvironmentContent, FlowEnvironment } from "../types/environments";
 import { FlowSignature, FlowSignatureId, InputRowSignature, OutputRowSignature } from "../types/signatures";
 import { ArrayTypeSpecifier, MapTypeSpecifier, TypeSpecifier } from "../types/typeSpecifiers";
-import { Obj } from "../types/utils";
+import { Obj } from "../types/utilTypes";
 
 export class LinkedFlowEnvironment implements FlowEnvironment {
     private parent: LinkedFlowEnvironment | null = null;

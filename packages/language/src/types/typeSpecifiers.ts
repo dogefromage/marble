@@ -1,4 +1,4 @@
-import { Obj } from "./utils";
+import { Obj } from "./utilTypes";
 
 export interface PrimitiveTypeSpecifier {
     type: 'primitive';

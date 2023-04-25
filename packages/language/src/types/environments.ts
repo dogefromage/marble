@@ -1,6 +1,6 @@
 import { FlowSignature, FlowSignatureId } from "./signatures";
 import { TypeSpecifier } from "./typeSpecifiers";
-import { Obj } from "./utils";
+import { Obj } from "./utilTypes";
 
 export interface EnvironmentContent {
     signatures: Obj<FlowSignature>;

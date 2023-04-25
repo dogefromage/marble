@@ -1,5 +1,5 @@
 import { InputRowSignature, ListInputRowSignature, OutputRowSignature, RowContext, SimpleInputRowSignature, TypeSpecifier, VariableInputRowSignature } from "@marble/language";
-import React from "react";
+import React, { useEffect } from "react";
 import { FlowNodeRowNameP } from "../styles/flowStyles";
 import { DataTypes, Vec2 } from "../types";
 import FlowJoint from "./FlowJoint";
@@ -28,6 +28,10 @@ export type RowComponentProps<R extends InputRowSignature | OutputRowSignature> 
 export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
     const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
     const dataTypeLiteral = getDataTypeLiteral(row.dataType);
+    
+    useEffect(() => {
+        console.log(`ROW UPDATE ${row.id}`);
+    }, [ context ])
 
     return (
         <FlowNodeRow
@@ -54,6 +58,12 @@ export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
 }
 
 export const FlowInputRowSwitch = (props: RowComponentProps<InputRowSignature>) => {
+    
+    useEffect(() => {
+        console.log(`ROW UPDATE ${props.row.id}`);
+    }, [ props.context ])
+
+
     switch (props.row.rowType) {
         case 'input-simple':
             return <FlowInputRowSimple {...props as RowComponentProps<SimpleInputRowSignature>} />

@@ -4,28 +4,25 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { validationSetResult } from '../slices/contextSlice';
 import { selectFlows } from '../slices/flowsSlice';
 import { selectLayers } from '../slices/layersSlice';
-import { baseEnvironment } from '../types/flows';
 import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
 import { objMap } from '../utils/data';
 import { layerProgramsSetMany } from '../slices/layerProgramsSlice';
+import { selectProjectEnvironment } from '../slices/projectEnvironmentSlice';
 
 interface Props {
 
 }
 
-const ProgramsManager = ({}: Props) => {
+const ProjectManager = ({}: Props) => {
     const dispatch = useAppDispatch();
     const flows = useAppSelector(selectFlows);
-    const programEmitter = useRef(new ProgramEmitter());
     const layers = useAppSelector(selectLayers);
-
-    // useEffect(() => {
-    //     programEmitter.current.updateAssets()
-    // }, [ assets ]);
+    const projectEnvironment = useAppSelector(selectProjectEnvironment);
+    const programEmitter = useRef(new ProgramEmitter());
 
     useEffect(() => {
         const topFlowsPerLayer = objMap(layers, l => l.topFlowId);
-        const projectContext = validateProject(flows, baseEnvironment, topFlowsPerLayer);
+        const projectContext = validateProject(flows, projectEnvironment, topFlowsPerLayer);
         dispatch(validationSetResult({
             context: projectContext,
         }));
@@ -42,4 +39,4 @@ const ProgramsManager = ({}: Props) => {
     return null;
 }
 
-export default ProgramsManager;
+export default ProjectManager;

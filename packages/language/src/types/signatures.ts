@@ -1,5 +1,5 @@
 import { InitializerValue, TypeSpecifier } from "./typeSpecifiers";
-import { Obj, Versionable } from "./utils";
+import { Obj, Versionable } from "./utilTypes";
 
 /**
  * Rows are either inputs or outputs of node.

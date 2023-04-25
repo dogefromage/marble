@@ -3,7 +3,7 @@ import { generate } from "@shaderfrog/glsl-parser";
 import { AstNode, IdentifierNode, ParameterDeclarationNode, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 import { Layer, LayerProgram, Obj } from "../../types";
 import ast from "./AstUtils";
-import { buildinFunctionBlocks } from "../../types/flows";
+import { internalNodeFunctions } from "../../types/flows";
 
 function unsupported(msg: string) {
     return new Error(`Unsupported: ${msg}`);
@@ -59,7 +59,7 @@ export class ProgramEmitter {
 
         const builtinBlocks = Array
             .from(requiredBuiltins)
-            .map(blockId => this.assertDef(buildinFunctionBlocks[blockId]));
+            .map(blockId => this.assertDef(internalNodeFunctions[blockId]));
 
         const structureDefinitions = Array
             .from(requiredStructures)
