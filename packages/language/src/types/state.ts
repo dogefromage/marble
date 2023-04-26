@@ -1,6 +1,6 @@
 import { FlowSignatureId, InputRowSignature, OutputRowSignature } from "./signatures";
 import { InitializerValue } from "./typeSpecifiers";
-import { Obj, Vec2, Versionable } from "./utilTypes";
+import { Obj, Vec2 } from "./utilTypes";
 
 export interface InputJointLocation {
     direction: 'input';
@@ -33,7 +33,8 @@ export interface FlowNode {
     signature: FlowSignatureId;
 }
 
-export interface FlowGraph extends Versionable {
+export interface FlowGraph {
+    id: string;
     name: string;
     nodes: Obj<FlowNode>;
     inputs: InputRowSignature[];
@@ -42,6 +43,7 @@ export interface FlowGraph extends Versionable {
 }
 
 
-export interface FlowEntryPoint extends Versionable {
+export interface FlowEntryPoint {
+    id: string;
     entryFlowId: string;
 }

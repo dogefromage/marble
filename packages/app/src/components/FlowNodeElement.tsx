@@ -1,6 +1,6 @@
 import { useMouseDrag } from '@marble/interactive';
 import { FlowNode, FlowNodeContext } from '@marble/language';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { flowsMoveSelection } from '../slices/flowsSlice';
@@ -86,6 +86,14 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
     }, {
         cursor: 'grab',
     });
+    
+    
+    const [color, setColor] = useState('#ffffff');
+    useEffect(() => {
+        // console.log(`ROW UPDATE ${row.id}`);
+        setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
+    }, [context])
+
 
     return (
         <FlowNodeDiv
@@ -99,6 +107,7 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
             }}
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
             ref={wrapperRef}
+            debugOutlineColor={color}
         // onDoubleClick={e => {
         //     // enter nested geometry
         //     if (nodeData?.template == null) {

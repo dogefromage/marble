@@ -8,6 +8,7 @@ export const FLOW_NODE_MIN_WIDTH = 7 * FLOW_NODE_ROW_HEIGHT;
 export interface FlowNodeDivProps {
     position: Vec2;
     selectionStatus: SelectionStatus;
+    debugOutlineColor?: string
 }
 export const FlowNodeDiv = styled.div.attrs<FlowNodeDivProps>(({ position }) => ({
     style: {
@@ -29,6 +30,11 @@ export const FlowNodeDiv = styled.div.attrs<FlowNodeDivProps>(({ position }) => 
             outline: solid calc(3px / min(var(--zoom), 1)) ${theme.colors.selectionStatus[selectionStatus]};
         `
     }
+
+    ${({ debugOutlineColor }) => debugOutlineColor && css`
+        outline: 5px solid ${debugOutlineColor};
+        outline-offset: 5px;
+    `}
 
     cursor: pointer;
 `;

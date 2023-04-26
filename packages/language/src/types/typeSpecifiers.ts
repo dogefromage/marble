@@ -1,8 +1,9 @@
 import { Obj } from "./utilTypes";
 
+export type Primitives = 'number' | 'boolean' | 'string';
 export interface PrimitiveTypeSpecifier {
     type: 'primitive';
-    primitive: 'number' | 'boolean' | 'string';
+    primitive: Primitives;
 }
 export interface ListTypeSpecifier {
     type: 'list';
@@ -24,13 +25,15 @@ export interface ReferenceTypeSpecifier {
 export interface UnknownTypeSpecifier {
     type: 'unknown';
 }
+
+
 export type TypeSpecifier =
+    | ReferenceTypeSpecifier
+    | UnknownTypeSpecifier
     | PrimitiveTypeSpecifier
     | MapTypeSpecifier
     | ListTypeSpecifier
     | ArrayTypeSpecifier
-    | ReferenceTypeSpecifier
-    | UnknownTypeSpecifier
 
 export type InitializerValue =
     | null
@@ -39,3 +42,9 @@ export type InitializerValue =
     | string
     | readonly InitializerValue[]
     | { [key: string]: InitializerValue }
+
+
+export interface UniqueType<T extends TypeSpecifier = TypeSpecifier> {
+    type: T;
+    hash: number;
+}

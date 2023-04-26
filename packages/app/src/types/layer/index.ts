@@ -1,7 +1,6 @@
+import { FlowEntryPoint } from "@marble/language";
 
-export interface Layer {
-    id: string;
+export interface Layer extends FlowEntryPoint {
     name: string;
     drawIndex: number;
-    topFlowId: string;
 }

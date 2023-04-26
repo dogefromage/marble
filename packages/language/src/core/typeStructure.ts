@@ -1,10 +1,168 @@
-import { FlowEnvironment, TypeSpecifier } from "../types";
+import { ArrayTypeSpecifier, FlowEnvironment, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, Primitives, ReferenceTypeSpecifier, TypeSpecifier, UniqueType, UnknownTypeSpecifier } from "../types";
+import { assertTruthy } from "../utils";
+import { always, freezeResult, memoizeMulti } from "../utils/functional";
+import { crudeHash, hashIntSequence } from "../utils/hashing";
+import { findEnvironmentType } from "./environment";
+
+
+const createUnknown = always<UnknownTypeSpecifier>({ type: 'unknown' });
+
+const createReference = memoizeMulti(freezeResult(
+    (name: string): ReferenceTypeSpecifier =>
+        ({ type: 'reference', name })
+));
+
+const createPrimitive = memoizeMulti(freezeResult(
+    (primitive: Primitives): PrimitiveTypeSpecifier =>
+        ({ type: 'primitive', primitive })
+));
+
+const createList = memoizeMulti(freezeResult(
+    (elementType: TypeSpecifier): ListTypeSpecifier =>
+        ({ type: 'list', elementType })
+));
+
+const createArray = memoizeMulti(freezeResult(
+    (elementType: TypeSpecifier, length: number): ArrayTypeSpecifier =>
+        ({ type: 'array', elementType, length })
+));
+
+
+const _createMap = memoizeMulti(freezeResult(
+    (flatEntries: (string | TypeSpecifier)[]): MapTypeSpecifier => {
+        const map: MapTypeSpecifier = {
+            type: 'map',
+            elements: {},
+        };
+        assertTruthy(flatEntries.length % 2 == 0);
+        for (let i = 0; i < flatEntries.length; i += 2) {
+            const [key, value] = flatEntries.slice(i);
+            assertTruthy(typeof key === 'string');
+            assertTruthy(typeof value === 'object');
+            map.elements[key as string] = value as TypeSpecifier;
+        }
+        return map;
+    }
+));
+
+const createMap = (elements: Record<string, TypeSpecifier>) => {
+    const flatEntries = Object.entries(elements).flat();
+    return _createMap(flatEntries);
+}
+
+export const types = {
+    createPrimitive, 
+    createList, 
+    createArray, 
+    createMap,
+    createUnknown,
+    createReference,
+};
+
+// memoization does not guarantee uniqueness but helps if the exact same type is passed multiple times
+export const memoizeTypeStructure = memoizeMulti((equivalentType: TypeSpecifier): TypeSpecifier => {
+    switch (equivalentType.type) {
+        case 'reference':
+            return createReference(equivalentType.name);
+        case 'primitive':
+            return createPrimitive(equivalentType.primitive);
+        case 'array':
+            return createArray(
+                memoizeTypeStructure(equivalentType.elementType),
+                equivalentType.length,
+            );
+        case 'list':
+            return createList(
+                memoizeTypeStructure(equivalentType.elementType),
+            );
+        case 'map':
+            const uniqueEntries = Object.entries(equivalentType.elements)
+                .map(([key, valueType]) => {
+                    return [ key, memoizeTypeStructure(valueType) ];
+                })
+            return _createMap(uniqueEntries.flat());
+        case 'unknown':
+            return createUnknown();
+        default:
+            throw new Error(`Unknown type "${(equivalentType as any).type}"`);
+    }
+});
+
+// // memoization does not guarantee uniqueness but helps if the exact same type is passed multiple times
+// export const getUniqueType = memoizeMulti(<T extends TypeSpecifier>(equivalentType: T): UniqueType<T> => {
+//     const hashSequence: number[] = [
+//         crudeHash(equivalentType.type)
+//     ];
+
+//     switch (equivalentType.type) {
+//         case 'reference':
+//             hashSequence.push(
+//                 crudeHash(equivalentType.name)
+//             );
+//             break;
+//         case 'primitive':
+//             hashSequence.push(
+//                 crudeHash(equivalentType.primitive)
+//             );
+//             break;
+//         case 'array':
+//             hashSequence.push(
+//                 getUniqueType(equivalentType.elementType).hash,
+//                 equivalentType.length,
+//             );
+//             break;
+//         case 'list':
+//             hashSequence.push(
+//                 getUniqueType(equivalentType.elementType).hash,
+//             );
+//             break;
+//         case 'map':
+//             const flatEntryHashes = Object.entries(equivalentType.elements)
+//                 .map(([key, valueType]) => {
+//                     return [
+//                         crudeHash(key),
+//                         getUniqueType(valueType).hash,
+//                     ];
+//                 })
+//                 .flat();
+//             hashSequence.push(
+//                 ...flatEntryHashes,
+//             );
+//             break;
+//         case 'unknown':
+//             break;
+//         default:
+//             throw new Error(`Unknown type "${(equivalentType as any).type}"`);
+//     }
+
+//     const totalHash = hashIntSequence(hashSequence);
+//     return getMemoizedUniqueType(totalHash, equivalentType) as UniqueType<T>;
+// });
+
+// const uniqueTypeTable = new Map<number, UniqueType>();
+// function getMemoizedUniqueType(hash: number, type: TypeSpecifier) {
+//     const cached = uniqueTypeTable.get(hash);
+//     if (cached != null) {
+//         return cached;
+//     }
+//     const newUniqueType: UniqueType = {
+//         type, hash,
+//     };
+//     uniqueTypeTable.set(hash, newUniqueType);
+//     return newUniqueType;
+// }
+
+
+
+
+
+
 
 export function resolveReferences(path: TypeTreePath, typeSpecifier: TypeSpecifier, env: FlowEnvironment): TypeSpecifier {
     if (typeSpecifier.type !== 'reference') {
         return typeSpecifier;
     }
-    const envType = env.getType(typeSpecifier.name);
+    const envType = findEnvironmentType(env, typeSpecifier.name);
     const namedTypePath = path
         .add('reference')
         .add(typeSpecifier.name);

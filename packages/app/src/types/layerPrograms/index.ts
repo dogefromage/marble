@@ -53,7 +53,7 @@ export interface LayerProgram {
     drawIndex: number;
     // hash: number;
     programCode: string;
-    rootFunction: string;
+    entryFunctionName: string;
     // textureVarMappings: ProgramDynamicLookupMapping[];
     // textureVarRowIndex: number;
     // textureVarRow: number[];

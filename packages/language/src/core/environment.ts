@@ -1,65 +1,52 @@
-import { EnvironmentContent, FlowEnvironment } from "../types/environments";
-import { FlowSignature, FlowSignatureId, InputRowSignature, OutputRowSignature } from "../types/signatures";
+import { FlowEnvironment, FlowEnvironmentContent } from "../types";
+import { FlowSignature, InputRowSignature, OutputRowSignature } from "../types/signatures";
 import { ArrayTypeSpecifier, MapTypeSpecifier, TypeSpecifier } from "../types/typeSpecifiers";
 import { Obj } from "../types/utilTypes";
+import { memoizeMulti } from "../utils/functional";
 
-export class LinkedFlowEnvironment implements FlowEnvironment {
-    private parent: LinkedFlowEnvironment | null = null;
-    private content: EnvironmentContent;
+export const createEnvironment = memoizeMulti(
+    (content: FlowEnvironmentContent): FlowEnvironment => ({ parent: null, content })
+);
 
-    constructor(
-        baseContent: EnvironmentContent
-    ) {
-        this.content = {
-            types: baseContent.types,
-            signatures: {
-                ...baseContent.signatures,
-                ...generateLayerTypeSignatures(baseContent.types),
-            }
+export const pushContent = memoizeMulti(
+    (parent: FlowEnvironment, content: FlowEnvironmentContent): FlowEnvironment => ({ parent, content })
+);
+export const popContent = (env: FlowEnvironment) => env.parent;
+
+export const collectTotalEnvironmentContent = memoizeMulti((env: FlowEnvironment): FlowEnvironmentContent => {
+    const totalCurr = addAdditionalContent(env.content);
+    if (!env.parent) {
+        return totalCurr;
+    }
+    const parent = collectTotalEnvironmentContent(env.parent);
+    return {
+        // children overwrite parents
+        signatures: { ...parent.signatures, ...totalCurr.signatures },
+        types: { ...parent.types, ...totalCurr.types },
+    };
+});
+
+export const findEnvironmentSignature = memoizeMulti(
+    (env: FlowEnvironment, signatureId: string): FlowSignature | undefined => 
+        collectTotalEnvironmentContent(env).signatures[signatureId]
+);
+export const findEnvironmentType = memoizeMulti(
+    (env: FlowEnvironment, typeName: string): TypeSpecifier | undefined => 
+        collectTotalEnvironmentContent(env).types[typeName]
+);
+
+
+
+
+const addAdditionalContent = memoizeMulti((scope: FlowEnvironmentContent) => {
+    return {
+        types: scope.types,
+        signatures: {
+            ...scope.signatures,
+            ...generateLayerTypeSignatures(scope.types),
         }
-    }
-
-    public push(content: EnvironmentContent): LinkedFlowEnvironment {
-        const next = new LinkedFlowEnvironment(content);
-        next.parent = this;
-        return next;
-    }
-    public pop(): LinkedFlowEnvironment {
-        if (!this.parent) {
-            throw new Error(`Top scope cannot be popped`);
-        }
-        return this.parent;
-    }
-
-    public getSignature(signatureId: FlowSignatureId): FlowSignature | undefined {
-        return this.getTotalContent().signatures[signatureId];
-    }
-    public getType(name: string): TypeSpecifier | undefined {
-        return this.getTotalContent().types[name];
-    }
-
-    private getContentList(): EnvironmentContent[] {
-        if (this.parent) {
-            return [this.content, ...this.parent.getContentList()];
-        } else {
-            return [this.content];
-        }
-    }
-    public getTotalContent(): EnvironmentContent {
-        const contentList = this.getContentList();
-        const baseContent: EnvironmentContent = {
-            signatures: {},
-            types: {},
-        };
-        // older content should be overwritten by newer content
-        const totalContent = contentList.reduceRight((acc, curr) => {
-            acc.signatures = { ...acc.signatures, ...curr.signatures };
-            acc.types = { ...acc.types, ...curr.types };
-            return acc;
-        }, baseContent);
-        return totalContent;
-    }
-}
+    };
+});
 
 function generateLayerTypeSignatures(types: Obj<TypeSpecifier>) {
     const signatureMap: Obj<FlowSignature> = {};
@@ -72,7 +59,7 @@ function generateLayerTypeSignatures(types: Obj<TypeSpecifier>) {
     return signatureMap;
 }
 
-function generateTypeSyntaxSignatures(name: string, type: TypeSpecifier) {
+const generateTypeSyntaxSignatures = memoizeMulti((name: string, type: TypeSpecifier) => {
     if (type.type === 'primitive' ||
         type.type === 'list' ||
         type.type === 'unknown' ||
@@ -84,7 +71,6 @@ function generateTypeSyntaxSignatures(name: string, type: TypeSpecifier) {
     // combiner
     const combiner: FlowSignature = {
         id: `syntax:combine_${name}`,
-        version: 0,
         name: `Combine ${name}`,
         description: `Combines required data into a ${name}`,
         attributes: {
@@ -104,7 +90,6 @@ function generateTypeSyntaxSignatures(name: string, type: TypeSpecifier) {
     // separator
     const separator: FlowSignature = {
         id: `syntax:separate_${name}`,
-        version: 0,
         name: `Separate ${name}`,
         description: `Separates ${name} into its `,
         attributes: {
@@ -122,7 +107,7 @@ function generateTypeSyntaxSignatures(name: string, type: TypeSpecifier) {
     };
 
     return [combiner, separator];
-}
+});
 
 function getCombinerInputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): InputRowSignature[] {
     if (type.type === 'array') {

@@ -110,7 +110,7 @@ export const flowsSlice = createSlice({
                 id,
                 name: a.payload.name,
                 nodes: {},
-                version: 0,
+                // version: 0,
                 inputs: a.payload.signature.inputs,
                 outputs: a.payload.signature.outputs,
                 nextIdIndex: 10, // start at "a"
@@ -122,7 +122,7 @@ export const flowsSlice = createSlice({
             const g = getFlow(s, a);
             if (!g) return;
             g.name = a.payload.name;
-            g.version++;
+            // g.version++;
 
         },
         remove: (s, a: UndoAction<{ flowId: string }>) => {
@@ -138,7 +138,7 @@ export const flowsSlice = createSlice({
                 position: a.payload.position,
             }
             g.nodes[node.id] = node;
-            g.version++;
+            // g.version++;
         },
         removeNodes: (s, a: UndoAction<{ flowId: string, selection: string[] }>) => {
             const g = getFlow(s, a);
@@ -149,7 +149,7 @@ export const flowsSlice = createSlice({
                     delete g.nodes[id];
                 }
                 removeConnectionsToNodes(g, new Set(targets));
-                g.version++;
+                // g.version++;
             }
         },
         positionNode: (s, a: UndoAction<{ flowId: string, nodeId: string, position: Vec2 }>) => {
@@ -245,14 +245,14 @@ export const flowsSlice = createSlice({
             //     inputRow.incomingElements = [ a.payload.incomingElement ];
             // }
 
-            g.version++;
+            // g.version++;
         },
         removeEdge: (s, a: UndoAction<{ flowId: string, input: InputJointLocation }>) => {
             const g = getFlow(s, a);
             if (!g) return;
             const { nodeId, rowId, jointIndex } = a.payload.input;
             g.nodes[nodeId]?.rowStates[rowId]?.connections.splice(jointIndex, 1);
-            g.version++;
+            // g.version++;
         },
         // setUserSelection: (s, a: UndoAction<{ flowId: string, userId: string, selection: string[] }>) => {
         //     const g = getFlow(s, a);

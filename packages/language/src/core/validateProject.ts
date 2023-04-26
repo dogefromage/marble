@@ -1,15 +1,15 @@
-import _ from "lodash";
-import { EnvironmentContent, FlowEntryPoint, FlowGraph, FlowNode, FlowSignature, FlowSignatureId } from "../types";
-import { ProjectContext } from "../types/context";
+import { FlowEntryPoint, FlowEnvironmentContent, FlowGraph, FlowSignature, InputRowSignature, OutputRowSignature } from "../types";
+import { FlowGraphContext, ProjectContext } from "../types/context";
 import { Obj } from "../types/utilTypes";
-import { assert, deepFreeze } from "../utils";
+import { deepFreeze } from "../utils";
 import { findDependencies, sortTopologically } from "../utils/algorithms";
-import { LinkedFlowEnvironment } from "./LinkedFlowEnvironment";
-import { validateFlowGraph } from "./validateFlowGraph";
+import { memoizeMulti } from "../utils/functional";
+import { createEnvironment, pushContent } from "./environment";
+import { collectFlowDependencies, validateFlowGraph } from "./validateFlowGraph";
 
 export function validateProject(
     flowGraphs: Obj<FlowGraph>,
-    content: EnvironmentContent,
+    content: FlowEnvironmentContent,
     entryPoints: Obj<FlowEntryPoint>,
 ): ProjectContext {
     const result: ProjectContext = {
@@ -20,15 +20,13 @@ export function validateProject(
         entryPointDependencies: {},
     }
 
-    let dynamicEnvironment = new LinkedFlowEnvironment(content);
+    let currentEnvironment = createEnvironment(content);
 
     const flowEntries = Object.entries(flowGraphs);
-    const flowDependenciesMap = new Map<string, string[]>();
     const numberedAdjacency = new Array(flowEntries.length).fill([]).map(_ => [] as number[]);
     for (let i = 0; i < flowEntries.length; i++) {
         const flow = flowEntries[i][1];
         const flowDependencies = collectFlowDependencies(flow);
-        flowDependenciesMap.set(flow.id, flowDependencies);
         for (const signature of flowDependencies) {
             // find index of dependency
             const depIndex = flowEntries
@@ -69,47 +67,38 @@ export function validateProject(
 
     for (const graphIndex of topSortResult.topologicalSorting) {
         const [graphId, graph] = flowEntries[graphIndex];
-        const graphSyntaxContent = generateFlowSyntaxLayer(graph);
+        const flowSyntaxContent = generateFlowSyntaxLayer(graph.inputs, graph.outputs);
+        const flowSyntaxEnv = pushContent(currentEnvironment, flowSyntaxContent);
+        const flowContext = validateFlowGraph(graph, flowSyntaxEnv);
+        result.flowContexts[graphId] = flowContext;
 
-        dynamicEnvironment = dynamicEnvironment
-            .push(graphSyntaxContent);
-
-        const graphDependencies = assert(flowDependenciesMap.get(graphId));
-
-        const graphContext = validateFlowGraph(graph, dynamicEnvironment, graphDependencies);
-        const graphSignatureContent: EnvironmentContent = {
-            signatures: { [graphId]: graphContext.flowSignature },
-            types: {},
-        }
-
-        dynamicEnvironment = dynamicEnvironment
-            .pop()
-            .push(graphSignatureContent);
-
-        result.flowContexts[graphId] = graphContext;
+        // extend environment
+        currentEnvironment = pushContent(currentEnvironment, flowSignatureContent(flowContext))
     }
 
     deepFreeze(result);
     return result;
 };
 
-function collectFlowDependencies(flow: FlowGraph) {
-    const signatures = new Set<FlowSignatureId>();
-    for (const node of Object.values(flow.nodes) as FlowNode[]) {
-        signatures.add(node.signature);
-    }
-    return Array.from(signatures);
-}
+const flowSignatureContent = memoizeMulti(
+    (flowContext: FlowGraphContext): FlowEnvironmentContent => ({
+        signatures: { [flowContext.ref.id]: flowContext.flowSignature },
+        types: {},
+    })
+);
 
-function generateFlowSyntaxLayer(graph: FlowGraph): EnvironmentContent {
+const generateFlowSyntaxLayer = memoizeMulti(generateFlowSyntaxLayerInitial);
+function generateFlowSyntaxLayerInitial(
+    flowInputs: InputRowSignature[],
+    flowOutputs: OutputRowSignature[],
+): FlowEnvironmentContent {
     const input: FlowSignature = {
         id: `syntax:input`,
-        version: graph.version,
         name: 'Input',
         description: null,
         attributes: { category: 'In/Out' },
         inputs: [],
-        outputs: graph.inputs.map(o => ({
+        outputs: flowInputs.map(o => ({
             id: o.id,
             label: o.label,
             dataType: o.dataType,
@@ -119,11 +108,10 @@ function generateFlowSyntaxLayer(graph: FlowGraph): EnvironmentContent {
     }
     const output: FlowSignature = {
         id: `syntax:output`,
-        version: graph.version,
         name: 'Output',
         description: null,
         attributes: { category: 'In/Out' },
-        inputs: graph.outputs.map(o => ({
+        inputs: flowOutputs.map(o => ({
             id: o.id,
             label: o.label,
             dataType: o.dataType,

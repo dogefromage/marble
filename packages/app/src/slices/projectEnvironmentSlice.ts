@@ -1,9 +1,9 @@
-import { EnvironmentContent } from "@marble/language";
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { initialEnvironment } from "../types/flows";
+import { FlowEnvironmentContent } from "@marble/language";
 
-const initialState: EnvironmentContent = initialEnvironment;
+const initialState: FlowEnvironmentContent = initialEnvironment;
 
 export const projectEnvironmentSlice = createSlice({
     name: 'projectEnvironment',

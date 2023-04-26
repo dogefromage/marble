@@ -51,3 +51,15 @@ float_float_float separate_xyz(vec3 v) {
         v.x, v.y, v.z
     );
 }
+
+
+
+#NAME Test Node
+#DESCRIPTION adfasd.
+#COLOR #123456
+#OUTTYPE float
+#ROW 0 -n "X" -rt output
+
+float testNode() {
+    return 0.;
+}

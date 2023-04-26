@@ -16,7 +16,7 @@ function generateShaders(layerProgram: LayerProgram) {
     //     .join('\n');
     // fragCodeTemplate.replace('%INCLUDES%', includedCodeTotal);
     fragCodeTemplate.replace('%MAIN_PROGRAM%', layerProgram.programCode);
-    fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', layerProgram.rootFunction);
+    fragCodeTemplate.replace('%ROOT_FUNCTION_NAME%', layerProgram.entryFunctionName);
 
     const fragCode = fragCodeTemplate.getFinishedCode(/%.*%/);
     // console.log(logCodeWithLines(fragCode));

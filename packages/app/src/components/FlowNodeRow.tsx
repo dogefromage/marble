@@ -1,9 +1,14 @@
-import React, { ReactNode } from 'react';
+import { RowContext } from '@marble/language';
+import React, { ReactNode, useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { FlowNodeRowDiv } from '../styles/flowStyles';
-import { RowContext } from '@marble/language';
 
-const ErrorUnderlineSpan = styled.span<{ hasErrors: boolean }>`
+const ErrorUnderlineSpan = styled.span<{ hasErrors: boolean, testColor: string }>`
+
+    &>div {
+        ${({ testColor }) => `background-color: ${testColor};`}
+    }
+
     ${({ hasErrors, theme }) => hasErrors && css`
         position: relative;
 
@@ -43,12 +48,19 @@ interface Props {
 const FlowNodeRow = ({ context, children }: Props) => {
     const hasErrors = !!context?.problems.length;
 
+    const [color, setColor] = useState('#ffffff');
+    useEffect(() => {
+        // console.log(`ROW UPDATE ${row.id}`);
+        setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
+    }, [context])
+
     return (
         <ErrorUnderlineSpan
             hasErrors={hasErrors}
             onMouseEnter={(hasErrors) => {
                 // hasErrors && console.log(context?.problems);
             }}
+            testColor={color}
         >
             <FlowNodeRowDiv>
                 {children}

@@ -1,4 +1,3 @@
-import { FlowEnvironment } from './environments';
 import {
     FlowGraph,
     FlowNode,
@@ -9,6 +8,17 @@ import {
 import { FlowSignature } from './signatures';
 import { InitializerValue, MapTypeSpecifier, TypeSpecifier } from './typeSpecifiers';
 import { Obj } from './utilTypes';
+
+
+export type FlowEnvironment = {
+    parent: FlowEnvironment | null;
+    content: FlowEnvironmentContent;
+}
+export interface FlowEnvironmentContent {
+    signatures: Obj<FlowSignature>;
+    types: Obj<TypeSpecifier>;
+}
+
 
 export type EdgeColor = 'normal' | 'redundant' | 'cyclic';
 
@@ -44,7 +54,7 @@ export interface FlowNodeContext {
     rowContexts: Obj<RowContext>;
     templateSignature: FlowSignature | null;
     outputSpecifier: MapTypeSpecifier | null;
-    isRedundant: boolean;
+    isUsed: boolean;
 }
 
 export interface RowContext {

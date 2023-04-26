@@ -21,19 +21,18 @@ const ProjectManager = ({}: Props) => {
     const programEmitter = useRef(new ProgramEmitter());
 
     useEffect(() => {
-        const topFlowsPerLayer = objMap(layers, l => l.topFlowId);
-        const projectContext = validateProject(flows, projectEnvironment, topFlowsPerLayer);
+        const projectContext = validateProject(flows, projectEnvironment, layers);
         dispatch(validationSetResult({
             context: projectContext,
         }));
 
-        const newPrograms = programEmitter.current
-            .emitPrograms(projectContext, layers);
+        // const newPrograms = programEmitter.current
+        //     .emitPrograms(projectContext, layers);
 
-        dispatch(layerProgramsSetMany({
-            setPrograms: newPrograms,
-            removePrograms: [], // TODO
-        }));
+        // dispatch(layerProgramsSetMany({
+        //     setPrograms: newPrograms,
+        //     removePrograms: [], // TODO
+        // }));
     }, [ layers, flows ]);
 
     return null;

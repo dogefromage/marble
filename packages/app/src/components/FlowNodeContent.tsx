@@ -16,10 +16,6 @@ interface Props {
 const FlowNodeContent = ({ panelId, flowId, nodeId, context, signature, getClientNodePos }: Props) => {
     const commonProps = { panelId, flowId, nodeId, getClientNodePos };
 
-    useEffect(() => {
-        console.log(`NODE UPDATE ${nodeId}`);
-    }, [ context ])
-
     return (<>
         <FlowNodeNameWrapper
             backColor={signature.attributes.color}

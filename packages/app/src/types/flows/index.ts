@@ -1,4 +1,4 @@
-import { AnonymousFlowSignature, EnvironmentContent, FlowSignature, TypeSpecifier } from "@marble/language";
+import { AnonymousFlowSignature, FlowEnvironmentContent, FlowSignature, TypeSpecifier } from "@marble/language";
 import internalTemplates from '../../glsl/test.template.glsl';
 import { Obj } from "../UtilityTypes";
 
@@ -30,7 +30,9 @@ for (const template of internalTemplates) {
     }
 }
 
-export const initialEnvironment: EnvironmentContent = {
+
+
+export const initialEnvironment: FlowEnvironmentContent = {
     types: {
         vec3: {
             type: 'map',

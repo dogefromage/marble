@@ -8,7 +8,7 @@ import { flowEditorSetStateNeutral } from '../slices/panelFlowEditorSlice';
 import { selectFlowContext } from '../slices/contextSlice';
 import { FloatingMenuShape, FlowEditorActionState, MenuElement, ObjStrict, SearchMenuElement, TitleMenuElement, ViewTypes } from '../types';
 import MenuRootFloating from './MenuRootFloating';
-import { FlowSignature, FlowSignatureId } from '@marble/language';
+import { FlowSignature, FlowSignatureId, collectTotalEnvironmentContent } from '@marble/language';
 
 function isCatalogOpen(
     state: FlowEditorActionState
@@ -45,10 +45,11 @@ const FlowNodeCatalog = ({ panelId }: Props) => {
     const catalogState = panelState && isCatalogOpen(panelState.state) && panelState.state || undefined;
 
     const environmentSignatures = useMemo(() => {
-        const signatureObj = graphValidation?.flowEnvironment.getTotalContent().signatures;
-        if (signatureObj) {
-            return Array.from(Object.values(signatureObj));
+        if (!graphValidation?.flowEnvironment) {
+            return;
         }
+        const envContent = collectTotalEnvironmentContent(graphValidation?.flowEnvironment);
+        return Array.from(Object.values(envContent.signatures));
     }, [ graphValidation?.flowEnvironment ])
 
     const menuShape = useMemo(() => {

@@ -1,90 +1,114 @@
-import { FlowEnvironment, FlowNode, FlowSignature, InitializerValue, InputRowSignature, MapTypeSpecifier, OutputRowSignature, RowState, TypeSpecifier } from "../types";
+import { FlowEnvironment, FlowNode, FlowSignature, InitializerValue, InputRowSignature, MapTypeSpecifier, RowState, TypeSpecifier } from "../types";
 import { FlowNodeContext, RowContext, RowProblem } from "../types/context";
 import { Obj } from "../types/utilTypes";
-import { deepFreeze, wrapDefined } from "../utils";
-import { GraphTypeException } from "./typeStructure";
-import { generateDefaultValue } from "./generateDefaultValue";
-import { validateValue } from "./validateValue";
+import { assertTruthy, deepFreeze, wrapDefined } from "../utils";
+import { freezeResult, memoizeMulti } from "../utils/functional";
 import { compareTypes } from "./compareTypes";
+import { findEnvironmentSignature } from "./environment";
+import { generateDefaultValue } from "./generateDefaultValue";
+import { GraphTypeException, memoizeTypeStructure, types } from "./typeStructure";
+import { validateValue } from "./validateValue";
 
 export function validateNode(
     node: FlowNode,
     environment: FlowEnvironment,
-    earlierNodeOutputTypes: Map<string, MapTypeSpecifier>
+    earlierNodeOutputTypes: Map<string, MapTypeSpecifier>,
+    isUsed: boolean,
 ): FlowNodeContext {
-    const templateSignature = environment.getSignature(node.signature);
+    const templateSignature = findEnvironmentSignature(environment, node.signature);
     if (templateSignature == null) {
-        return {
-            ref: node,
-            problems: [{
-                type: 'missing-signature',
-                signature: node.signature,
-            }],
-            outputSpecifier: null,
-            templateSignature: null,
-            rowContexts: {},
-            isRedundant: false,
-        };
+        return bundleNoSignatureContext(node, isUsed);
     }
-    const outputSpecifier = signatureRowsToMapType(templateSignature.outputs);
-    const rowContexts = validateNodeInputs(node.rowStates, templateSignature.inputs, earlierNodeOutputTypes, environment);
 
+    const inputContexts: RowContext[] = [];
+    for (const input of templateSignature.inputs) {
+        const rowState = node.rowStates[input.id] as RowState | undefined;
+        const connectedTypes = selectConnectedTypes(rowState, earlierNodeOutputTypes);
+        const rowResult = validateRows(input, rowState, connectedTypes, environment);
+        inputContexts.push(rowResult);
+    }
+    
+    return bundleNodeContext(
+        node,
+        isUsed, 
+        templateSignature,
+        ...inputContexts,
+    );
+}
+
+const bundleNoSignatureContext = memoizeMulti(freezeResult(
+    (node: FlowNode, isUsed: boolean): FlowNodeContext => ({
+        ref: node,
+        problems: [{
+            type: 'missing-signature',
+            signature: node.signature,
+        }],
+        outputSpecifier: null,
+        templateSignature: null,
+        rowContexts: {},
+        isUsed,
+    })
+));
+
+const bundleNodeContext = memoizeMulti(freezeResult((
+    node: FlowNode,
+    isUsed: boolean,
+    templateSignature: FlowSignature,
+    ...inputContexts: RowContext[] // automatically memoizes into list
+): FlowNodeContext => {
     const result: FlowNodeContext = {
         ref: node,
         problems: [],
         templateSignature,
-        outputSpecifier,
-        rowContexts,
-        isRedundant: false,
+        outputSpecifier: getSignatureOutputType(templateSignature),
+        rowContexts: {},
+        isUsed,
     };
-    deepFreeze(result);
-    return result;
-}
-
-function signatureRowsToMapType<S extends InputRowSignature | OutputRowSignature>(rows: S[]): MapTypeSpecifier {
-    const rowTypes: Obj<TypeSpecifier> = {};
-    for (const row of rows) {
-        rowTypes[row.id] = row.dataType;
+    assertTruthy(templateSignature.inputs.length === inputContexts.length);
+    for (let i = 0; i < templateSignature.inputs.length; i++) {
+        result.rowContexts[templateSignature.inputs[i].id] = inputContexts[i];
     }
-    return {
+    return result;
+}));
+
+const getSignatureOutputType = (signature: FlowSignature): MapTypeSpecifier => {
+    const rowTypes: Obj<TypeSpecifier> = {};
+    for (const output of signature.outputs) {
+        rowTypes[output.id] = output.dataType;
+    }
+    const mapType: MapTypeSpecifier = {
         type: 'map',
         elements: rowTypes,
     };
+    const uniqueMemoized = memoizeTypeStructure(mapType);
+    return uniqueMemoized as MapTypeSpecifier;
 }
 
-function validateNodeInputs(
-    rowStates: FlowNode['rowStates'],
-    inputRowSigs: FlowSignature['inputs'],
+const selectConnectedTypes = memoizeMulti((
+    rowState: RowState | undefined,
     earlierNodeOutputTypes: Map<string, MapTypeSpecifier>,
-    environment: FlowEnvironment
-): Obj<RowContext> {
-    const rowResults: Obj<RowContext> = {};
+) => {
+    // each node input receives a list of connections to support list inputs
+    const connectedTypes: TypeSpecifier[] = rowState?.connections.map(conn => {
+        const sourceOutput = earlierNodeOutputTypes.get(conn.nodeId);
+        const rowOutputType = sourceOutput?.elements[conn.outputId];
+        if (!rowOutputType) {
+            return types.createUnknown();
+        }
+        return rowOutputType;
+    }) || [];
+    return memoList(...connectedTypes);
+});
 
-    for (const input of inputRowSigs) {
-        const rowState = rowStates[input.id] as RowState | undefined;
-        // each node input receives a list of connections to support list inputs
-        const connectedTypes: TypeSpecifier[] = rowState?.connections.map(conn => {
-            const sourceOutput = earlierNodeOutputTypes.get(conn.nodeId);
-            const rowOutputType = sourceOutput?.elements[conn.outputId];
-            if (!rowOutputType) {
-                return { type: 'unknown' };
-            }
-            return rowOutputType;
-        }) || [];
+const memoList = memoizeMulti(<T>(...items: T[]) => items);
 
-        const rowResult = validateRowInput(input, rowState, connectedTypes, environment);
-        deepFreeze(rowResult);
-        rowResults[input.id] = rowResult;
-    }
-
-    return rowResults;
-}
-function validateRowInput(
+const validateRows = memoizeMulti(freezeResult((
     input: InputRowSignature,
     rowState: RowState | undefined,
     connectedTypeList: TypeSpecifier[],
     environment: FlowEnvironment
-): RowContext {
+): RowContext => {
+
     const expectedType = input.dataType;
     const result: RowContext = {
         ref: rowState,
@@ -147,6 +171,8 @@ function validateRowInput(
 
     throw new Error(`Unknown type ${(input as any).rowType}`);
 }
+));
+
 function compareParameterToExpected(
     param: TypeSpecifier,
     expected: TypeSpecifier,

@@ -17,7 +17,7 @@ export class ProgramEmitter {
 
         const newPrograms: LayerProgram[] = [];
 
-        for (const [layerId, topFlowDeps] of Object.entries(projectContext.programDependencies)) {
+        for (const [layerId, topFlowDeps] of Object.entries(projectContext.entryPointDependencies)) {
             const sortedUsedFlows = projectContext.topologicalFlowOrder
                 .filter(flowId => topFlowDeps.has(flowId));
 
@@ -96,7 +96,7 @@ export class ProgramEmitter {
             name: layer.name,
             drawIndex: layer.drawIndex,
             programCode,
-            rootFunction: layer.topFlowId,
+            entryFunctionName: layer.entryFlowId,
         };
     }
 
@@ -112,7 +112,7 @@ export class ProgramEmitter {
 
         // statements 
         const statements: any[] = [];
-        for (const nodeId of flowContext.filteredSortedNodes) {
+        for (const nodeId of flowContext.sortedUsedNodes) {
             const nodeContext = this.assertExistsAndNoProblems(flowContext.nodeContexts[nodeId]);
             this.transpileNode(statements, declarations, nodeContext);
 

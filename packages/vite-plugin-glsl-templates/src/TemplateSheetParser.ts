@@ -67,7 +67,8 @@ export class TemplateSheetParser {
 
     private registerFunction(funcNode: FunctionNode) {
         const functionId = funcNode.prototype.header.name.identifier;
-        const params = (funcNode.prototype.parameters as ParameterDeclarationNode[])
+        const paramNodes = funcNode.prototype.parameters || []
+        const params = (paramNodes as ParameterDeclarationNode[])
             .filter(param => param.type === 'parameter_declaration')
             .map(param => {
                 if (param.declaration.type === 'type_specifier') {

@@ -1,19 +1,19 @@
-import { FlowEnvironment, FlowGraph, FlowSignature, MapTypeSpecifier } from "../types";
+import _ from "lodash";
+import { FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, MapTypeSpecifier } from "../types";
 import { EdgeColor, FlowEdge, FlowGraphContext } from "../types/context";
 import { deepFreeze } from "../utils";
 import { findDependencies, sortTopologically } from "../utils/algorithms";
+import { memoizeMulti } from "../utils/functional";
 import { validateNode } from "./validateNode";
 
-export function validateFlowGraph(
+export const validateFlowGraph = memoizeMulti((
     flow: FlowGraph,
     flowEnvironment: FlowEnvironment,
-    graphDependencies: string[], 
-): FlowGraphContext {
+): FlowGraphContext => {
 
     const flowSignature: FlowSignature = {
         id: `composed:${flow.id}`,
         attributes: { category: 'Groups' },
-        version: flow.version,
         description: null,
         name: flow.name,
         inputs: flow.inputs,
@@ -28,11 +28,10 @@ export function validateFlowGraph(
         flowEnvironment,
         edges: {},
         sortedUsedNodes: [],
-        dependencies: graphDependencies,
+        dependencies: collectFlowDependencies(flow),
     };
 
     const missingNodes = new Set<string>();
-
     // edge information and adjacency list
     const nodeEntries = Object.entries(flow.nodes);
     const numberedAdjacency = new Array(nodeEntries.length)
@@ -44,7 +43,6 @@ export function validateFlowGraph(
 
         for (const [inputRowId, inputRow] of Object.entries(inputNode.rowStates)) {
             const { connections } = inputRow!;
-            const edgesOfInputRow: FlowEdge[] = [];
             for (let inputIndex = 0; inputIndex < connections.length; inputIndex++) {
                 const { nodeId: outputNodeId, outputId } = connections[inputIndex];
                 // check if present
@@ -92,20 +90,10 @@ export function validateFlowGraph(
     const topSortResult = sortTopologically(numberedAdjacency);
     const namedTopSort = topSortResult.topologicalSorting
         .map(i => nodeEntries[i][0]);
-    // result.topologicalNodeOrder = namedTopSort;
-    // filling type table bottom-up using topsort
-    const nodeOutputTypes = new Map<string, MapTypeSpecifier>();
-    for (const nodeId of namedTopSort) {
-        const node = flow.nodes[nodeId];
-        const nodeResult = validateNode(node, flowEnvironment, nodeOutputTypes);
-        result.nodeContexts[nodeId] = nodeResult;
-        if (nodeResult.outputSpecifier) {
-            nodeOutputTypes.set(nodeId, nodeResult.outputSpecifier);
-        }
-    }
 
     type GraphEdgeKey = `${string}:${string}`;
     const edgeColors = new Map<GraphEdgeKey, EdgeColor>();
+    const usedNodeIds = new Set<string>();
 
     // output and outputs dependencies
     let outputIndex = -1;
@@ -123,13 +111,13 @@ export function validateFlowGraph(
     } else {
         // mark nodes redundant
         const numberedOutputDeps = findDependencies(numberedAdjacency, outputIndex);
-        const namedOutputDeps = Array.from(numberedOutputDeps)
-            .map(index => nodeEntries[index][0]);
-        const usedNodeIds = new Set(namedOutputDeps);
+        for (const numberedDep of numberedOutputDeps) {
+            usedNodeIds.add(nodeEntries[numberedDep][0]);
+        }
 
         for (const [nodeId, nodeContext] of Object.entries(result.nodeContexts)) {
             if (!usedNodeIds.has(nodeId)) {
-                nodeContext.isRedundant = true;
+                nodeContext.isUsed = true;
             }
         }
 
@@ -141,7 +129,6 @@ export function validateFlowGraph(
                 edgeColors.set(edgeKey, 'redundant');
             }
         }
-
         result.sortedUsedNodes = namedTopSort.filter(nodeId => usedNodeIds.has(nodeId));
     }
 
@@ -169,6 +156,26 @@ export function validateFlowGraph(
         edge.color = edgeColors.get(edgeKey) || edge.color;
     }
 
+    // filling type table bottom-up using topsort
+    const nodeOutputTypes = new Map<string, MapTypeSpecifier>();
+    for (const nodeId of namedTopSort) {
+        const node = flow.nodes[nodeId];
+        const isUsed = usedNodeIds.has(nodeId);
+        const nodeResult = validateNode(node, flowEnvironment, nodeOutputTypes, isUsed);
+        result.nodeContexts[nodeId] = nodeResult;
+        if (nodeResult.outputSpecifier) {
+            nodeOutputTypes.set(nodeId, nodeResult.outputSpecifier);
+        }
+    }
+
     deepFreeze(result);
     return result;
-}
+});
+
+export const collectFlowDependencies = memoizeMulti((flow: FlowGraph) => {
+    const signatures = new Set<FlowSignatureId>();
+    for (const node of Object.values(flow.nodes) as FlowNode[]) {
+        signatures.add(node.signature);
+    }
+    return Array.from(signatures);
+});

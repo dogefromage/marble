@@ -1,5 +1,5 @@
 import { InitializerValue, TypeSpecifier } from "./typeSpecifiers";
-import { Obj, Versionable } from "./utilTypes";
+import { Obj } from "./utilTypes";
 
 /**
  * Rows are either inputs or outputs of node.
@@ -50,7 +50,7 @@ export interface AnonymousFlowSignature {
     outputs: OutputRowSignature[];
 }
 
-export interface FlowSignature extends Versionable, AnonymousFlowSignature {
+export interface FlowSignature extends AnonymousFlowSignature {
     id: FlowSignatureId;
     name: string;
     description: string | null;
