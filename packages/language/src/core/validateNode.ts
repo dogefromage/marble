@@ -2,7 +2,7 @@ import { FlowEnvironment, FlowNode, FlowSignature, InitializerValue, InputRowSig
 import { FlowNodeContext, RowContext, RowProblem } from "../types/context";
 import { Obj } from "../types/utilTypes";
 import { assertTruthy, deepFreeze, wrapDefined } from "../utils";
-import { freezeResult, memoizeMulti } from "../utils/functional";
+import { freezeResult, memoList, memoizeMulti } from "../utils/functional";
 import { compareTypes } from "./compareTypes";
 import { findEnvironmentSignature } from "./environment";
 import { generateDefaultValue } from "./generateDefaultValue";
@@ -56,6 +56,7 @@ const bundleNodeContext = memoizeMulti(freezeResult((
     templateSignature: FlowSignature,
     ...inputContexts: RowContext[] // automatically memoizes into list
 ): FlowNodeContext => {
+
     const result: FlowNodeContext = {
         ref: node,
         problems: [],
@@ -99,8 +100,6 @@ const selectConnectedTypes = memoizeMulti((
     }) || [];
     return memoList(...connectedTypes);
 });
-
-const memoList = memoizeMulti(<T>(...items: T[]) => items);
 
 const validateRows = memoizeMulti(freezeResult((
     input: InputRowSignature,

@@ -16,11 +16,11 @@ interface Props {
 }
 
 const FlowEditorContent = ({ flowId, panelId, getPanelState }: Props) => {
-    const flow = useAppSelector(selectSingleFlow(flowId));
+    // const flow = useAppSelector(selectSingleFlow(flowId));
     const context = useAppSelector(selectFlowContext(flowId));
     const panelState = useAppSelector(selectPanelState(ViewTypes.FlowEditor, panelId));
 
-    if (!flow || !context || !panelState) return <p>Loading...</p>;
+    if (/* !flow ||  */!context || !panelState) return <p>Loading...</p>;
 
     // // New link
     // const newLink = panelState?.newLink;
@@ -41,20 +41,17 @@ const FlowEditorContent = ({ flowId, panelId, getPanelState }: Props) => {
                 //     getCamera={getCamera}
                 // />
             }{
-                (Object.values(flow.nodes) as FlowNode[]).map((node, nodeIndex) => {
+                Object.values(context.nodeContexts).map((nodeContext, nodeIndex) => {
+                    const node = nodeContext.ref;
                     let selectionStatus = SelectionStatus.Nothing;
                     if (panelState.selection.includes(node.id)) {
                         selectionStatus = SelectionStatus.Selected;
                     }
-                    const nodeContext = context.nodeContexts[node.id];
-                    if (!nodeContext) return null;
-
                     return (
                         <FlowNodeElement
                             key={node.id}
-                            flowId={flow.id}
+                            flowId={flowId}
                             panelId={panelId}
-                            node={node}
                             context={nodeContext}
                             getPanelState={getPanelState}
                             selectionStatus={selectionStatus}

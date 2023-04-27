@@ -27,3 +27,8 @@ export function logCodeWithLines(code: string) {
     }
     return labeledLines.join('\n');
 }
+
+export function spinWait(millis: number) {
+    const endTime = millis + new Date().getTime();
+    while (new Date().getTime() < endTime) {};
+}

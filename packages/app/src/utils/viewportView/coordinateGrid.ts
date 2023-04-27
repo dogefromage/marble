@@ -122,10 +122,13 @@ void main() {
         return; // behind camera
     }
 
-    gl_FragDepth = encodeDepth(ray_d, t);
 
     vec3 p = ray_o + ray_d * t;
     outColor = coordinate_grid(p);
+
+    if (outColor.a > 0.) {
+        gl_FragDepth = encodeDepth(ray_d, t);
+    }
 }
 `;
 

@@ -1,5 +1,5 @@
 import { FlowNodeContext, FlowSignature } from '@marble/language';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FlowNodeNameWrapper, FlowNodeRowNameP } from '../styles/flowStyles';
 import { Vec2 } from '../types';
 import { FlowInputRowSwitch, FlowOutputRow } from './FlowNodeRowComponents';
@@ -7,14 +7,18 @@ import { FlowInputRowSwitch, FlowOutputRow } from './FlowNodeRowComponents';
 interface Props {
     panelId: string;
     flowId: string;
-    nodeId: string;
     context: FlowNodeContext;
     signature: FlowSignature;
     getClientNodePos: () => Vec2;
 }
 
-const FlowNodeContent = ({ panelId, flowId, nodeId, context, signature, getClientNodePos }: Props) => {
-    const commonProps = { panelId, flowId, nodeId, getClientNodePos };
+const FlowNodeContent = ({ panelId, flowId, context, signature, getClientNodePos }: Props) => {
+    const commonProps = { 
+        panelId, 
+        flowId, 
+        nodeId: context.ref.id, 
+        getClientNodePos 
+    };
 
     return (<>
         <FlowNodeNameWrapper

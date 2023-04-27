@@ -17,13 +17,12 @@ export const FLOW_NODE_DIV_CLASS = 'flow-node-div';
 interface Props {
     panelId: string;
     flowId: string;
-    node: FlowNode;
     context: FlowNodeContext;
     getPanelState: () => FlowEditorPanelState;
     selectionStatus: SelectionStatus;
 }
 
-const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, selectionStatus }: Props) => {
+const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionStatus }: Props) => {
     const dispatch = useAppDispatch();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +42,7 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
         if (selectionStatus !== SelectionStatus.Selected) {
             dispatch(flowEditorSetSelection({
                 panelId,
-                selection: [node.id],
+                selection: [context.ref.id],
             }));
         }
     }
@@ -55,7 +54,7 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
             {
                 startCursor: { x: e.clientX, y: e.clientY },
                 lastCursor: { x: e.clientX, y: e.clientY },
-                startPosition: { ...node.position },
+                startPosition: { ...context.ref.position },
                 stackToken: 'drag_node:' + uuidv4(),
             };
             e.stopPropagation();
@@ -87,27 +86,26 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
         cursor: 'grab',
     });
     
-    
-    const [color, setColor] = useState('#ffffff');
-    useEffect(() => {
-        // console.log(`ROW UPDATE ${row.id}`);
-        setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
-    }, [context])
-
+    // // DEBUG UPDATES
+    // const [color, setColor] = useState('#ffffff');
+    // useEffect(() => {
+    //     // console.log(`ROW UPDATE ${row.id}`);
+    //     setColor(`#${Math.floor(Math.random() * 16777215).toString(16)}`);
+    // }, [context])
 
     return (
         <FlowNodeDiv
-            position={node.position}
+            position={context.ref.position}
             selectionStatus={selectionStatus}
             {...handlers}
             className={FLOW_NODE_DIV_CLASS}
-            data-id={node.id} // for DOM querying node ids
+            data-id={context.ref.id} // for DOM querying node ids
             onClick={e => {
                 e.stopPropagation();
             }}
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
             ref={wrapperRef}
-            debugOutlineColor={color}
+            // debugOutlineColor={color}
         // onDoubleClick={e => {
         //     // enter nested geometry
         //     if (nodeData?.template == null) {
@@ -128,7 +126,6 @@ const FlowNodeElement = ({ panelId, flowId, node, context, getPanelState, select
                     <FlowNodeContent
                         panelId={panelId}
                         flowId={flowId}
-                        nodeId={node.id}
                         context={context}
                         signature={context.templateSignature}
                         getClientNodePos={getClientNodePos}

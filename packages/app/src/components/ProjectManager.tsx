@@ -3,11 +3,10 @@ import { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { validationSetResult } from '../slices/contextSlice';
 import { selectFlows } from '../slices/flowsSlice';
-import { selectLayers } from '../slices/layersSlice';
-import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
-import { objMap } from '../utils/data';
 import { layerProgramsSetMany } from '../slices/layerProgramsSlice';
+import { selectLayers } from '../slices/layersSlice';
 import { selectProjectEnvironment } from '../slices/projectEnvironmentSlice';
+import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
 
 interface Props {
 
@@ -20,19 +19,26 @@ const ProjectManager = ({}: Props) => {
     const projectEnvironment = useAppSelector(selectProjectEnvironment);
     const programEmitter = useRef(new ProgramEmitter());
 
+    const lastEmissionTimeoutRef = useRef<any>();
+
     useEffect(() => {
         const projectContext = validateProject(flows, projectEnvironment, layers);
         dispatch(validationSetResult({
             context: projectContext,
         }));
 
-        // const newPrograms = programEmitter.current
-        //     .emitPrograms(projectContext, layers);
-
-        // dispatch(layerProgramsSetMany({
-        //     setPrograms: newPrograms,
-        //     removePrograms: [], // TODO
-        // }));
+        const EMISSION_DELAY = 100;
+        if (lastEmissionTimeoutRef.current) {
+            clearTimeout(lastEmissionTimeoutRef.current);
+        }
+        lastEmissionTimeoutRef.current = setTimeout(() => {
+            const newPrograms = programEmitter.current
+                .emitPrograms(projectContext, layers);
+            dispatch(layerProgramsSetMany({
+                setPrograms: newPrograms,
+                removePrograms: [], // TODO
+            }));
+        }, EMISSION_DELAY);
     }, [ layers, flows ]);
 
     return null;

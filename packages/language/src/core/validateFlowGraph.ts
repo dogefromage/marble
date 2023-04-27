@@ -1,10 +1,11 @@
 import _ from "lodash";
-import { FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, MapTypeSpecifier } from "../types";
+import { FlowEnvironment, FlowGraph, FlowNode, FlowSignature, FlowSignatureId, JointLocation, MapTypeSpecifier } from "../types";
 import { EdgeColor, FlowEdge, FlowGraphContext } from "../types/context";
 import { deepFreeze } from "../utils";
 import { findDependencies, sortTopologically } from "../utils/algorithms";
-import { memoizeMulti } from "../utils/functional";
+import { memoObjectByFlatEntries, memoizeMulti } from "../utils/functional";
 import { validateNode } from "./validateNode";
+import { Obj } from "../types/utilTypes";
 
 export const validateFlowGraph = memoizeMulti((
     flow: FlowGraph,
@@ -36,7 +37,7 @@ export const validateFlowGraph = memoizeMulti((
     const nodeEntries = Object.entries(flow.nodes);
     const numberedAdjacency = new Array(nodeEntries.length)
         .fill([]).map(_ => [] as number[]);
-    const allEdges: FlowEdge[] = [];
+    const uncoloredEdges: ReturnType<typeof makeUncoloredEdge>[] = [];
     for (let inputNodeIndex = 0; inputNodeIndex < nodeEntries.length; inputNodeIndex++) {
         const [inputNodeId, inputNode] = nodeEntries[inputNodeIndex];
         const inputNodeDepIndices = new Set<number>();
@@ -56,23 +57,16 @@ export const validateFlowGraph = memoizeMulti((
                 inputNodeDepIndices.add(depIndex);
                 // edge list
                 const edgeId = `${outputNodeId}.${outputId}_${inputNodeId}.${inputRowId}.${inputIndex}`;
-                const flowEdge: FlowEdge = {
-                    id: edgeId,
-                    source: {
-                        direction: 'output',
-                        nodeId: outputNodeId,
-                        rowId: outputId
-                    },
-                    target: {
-                        direction: 'input',
-                        nodeId: inputNodeId,
-                        rowId: inputRowId,
-                        jointIndex: inputIndex
-                    },
-                    color: 'normal',
-                };
-                result.edges[edgeId] = flowEdge;
-                allEdges.push(flowEdge);
+                uncoloredEdges.push(
+                    makeUncoloredEdge(
+                        edgeId,
+                        outputNodeId,
+                        outputId,
+                        inputNodeId,
+                        inputRowId,
+                        inputIndex,
+                    )
+                );
             }
         }
         for (const depIndex of inputNodeDepIndices) {
@@ -91,10 +85,7 @@ export const validateFlowGraph = memoizeMulti((
     const namedTopSort = topSortResult.topologicalSorting
         .map(i => nodeEntries[i][0]);
 
-    type GraphEdgeKey = `${string}:${string}`;
-    const edgeColors = new Map<GraphEdgeKey, EdgeColor>();
     const usedNodeIds = new Set<string>();
-
     // output and outputs dependencies
     let outputIndex = -1;
     for (let i = 0; i < nodeEntries.length; i++) {
@@ -114,25 +105,12 @@ export const validateFlowGraph = memoizeMulti((
         for (const numberedDep of numberedOutputDeps) {
             usedNodeIds.add(nodeEntries[numberedDep][0]);
         }
-
-        for (const [nodeId, nodeContext] of Object.entries(result.nodeContexts)) {
-            if (!usedNodeIds.has(nodeId)) {
-                nodeContext.isUsed = true;
-            }
-        }
-
-        // mark edges redundant
-        for (const edge of allEdges) {
-            const targetNode = edge.target.nodeId;
-            if (!usedNodeIds.has(targetNode)) {
-                const edgeKey: GraphEdgeKey = `${edge.source.nodeId}:${edge.target.nodeId}`;
-                edgeColors.set(edgeKey, 'redundant');
-            }
-        }
         result.sortedUsedNodes = namedTopSort.filter(nodeId => usedNodeIds.has(nodeId));
     }
 
     // mark cycles
+    type GraphEdgeKey = `${string}:${string}`;
+    const cyclicGraphEdges = new Set<GraphEdgeKey>();
     if (topSortResult.cycles.length) {
         const namedCycles = topSortResult.cycles
             .map(cycle => cycle.map(i => nodeEntries[i][0]));
@@ -145,16 +123,35 @@ export const validateFlowGraph = memoizeMulti((
             for (let i = 0; i < cycle.length; i++) {
                 let j = (i + 1) % cycle.length;
                 const key: GraphEdgeKey = `${cycle[i]}:${cycle[j]}`;
-                edgeColors.set(key, 'cyclic');
+                cyclicGraphEdges.add(key);
             }
         }
     }
 
     // color edges
-    for (const edge of allEdges) {
-        const edgeKey: GraphEdgeKey = `${edge.source.nodeId}:${edge.target.nodeId}`;
-        edge.color = edgeColors.get(edgeKey) || edge.color;
-    }
+    const coloredEdges = uncoloredEdges.map(almostEdge => {
+        let edgeColor: EdgeColor = 'normal';
+        const targetNode = almostEdge.target.nodeId;
+        // redundant
+        if (!usedNodeIds.has(targetNode)) {
+            edgeColor = 'redundant';
+        }
+        // cyclic
+        const graphEdgeKey: GraphEdgeKey = `${almostEdge.source.nodeId}:${almostEdge.target.nodeId}`;
+        if (cyclicGraphEdges.has(graphEdgeKey)) {
+            edgeColor = 'cyclic';
+        }
+        return finalizeEdge(almostEdge, edgeColor);
+    });
+
+    const memoizedEdgeObj = memoObjectByFlatEntries(
+        // flatten into sequence with pairwise id and value for memoization
+        ...coloredEdges
+            .sort((a, b) => a.id.localeCompare(b.id))
+            .map(edge => [ edge.id, edge ])
+            .flat()
+    );
+    result.edges = memoizedEdgeObj;
 
     // filling type table bottom-up using topsort
     const nodeOutputTypes = new Map<string, MapTypeSpecifier>();
@@ -179,3 +176,31 @@ export const collectFlowDependencies = memoizeMulti((flow: FlowGraph) => {
     }
     return Array.from(signatures);
 });
+
+const makeUncoloredEdge = memoizeMulti((
+    id: string,
+    sourceNode: string,
+    sourceRow: string,
+    inputNode: string,
+    inputRow: string,
+    inputJoint: number,
+) => ({
+    id,
+    source: {
+        direction: 'output',
+        nodeId: sourceNode,
+        rowId: sourceRow,
+    },
+    target: {
+        direction: 'input',
+        nodeId: inputNode,
+        rowId: inputRow,
+        jointIndex: inputJoint,
+    },
+}) satisfies Partial<FlowEdge>);
+
+const finalizeEdge = memoizeMulti(
+    (edge: ReturnType<typeof makeUncoloredEdge>, color: EdgeColor): FlowEdge => ({
+        ...edge, color,
+    })
+);

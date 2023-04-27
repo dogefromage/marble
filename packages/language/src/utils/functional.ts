@@ -1,4 +1,5 @@
-import { deepFreeze } from '.';
+import { assertTruthy, deepFreeze } from '.';
+import { Obj } from '../types/utilTypes';
 import { crudeHash, hashIntSequence } from './hashing';
 
 // function sameValueZero(x: any, y: any) {
@@ -64,3 +65,24 @@ export function freezeResult<F extends (...args: any[]) => any>(fn: F) {
 }
 
 export const always = <T>(v: T) => () => v;
+
+export const memoObjectByFlatEntries = memoizeMulti(
+    <T extends (string | any)>(...flatEntries: T[]) => {
+        type V = T extends string ? never : T;
+        const res: Obj<V> = {};
+        assertTruthy(flatEntries.length % 2 == 0);
+        for (let i = 0; i < flatEntries.length; i += 2) {
+            const [key, value] = flatEntries.slice(i);
+            assertTruthy(typeof key === 'string');
+            res[key as string] = value as V;
+        }
+        return res;
+    }
+)
+
+export function memoObject<T extends any>(obj: Obj<T>): Obj<T> {
+    const flatEntries: (string | T)[] = Object.entries(obj).flat();
+    return memoObjectByFlatEntries(...flatEntries);
+} 
+
+export const memoList = memoizeMulti(<T>(...items: T[]) => items);

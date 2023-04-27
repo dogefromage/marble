@@ -68,14 +68,11 @@ interface Props {
 const FlowEditorTransform = ({ flowId, panelId }: Props) => {
     const dispatch = useAppDispatch();
     const panelState = useAppSelector(selectPanelState(ViewTypes.FlowEditor, panelId));
-    const flow = useAppSelector(selectSingleFlow(flowId));
-    // const geometryData = useAppSelector(selectSingleGeometryData(flowId));
     const panelStateRef = useRef(panelState);
     panelStateRef.current = panelState;
     const getPanelState = useCallback(() => {
         return panelStateRef.current!;
     }, [panelStateRef]);
-    // const userSelection = geometry?.selections[TEST_USER_ID];
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     const getOffsetPoint = (clientPoint: Vec2) => {
@@ -121,7 +118,7 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
             end: e => {
                 setSelection(undefined);
                 isActionOngoingRef.current = false;
-                if (!selection || !flow) return;
+                if (!selection) return;
                 const nodeDivs = Array.from(wrapperRef.current?.querySelectorAll(`.${FLOW_NODE_DIV_CLASS}`) || []);
                 const intersectingNodes = nodeDivs.filter(item => {
                     const clientBounds = item.getBoundingClientRect();

@@ -67,12 +67,12 @@ struct Distance {
 
 ${GLSL_RAY_STRUCTURE}
 
-float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
-    int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
-    int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
-    vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
-    return texture(varTexture, uv).r;
-}
+// float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
+//     int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
+//     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
+//     vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
+//     return texture(varTexture, uv).r;
+// }
 
 %MAIN_PROGRAM%
 
@@ -143,6 +143,8 @@ vec4 shade(Ray ray) {
 
     if (main_march.state == INTERSECTION_STATE_CLEAR) {
         // CLEAR
+        // float clearB = 0.95;
+        // return vec4(clearB,clearB,clearB, 1);
         return vec4(0,0,0,0);
     }
     

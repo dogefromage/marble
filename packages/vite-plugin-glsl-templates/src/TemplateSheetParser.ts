@@ -81,7 +81,7 @@ export class TemplateSheetParser {
             id: `internal:${functionId}`,
             name: this.currentName,
             description: '',
-            version: 0,
+            // version: 0,
             attributes: {
                 category: this.currentCategory,
                 color: this.currentColor,

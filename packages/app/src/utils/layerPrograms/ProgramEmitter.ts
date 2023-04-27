@@ -4,6 +4,7 @@ import { AstNode, IdentifierNode, ParameterDeclarationNode, TypeSpecifierNode } 
 import { Layer, LayerProgram, Obj } from "../../types";
 import ast from "./AstUtils";
 import { internalNodeFunctions } from "../../types/flows";
+import { spinWait } from "../debugging";
 
 function unsupported(msg: string) {
     return new Error(`Unsupported: ${msg}`);
@@ -12,11 +13,7 @@ function unsupported(msg: string) {
 export class ProgramEmitter {
 
     public emitPrograms(projectContext: ProjectContext, layers: Obj<Layer>) {
-        // console.log('\n'.repeat(100))
-        // console.log('________ Emission ________');
-
         const newPrograms: LayerProgram[] = [];
-
         for (const [layerId, topFlowDeps] of Object.entries(projectContext.entryPointDependencies)) {
             const sortedUsedFlows = projectContext.topologicalFlowOrder
                 .filter(flowId => topFlowDeps.has(flowId));
