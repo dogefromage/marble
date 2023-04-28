@@ -1,4 +1,4 @@
-import { FlowSignature, InitializerValue, InputRowSignature, TypeSpecifier, VariableInputRowSignature, inputRowTypes, outputRowTypes } from '@marble/language';
+import * as ml from '@marble/language';
 import { generate, parser } from '@shaderfrog/glsl-parser';
 import { FunctionNode, ParameterDeclarationNode, PreprocessorNode, TypeSpecifierNode } from '@shaderfrog/glsl-parser/ast';
 import { SourceTemplate } from './typings';
@@ -10,7 +10,7 @@ export class TemplateSheetParser {
     private currentColor = '#aa66aa';
     private currentCategory = 'other';
     private currentName = 'Unnamed';
-    private currentOutTypes: TypeSpecifier[] = [];
+    private currentOutTypes: ml.TypeSpecifier[] = [];
     private rowRecords: Record<string, Record<string, string>> = {};
 
     constructor(
@@ -77,7 +77,7 @@ export class TemplateSheetParser {
                 return param.declaration;
             });
 
-        const signature: FlowSignature = {
+        const signature: ml.FlowSignature = {
             id: `internal:${functionId}`,
             name: this.currentName,
             description: '',
@@ -90,13 +90,13 @@ export class TemplateSheetParser {
                 const rowId = param.identifier.identifier;
                 const rowRecord = this.rowRecords[rowId] || {};
 
-                const rowType: InputRowSignature['rowType'] = (rowRecord.rt as any) || 'input-simple';
-                if (!inputRowTypes.includes(rowType)) {
+                const rowType: ml.InputRowSignature['rowType'] = (rowRecord.rt as any) || 'input-simple';
+                if (!ml.inputRowTypes.includes(rowType)) {
                     throw new Error(`"${rowType}" is not a valid input rowtype`);
                 }
 
                 if (rowType === 'input-variable') {
-                    let defaultValue: InitializerValue | null = null;
+                    let defaultValue: ml.InitializerValue | null = null;
                     if (rowRecord.dv != null) {
                         try {
                             defaultValue = JSON.parse(rowRecord.dv);
@@ -104,7 +104,7 @@ export class TemplateSheetParser {
                             throw new Error(`Could not parse default value: ${e}`);
                         }
                     }
-                    const row: VariableInputRowSignature = {
+                    const row: ml.VariableInputRowSignature = {
                         id: rowId,
                         label: rowRecord.n || rowId,
                         rowType: rowType,
@@ -125,7 +125,7 @@ export class TemplateSheetParser {
                 const rowId = outIndex.toString();
                 const rowRecord = this.rowRecords[rowId] || {};
                 const rowType: any = rowRecord.rt || 'output';
-                if (!outputRowTypes.includes(rowType)) {
+                if (!ml.outputRowTypes.includes(rowType)) {
                     throw new Error(`"${rowType}" is not a valid output rowtype`);
                 }
 
@@ -149,7 +149,7 @@ export class TemplateSheetParser {
     }
 }
 
-function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): TypeSpecifier {
+function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): ml.TypeSpecifier {
     let name: string | undefined;
     if (typeSpec.specifier.type === 'identifier') {
         name = typeSpec.specifier.identifier;
@@ -164,18 +164,14 @@ function parseTypeSpecifierNode(typeSpec: TypeSpecifierNode): TypeSpecifier {
     return generateNamedSpecifier(name);
 }
 
-function generateNamedSpecifier(name: string): TypeSpecifier {
+function generateNamedSpecifier(name: string): ml.TypeSpecifier {
     if (name === 'float') {
-        return { type: 'primitive', primitive: 'number' };
+        return ml.types.createPrimitive('number');
     }
     if (name === 'bool') {
-        return { type: 'primitive', primitive: 'boolean' };
+        return ml.types.createPrimitive('boolean');
     }
-
-    return {
-        type: 'reference',
-        name,
-    }
+    return ml.types.createReference(name);
 }
 
 

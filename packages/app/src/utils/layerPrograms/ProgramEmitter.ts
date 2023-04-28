@@ -135,6 +135,8 @@ export class ProgramEmitter {
         );
         const functionCode = generate(functionNode);
 
+        // console.log(functionCode);
+
         return {
             functionCode,
             requiredStructures,

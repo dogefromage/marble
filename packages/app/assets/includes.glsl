@@ -6,7 +6,7 @@
 Distance inc_union(Distance a, Distance b)
 {
     if (a.d < b.d) return a;
-    else             return b;
+    else            return b;
 }
 
 #DEFINCLUDE inc_intersection;

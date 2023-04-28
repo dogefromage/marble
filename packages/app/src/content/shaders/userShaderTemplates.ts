@@ -1,4 +1,4 @@
-import { LOOKUP_TEXTURE_WIDTH } from "../../types";
+// import { LOOKUP_TEXTURE_WIDTH } from "../../types";
 import { glsl } from "../../utils/codeStrings";
 import { GLSL_ENCODE_DEPTH, GLSL_RAY_STRUCTURE, GLSL_SCREEN_TO_WORLD } from "./common";
 
@@ -61,34 +61,33 @@ struct Intersection {
     vec3 color; 
 };
 struct Distance { 
-    float d; 
-    vec3 color; 
+    vec3 color;
+    float radius; 
 };
 
 ${GLSL_RAY_STRUCTURE}
 
 // float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
-//     int y = textureCoordinate / ${LOOKUP_TEXTURE_WIDTH};
-//     int x = textureCoordinate - y * ${LOOKUP_TEXTURE_WIDTH};
-//     vec2 uv = (vec2(x, y) + 0.5) / float(${LOOKUP_TEXTURE_WIDTH});
+//     int y = textureCoordinate / ${/* LOOKUP_TEXTURE_WIDTH */1};
+//     int x = textureCoordinate - y * ${/* LOOKUP_TEXTURE_WIDTH */1};
+//     vec2 uv = (vec2(x, y) + 0.5) / float(${/* LOOKUP_TEXTURE_WIDTH */1});
 //     return texture(varTexture, uv).r;
 // }
 
 %MAIN_PROGRAM%
 
 Distance sdf(vec3 p) { 
-    float dist = %ROOT_FUNCTION_NAME%(p); 
-    return Distance(dist, vec3(1,1,1));
+    return %ROOT_FUNCTION_NAME%(p);
 }
 
 vec3 normal(vec3 p) {
     // https://iquilezles.org/articles/normalsSDF/
     float h = 10.0 * marchParameters.z;
     vec2 k = vec2(1,-1);
-    return normalize( k.xyy * sdf( p + k.xyy*h ).d + 
-                      k.yyx * sdf( p + k.yyx*h ).d + 
-                      k.yxy * sdf( p + k.yxy*h ).d + 
-                      k.xxx * sdf( p + k.xxx*h ).d );
+    return normalize( k.xyy * sdf( p + k.xyy*h ).radius + 
+                      k.yyx * sdf( p + k.yyx*h ).radius + 
+                      k.yxy * sdf( p + k.yxy*h ).radius + 
+                      k.xxx * sdf( p + k.xxx*h ).radius );
 }
 
 Intersection march(Ray ray, float clear_distance, int max_iter, float epsilon) {
@@ -102,7 +101,7 @@ Intersection march(Ray ray, float clear_distance, int max_iter, float epsilon) {
 
         vec3 p = ray_at(ray, t);
         Distance surface_hit = sdf(p);
-        float d = 0.99 * surface_hit.d;
+        float d = 0.99 * surface_hit.radius;
         last_color = surface_hit.color;
 
         if (d < epsilon) {

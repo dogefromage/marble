@@ -19,7 +19,7 @@ const defaultTheme: DefaultTheme = {
         },
         dataTypes: {
             boolean: '#787878',
-            // int: '#617a43',
+            Distance: '#4bc96d',
             number: '#5f91c9',
             vec2: '#3f478c',
             vec3: '#6a40a8',

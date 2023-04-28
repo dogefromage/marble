@@ -1,9 +1,9 @@
 import { mat4, vec4 } from 'gl-matrix';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { BOX_SHADOW, INSET_SHADOW } from '../styles/utils';
-import { DataTypeValueTypes, Vec2 } from '../types';
 import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
+import { INSET_SHADOW } from '../styles/utils';
+import { Vec2 } from '../types';
 
 export const BEZIER_WIDTH_PIXELS = 260;
 export const BEZIER_GRID_UNITS = 8;
