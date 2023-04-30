@@ -55,6 +55,7 @@ const FlowEditorContent = ({ flowId, panelId, getPanelState }: Props) => {
                             context={nodeContext}
                             getPanelState={getPanelState}
                             selectionStatus={selectionStatus}
+                            env={context.flowEnvironment}
                         />
                     );
                 })

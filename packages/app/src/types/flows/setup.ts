@@ -1,8 +1,14 @@
 import * as ml from "@marble/language";
-import internalTemplates from '../../glsl/test.template.glsl';
 import { Obj } from "../UtilityTypes";
+import solidOpTemplates from '../../glsl/solid_ops.template.glsl';
+import solidTemplates from '../../glsl/solids.template.glsl';
+import testingTemplates from '../../glsl/testing.template.glsl';
+import vectorTemplates from '../../glsl/vectors.template.glsl';
+import spaceTemplates from '../../glsl/space.template.glsl';
 
 const vec3Ref = ml.types.createReference('vec3');
+// const vec2Ref = ml.types.createReference('vec2');
+// const mat3Ref = ml.types.createReference('mat3');
 const numberPrimitive = ml.types.createPrimitive('number');
 
 const DISTANCE_STRUCT_NAME = 'Distance';
@@ -23,6 +29,14 @@ export const topFlowSignature: ml.AnonymousFlowSignature = {
     }],
 }
 
+const internalTemplates = [
+    ...solidTemplates,
+    ...solidOpTemplates,
+    ...vectorTemplates,
+    ...testingTemplates,
+    ...spaceTemplates,
+];
+
 // import from loader
 export const internalNodeSignatures: Obj<ml.FlowSignature> = {};
 export const internalNodeFunctions: Obj<string> = {};
@@ -33,14 +47,21 @@ for (const template of internalTemplates) {
     }
 }
 
-
-
 export const initialEnvironment: ml.FlowEnvironmentContent = {
     types: {
         vec3: ml.types.createMap({
             x: numberPrimitive,
             y: numberPrimitive,
             z: numberPrimitive,
+        }),
+        vec2: ml.types.createMap({
+            x: numberPrimitive,
+            y: numberPrimitive,
+        }),
+        mat3: ml.types.createMap({
+            column_1: vec3Ref,
+            column_2: vec3Ref,
+            column_3: vec3Ref,
         }),
         [DISTANCE_STRUCT_NAME]: ml.types.createMap({
             radius: numberPrimitive,

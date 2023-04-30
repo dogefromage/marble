@@ -137,11 +137,11 @@ function generateVectorData(edges: Obj<FlowEdge>, flow: FlowGraph, panelState: F
 
     // new edge link
     if (panelState.state.type === 'dragging-link') {
-        let A = getJointPosition(panelState.state.fromJoint, panelState, flow);
+        let A = getJointPosition(panelState.state.draggingContext.fromJoint, panelState, flow);
         const mouseWorld = panelState.state.cursorWorldPosition;
         if (A && mouseWorld) {
             let D = new Vector2(mouseWorld.x, mouseWorld.y);
-            if (panelState.state.fromJoint.direction === 'input') {
+            if (panelState.state.draggingContext.fromJoint.direction === 'input') {
                 const temp = A;
                 A = D;
                 D = temp;

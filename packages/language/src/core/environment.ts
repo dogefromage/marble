@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { FlowEnvironment, FlowEnvironmentContent } from "../types";
 import { FlowSignature, InputRowSignature, OutputRowSignature } from "../types/signatures";
 import { ArrayTypeSpecifier, MapTypeSpecifier, TypeSpecifier } from "../types/typeSpecifiers";
@@ -68,14 +69,14 @@ const generateTypeSyntaxSignatures = memoizeMulti((name: string, type: TypeSpeci
         return []; // not combinable
     }
 
+    const category = 'Combine/Separate';
+
     // combiner
     const combiner: FlowSignature = {
         id: `syntax:combine_${name}`,
         name: `Combine ${name}`,
         description: `Combines required data into a ${name}`,
-        attributes: {
-            category: 'Types',
-        },
+        attributes: { category },
         inputs: getCombinerInputRows(type),
         outputs: [
             {
@@ -92,9 +93,7 @@ const generateTypeSyntaxSignatures = memoizeMulti((name: string, type: TypeSpeci
         id: `syntax:separate_${name}`,
         name: `Separate ${name}`,
         description: `Separates ${name} into its `,
-        attributes: {
-            category: 'Types',
-        },
+        attributes: { category },
         inputs: [
             {
                 id: 'input',
@@ -129,7 +128,7 @@ function getCombinerInputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): Inpu
             .map(([key, type]) => {
                 const row: InputRowSignature = {
                     id: key,
-                    label: key,
+                    label: prettifyLabel(key),
                     dataType: type,
                     rowType: 'input-variable',
                     defaultValue: null,
@@ -160,7 +159,7 @@ function getSeparatorOutputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): Ou
             .map(([key, type]) => {
                 const row: OutputRowSignature = {
                     id: key,
-                    label: key,
+                    label: prettifyLabel(key),
                     dataType: type,
                     rowType: 'output',
                 };
@@ -169,4 +168,8 @@ function getSeparatorOutputRows(type: ArrayTypeSpecifier | MapTypeSpecifier): Ou
         return rows;
     }
     throw new Error(`Type ${(type as any).type} is not structurable`);
+}
+
+function prettifyLabel(propertyName: string) {
+    return _.startCase(propertyName.replaceAll('_', ' ').trim());
 }

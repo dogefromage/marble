@@ -1,4 +1,4 @@
-import { JointLocation } from "@marble/language";
+import { FlowEnvironment, JointLocation, TypeSpecifier } from "@marble/language";
 import { Vec2 } from "../UtilityTypes";
 import { PanelState } from "../panelManager";
 
@@ -23,30 +23,35 @@ interface FlowEditorActionLocation {
     worldPosition: Vec2;
     clientPosition: Vec2;
 }
+export interface DraggingJointContext {
+    fromJoint: JointLocation;
+    dataType: TypeSpecifier;
+    environment: FlowEnvironment;
+}
 
-interface NeutralState {
+export interface FlowEditorNeutralState {
     type: 'neutral';
 }
-interface AddNodeAtPositionState {
+export interface FlowEditorAddNodeAtPositionState {
     type: 'add-node-at-position';
     location: FlowEditorActionLocation;
 }
-interface DraggingLinkState {
+export interface FlowEditorDraggingLinkState {
     type: 'dragging-link';
-    fromJoint: JointLocation;
     cursorWorldPosition: Vec2 | null;
+    draggingContext: DraggingJointContext;
 }
-interface AddNodeWithConnectionState {
+export interface FlowEditorAddNodeWithConnectionState {
     type: 'add-node-with-connection';
     location: FlowEditorActionLocation;
-    fromJoint: JointLocation;
+    draggingContext: DraggingJointContext;
 }
 
 export type FlowEditorActionState =
-    | NeutralState
-    | AddNodeAtPositionState
-    | DraggingLinkState
-    | AddNodeWithConnectionState
+    | FlowEditorNeutralState
+    | FlowEditorAddNodeAtPositionState
+    | FlowEditorDraggingLinkState
+    | FlowEditorAddNodeWithConnectionState
 
 export type JointLocationKey = `${string}.${string}.${number}` | `${string}.${string}`;
 

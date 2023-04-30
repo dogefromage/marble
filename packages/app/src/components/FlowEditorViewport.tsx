@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { flowsCreate, selectSingleFlow } from '../slices/flowsSlice';
 import { layersCreate } from '../slices/layersSlice';
 import { UndoRecord, ViewTypes } from '../types';
-import { topFlowSignature } from '../types/flows';
+import { topFlowSignature } from '../types/flows/setup';
 import useDispatchCommand from '../utils/commands/useDispatchCommand';
 import useContextMenu from '../utils/menus/useContextMenu';
 import { TEST_LAYER_ID } from '../utils/testSetup';

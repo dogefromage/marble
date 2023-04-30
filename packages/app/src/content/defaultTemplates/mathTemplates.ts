@@ -5,7 +5,7 @@
 //     version: 0,
 //     category: 'math',
 //     rows: [
-//         nameRow('Number Value', templateColors['math']),
+        // nameRow('Number Value', templateColors['math']),
 //         outputRow('output', 'Value', 'float'),
 //         inputField('input', 'Input', 'float'),
 //     ],

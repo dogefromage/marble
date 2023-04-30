@@ -1,20 +1,10 @@
-import { InputRowSignature, ListInputRowSignature, OutputRowSignature, RowContext, SimpleInputRowSignature, TypeSpecifier, VariableInputRowSignature } from "@marble/language";
-import React, { useEffect, useState } from "react";
+import { FlowEnvironment, InputRowSignature, ListInputRowSignature, OutputRowSignature, RowContext, SimpleInputRowSignature, TypeSpecifier, VariableInputRowSignature } from "@marble/language";
+import React from "react";
 import { FlowNodeRowNameP } from "../styles/flowStyles";
 import { DataTypes, Vec2 } from "../types";
 import FlowJoint from "./FlowJoint";
 import FlowNodeRow from "./FlowNodeRow";
 import FlowNodeRowInitializer from "./FlowNodeRowInitializer";
-
-function getDataTypeLiteral(specifier: TypeSpecifier): DataTypes {
-    if (specifier.type === 'primitive') {
-        return specifier.primitive as DataTypes;
-    }
-    if (specifier.type === 'reference') {
-        return specifier.name as DataTypes;
-    }
-    return 'unknown' as DataTypes;
-}
 
 export type RowComponentProps<R extends InputRowSignature | OutputRowSignature> = {
     panelId: string;
@@ -22,12 +12,12 @@ export type RowComponentProps<R extends InputRowSignature | OutputRowSignature> 
     nodeId: string;
     row: R;
     context: RowContext | undefined;
+    env: FlowEnvironment;
     getClientNodePos: () => Vec2;
 }
 
 export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
-    const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
-    const dataTypeLiteral = getDataTypeLiteral(row.dataType);
+    const { panelId, flowId, nodeId, row, getClientNodePos, context, env } = props;
 
     return (
         <FlowNodeRow
@@ -36,12 +26,13 @@ export const FlowOutputRow = (props: RowComponentProps<OutputRowSignature>) => {
             <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
-                dataType={dataTypeLiteral}
+                dataType={row.dataType}
                 location={{
                     direction: 'output',
                     nodeId,
                     rowId: row.id,
                 }}
+                env={env}
                 getClientNodePos={getClientNodePos}
             />
             <FlowNodeRowNameP
@@ -68,8 +59,7 @@ export const FlowInputRowSwitch = (props: RowComponentProps<InputRowSignature>) 
 }
 
 export const FlowInputRowSimple = (props: RowComponentProps<SimpleInputRowSignature>) => {
-    const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
-    const dataTypeLiteral = getDataTypeLiteral(row.dataType);
+    const { panelId, flowId, nodeId, row, getClientNodePos, context, env } = props;
 
     return (
         <FlowNodeRow
@@ -78,13 +68,14 @@ export const FlowInputRowSimple = (props: RowComponentProps<SimpleInputRowSignat
             <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
-                dataType={dataTypeLiteral}
+                dataType={row.dataType}
                 location={{
                     direction: 'input',
                     nodeId,
                     jointIndex: 0,
                     rowId: row.id,
                 }}
+                env={env}
                 getClientNodePos={getClientNodePos}
             />
             <FlowNodeRowNameP
@@ -97,21 +88,21 @@ export const FlowInputRowSimple = (props: RowComponentProps<SimpleInputRowSignat
 }
 
 export const FlowInputRowVariable = (props: RowComponentProps<VariableInputRowSignature>) => {
-    const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
-    const dataTypeLiteral = getDataTypeLiteral(row.dataType);
+    const { panelId, flowId, nodeId, row, getClientNodePos, context, env } = props;
 
     return (
         <FlowNodeRow context={context}>
             <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
-                dataType={dataTypeLiteral}
+                dataType={row.dataType}
                 location={{
                     direction: 'input',
                     nodeId,
                     jointIndex: 0,
                     rowId: row.id,
                 }}
+                env={env}
                 getClientNodePos={getClientNodePos}
             />
             <FlowNodeRowInitializer
@@ -126,14 +117,13 @@ export const FlowInputRowVariable = (props: RowComponentProps<VariableInputRowSi
 
 export const FlowInputRowList = (props: RowComponentProps<ListInputRowSignature>) => {
     const { panelId, flowId, nodeId, row, getClientNodePos, context } = props;
-    const dataTypeLiteral = getDataTypeLiteral(row.dataType);
 
     return (
         <FlowNodeRow context={context}>
             {/* <FlowJoint
                 panelId={panelId}
                 flowId={flowId}
-                dataType={dataTypeLiteral}
+                dataType={row.dataType}
                 location={{
                     direction: 'input',
                     nodeId,

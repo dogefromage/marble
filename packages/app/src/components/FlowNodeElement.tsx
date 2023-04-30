@@ -1,5 +1,5 @@
 import { useMouseDrag } from '@marble/interactive';
-import { FlowNode, FlowNodeContext } from '@marble/language';
+import { FlowEnvironment, FlowNode, FlowNodeContext } from '@marble/language';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
@@ -20,9 +20,10 @@ interface Props {
     context: FlowNodeContext;
     getPanelState: () => FlowEditorPanelState;
     selectionStatus: SelectionStatus;
+    env: FlowEnvironment;
 }
 
-const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionStatus }: Props) => {
+const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionStatus, env }: Props) => {
     const dispatch = useAppDispatch();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -129,6 +130,7 @@ const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionSta
                         context={context}
                         signature={context.templateSignature}
                         getClientNodePos={getClientNodePos}
+                        env={env}
                     />
                 ) : (
                     <FlowNodeMissingContent />

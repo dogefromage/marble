@@ -1,10 +1,9 @@
-import { FlowGraphContext, FlowNodeContext, FlowSignature, FlowSignatureSources, InitializerValue, InputRowSignature, OutputRowSignature, ProjectContext, RowContext, TypeSpecifier } from "@marble/language";
+import * as ml from "@marble/language";
 import { generate } from "@shaderfrog/glsl-parser";
 import { AstNode, IdentifierNode, ParameterDeclarationNode, TypeSpecifierNode } from "@shaderfrog/glsl-parser/ast";
 import { Layer, LayerProgram, Obj } from "../../types";
+import { internalNodeFunctions } from "../../types/flows/setup";
 import ast from "./AstUtils";
-import { internalNodeFunctions } from "../../types/flows";
-import { spinWait } from "../debugging";
 
 function unsupported(msg: string) {
     return new Error(`Unsupported: ${msg}`);
@@ -12,7 +11,7 @@ function unsupported(msg: string) {
 
 export class ProgramEmitter {
 
-    public emitPrograms(projectContext: ProjectContext, layers: Obj<Layer>) {
+    public emitPrograms(projectContext: ml.ProjectContext, layers: Obj<Layer>) {
         const newPrograms: LayerProgram[] = [];
         for (const [layerId, topFlowDeps] of Object.entries(projectContext.entryPointDependencies)) {
             const sortedUsedFlows = projectContext.topologicalFlowOrder
@@ -34,7 +33,7 @@ export class ProgramEmitter {
         return newPrograms;
     }
 
-    private emitProgram(projectContext: ProjectContext, layer: Layer, sortedUsedFlows: string[]): LayerProgram {
+    private emitProgram(projectContext: ml.ProjectContext, layer: Layer, sortedUsedFlows: string[]): LayerProgram {
         // console.log(`Program (layer=${layer.id}):`);
 
         const flowFunctionBlocks: string[] = [];
@@ -86,8 +85,6 @@ export class ProgramEmitter {
             ...flowFunctionBlocks,
         ].join('\n');
 
-        // console.log(programCode);
-
         return {
             id: layer.id,
             name: layer.name,
@@ -97,7 +94,7 @@ export class ProgramEmitter {
         };
     }
 
-    private emitFlow(flowContext: FlowGraphContext) {
+    private emitFlow(flowContext: ml.FlowGraphContext) {
         // console.log(`Flow (id=${flowContext.ref.id}):`);
         // keeps track of defined symbols
         const declarations = new Set<string>();
@@ -144,9 +141,9 @@ export class ProgramEmitter {
         }
     }
 
-    private transpileNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext) {
+    private transpileNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext) {
         const signature = this.assertDef(nodeContext.templateSignature);
-        const [signatureType, signatureName] = signature.id.split(':') as [FlowSignatureSources, string];
+        const [signatureType, signatureName] = signature.id.split(':') as [ml.FlowSignatureSources, string];
 
         if (signatureType === 'syntax') {
             if (signatureName === 'input') {
@@ -173,7 +170,7 @@ export class ProgramEmitter {
         }
     }
 
-    private transpileSyntaxInputNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext, signature: FlowSignature) {
+    private transpileSyntaxInputNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const nodeId = nodeContext.ref.id;
         for (const output of signature.outputs) {
             const paramName = this.getParameterName(output.id);
@@ -192,7 +189,7 @@ export class ProgramEmitter {
         }
     }
 
-    private transpileSyntaxCombineNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext, signature: FlowSignature) {
+    private transpileSyntaxCombineNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const argExpressions = this.getArgumentExpressions(nodeContext, signature);
         const structType = this.getRowMapType(signature.outputs);
 
@@ -215,7 +212,7 @@ export class ProgramEmitter {
         );
     }
 
-    private transpileSyntaxSeparateNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext, signature: FlowSignature) {
+    private transpileSyntaxSeparateNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const argExpression = this.getArgumentExpressions(nodeContext, signature)[0];
         for (const output of signature.outputs) {
             const outputName = this.getOutputName(nodeContext.ref.id, output.id);
@@ -229,9 +226,7 @@ export class ProgramEmitter {
                         outputName,
                         ast.createPostfix(
                             argExpression,
-                            ast.createFieldSelection(
-                                ast.createLiteral(output.id)
-                            )
+                            this.getSeparatorFieldPostfix(signature.id, output.id) as any,
                         )
                     )
                 )
@@ -239,7 +234,24 @@ export class ProgramEmitter {
         }
     }
 
-    private transpileSyntaxOutputNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext, signature: FlowSignature) {
+    private getSeparatorFieldPostfix(signatureId: string, outputId: string) {
+        if (signatureId === 'syntax:separate_mat3') {
+            const num = parseInt(outputId.match(/\d/)![0]) - 1;
+            return (
+                ast.createQuantifier(
+                    ast.createLiteral(num.toString())
+                )
+            )
+        }
+
+        return (
+            ast.createFieldSelection(
+                ast.createLiteral(outputId)
+            )
+        )
+    }
+
+    private transpileSyntaxOutputNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const argExpressions = this.getArgumentExpressions(nodeContext, signature);
 
         let returnExpression: AstNode | undefined;
@@ -263,8 +275,7 @@ export class ProgramEmitter {
         );
     }
 
-    private transpileCallNode(statements: any[], declarations: Set<string>, nodeContext: FlowNodeContext, signature: FlowSignature) {
-
+    private transpileCallNode(statements: any[], declarations: Set<string>, nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const argExpressions = this.getArgumentExpressions(nodeContext, signature);
 
         const callExpression = (
@@ -296,6 +307,7 @@ export class ProgramEmitter {
             );
         } else {
             // more than one output
+            const mainOutputName = this.getMainOutputName(nodeId);
             declarations.add(nodeId);
             statements.push(
                 ast.createDeclarationStatement(
@@ -305,12 +317,15 @@ export class ProgramEmitter {
                         )
                     ),
                     ast.createDeclaration(
-                        nodeId, callExpression,
+                        mainOutputName, callExpression,
                     )
                 )
             );
             for (let i = 0; i < signature.outputs.length; i++) {
                 const output = signature.outputs[i];
+                if (output.id === 'all') {
+                    throw new ProgramEmissionException('reserved-name')
+                }
                 const outputName = this.getOutputName(nodeId, output.id);
                 declarations.add(outputName);
                 statements.push(
@@ -323,7 +338,7 @@ export class ProgramEmitter {
                         ast.createDeclaration(
                             outputName,
                             ast.createPostfix(
-                                ast.createIdentifier(nodeId),
+                                ast.createIdentifier(mainOutputName),
                                 ast.createFieldSelection(
                                     ast.createLiteral(this.getAttributeName(i))
                                 )
@@ -335,7 +350,7 @@ export class ProgramEmitter {
         }
     }
 
-    private getArgumentExpressions(nodeContext: FlowNodeContext, signature: FlowSignature) {
+    private getArgumentExpressions(nodeContext: ml.FlowNodeContext, signature: ml.FlowSignature) {
         const argExpressions: any[] = [];
         for (const inputRow of signature.inputs) {
             const rowContext = this.assertExistsAndNoProblems(nodeContext.rowContexts[inputRow.id]);
@@ -355,10 +370,11 @@ export class ProgramEmitter {
         return argExpressions;
     }
 
-    private generateInitializer(value: InitializerValue, dataType: TypeSpecifier) {
+    private generateInitializer(value: ml.InitializerValue, dataType: ml.TypeSpecifier): AstNode {
         if (dataType.type === 'primitive') {
             return ast.createFloatLiteral(value as number)
         }
+
         if (dataType.type === 'reference') {
             if (dataType.name === 'vec3') {
                 const { x, y, z } = value as any;
@@ -374,11 +390,26 @@ export class ProgramEmitter {
                     )
                 );
             }
+
+            if (dataType.name === 'mat3') {
+                const { column_1, column_2, column_3 } = value as any;
+                const columnInitializers = [column_1, column_2, column_3]
+                    .map(col => this.generateInitializer(col, ml.types.createReference('vec3')));
+                return (
+                    ast.createFunctionCall(
+                        ast.createTypeSpecifier(
+                            ast.createKeyword('mat3'),
+                        ),
+                        columnInitializers,
+                    )
+                );
+            }
         }
+
         throw new Error(`Unknown initializer, ${dataType.type}`);
     }
 
-    private generateFunctionPrototype(flowContext: FlowGraphContext, declarations: Set<string>) {
+    private generateFunctionPrototype(flowContext: ml.FlowGraphContext, declarations: Set<string>) {
         const { id, outputs, inputs } = flowContext.flowSignature;
 
         // function prototype
@@ -414,6 +445,9 @@ export class ProgramEmitter {
     private getParameterName(inputId: string) {
         return `param_${inputId}`;
     }
+    private getMainOutputName(nodeId: string) {
+        return `${nodeId}_all`;
+    }
     private getOutputName(nodeId: string, rowId: string) {
         return `${nodeId}_${rowId}`;
     }
@@ -421,7 +455,7 @@ export class ProgramEmitter {
         return `_${attributeIndex}`;
     }
 
-    private getRowMapType(outputs: (InputRowSignature | OutputRowSignature)[]) {
+    private getRowMapType(outputs: (ml.InputRowSignature | ml.OutputRowSignature)[]) {
         if (outputs.length === 0) {
             return (
                 ast.createTypeSpecifier(
@@ -471,7 +505,7 @@ export class ProgramEmitter {
         );
     }
 
-    private parseDataType(dataType: TypeSpecifier): TypeSpecifierNode {
+    private parseDataType(dataType: ml.TypeSpecifier): TypeSpecifierNode {
         if (dataType.type === 'array') {
             const elementExpression = this.parseDataType(dataType.elementType);
             return ast.createTypeSpecifier(
@@ -507,7 +541,7 @@ export class ProgramEmitter {
         throw unsupported(`dataType ${dataType.type}`)
     }
 
-    private assertExistsAndNoProblems<C extends FlowGraphContext | FlowNodeContext | RowContext>(ctx: C | undefined) {
+    private assertExistsAndNoProblems<C extends ml.FlowGraphContext | ml.FlowNodeContext | ml.RowContext>(ctx: C | undefined) {
         if (ctx == null || ctx.problems.length) {
             throw new ProgramEmissionException('contains-problems');
         }
@@ -524,7 +558,7 @@ export class ProgramEmitter {
 
 export class ProgramEmissionException extends Error {
     constructor(
-        type: 'contains-problems' | 'missing-value'
+        type: 'contains-problems' | 'missing-value' | 'reserved-name'
     ) {
         super(type);
     }

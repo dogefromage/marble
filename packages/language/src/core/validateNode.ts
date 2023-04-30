@@ -1,12 +1,12 @@
 import { FlowEnvironment, FlowNode, FlowSignature, InitializerValue, InputRowSignature, MapTypeSpecifier, RowState, TypeSpecifier } from "../types";
 import { FlowNodeContext, RowContext, RowProblem } from "../types/context";
 import { Obj } from "../types/utilTypes";
-import { assertTruthy, deepFreeze, wrapDefined } from "../utils";
+import { assertTruthy, wrapDefined } from "../utils";
 import { freezeResult, memoList, memoizeMulti } from "../utils/functional";
 import { compareTypes } from "./compareTypes";
 import { findEnvironmentSignature } from "./environment";
 import { generateDefaultValue } from "./generateDefaultValue";
-import { GraphTypeException, memoizeTypeStructure, types } from "./typeStructure";
+import { FlowTypeComparisonException, memoizeTypeStructure, types } from "./typeStructure";
 import { validateValue } from "./validateValue";
 
 export function validateNode(
@@ -147,7 +147,7 @@ const validateRows = memoizeMulti(freezeResult((
                 try {
                     validateValue(expectedType, displayValue, environment);
                 } catch (e) {
-                    if (e instanceof GraphTypeException) {
+                    if (e instanceof FlowTypeComparisonException) {
                         result.problems.push({
                             type: 'invalid-value',
                             typeProblemMessage: e.message,
@@ -181,7 +181,7 @@ function compareParameterToExpected(
     try {
         compareTypes(param, expected, environment);
     } catch (e) {
-        if (e instanceof GraphTypeException) {
+        if (e instanceof FlowTypeComparisonException) {
             return {
                 type: 'incompatible-type',
                 connectionIndex,

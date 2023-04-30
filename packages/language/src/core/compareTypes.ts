@@ -1,5 +1,17 @@
 import { ArrayTypeSpecifier, FlowEnvironment, ListTypeSpecifier, MapTypeSpecifier, PrimitiveTypeSpecifier, TypeSpecifier } from "../types";
-import { TypeTreePath, resolveReferences, GraphTypeException } from "./typeStructure";
+import { TypeTreePath, resolveReferences, FlowTypeComparisonException } from "./typeStructure";
+
+export function areTypesCompatible(S: TypeSpecifier, T: TypeSpecifier, env: FlowEnvironment) {
+    try {
+        compareTypes(S, T, env);
+    } catch (e) {
+        if (e instanceof FlowTypeComparisonException) {
+            return false;
+        }
+        throw e; // other error
+    }
+    return true;
+}
 
 export function compareTypes(gotten: TypeSpecifier, expected: TypeSpecifier, env: FlowEnvironment) {
     compareSwitch(new TypeTreePath(), gotten, expected, env);
@@ -20,7 +32,7 @@ function compareSwitch(path: TypeTreePath, gotten: TypeSpecifier, expected: Type
     }
 
     if (gotten.type !== expected.type) {
-        throw new GraphTypeException('type-mismatch', new TypeTreePath());
+        throw new FlowTypeComparisonException('type-mismatch', new TypeTreePath());
     }
     const pathWithType = path.add(gotten.type);
     switch (gotten.type) {
@@ -42,7 +54,7 @@ function compareSwitch(path: TypeTreePath, gotten: TypeSpecifier, expected: Type
 }
 function comparePrimitive(path: TypeTreePath, gotten: PrimitiveTypeSpecifier, expected: PrimitiveTypeSpecifier, env: FlowEnvironment) {
     if (gotten.primitive !== expected.primitive) {
-        throw new GraphTypeException('type-mismatch', path.add('primitive'));
+        throw new FlowTypeComparisonException('type-mismatch', path.add('primitive'));
     }
 }
 function compareList(path: TypeTreePath, gotten: ListTypeSpecifier, expected: ListTypeSpecifier, env: FlowEnvironment) {
@@ -50,7 +62,7 @@ function compareList(path: TypeTreePath, gotten: ListTypeSpecifier, expected: Li
 }
 function compareArray(path: TypeTreePath, gotten: ArrayTypeSpecifier, expected: ArrayTypeSpecifier, env: FlowEnvironment) {
     if (gotten.length !== expected.length) {
-        throw new GraphTypeException('type-mismatch', path.add('length'));
+        throw new FlowTypeComparisonException('type-mismatch', path.add('length'));
     }
     compareSwitch(path.add('elementType'), gotten.elementType, expected.elementType, env);
 }
@@ -61,7 +73,7 @@ function compareMap(basePath: TypeTreePath, gotten: MapTypeSpecifier, expected: 
         const expectedElementPath = elementsPath.add(expectedKey);
         const gottenType = gotten.elements[expectedKey];
         if (gottenType == null) {
-            throw new GraphTypeException('missing-element', expectedElementPath);
+            throw new FlowTypeComparisonException('missing-element', expectedElementPath);
         }
         compareSwitch(expectedElementPath, gottenType, expectedType, env);
         gottenKeys.delete(expectedKey);

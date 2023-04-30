@@ -11,6 +11,7 @@ import { createCoordinateGrid } from "./coordinateGrid";
 interface UserProgramWrapper {
     id: string;
     ref: LayerProgram;
+    status: 'compiling' | 'ready' | 'destroyed';
     mesh: THREE.Mesh;
 }
 
@@ -27,7 +28,7 @@ export default class ViewportScene {
 
     private globalUniforms = {
         cameraWorld: { value: new Matrix4().identity() },
-        marchParameters: { value: new Vector3(1e5, 1e2, 1e-2) },
+        marchParameters: { value: new Vector3(1e2, 1e2, 1e-2) },
         ambientColor: { value: new Vector3(0.03, 0.03, 0.07) },
         sunColor: { value: new Vector3(1, 0.9, 0.7) },
         sunGeometry: { value: new Vector4(0.312347, 0.15617376, 0.93704257, degToRad(3)) },
@@ -103,7 +104,7 @@ export default class ViewportScene {
             .copy(this.camera.matrixWorld);
         this.globalUniforms.cameraDistance.value = panelState.viewportCamera.distance;
 
-        const maxMarchDist = 1e3 * targetDistance;
+        const maxMarchDist = 1e1 * targetDistance;
         const maxMarchIter = panelState.maxIterations;
         const marchEpsilon = 1e-5 * targetDistance;
         this.globalUniforms.marchParameters.value.set(maxMarchDist, maxMarchIter, marchEpsilon);
@@ -140,13 +141,21 @@ export default class ViewportScene {
         const wrapper: UserProgramWrapper = {
             id: layerProgram.id,
             ref: layerProgram,
+            status: 'compiling',
             mesh,
         }
 
         // @ts-ignore
         this.renderer.compileAsync(mesh, this.scene).then(() => {
-            this.scene.add(mesh);
-            this.requestRender();
+            if (wrapper.status === 'compiling') {
+                this.scene.add(mesh);
+                this.requestRender();
+                wrapper.status = 'ready';
+                // console.log(`${layerProgram.id} ready`);
+            } else {
+                mesh.material.dispose();
+                // console.log(`${layerProgram.id} disposed directly`);
+            }
         });
 
         return wrapper;
@@ -166,9 +175,13 @@ export default class ViewportScene {
         for (const id of toBeDeleted) {
             const userMesh = this.userPrograms[id];
             if (userMesh != null) {
-                this.scene.remove(userMesh.mesh);
-                const material = userMesh.mesh.material as THREE.ShaderMaterial;
-                material.dispose();
+                if (userMesh.status === 'ready') {
+                    this.scene.remove(userMesh.mesh);
+                    const material = userMesh.mesh.material as THREE.ShaderMaterial;
+                    material.dispose();
+                    // console.log(`${userMesh.id} disposed after user`);
+                }
+                userMesh.status = 'destroyed'; // in case not compiled
             }
         }
         for (const removeProgram of difference.removeItems) {

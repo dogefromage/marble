@@ -18647,31 +18647,31 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 
 			}
 
-			if ( haveDiagnostics ) {
+			// if ( haveDiagnostics ) {
 
-				this.diagnostics = {
+			// 	this.diagnostics = {
 
-					runnable: runnable,
+			// 		runnable: runnable,
 
-					programLog: programLog,
+			// 		programLog: programLog,
 
-					vertexShader: {
+			// 		vertexShader: {
 
-						log: vertexLog,
-						prefix: prefixVertex
+			// 			log: vertexLog,
+			// 			prefix: prefixVertex
 
-					},
+			// 		},
 
-					fragmentShader: {
+			// 		fragmentShader: {
 
-						log: fragmentLog,
-						prefix: prefixFragment
+			// 			log: fragmentLog,
+			// 			prefix: prefixFragment
 
-					}
+			// 		}
 
-				};
+			// 	};
 
-			}
+			// }
 
 		}
 

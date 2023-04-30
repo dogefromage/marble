@@ -1,13 +1,14 @@
+import { TypeSpecifier } from "@marble/language";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import panelStateEnhancer, { panelStateBind, selectPanelState } from "../enhancers/panelStateEnhancer";
-import { CreatePanelStateCallback, FlowEditorPanelState, JointLocationKey, Obj, PlanarCamera, ViewTypes } from "../types";
+import { useCallback } from "react";
+import { Vec2 } from "three";
+import panelStateEnhancer, { selectPanelState } from "../enhancers/panelStateEnhancer";
+import { RootState } from "../redux/store";
+import { CreatePanelStateCallback, DraggingJointContext, FlowEditorPanelState, JointLocationKey, Obj, PlanarCamera, ViewTypes } from "../types";
 import { clamp } from "../utils/math";
 import { getPanelState } from "../utils/panelManager";
-import { Vec2 } from "three";
 import { pointScreenToWorld, vectorScreenToWorld } from "../utils/planarCameraMath";
-import { JointLocation } from "@marble/language";
-import { useCallback } from "react";
-import { RootState } from "../redux/store";
+import { castDraft } from "immer";
 
 export const CAMERA_MIN_ZOOM = 1e-2;
 export const CAMERA_MAX_ZOOM = 1e+2;
@@ -71,12 +72,12 @@ export const flowEditorPanelsSlice = createSlice({
                 },
             };
         },
-        setStateDraggingLink: (s, a: PayloadAction<{ panelId: string, fromJoint: JointLocation }>) => {
+        setStateDraggingLink: (s, a: PayloadAction<{ panelId: string, draggingContext: DraggingJointContext }>) => {
             const ps = getPanelState(s, a);
             if (!ps) return;
             ps.state = {
                 type: 'dragging-link',
-                fromJoint: a.payload.fromJoint,
+                draggingContext: castDraft(a.payload.draggingContext),
                 cursorWorldPosition: null,
             };
         },
@@ -102,7 +103,7 @@ export const flowEditorPanelsSlice = createSlice({
                     clientPosition: a.payload.clientPosition,
                     worldPosition,
                 },
-                fromJoint: lastState.fromJoint,
+                draggingContext: lastState.draggingContext,
             };
         },
         setSelection: (s, a: PayloadAction<{ panelId: string, selection: string[] }>) => {

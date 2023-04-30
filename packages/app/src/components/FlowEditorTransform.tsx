@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectSingleFlow } from '../slices/flowsSlice';
-import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, flowEditorPanelsUpdateCamera, flowEditorSetSelection, flowEditorSetStateNeutral, flowEditorUpdateDragginLinkPosition } from '../slices/panelFlowEditorSlice';
+import { CAMERA_MAX_ZOOM, CAMERA_MIN_ZOOM, flowEditorPanelsUpdateCamera, flowEditorSetSelection, flowEditorSetStateAddNodeWithConnection, flowEditorSetStateNeutral, flowEditorUpdateDragginLinkPosition } from '../slices/panelFlowEditorSlice';
 import MouseSelectionDiv from '../styles/MouseSelectionDiv';
 import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 import { PlanarCamera, Rect, Vec2, ViewTypes } from '../types';
@@ -195,14 +195,20 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
 
     const prevDefault = (e: React.DragEvent) => e.preventDefault();
 
+    const getOffsetCursor = (clientPos: Vec2) => {
+        const bounds = wrapperRef.current?.getBoundingClientRect();
+        if (!bounds) return;
+        const offsetCursor: Vec2 = {
+            x: clientPos.x - bounds.left,
+            y: clientPos.y - bounds.top,
+        }
+        return offsetCursor;
+    }
+
     const updatePosition = useCallback(
         _.throttle((clientPos: Vec2) => {
-            const bounds = wrapperRef.current?.getBoundingClientRect();
-            if (!bounds) return;
-            const offsetCursor = {
-                x: clientPos.x - bounds.left,
-                y: clientPos.y - bounds.top,
-            }
+            const offsetCursor = getOffsetCursor(clientPos);
+            if (!offsetCursor) return;
             dispatch(flowEditorUpdateDragginLinkPosition({
                 panelId, offsetCursor,
             }));
@@ -224,7 +230,14 @@ const FlowEditorTransform = ({ flowId, panelId }: Props) => {
             prevDefault(e);
         },
         drop: e => {
-            dispatch(flowEditorSetStateNeutral({ panelId }));
+            const clientPosition = { x: e.clientX, y: e.clientY };
+            const offsetPosition = getOffsetCursor(clientPosition);
+            if (!offsetPosition) return;
+            dispatch(flowEditorSetStateAddNodeWithConnection({ 
+                panelId,
+                clientPosition,
+                offsetPosition,
+            }));
             updatePosition.cancel();
         },
     });

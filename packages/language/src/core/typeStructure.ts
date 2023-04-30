@@ -88,76 +88,6 @@ export const memoizeTypeStructure = memoizeMulti((equivalentType: TypeSpecifier)
     }
 });
 
-// // memoization does not guarantee uniqueness but helps if the exact same type is passed multiple times
-// export const getUniqueType = memoizeMulti(<T extends TypeSpecifier>(equivalentType: T): UniqueType<T> => {
-//     const hashSequence: number[] = [
-//         crudeHash(equivalentType.type)
-//     ];
-
-//     switch (equivalentType.type) {
-//         case 'reference':
-//             hashSequence.push(
-//                 crudeHash(equivalentType.name)
-//             );
-//             break;
-//         case 'primitive':
-//             hashSequence.push(
-//                 crudeHash(equivalentType.primitive)
-//             );
-//             break;
-//         case 'array':
-//             hashSequence.push(
-//                 getUniqueType(equivalentType.elementType).hash,
-//                 equivalentType.length,
-//             );
-//             break;
-//         case 'list':
-//             hashSequence.push(
-//                 getUniqueType(equivalentType.elementType).hash,
-//             );
-//             break;
-//         case 'map':
-//             const flatEntryHashes = Object.entries(equivalentType.elements)
-//                 .map(([key, valueType]) => {
-//                     return [
-//                         crudeHash(key),
-//                         getUniqueType(valueType).hash,
-//                     ];
-//                 })
-//                 .flat();
-//             hashSequence.push(
-//                 ...flatEntryHashes,
-//             );
-//             break;
-//         case 'unknown':
-//             break;
-//         default:
-//             throw new Error(`Unknown type "${(equivalentType as any).type}"`);
-//     }
-
-//     const totalHash = hashIntSequence(hashSequence);
-//     return getMemoizedUniqueType(totalHash, equivalentType) as UniqueType<T>;
-// });
-
-// const uniqueTypeTable = new Map<number, UniqueType>();
-// function getMemoizedUniqueType(hash: number, type: TypeSpecifier) {
-//     const cached = uniqueTypeTable.get(hash);
-//     if (cached != null) {
-//         return cached;
-//     }
-//     const newUniqueType: UniqueType = {
-//         type, hash,
-//     };
-//     uniqueTypeTable.set(hash, newUniqueType);
-//     return newUniqueType;
-// }
-
-
-
-
-
-
-
 export function resolveReferences(path: TypeTreePath, typeSpecifier: TypeSpecifier, env: FlowEnvironment): TypeSpecifier {
     if (typeSpecifier.type !== 'reference') {
         return typeSpecifier;
@@ -167,7 +97,7 @@ export function resolveReferences(path: TypeTreePath, typeSpecifier: TypeSpecifi
         .add('reference')
         .add(typeSpecifier.name);
     if (!envType) {
-        throw new GraphTypeException('unknown-reference', namedTypePath);
+        throw new FlowTypeComparisonException('unknown-reference', namedTypePath);
     }
     // TODO add recursion base case
     return resolveReferences(namedTypePath, envType, env);
@@ -188,10 +118,9 @@ export class TypeTreePath {
     }
 }
 
-export type GraphTypeExceptionType = 'type-mismatch' | 'missing-element' | 'unknown-reference' | 'invalid-value';
-export class GraphTypeException extends Error {
+export class FlowTypeComparisonException extends Error {
     constructor(
-        public type: GraphTypeExceptionType,
+        public type: 'type-mismatch' | 'missing-element' | 'unknown-reference' | 'invalid-value',
         public path: TypeTreePath,
     ) {
         super(type);

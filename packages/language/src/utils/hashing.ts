@@ -22,14 +22,19 @@ export function hashIntSequence(X: number[]) {
 
 const objHashCache = new WeakMap<object, number>(); // makes objects garbage collectable
 const otherHashCache = new Map<any, number>(); // for now dont care about memory
-const randomBuffer = new Uint32Array(new Int32Array(1));
 export function crudeHash(value: any) {
     const hashCache = typeof value === 'object' ? objHashCache : otherHashCache;
     const cached = hashCache.get(value);
     if (cached != null) {
         return cached;
     }
-    const val = crypto.getRandomValues(randomBuffer)[0];
+    const val = randomI32();
     hashCache.set(value, val);
     return val;
+}
+
+// const randomBuffer = new Uint32Array(new Int32Array(1));
+function randomI32() {
+    // return crypto.getRandomValues(randomBuffer)[0];
+    return (Math.random()*(2**32)) | 0;
 }

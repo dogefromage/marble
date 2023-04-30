@@ -11,3 +11,7 @@ export {
 export {
     types
 } from './core/typeStructure';
+
+export {
+    areTypesCompatible,
+} from './core/compareTypes';

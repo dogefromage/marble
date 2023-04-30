@@ -1,4 +1,4 @@
-import { FlowNodeContext, FlowSignature } from '@marble/language';
+import { FlowEnvironment, FlowNodeContext, FlowSignature } from '@marble/language';
 import React from 'react';
 import { FlowNodeNameWrapper, FlowNodeRowNameP } from '../styles/flowStyles';
 import { Vec2 } from '../types';
@@ -10,9 +10,10 @@ interface Props {
     context: FlowNodeContext;
     signature: FlowSignature;
     getClientNodePos: () => Vec2;
+    env: FlowEnvironment;
 }
 
-const FlowNodeContent = ({ panelId, flowId, context, signature, getClientNodePos }: Props) => {
+const FlowNodeContent = ({ panelId, flowId, context, signature, getClientNodePos, env }: Props) => {
     const commonProps = { 
         panelId, 
         flowId, 
@@ -38,6 +39,7 @@ const FlowNodeContent = ({ panelId, flowId, context, signature, getClientNodePos
                     key={output.id}
                     row={output}
                     context={context.rowContexts[output.id]}
+                    env={env}
                 />
             )
         }
@@ -48,6 +50,7 @@ const FlowNodeContent = ({ panelId, flowId, context, signature, getClientNodePos
                     key={input.id}
                     row={input}
                     context={context.rowContexts[input.id]}
+                    env={env}
                 />
             )
         }

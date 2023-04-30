@@ -1,5 +1,5 @@
 import { useDraggable, useDroppable } from '@marble/interactive';
-import { JointLocation } from '@marble/language';
+import { FlowEnvironment, JointLocation, TypeSpecifier } from '@marble/language';
 import React, { useEffect, useRef } from 'react';
 import { Vec2 } from 'three';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
@@ -12,17 +12,19 @@ import { getJointLocationKey } from '../utils/flows';
 interface Props {
     panelId: string;
     flowId: string;
+    env: FlowEnvironment;
     location: JointLocation;
-    dataType: DataTypes;
+    dataType: TypeSpecifier;
     getClientNodePos: () => Vec2;
 }
 
 export const DRAG_JOIN_DND_TAG = `drag-join`;
 const JOINT_DIV_CLASS = `joint-target`;
 
-const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Props) => {
+const FlowJoint = ({ panelId, flowId, location, env, dataType, getClientNodePos }: Props) => {
     const dispatch = useAppDispatch();
     const actionState = useAppSelector(selectFlowEditorPanelActionState(panelId));
+    const dataTypeLiteral = getDataTypeLiteral(dataType);
 
     const drag = useDraggable({
         tag: DRAG_JOIN_DND_TAG,
@@ -30,7 +32,11 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
             e.dataTransfer.setDragImage(new Image(), 0, 0);
             dispatch(flowEditorSetStateDraggingLink({
                 panelId,
-                fromJoint: location,
+                draggingContext: {
+                    fromJoint: location,
+                    dataType: dataType,
+                    environment: env,
+                }
             }));
             return {};
         },
@@ -38,8 +44,8 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
 
     const isDroppableTarget = (
         actionState?.type === 'dragging-link' &&
-        actionState.fromJoint.nodeId !== location.nodeId &&
-        actionState.fromJoint.direction !== location.direction
+        actionState.draggingContext.fromJoint.nodeId !== location.nodeId &&
+        actionState.draggingContext.fromJoint.direction !== location.direction
     );
 
     const droppableHandler = (e: React.DragEvent) => {
@@ -56,12 +62,13 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
             if (!isDroppableTarget) return;
             dispatch(flowsAddLink({
                 flowId,
-                locations: [location, actionState.fromJoint],
+                locations: [location, actionState.draggingContext.fromJoint],
                 undo: { desc: `Linked two nodes in active flow.` }
             }));
             dispatch(flowEditorSetStateNeutral({
                 panelId,
             }));
+            e.stopPropagation();
         },
     });
 
@@ -87,7 +94,7 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
     return (
         <FlowJointDiv
             direction={location.direction}
-            dataType={dataType}
+            dataType={dataTypeLiteral}
             {...drag.handlers}
             {...drop.handlers}
             onMouseDown={e => e.stopPropagation()}
@@ -102,3 +109,13 @@ const FlowJoint = ({ panelId, flowId, location, dataType, getClientNodePos }: Pr
 }
 
 export default FlowJoint;
+
+function getDataTypeLiteral(specifier: TypeSpecifier): DataTypes {
+    if (specifier.type === 'primitive') {
+        return specifier.primitive as DataTypes;
+    }
+    if (specifier.type === 'reference') {
+        return specifier.name as DataTypes;
+    }
+    return 'unknown' as DataTypes;
+}
