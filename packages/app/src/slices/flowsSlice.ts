@@ -7,6 +7,7 @@ import { useCallback } from "react";
 import { RootState } from "../redux/store";
 import { FlowsSliceState, UndoAction, Vec2 } from "../types";
 import { getBasePowers } from "../utils/math";
+import { ROOT_FLOW_ID, initialDefaultRootFlow } from "../types/flows/setup";
 enableMapSet();
 
 function getFlow(s: WritableDraft<FlowsSliceState>, a: { payload: { flowId: string } }) {
@@ -82,7 +83,9 @@ export function generateNodeId(index: number) {
     return token;
 }
 
-const initialState: FlowsSliceState = {};
+const initialState: FlowsSliceState = {
+    [ROOT_FLOW_ID]: initialDefaultRootFlow,
+};
 
 export const flowsSlice = createSlice({
     name: 'flows',

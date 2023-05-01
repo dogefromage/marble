@@ -1,13 +1,11 @@
-import { useEffect } from 'react';
-import { useAppSelector } from '../redux/hooks';
-import { selectApp } from '../slices/appSlice';
+import { useEffect, useRef } from 'react';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { appLoadProject, selectApp } from '../slices/appSlice';
 import { storeLocalProjectJson } from '../utils/projectStorage';
+import React from 'react';
 
-interface Props {
-
-}
-
-const ProjectLoader = ({}: Props) => {
+const ProjectLoader = () => {
+    const dispatch = useAppDispatch();
     const app = useAppSelector(selectApp);
 
     useEffect(() => {
@@ -16,9 +14,56 @@ const ProjectLoader = ({}: Props) => {
         }
         storeLocalProjectJson(app.projectToLoad.data);
         location.reload();
-    }, [ app.projectToLoad ]);
+    }, [app.projectToLoad]);
 
-    return null;
+    const handleFileContent = (content: string) => {
+        dispatch(appLoadProject({
+            data: content,
+        }));
+    }
+
+    return (
+        <FileLoader
+            openTrigger={app.displayOpenFilePopup}
+            onFileContent={handleFileContent}
+        />
+    );
 }
 
 export default ProjectLoader;
+
+interface FileLoaderProps {
+    openTrigger: number;
+    onFileContent: (content: string) => void;
+}
+const FileLoader = ({ onFileContent, openTrigger }: FileLoaderProps) => {
+    const fileInput = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!fileInput.current) return;
+        fileInput.current.click();
+    }, [openTrigger]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            const file = e.target.files?.[0];
+            if (!file) {
+                return;
+            }
+            const fileText = await file.text();
+            onFileContent(fileText);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    return (
+        <input
+            ref={fileInput}
+            type='file'
+            accept='.marble'
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+        />
+    );
+}

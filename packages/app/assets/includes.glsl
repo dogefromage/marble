@@ -2,57 +2,6 @@
 // various: https://iquilezles.org/articles/distfunctions/
 // perlin noise: https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 
-#DEFINCLUDE inc_union;
-Distance inc_union(Distance a, Distance b)
-{
-    if (a.d < b.d) return a;
-    else            return b;
-}
-
-#DEFINCLUDE inc_intersection;
-Distance inc_intersection(Distance a, Distance b)
-{
-    if (a.d > b.d) return a;
-    else             return b;
-}
-
-#DEFINCLUDE inc_difference;
-Distance inc_difference(Distance a, Distance b)
-{
-    b.d = -b.d;
-    if (a.d > b.d) return a;
-    else             return b;
-}
-
-#DEFINCLUDE inc_smooth_union;
-Distance inc_smooth_union( Distance a, Distance b, float k ) {
-    float h = clamp( 0.5 + 0.5*(b.d-a.d)/k, 0.0, 1.0 );
-    return Distance(mix( b.d, a.d, h ) - k*h*(1.0-h), mix(b.color, a.color, h));
-}
-
-#DEFINCLUDE inc_smooth_difference;
-Distance inc_smooth_difference( Distance a, Distance b, float k ) {
-    float h = clamp( 0.5 - 0.5*(a.d+b.d)/k, 0.0, 1.0 );
-    return Distance(mix( a.d, -b.d, h ) + k*h*(1.0-h), mix(a.color, b.color, h));
-}
-
-#DEFINCLUDE inc_smooth_intersection;
-Distance inc_smooth_intersection( Distance a, Distance b, float k ) {
-    float h = clamp( 0.5 - 0.5*(b.d-a.d)/k, 0.0, 1.0 );
-    return Distance(mix( b.d, a.d, h ) + k*h*(1.0-h), mix(b.color, a.color, h));
-}
-
-#DEFINCLUDE inc_extrude_z;
-Distance inc_extrude_z(vec3 p, Distance s, float h) {
-    vec2 w = vec2( s.d, abs(p.z) - h);
-    return Distance(min(max(w.x,w.y),0.0) + length(max(w,0.0)), s.color);
-}
-
-// float opRevolution( in vec3 p, in sdf2d primitive, float o )
-// {
-//     vec2 q = vec2( length(p.xz) - o, p.y );
-//     return primitive(q)
-// }
 
 #DEFINCLUDE inc_perlin_noise;
 vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
@@ -127,41 +76,5 @@ float inc_perlin_noise(vec3 P){
     return 2.2 * n_xyz;
 }
 
-#DEFINCLUDE modSelective;
-
-vec3 modSelective(vec3 v, vec3 m) {
-    if (m.x > 0.) v.x = mod(v.x, m.x);
-    if (m.y > 0.) v.y = mod(v.y, m.y);
-    if (m.z > 0.) v.z = mod(v.z, m.z);
-    return v;
-}
 
 #DEFINCLUDE inc_voronoi;
-
-vec3 inc_voronoi_hash(vec3 p3) {
-	p3 = fract(p3 * vec3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yxz+33.33);
-    return fract((p3.xxy + p3.yxx)*p3.zyx);
-}
-
-vec4 inc_voronoi(vec3 x, float scale, float margin) {
-    x /= scale;
-    vec3 cellPos = floor(x);
-    vec3 fracPart = fract(x);
-    vec3 outPoint;
-    float minDist = 1000.0;
-
-    for (int k = -1; k <= 1; k++)
-    for (int j = -1; j <= 1; j++)
-    for (int i = -1; i <= 1; i++) {
-        vec3 off = vec3(i, j, k);
-        vec3 hash = inc_voronoi_hash(cellPos + off);
-        vec3 cellPoint = 0.5 * margin + hash * (1. - margin);
-        float currMin = length(cellPoint + off - fracPart);
-        if (currMin < minDist) {
-            minDist = currMin;
-            outPoint = cellPos + cellPoint + off;
-        }
-    }
-    return vec4(scale * outPoint, scale * minDist);
-}

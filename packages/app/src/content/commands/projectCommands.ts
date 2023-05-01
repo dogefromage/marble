@@ -1,5 +1,7 @@
-import { appLoadProject } from "../../slices/appSlice";
+import { appLoadProject, appSetOpenFilePopup } from "../../slices/appSlice";
 import { Command } from "../../types";
+import { download } from "../../utils/download";
+import { getLocalProjectJson } from "../../utils/projectStorage";
 
 export const projectCommands: Command[] = [
     /**
@@ -10,7 +12,12 @@ export const projectCommands: Command[] = [
         name: 'Save Project',
         scope: 'global',
         actionCreator() {
-            console.log('save');
+            const localProject = getLocalProjectJson();
+            if (localProject) {
+                download(localProject, 'application/json', 'project.marble');
+            } else {
+                console.error(`No Project found.`);
+            }
         },
         keyCombinations: [{ key: 's', ctrlKey: true }],
     },
@@ -19,7 +26,7 @@ export const projectCommands: Command[] = [
         name: 'Load Project',
         scope: 'global',
         actionCreator() {
-            console.log('load');
+            return appSetOpenFilePopup();
         },
         keyCombinations: [{ key: 'o', ctrlKey: true }],
     },

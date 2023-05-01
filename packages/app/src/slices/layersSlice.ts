@@ -1,8 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../redux/store";
 import { LayersSliceState, UndoAction } from "../types";
+import { DEFAULT_LAYER_ID, initialDefaultLayer } from "../types/flows/setup";
 
-const initialState: LayersSliceState = {};
+const initialState: LayersSliceState = {
+    [DEFAULT_LAYER_ID]: initialDefaultLayer,
+};
 
 export const layersSlice = createSlice({
     name: 'layers',

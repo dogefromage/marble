@@ -1,9 +1,7 @@
 import { jsonReplacer, jsonReviver } from "./serialization";
 
-export const PROJECT_KEY = 'project';
-
-export function loadLocalProject() {
-    const stored = localStorage.getItem(PROJECT_KEY);
+export function getAndDeserializeLocalProject() {
+    const stored = getLocalProjectJson();
     if (stored != null) {
         try {
             return JSON.parse(stored, jsonReviver);
@@ -13,7 +11,7 @@ export function loadLocalProject() {
     }
 }
 
-export function storeLocalProject(data: any) {
+export function serializeAndStoreProjectLocally(data: any) {
     try {
         const stateJSON = JSON.stringify(data, jsonReplacer);
         storeLocalProjectJson(stateJSON);
@@ -22,6 +20,11 @@ export function storeLocalProject(data: any) {
     }
 }
 
+export const PROJECT_KEY = 'project';
+
+export function getLocalProjectJson() {
+    return localStorage.getItem(PROJECT_KEY);
+}
 export function storeLocalProjectJson(json: string | null) {
     if (json) {
         localStorage.setItem(PROJECT_KEY, json);

@@ -19,6 +19,7 @@ export class ProgramEmitter {
 
             try {
                 const layer = this.assertDef(layers[layerId]);
+                this.assertDef(projectContext.flowContexts[layer.entryFlowId]);
                 const newLayerProgram = this.emitProgram(projectContext, layer, sortedUsedFlows);
                 newPrograms.push(newLayerProgram);
             } catch (e) {

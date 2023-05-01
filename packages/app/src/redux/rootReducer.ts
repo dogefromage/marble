@@ -14,7 +14,7 @@ import panelManagerReducer from "../slices/panelManagerSlice";
 import viewportPanelsReducer from "../slices/panelViewportSlice";
 import worldReducer from "../slices/worldSlice";
 import { ViewTypes } from "../types";
-import { loadLocalProject, storeLocalProject } from "../utils/projectStorage";
+import { getAndDeserializeLocalProject, serializeAndStoreProjectLocally } from "../utils/projectStorage";
 
 const projectReducer = combineReducers({
     world: worldReducer,
@@ -29,8 +29,8 @@ const rootReducer = combineReducers({
             project: 
             storageEnhancer(
                 projectReducer,
-                loadLocalProject,
-                storeLocalProject,
+                getAndDeserializeLocalProject,
+                serializeAndStoreProjectLocally,
             ),
             context: contextReducer,
             layerPrograms: layerProgramsReducer,

@@ -4,6 +4,7 @@ import { AppSliceState } from "../types";
 
 const initialState: AppSliceState = {
     hasUserSaved: false,
+    displayOpenFilePopup: 0,
 };
 
 export const appSlice = createSlice({
@@ -18,12 +19,16 @@ export const appSlice = createSlice({
                 data: a.payload.data,
             };
         },
+        setOpenFilePopup: s => {
+            s.displayOpenFilePopup++;
+        }
     }
 });
 
 export const {
     setUserSaved: appSetUserSaved,
     loadProject: appLoadProject,
+    setOpenFilePopup: appSetOpenFilePopup,
 } = appSlice.actions;
 
 export const selectApp = (state: RootState) => state.app;

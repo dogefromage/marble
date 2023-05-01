@@ -19,6 +19,7 @@ export interface AppSliceState {
     projectToLoad?: {
         data: string | null;
     };
+    displayOpenFilePopup: number;
 }
 
 export interface ContextSliceState {
