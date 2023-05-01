@@ -5,7 +5,7 @@ import { validationSetResult } from '../slices/contextSlice';
 import { selectFlows } from '../slices/flowsSlice';
 import { layerProgramsSetMany } from '../slices/layerProgramsSlice';
 import { selectLayers } from '../slices/layersSlice';
-import { selectProjectEnvironment } from '../slices/projectEnvironmentSlice';
+import { initialEnvironment } from '../types/flows/setup';
 import { ProgramEmitter } from '../utils/layerPrograms/ProgramEmitter';
 
 interface Props {
@@ -16,7 +16,8 @@ const ProjectManager = ({}: Props) => {
     const dispatch = useAppDispatch();
     const flows = useAppSelector(selectFlows);
     const layers = useAppSelector(selectLayers);
-    const projectEnvironment = useAppSelector(selectProjectEnvironment);
+    // const projectEnvironment = useAppSelector(selectProjectEnvironment);
+    const projectEnvironment = initialEnvironment;
     const programEmitter = useRef(new ProgramEmitter());
 
     const lastEmissionTimeoutRef = useRef<any>();

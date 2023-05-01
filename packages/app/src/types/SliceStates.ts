@@ -1,8 +1,8 @@
-import { FlowGraph, ProjectContext } from "@marble/language";
-import { Command, ConsoleMessage, ContextMenuState, Layer, LayerProgram, MenuState, World } from ".";
+import * as ML from "@marble/language";
+import { Command, ContextMenuState, Layer, LayerProgram, MenuState, World } from ".";
 import { Obj, Rect } from "./UtilityTypes";
 
-export type FlowsSliceState = Obj<FlowGraph>;
+export type FlowsSliceState = Obj<ML.FlowGraph>;
 export type LayerProgramsSliceState = Obj<LayerProgram>;
 export type MenusSliceState = Obj<MenuState>;
 export type LayersSliceState = Obj<Layer>;
@@ -12,14 +12,17 @@ export type PreferencesSliceState = {};
 
 export interface CommandsSliceState { commands: Obj<Command> };
 
-// export interface AssetsSliceState {
-//     signatures: Obj<FlowSignature>;
-//     types: Obj<TypeSpecifier>;
-//     glsl: Obj<string>;
-// }
+
+
+export interface AppSliceState {
+    hasUserSaved: boolean;
+    projectToLoad?: {
+        data: string | null;
+    };
+}
 
 export interface ContextSliceState {
-    projectContext: ProjectContext | null;
+    projectContext: ML.ProjectContext | null;
     // add cache
 }
 
@@ -30,7 +33,3 @@ export interface PanelManagerSliceState {
 }
 
 export type ContextMenuSliceState = { contextMenu: ContextMenuState | null };
-
-export type ConsoleSliceState = {
-    feed: ConsoleMessage[];
-}

@@ -1,7 +1,5 @@
 import React from 'react';
 import { ReflexContainer, ReflexElement, ReflexSplitter } from 'react-reflex';
-import { useAppDispatch } from '../redux/hooks';
-import ConsoleView from './ConsoleView';
 import FlowEditorView from './FlowEditorView';
 import ViewportView from './ViewportView';
 
@@ -11,21 +9,7 @@ const LayoutViewRoot = () => {
             orientation='horizontal'
         >
             <ReflexElement>
-                {/* <ReflexContainer
-                    orientation='vertical'
-                >
-                    <ReflexElement
-                        flex={2}
-                    > */}
-                        <ViewportView panelId='4321' />
-                    {/* </ReflexElement>
-                    <ReflexSplitter />
-                    <ReflexElement
-                        flex={1}
-                    >
-                        <ConsoleView panelId='1432134' />
-                    </ReflexElement>
-                </ReflexContainer> */}
+                <ViewportView panelId='4321' />
             </ReflexElement>
             <ReflexSplitter />
             <ReflexElement>

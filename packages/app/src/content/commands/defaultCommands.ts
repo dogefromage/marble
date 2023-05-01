@@ -1,7 +1,7 @@
 import { redo, undo } from "../../enhancers/undoableEnhancer";
-import { consoleClearMessages } from "../../slices/consoleSlice";
-import { Command, ViewTypes } from "../../types";
+import { Command } from "../../types";
 import { flowEditorCommands } from "./flowEditorCommands";
+import { projectCommands } from "./projectCommands";
 import { viewportCommands } from "./viewportCommands";
 
 export const defaultCommands: Command[] = [
@@ -22,20 +22,21 @@ export const defaultCommands: Command[] = [
         actionCreator: redo,
         keyCombinations: [{ key: 'y', ctrlKey: true }],
     },
-    /**
-     * Console view
-     */
-    {
-        scope: 'view',
-        viewType: ViewTypes.Console,
-        id: 'console.clearMessages',
-        name: 'Clear Messages',
-        actionCreator() {
-            return consoleClearMessages({
-                undo: { desc: `Cleared all messages from the console.` }
-            });
-        },
-    },
+    // /**
+    //  * Console view
+    //  */
+    // {
+    //     scope: 'view',
+    //     viewType: ViewTypes.Console,
+    //     id: 'console.clearMessages',
+    //     name: 'Clear Messages',
+    //     actionCreator() {
+    //         return consoleClearMessages({
+    //             undo: { desc: `Cleared all messages from the console.` }
+    //         });
+    //     },
+    // },
+    ...projectCommands,
     ...flowEditorCommands,
     ...viewportCommands
 ]

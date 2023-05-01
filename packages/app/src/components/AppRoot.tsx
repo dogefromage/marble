@@ -8,13 +8,11 @@ import { ThemeProvider } from 'styled-components';
 import defaultTheme from '../content/defaultTheme';
 import { RootState, initStore } from '../redux/store';
 import ContextMenu from './ContextMenu';
-import { ErrorBoundary } from './ErrorBoundary';
-import ErrorDisplay from './ErrorDisplay';
 import KeyboardCommandListener from './KeyboardCommandListener';
 import LayoutRoot from './LayoutRoot';
 import { MenuPortalMount } from './MenuPortalMount';
-import StartAnouncer from './StartAnouncer';
 import ProjectManager from './ProjectManager';
+import ProjectLoader from './ProjectLoader';
 
 glMatrix.setMatrixArrayType(Array);
 
@@ -32,35 +30,21 @@ const AppRoot = ({ projectId }: Props) => {
     if (!store) return null;
 
     return (
-        <ErrorBoundary
-            fallbackComponent={ErrorDisplay}
-        >
-            <Provider store={store}>
-                {/* APP STATE */}
-                {/* <AssetsManager /> */}
-                <ProjectManager />
-                {/* <DependencyManager /> */}
-                {/* <TemplateManager staticOnly={false} /> */}
-                {/* <GeometryDataManager /> */}
-
-                {/* COMPILATION */}
-                {/* <CompilerRoot /> */}
-                
-                {/* Views */}
-                <ThemeProvider theme={defaultTheme}>
-                    <LayoutRoot />
-                </ThemeProvider>
-                
-                {/* USER INTERACTION */}
-                <KeyboardCommandListener />
-                <ContextMenu />
-                <StartAnouncer projectId={projectId} />
-                
-                {/* PORTAL MOUNTS */}
-                <MenuPortalMount />
-                <DragzonePortalMount />
-            </Provider>
-        </ErrorBoundary>
+        <Provider store={store}>
+            {/* APP STATE */}
+            <ProjectManager />
+            <ProjectLoader />
+            {/* Views */}
+            <ThemeProvider theme={defaultTheme}>
+                <LayoutRoot />
+            </ThemeProvider>
+            {/* USER INTERACTION */}
+            <KeyboardCommandListener />
+            <ContextMenu />
+            {/* PORTAL MOUNTS */}
+            <MenuPortalMount />
+            <DragzonePortalMount />
+        </Provider>
     )
 }
 

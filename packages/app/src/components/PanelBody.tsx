@@ -4,8 +4,6 @@ import styled from 'styled-components';
 import { useAppDispatch } from '../redux/hooks';
 import { panelManagerSetActive, panelManagerSetClientRect } from '../slices/panelManagerSlice';
 import { Rect, ViewProps } from '../types';
-import { ErrorBoundary } from './ErrorBoundary';
-import ErrorDisplay from './ErrorDisplay';
 
 const PanelDiv = styled.div`
     width: 100%;
@@ -50,11 +48,7 @@ const PanelBody = ({ children, viewProps: { panelId } }: Props) => {
             ref={panelDiv}
             onMouseEnter={mouseEnter}
         >
-            <ErrorBoundary
-                fallbackComponent={ErrorDisplay}
-            >
-                {children}
-            </ErrorBoundary>
+            {children}
         </PanelDiv>
     );
 }

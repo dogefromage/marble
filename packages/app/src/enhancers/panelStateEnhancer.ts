@@ -57,8 +57,8 @@ export default function panelStateEnhancer<S extends PanelState, A extends AnyAc
 export function selectPanelState<T extends ViewTypes>(viewType: T, panelId: string):
     (state: RootState) => PanelStateMap[T] | undefined {
     return useCallback((state: RootState) => {
-        type ReducerState = RootState['editor']['panels'];
-        const panelsOfType = state.editor.panels[viewType as keyof ReducerState]!;
+        type ReducerState = RootState['panels'];
+        const panelsOfType = state.panels[viewType as keyof ReducerState]!;
         return panelsOfType[panelId] as PanelStateMap[T];
     }, [viewType, panelId]);
 }

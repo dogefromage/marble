@@ -3,12 +3,10 @@ import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { consoleAppendMessage } from '../slices/consoleSlice';
 import { selectWorld } from '../slices/worldSlice';
-import { BORDER_RADIUS, INSET_SHADOW } from '../styles/utils';
+import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 import { Metrics, UnitNames } from '../types/world';
 import { Units } from '../utils/formatUnitValues';
-import { FLOW_NODE_ROW_HEIGHT } from '../styles/flowStyles';
 
 const SlidableInputDiv = styled.div`
     position: relative;
@@ -113,10 +111,7 @@ const SlidableInput = ({
             onChange(parsed);
         }
         catch (e: any) {
-            dispatch(consoleAppendMessage({
-                text: `Error at evaluating user input: ${e.message}`,
-                type: 'error',
-            }));
+            console.error(`Error at evaluating user input: ${e.message}`);
         }
     };
 

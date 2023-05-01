@@ -1,13 +1,11 @@
-import { FlowNode } from '@marble/language';
 import React from 'react';
 import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppSelector } from '../redux/hooks';
 import { selectFlowContext } from '../slices/contextSlice';
-import { selectSingleFlow } from '../slices/flowsSlice';
 import { FlowEditorPanelState, SelectionStatus } from '../types';
 import { ViewTypes } from '../types/panelManager/views';
-import FlowNodeElement from './FlowNodeElement';
 import FlowEdges from './FlowEdges';
+import FlowNodeElement from './FlowNodeElement';
 
 interface Props {
     panelId: string;
@@ -16,32 +14,19 @@ interface Props {
 }
 
 const FlowEditorContent = ({ flowId, panelId, getPanelState }: Props) => {
-    // const flow = useAppSelector(selectSingleFlow(flowId));
     const context = useAppSelector(selectFlowContext(flowId));
     const panelState = useAppSelector(selectPanelState(ViewTypes.FlowEditor, panelId));
 
-    if (/* !flow ||  */!context || !panelState) return <p>Loading...</p>;
-
-    // // New link
-    // const newLink = panelState?.newLink;
-    // const newLinkNodeIndex = geometry?.nodes.findIndex(node => node.id === newLink?.location.nodeId);
-    // const newLinkNode = geometry?.nodes[newLinkNodeIndex!];
-    // const newLinkData = connectionData.nodeDatas[newLinkNodeIndex!];
+    if (!context || !panelState)  {
+        return null;
+    }
 
     return (
         <>
             <FlowEdges panelId={panelId} flowId={flowId} />
             {
-                // newLink && newLinkNode && newLinkData &&
-                // <GeometryLinkNew
-                //     panelId={panelId}
-                //     newLink={newLink}
-                //     node={newLinkNode}
-                //     nodeData={newLinkData}
-                //     getCamera={getCamera}
-                // />
-            }{
-                Object.values(context.nodeContexts).map((nodeContext, nodeIndex) => {
+                // nodes
+                Object.values(context.nodeContexts).map(nodeContext => {
                     const node = nodeContext.ref;
                     let selectionStatus = SelectionStatus.Nothing;
                     if (panelState.selection.includes(node.id)) {

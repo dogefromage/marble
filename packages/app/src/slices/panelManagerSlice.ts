@@ -31,12 +31,12 @@ export const {
     setRootClientRect: panelManagerSetRootClientRect,
 } = PanelManagerSlice.actions;
 
-export const selectPanelManager = (state: RootState) => state.editor.panelManager;
+export const selectPanelManager = (state: RootState) => state.panelManager;
 
 export const selectPanelClientRect = 
     (panelId: string) =>
         useCallback((state: RootState) => 
-            state.editor.panelManager.clientRects.get(panelId), 
+            state.panelManager.clientRects.get(panelId), 
             [ panelId ]
         );
 

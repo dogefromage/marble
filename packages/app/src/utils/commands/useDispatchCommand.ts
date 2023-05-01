@@ -1,10 +1,12 @@
-import { $CombinedState, AnyAction } from "@reduxjs/toolkit";
+import { AnyAction } from "@reduxjs/toolkit";
 import { useCallback, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { RootState } from "../../redux/store";
 import { selectCommands } from "../../slices/commandsSlice";
-import { Command, CommandBaseArgs, CommandCallTypes, CommandParameterMap, GlobalCommandArgs, ViewCommandArgs } from "../../types";
+import { CommandBaseArgs, CommandCallTypes, CommandParameterMap, GlobalCommandArgs, ViewCommandArgs } from "../../types";
 import { clientToOffsetPos, offsetToClientPos } from "../panelManager";
+
+const ID = <T>(t: T) => t;
 
 export default function useDispatchCommand() {
     const dispatch = useAppDispatch();
@@ -12,9 +14,9 @@ export default function useDispatchCommand() {
     const commandsRef = useRef(commands);
     commandsRef.current = commands;
 
-    const editorStateNotRef = useAppSelector(useCallback(state => state.editor, []));
-    const editorStateRef = useRef(editorStateNotRef);
-    editorStateRef.current = editorStateNotRef;
+    const editorStateNotRef = useAppSelector(ID);
+    const stateRef = useRef(editorStateNotRef);
+    stateRef.current = editorStateNotRef;
 
     return useCallback((
         commandId: string,
@@ -35,15 +37,15 @@ export default function useDispatchCommand() {
             const globalArgs: GlobalCommandArgs = { ...baseArgs };
             actionOrActions = command.actionCreator(globalArgs, paramMap);
         } else {
-            const panelManager = editorStateRef.current.panelManager;
+            const panelManager = stateRef.current.panelManager;
             const activePanelId = panelManager.activePanelId;
             const panelClientRect = panelManager.clientRects.get(activePanelId);
             if (!panelClientRect) {
                 return console.error(`Command panel client rect not found`);
             }
 
-            type ReducerState = RootState['editor']['panels'];
-            const panelState = editorStateRef.current.panels[command.viewType as keyof ReducerState]?.[activePanelId];
+            type ReducerState = RootState['panels'];
+            const panelState = stateRef.current.panels[command.viewType as keyof ReducerState]?.[activePanelId];
 
             // center
             const offsetCenter = {
@@ -81,5 +83,5 @@ export default function useDispatchCommand() {
             dispatch(action);
         }
 
-    }, [ dispatch, editorStateRef, commandsRef ]);
+    }, [ dispatch, stateRef, commandsRef ]);
 }

@@ -10,5 +10,4 @@ export * from './flowEditorView';
 export * from './SliceStates';
 export * from './contextMenu';
 export * from './layer';
-export * from './console';
 export * from './world';
