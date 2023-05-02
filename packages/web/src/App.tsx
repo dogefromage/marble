@@ -1,8 +1,7 @@
 import { AppRoot } from "@marble/app";
 import "@marble/app/src/styles/globals.scss";
 
-const App = () =>
-{
+const App = () => {
     return (
         <AppRoot projectId='test' />
     );

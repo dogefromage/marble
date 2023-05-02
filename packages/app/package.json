@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently --raw \"tsc --watch\" \"copy-and-watch --watch src/**/*.glsl src/**/*.glsl lib\"",
+    "build": "tsc && copy-and-watch src/**/*.glsl src/**/*.glsl lib",
     "schemagen": "sh src/dev/schemagen.sh"
   },
   "dependencies": {
