@@ -106,10 +106,13 @@ export const flowsSlice = createSlice({
             const flow: FlowGraph = {
                 id,
                 name: a.payload.name,
-                nodes: {},
                 inputs: a.payload.signature.inputs,
                 outputs: a.payload.signature.outputs,
-                nextIdIndex: 0,
+                nodes: {
+                    a: { id: 'a', signature: 'syntax:input', position: { x: 400, y: 200 }, rowStates: {} },
+                    b: { id: 'b', signature: 'syntax:output', position: { x: 1000, y: 200 }, rowStates: {} },
+                },
+                nextIdIndex: 2,
             }
             s[id] = castDraft(flow);
         },

@@ -1,4 +1,4 @@
-import { FlowEntryPoint, FlowEnvironmentContent, FlowGraph, FlowSignature, InputRowSignature, OutputRowSignature } from "../types";
+import { FlowEntryPoint, FlowEnvironmentContent, FlowGraph, FlowSignature, FlowSignatureId, InputRowSignature, OutputRowSignature } from "../types";
 import { FlowGraphContext, ProjectContext } from "../types/context";
 import { Obj } from "../types/utilTypes";
 import { deepFreeze } from "../utils";
@@ -29,10 +29,13 @@ export function validateProject(
         const flowDependencies = collectFlowDependencies(flow);
         for (const signature of flowDependencies) {
             // find index of dependency
-            const depIndex = flowEntries
-                .findIndex(entry => entry[0] === signature);
-            if (depIndex >= 0) {
-                numberedAdjacency[depIndex].push(i);
+            const [ signatureType, signatureName ] = signature.split(':');
+            if (signatureType === 'composed') {
+                const depIndex = flowEntries
+                    .findIndex(entry => entry[0] === signatureName);
+                if (depIndex >= 0) {
+                    numberedAdjacency[depIndex].push(i);
+                }
             }
             // here it doesn't matter if the dependency is invalid
         }
@@ -82,10 +85,14 @@ export function validateProject(
 
 const flowSignatureContent = memoizeMulti(
     (flowContext: FlowGraphContext): FlowEnvironmentContent => ({
-        signatures: { [flowContext.ref.id]: flowContext.flowSignature },
+        signatures: { [generateComposedId(flowContext.ref)]: flowContext.flowSignature },
         types: {},
     })
 );
+
+const generateComposedId = (flow: FlowGraph): FlowSignatureId => {
+    return `composed:${flow.id}`;
+}
 
 const generateFlowSyntaxLayer = memoizeMulti(generateFlowSyntaxLayerInitial);
 function generateFlowSyntaxLayerInitial(

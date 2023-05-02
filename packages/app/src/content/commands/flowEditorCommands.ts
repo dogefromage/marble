@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { flowsRemoveNodes } from "../../slices/flowsSlice";
 import { flowEditorSetStateAddNodeAtPosition } from "../../slices/panelFlowEditorSlice";
 import { Command, ViewTypes } from "../../types";
@@ -52,37 +53,31 @@ export const flowEditorCommands: Command[] = [
     // {
     //     scope: 'view',
     //     viewType: ViewTypes.FlowEditor,
-    //     id: 'flowEditor.createSubgeometry',
+    //     id: 'flowEditor.createGroup',
     //     name: 'Create Group',
     //     actionCreator({ offsetCursor, offsetCenter, panelState: { flowStack, camera } }, params) {
     //         const parentFlowId = flowStack[0];
     //         if (parentFlowId == null) return;
 
-    //         const subGeometryId = generateCodeSafeUUID();
-    //         const subTemplateId = getTemplateId('composite', subGeometryId);
+    //         const groupId = saveUUID();
+    //         const signatureId: FlowSignatureId = `composed:${groupId}`;
     //         const worldPos = pointScreenToWorld(camera, offsetCursor || offsetCenter);
 
     //         const undoRecord: UndoRecord = {
-    //             actionToken: 'createsub:' + subGeometryId,
-    //             desc: `Created new subgeometry and placed node into current.`
-    //         }
+    //             actionToken: 'createsub:' + signatureId,
+    //             desc: `Created new flow group and placed node into current.`
+    //         };
 
     //         return [
-    //             geometriesCreate({
-    //                 geometryId: subGeometryId,
-    //                 geometryTemplate: {
-    //                     name: 'Sub Geometry',
-    //                     isRoot: false,
-    //                     inputs: [],
-    //                     outputs: [
-    //                         defaultOutputRows['surface'],
-    //                     ],
-    //                 },
+    //             flowsCreate({
+    //                 flowId: groupId,
+    //                 name: 'New Group',
+    //                 signature: topFlowSignature,
     //                 undo: undoRecord,
     //             }),
-    //             geometriesAddNode({
-    //                 geometryId: parentFlowId,
-    //                 templateId: subTemplateId,
+    //             flowsAddNode({
+    //                 flowId: parentFlowId,
+    //                 signatureId,
     //                 position: worldPos,
     //                 undo: undoRecord,
     //             })
@@ -90,3 +85,7 @@ export const flowEditorCommands: Command[] = [
     //     },
     // }
 ]
+
+function saveUUID() {
+    return `group_${uuidv4().replaceAll('-', '').slice(10)}`;
+}

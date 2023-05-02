@@ -31,7 +31,7 @@ const FlowEditorView = (viewProps: ViewProps) => {
 
     return (
         <PanelBody viewProps={viewProps}>
-            <FlowNavigatorBar panelId={panelId} />
+            {/* <FlowNavigatorBar panelId={panelId} /> */}
             <FlowEditorViewport panelId={panelId} />
             {/* <ReflexContainer orientation='vertical'>
                 <ReflexElement>

@@ -90,7 +90,7 @@ export const initialDefaultRootFlow: ml.FlowGraph = {
     id: ROOT_FLOW_ID,
     name: 'Root Flow',
     ...topFlowSignature,
-    nextIdIndex: 2,
+    nextIdIndex: 3,
     nodes: {
         a: {
             id: 'a',

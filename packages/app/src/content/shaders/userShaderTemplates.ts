@@ -67,12 +67,10 @@ struct Distance {
 
 ${GLSL_RAY_STRUCTURE}
 
-// float ${TEXTURE_LOOKUP_METHOD_NAME}(int textureCoordinate) {
-//     int y = textureCoordinate / ${/* LOOKUP_TEXTURE_WIDTH */1};
-//     int x = textureCoordinate - y * ${/* LOOKUP_TEXTURE_WIDTH */1};
-//     vec2 uv = (vec2(x, y) + 0.5) / float(${/* LOOKUP_TEXTURE_WIDTH */1});
-//     return texture(varTexture, uv).r;
-// }
+// for perlin_noise
+vec4 perlin_permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 perlin_taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+vec3 perlin_fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
 
 %MAIN_PROGRAM%
 

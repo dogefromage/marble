@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../redux/hooks';
 import { flowsMoveSelection } from '../slices/flowsSlice';
-import { flowEditorSetSelection } from '../slices/panelFlowEditorSlice';
+import { flowEditorPanelsPushFlowId, flowEditorSetSelection } from '../slices/panelFlowEditorSlice';
 import { FlowNodeDiv } from '../styles/flowStyles';
 import { FlowEditorPanelState } from '../types';
 import { SelectionStatus, Vec2 } from '../types/UtilityTypes';
@@ -30,7 +30,7 @@ const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionSta
     const getClientNodePos = useCallback(() => {
         const rect = wrapperRef.current!.getBoundingClientRect();
         return { x: rect.x, y: rect.y } as Vec2;
-    }, [ wrapperRef ]);
+    }, [wrapperRef]);
 
     const dragRef = useRef<{
         startCursor: Vec2;
@@ -86,7 +86,7 @@ const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionSta
     }, {
         cursor: 'grab',
     });
-    
+
     // // DEBUG UPDATES
     // const [color, setColor] = useState('#ffffff');
     // useEffect(() => {
@@ -107,20 +107,20 @@ const FlowNodeElement = ({ panelId, flowId, context, getPanelState, selectionSta
             onContextMenu={() => ensureSelection()} // context will be triggered further down in tree
             ref={wrapperRef}
             // debugOutlineColor={color}
-        // onDoubleClick={e => {
-        //     // enter nested geometry
-        //     if (nodeData?.template == null) {
-        //         return;
-        //     }
-        //     const { id: subGeoId, type: templateType } = decomposeTemplateId(nodeData.template.id);
-        //     if (templateType === 'composite') {
-        //         dispatch(geometryEditorPanelsPushGeometryId({
-        //             panelId,
-        //             geometryId: subGeoId,
-        //         }));
-        //         e.stopPropagation();
-        //     }
-        // }}
+            onDoubleClick={e => {
+                const signatureId = context.templateSignature?.id;
+                if (signatureId == null) {
+                    return;
+                }
+                const [ signatureType, signatureName ] = signatureId.split(':');
+                if (signatureType === 'composed') {
+                    dispatch(flowEditorPanelsPushFlowId({
+                        panelId,
+                        flowId: signatureName,
+                    }));
+                    e.stopPropagation();
+                }
+            }}
         >
             {
                 context.templateSignature ? (

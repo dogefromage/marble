@@ -1,13 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
+import { selectPanelState } from '../enhancers/panelStateEnhancer';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { ViewTypes } from '../types';
 import useDispatchCommand from '../utils/commands/useDispatchCommand';
 import useContextMenu from '../utils/menus/useContextMenu';
 import FlowEditorTransform from './FlowEditorTransform';
 import FlowNodeCatalog from './FlowNodeCatalog';
-import { selectPanelState } from '../enhancers/panelStateEnhancer';
-import { BOX_SHADOW } from '../styles/utils';
 
 const EditorWrapper = styled.div`
     position: relative;
@@ -33,7 +32,7 @@ const FlowEditorViewport = ({ panelId }: Props) => {
             'flowEditor.addNodeAtPosition',
             'flowEditor.deleteSelected',
             // 'geometryEditor.resetSelected',
-            // 'geometryEditor.createSubgeometry'
+            'flowEditor.createGroup'
         ]
     );
 

@@ -21,14 +21,16 @@ const FlowNavigatorBar = ({ panelId }: Props) => {
         }));
     }
 
+    const active = panelState?.flowStack[0];
+
     return (
         <BarWrapper>
             {
-                panelState?.flowStack.map((flowId, index) =>
+                panelState?.flowStack.slice().reverse().map((flowId, index) =>
                     <HandleButton
                         key={flowId + index}
                         onClick={() => selectGeometry(flowId)}
-                        isActive={index === 0}
+                        isActive={flowId === active}
                     >
                         {flows[flowId]?.name || flowId}
                     </HandleButton>
@@ -74,4 +76,6 @@ const HandleButton = styled.button<{ isActive: boolean }>`
             background-color: #666;
         }
     `}
+
+    user-select: none;
 `;
