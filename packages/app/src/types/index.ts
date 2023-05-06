@@ -10,4 +10,4 @@ export * from './SliceStates';
 export * from './contextMenu';
 export * from './layer';
 export * from './world';
-export * from './undo';
+export * from './undoTypes';
