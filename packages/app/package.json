@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently --raw \"tsc --watch\" \"copy-and-watch --watch src/**/*.glsl src/**/*.glsl lib\"",
-    "build": "tsc && copy-and-watch src/**/*.glsl src/**/*.glsl lib",
+    "build": "tsc && copyfiles -u 1 --verbose src/**/*.glsl lib",
     "schemagen": "sh src/dev/schemagen.sh"
   },
   "dependencies": {
@@ -43,6 +43,7 @@
     "@types/uuid": "^8.3.4",
     "concurrently": "^8.0.1",
     "copy-and-watch": "^0.1.6",
+    "copyfiles": "^2.4.1",
     "typescript-json-schema": "^0.55.0"
   }
 }
